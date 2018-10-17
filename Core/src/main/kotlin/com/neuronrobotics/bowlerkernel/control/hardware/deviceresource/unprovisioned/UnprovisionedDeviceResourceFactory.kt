@@ -12,31 +12,39 @@ import javax.inject.Inject
 
 class UnprovisionedDeviceResourceFactory
 @Inject internal constructor(
-        private val registry: HardwareRegistry,
-        @Assisted private val device: Device
+    private val registry: HardwareRegistry,
+    @Assisted private val device: Device
 ) : UnprovisionedLEDFactory {
 
-    private fun registerDeviceResource(resourceId: ResourceId) = registry.registerDeviceResource(device.deviceId, resourceId)
+    private fun registerDeviceResource(resourceId: ResourceId) =
+        registry.registerDeviceResource(device.deviceId, resourceId)
 
     override fun makeUnprovisionedLED(pinNumber: Int): Either<RegisterError, UnprovisionedLED> {
         val resourceId = pinNumber.toString()
+
+        if (device.isResourceInRange(resourceId)) {
+        } else {
+            return Either.left(RegisterError("Could not make unprovisioned LED with resource id $resourceId because it is not in the range of resources for device $device."))
+        }
+
         val registerError = registerDeviceResource(resourceId)
         return Either.cond(
-                registerError.isEmpty(),
-                { UnprovisionedLED(device, resourceId) },
-                { registerError.get() }
+            registerError.isEmpty(),
+            { UnprovisionedLED(device, resourceId) },
+            { registerError.get() }
         )
     }
 
     companion object {
 
         internal fun unprovisionedDeviceResourceFactoryModule() = module {
-            install(FactoryModuleBuilder()
+            install(
+                FactoryModuleBuilder()
                     .implement(
-                            UnprovisionedLEDFactory::class.java,
-                            UnprovisionedDeviceResourceFactory::class.java
+                        UnprovisionedLEDFactory::class.java,
+                        UnprovisionedDeviceResourceFactory::class.java
                     ).build(
-                            UnprovisionedLEDFactory.Factory::class.java
+                        UnprovisionedLEDFactory.Factory::class.java
                     )
             )
         }

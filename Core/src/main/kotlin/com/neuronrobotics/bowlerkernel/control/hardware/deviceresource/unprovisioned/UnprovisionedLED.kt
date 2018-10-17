@@ -7,8 +7,8 @@ import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.ResourceI
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.provisioned.LED
 
 class UnprovisionedLED(
-        override val device: Device,
-        override val resourceId: ResourceId
+    override val device: Device,
+    override val resourceId: ResourceId
 ) : UnprovisionedDeviceResource {
 
     override fun provision(): Either<ProvisionError, LED> {

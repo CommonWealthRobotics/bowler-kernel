@@ -12,13 +12,14 @@ import javax.inject.Inject
 
 internal class HardwareRegistryTracker
 @Inject internal constructor(
-        private val registry: StaticHardwareRegistry
+    private val registry: StaticHardwareRegistry
 ) : HardwareRegistry {
 
     private val registeredDevices: MutableSet<DeviceId> = mutableSetOf()
 
     @Suppress("UnstableApiUsage")
-    private val registeredDeviceResources: SetMultimap<DeviceId, ResourceId> = MultimapBuilder.hashKeys().hashSetValues().build()
+    private val registeredDeviceResources: SetMultimap<DeviceId, ResourceId> =
+        MultimapBuilder.hashKeys().hashSetValues().build()
 
     override fun registerDevice(deviceId: DeviceId): Option<RegisterError> {
         val registerError = registry.registerDevice(deviceId)
@@ -62,19 +63,19 @@ internal class HardwareRegistryTracker
 
     internal fun unregisterAllHardware(): ImmutableList<UnregisterError> {
         val unregisterDeviceResourceErrors = registeredDeviceResources.entries()
-                .fold(emptyList<UnregisterError>()) { acc, elem ->
-                    acc + registry.unregisterDeviceResource(elem.key, elem.value).fold(
-                            { emptyList<UnregisterError>() },
-                            { listOf(it) }
-                    )
-                }.toImmutableList()
+            .fold(emptyList<UnregisterError>()) { acc, elem ->
+                acc + registry.unregisterDeviceResource(elem.key, elem.value).fold(
+                    { emptyList<UnregisterError>() },
+                    { listOf(it) }
+                )
+            }.toImmutableList()
 
         registeredDeviceResources.clear()
 
         val unregisterDeviceErrors = registeredDevices.fold(emptyList<UnregisterError>()) { acc, elem ->
             acc + registry.unregisterDevice(elem).fold(
-                    { emptyList<UnregisterError>() },
-                    { listOf(it) }
+                { emptyList<UnregisterError>() },
+                { listOf(it) }
             )
         }.toImmutableList()
 

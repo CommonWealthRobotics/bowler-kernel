@@ -8,7 +8,7 @@ fun <E> Iterable<E>.toImmutableList() = ImmutableList.copyOf(this)
 fun <E> Iterable<E>.toImmutableSet() = ImmutableSet.copyOf(this)
 
 operator fun <E> ImmutableList<E>.plus(other: ImmutableList<E>): ImmutableList<E> =
-        ImmutableList.builder<E>()
-                .addAll(this)
-                .addAll(other)
-                .build()
+    ImmutableList.builder<E>()
+        .addAll(this)
+        .addAll(other)
+        .build()

@@ -12,7 +12,8 @@ internal constructor() : HardwareRegistry {
     private val registeredDevices: MutableSet<DeviceId> = mutableSetOf()
 
     @Suppress("UnstableApiUsage")
-    private val registeredDeviceResources: SetMultimap<DeviceId, ResourceId> = MultimapBuilder.hashKeys().hashSetValues().build()
+    private val registeredDeviceResources: SetMultimap<DeviceId, ResourceId> =
+        MultimapBuilder.hashKeys().hashSetValues().build()
 
     override fun registerDevice(deviceId: DeviceId): Option<RegisterError> {
         if (registeredDevices.contains(deviceId)) {

@@ -6,7 +6,7 @@ import javax.inject.Inject
 
 class DeviceFactory
 @Inject internal constructor(
-        private val registry: HardwareRegistry
+    private val registry: HardwareRegistry
 ) : BowlerDeviceFactory {
 
     private fun registerDevice(deviceId: DeviceId) = registry.registerDevice(deviceId)

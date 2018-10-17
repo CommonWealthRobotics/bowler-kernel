@@ -2,5 +2,4 @@ package com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.provisio
 
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.DeviceResource
 
-interface ProvisionedDeviceResource : DeviceResource {
-}
+interface ProvisionedDeviceResource : DeviceResource

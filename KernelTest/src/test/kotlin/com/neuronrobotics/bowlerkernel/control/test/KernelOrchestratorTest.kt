@@ -5,8 +5,6 @@ import com.neuronrobotics.bowlerkernel.control.KernelOrchestrator
 import com.neuronrobotics.bowlerkernel.control.hardware.device.BowlerDeviceFactory
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.provisioned.LED
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.unprovisioned.UnprovisionedLEDFactory
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.verify
 import org.jlleitschuh.guice.key
 import org.junit.jupiter.api.Test
 import javax.inject.Inject
@@ -39,8 +37,8 @@ class KernelOrchestratorTest {
     @Suppress("NestedLambdaShadowedImplicitParameter")
     private class TestClass
     @Inject constructor(
-            bowlerDeviceFactory: BowlerDeviceFactory,
-            unprovisionedLEDFactory: UnprovisionedLEDFactory.Factory
+        bowlerDeviceFactory: BowlerDeviceFactory,
+        unprovisionedLEDFactory: UnprovisionedLEDFactory.Factory
     ) {
         val led: LED
 
@@ -48,19 +46,19 @@ class KernelOrchestratorTest {
             val device = bowlerDeviceFactory.makeBowlerDevice("bowler-device-id")
             val unprovisionedLED = unprovisionedLEDFactory.create(device).makeUnprovisionedLED(7)
             led = unprovisionedLED.fold(
-                    {
-                        throw RuntimeException(it.errorString)
-                    },
-                    {
-                        it.provision().fold(
-                                {
-                                    throw RuntimeException(it.errorString)
-                                },
-                                {
-                                    it
-                                }
-                        )
-                    }
+                {
+                    throw RuntimeException(it.errorString)
+                },
+                {
+                    it.provision().fold(
+                        {
+                            throw RuntimeException(it.errorString)
+                        },
+                        {
+                            it
+                        }
+                    )
+                }
             )
         }
     }

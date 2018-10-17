@@ -13,9 +13,9 @@ import org.jlleitschuh.guice.module
 abstract class ControlScript {
 
     protected val injector: Injector = KernelHardwareModule.injector.createChildInjector(
-            controlScriptHardwareModule(),
-            DeviceFactory.deviceFactoryModule(),
-            UnprovisionedDeviceResourceFactory.unprovisionedDeviceResourceFactoryModule()
+        controlScriptHardwareModule(),
+        DeviceFactory.deviceFactoryModule(),
+        UnprovisionedDeviceResourceFactory.unprovisionedDeviceResourceFactoryModule()
     )
 
     protected abstract fun runScript()
