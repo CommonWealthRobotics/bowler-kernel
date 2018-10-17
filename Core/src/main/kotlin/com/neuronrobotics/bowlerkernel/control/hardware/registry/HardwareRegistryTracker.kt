@@ -31,7 +31,10 @@ internal class HardwareRegistryTracker
         return registerError
     }
 
-    override fun registerDeviceResource(deviceId: DeviceId, resourceId: ResourceId): Option<RegisterError> {
+    override fun registerDeviceResource(
+        deviceId: DeviceId,
+        resourceId: ResourceId
+    ): Option<RegisterError> {
         val registerError = registry.registerDeviceResource(deviceId, resourceId)
 
         if (registerError.isEmpty()) {
@@ -51,7 +54,10 @@ internal class HardwareRegistryTracker
         return unregisterError
     }
 
-    override fun unregisterDeviceResource(deviceId: DeviceId, resourceId: ResourceId): Option<UnregisterError> {
+    override fun unregisterDeviceResource(
+        deviceId: DeviceId,
+        resourceId: ResourceId
+    ): Option<UnregisterError> {
         val unregisterError = registry.unregisterDeviceResource(deviceId, resourceId)
 
         if (unregisterError.isEmpty()) {
@@ -72,12 +78,13 @@ internal class HardwareRegistryTracker
 
         registeredDeviceResources.clear()
 
-        val unregisterDeviceErrors = registeredDevices.fold(emptyList<UnregisterError>()) { acc, elem ->
-            acc + registry.unregisterDevice(elem).fold(
-                { emptyList<UnregisterError>() },
-                { listOf(it) }
-            )
-        }.toImmutableList()
+        val unregisterDeviceErrors =
+            registeredDevices.fold(emptyList<UnregisterError>()) { acc, elem ->
+                acc + registry.unregisterDevice(elem).fold(
+                    { emptyList<UnregisterError>() },
+                    { listOf(it) }
+                )
+            }.toImmutableList()
 
         registeredDevices.clear()
 

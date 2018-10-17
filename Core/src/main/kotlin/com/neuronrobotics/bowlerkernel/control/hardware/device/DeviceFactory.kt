@@ -11,7 +11,8 @@ class DeviceFactory
 
     private fun registerDevice(deviceId: DeviceId) = registry.registerDevice(deviceId)
 
-    override fun makeBowlerDevice(deviceId: DeviceId) = BowlerDevice(deviceId)
+    override fun makeBowlerDevice(deviceId: DeviceId) =
+        registerDevice(deviceId).toEither { BowlerDevice(deviceId) }.swap()
 
     companion object {
 

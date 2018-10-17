@@ -9,30 +9,7 @@ import org.jlleitschuh.guice.key
 import org.junit.jupiter.api.Test
 import javax.inject.Inject
 
-class KernelOrchestratorTest {
-
-    private open class MockControlScript : ControlScript() {
-
-        public override fun runScript() {
-        }
-
-        public override fun stopScript() {
-        }
-    }
-
-    @Test
-    fun `test start`() {
-        val script = mock<MockControlScript> {
-        }
-
-        val orchestrator = KernelOrchestrator()
-
-        orchestrator.startControlScript(script)
-        verify(script).runScript()
-
-        orchestrator.stopControlScript(script)
-        verify(script).stopScript()
-    }
+class ControlScriptIntegrationTest {
 
     @Suppress("NestedLambdaShadowedImplicitParameter")
     private class TestClass
@@ -64,7 +41,7 @@ class KernelOrchestratorTest {
     }
 
     @Test
-    fun `lel help`() {
+    fun `provision LED integration test`() {
         val script = object : ControlScript() {
             override fun runScript() {
                 injector.getInstance(key<TestClass>())

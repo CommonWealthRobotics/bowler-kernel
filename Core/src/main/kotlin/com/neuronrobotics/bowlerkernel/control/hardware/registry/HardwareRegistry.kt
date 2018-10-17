@@ -12,5 +12,8 @@ internal interface HardwareRegistry {
 
     fun unregisterDevice(deviceId: DeviceId): Option<UnregisterError>
 
-    fun unregisterDeviceResource(deviceId: DeviceId, resourceId: ResourceId): Option<UnregisterError>
+    fun unregisterDeviceResource(
+        deviceId: DeviceId,
+        resourceId: ResourceId
+    ): Option<UnregisterError>
 }

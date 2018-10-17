@@ -30,10 +30,18 @@ dependencies {
 
     implementation(group = "com.google.guava", name = "guava", version = "25.0-jre")
     implementation(group = "com.google.inject", name = "guice", version = "4.1.0")
-    implementation(group = "com.google.inject.extensions", name = "guice-assistedinject", version = "4.1.0")
+    implementation(
+        group = "com.google.inject.extensions",
+        name = "guice-assistedinject",
+        version = "4.1.0"
+    )
     implementation(group = "com.google.code.findbugs", name = "annotations", version = "3.0.1")
     implementation(group = "com.natpryce", name = "hamkrest", version = "1.4.2.2")
     implementation(group = "org.jlleitschuh.guice", name = "kotlin-guiced-core", version = "0.0.4")
 
-    testImplementation(group = "com.nhaarman.mockitokotlin2", name = "mockito-kotlin", version = "2.0.0-RC3")
+    testImplementation(
+        group = "com.nhaarman.mockitokotlin2",
+        name = "mockito-kotlin",
+        version = "2.0.0-RC3"
+    )
 }
