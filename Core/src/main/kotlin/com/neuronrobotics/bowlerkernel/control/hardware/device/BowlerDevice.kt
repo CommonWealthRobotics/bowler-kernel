@@ -1,6 +1,7 @@
 package com.neuronrobotics.bowlerkernel.control.hardware.device
 
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.ResourceId
+import com.neuronrobotics.bowlerkernel.control.hardware.protocol.BowlerRPCProtocol
 
 /**
  * A Bowler device is a serial device which runs the Bowler RPC protocol.
@@ -9,19 +10,27 @@ import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.ResourceI
  */
 class BowlerDevice
 internal constructor(
-    override val deviceId: DeviceId
+    override val deviceId: DeviceId,
+    private val bowlerRPCProtocol: BowlerRPCProtocol
 ) : Device {
 
     override fun connect() {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // TODO: Implement this properly
+        bowlerRPCProtocol.write()
+        bowlerRPCProtocol.read()
     }
 
     override fun disconnect() {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // TODO: Implement this properly
+        bowlerRPCProtocol.write()
+        bowlerRPCProtocol.read()
     }
 
     override fun isResourceInRange(resourceId: ResourceId): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // TODO: Implement this properly
+        bowlerRPCProtocol.write()
+        bowlerRPCProtocol.read()
+        return true
     }
 
     override fun toString() = deviceId
