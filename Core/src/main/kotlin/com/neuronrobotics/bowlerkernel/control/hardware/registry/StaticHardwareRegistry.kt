@@ -1,10 +1,14 @@
 package com.neuronrobotics.bowlerkernel.control.hardware.registry
 
 import arrow.core.Option
+import com.google.common.collect.ImmutableSet
+import com.google.common.collect.ImmutableSetMultimap
 import com.google.common.collect.MultimapBuilder
 import com.google.common.collect.SetMultimap
 import com.neuronrobotics.bowlerkernel.control.hardware.device.DeviceId
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.ResourceId
+import com.neuronrobotics.bowlerkernel.util.toImmutableSet
+import com.neuronrobotics.bowlerkernel.util.toImmutableSetMultimap
 
 /**
  * The base implementation of [HardwareRegistry].
@@ -12,14 +16,19 @@ import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.ResourceI
 internal class StaticHardwareRegistry
 internal constructor() : HardwareRegistry {
 
-    private val registeredDevices: MutableSet<DeviceId> = mutableSetOf()
+    private val internalRegisteredDevices: MutableSet<DeviceId> = mutableSetOf()
 
     @Suppress("UnstableApiUsage")
-    private val registeredDeviceResources: SetMultimap<DeviceId, ResourceId> =
+    private val internalRegisteredDeviceResources: SetMultimap<DeviceId, ResourceId> =
         MultimapBuilder.hashKeys().hashSetValues().build()
 
+    override val registeredDevices: ImmutableSet<DeviceId>
+        get() = internalRegisteredDevices.toImmutableSet()
+    override val registeredDeviceResources: ImmutableSetMultimap<DeviceId, ResourceId>
+        get() = internalRegisteredDeviceResources.toImmutableSetMultimap()
+
     override fun registerDevice(deviceId: DeviceId): Option<RegisterError> {
-        if (registeredDevices.contains(deviceId)) {
+        if (internalRegisteredDevices.contains(deviceId)) {
             return Option.just(
                 RegisterError(
                     """
@@ -29,7 +38,7 @@ internal constructor() : HardwareRegistry {
             )
         }
 
-        registeredDevices.add(deviceId)
+        internalRegisteredDevices.add(deviceId)
         return Option.empty()
     }
 
@@ -37,7 +46,7 @@ internal constructor() : HardwareRegistry {
         deviceId: DeviceId,
         resourceId: ResourceId
     ): Option<RegisterError> {
-        if (!registeredDevices.contains(deviceId)) {
+        if (!internalRegisteredDevices.contains(deviceId)) {
             return Option.just(
                 RegisterError(
                     """
@@ -46,7 +55,7 @@ internal constructor() : HardwareRegistry {
                     """.trimIndent()
                 )
             )
-        } else if (registeredDeviceResources.containsEntry(deviceId, resourceId)) {
+        } else if (internalRegisteredDeviceResources.containsEntry(deviceId, resourceId)) {
             return Option.just(
                 RegisterError(
                     """
@@ -57,12 +66,12 @@ internal constructor() : HardwareRegistry {
             )
         }
 
-        registeredDeviceResources.put(deviceId, resourceId)
+        internalRegisteredDeviceResources.put(deviceId, resourceId)
         return Option.empty()
     }
 
     override fun unregisterDevice(deviceId: DeviceId): Option<UnregisterError> {
-        if (!registeredDevices.contains(deviceId)) {
+        if (!internalRegisteredDevices.contains(deviceId)) {
             return Option.just(
                 UnregisterError(
                     """
@@ -72,7 +81,7 @@ internal constructor() : HardwareRegistry {
             )
         }
 
-        registeredDevices.remove(deviceId)
+        internalRegisteredDevices.remove(deviceId)
         return Option.empty()
     }
 
@@ -80,7 +89,7 @@ internal constructor() : HardwareRegistry {
         deviceId: DeviceId,
         resourceId: ResourceId
     ): Option<UnregisterError> {
-        if (!registeredDevices.contains(deviceId)) {
+        if (!internalRegisteredDevices.contains(deviceId)) {
             return Option.just(
                 UnregisterError(
                     """
@@ -89,7 +98,7 @@ internal constructor() : HardwareRegistry {
                     """.trimIndent()
                 )
             )
-        } else if (!registeredDeviceResources.containsEntry(deviceId, resourceId)) {
+        } else if (!internalRegisteredDeviceResources.containsEntry(deviceId, resourceId)) {
             return Option.just(
                 UnregisterError(
                     """
@@ -100,7 +109,7 @@ internal constructor() : HardwareRegistry {
             )
         }
 
-        registeredDeviceResources.remove(deviceId, resourceId)
+        internalRegisteredDeviceResources.remove(deviceId, resourceId)
         return Option.empty()
     }
 }

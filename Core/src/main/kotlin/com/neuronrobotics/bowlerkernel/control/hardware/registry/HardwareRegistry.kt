@@ -1,10 +1,16 @@
 package com.neuronrobotics.bowlerkernel.control.hardware.registry
 
 import arrow.core.Option
+import com.google.common.collect.ImmutableSet
+import com.google.common.collect.ImmutableSetMultimap
 import com.neuronrobotics.bowlerkernel.control.hardware.device.DeviceId
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.ResourceId
 
 internal interface HardwareRegistry {
+
+    val registeredDevices: ImmutableSet<DeviceId>
+
+    val registeredDeviceResources: ImmutableSetMultimap<DeviceId, ResourceId>
 
     /**
      * Registers a device id. Fails if the device is already registered.

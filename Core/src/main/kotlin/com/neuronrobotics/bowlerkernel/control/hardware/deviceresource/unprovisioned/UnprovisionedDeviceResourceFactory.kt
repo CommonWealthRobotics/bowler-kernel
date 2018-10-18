@@ -22,23 +22,31 @@ class UnprovisionedDeviceResourceFactory
     private fun registerDeviceResource(resourceId: ResourceId) =
         registry.registerDeviceResource(device.deviceId, resourceId)
 
-    override fun makeUnprovisionedLED(pinNumber: Int): Either<RegisterError, UnprovisionedLED> {
-        val resourceId = pinNumber.toString()
-
+    private inline fun <T> makeUnprovisionedResource(
+        resourceId: ResourceId,
+        errorMessageType: String,
+        crossinline rightSide: (ResourceId) -> T
+    ):
+        Either<RegisterError, T> {
         return if (device.isResourceInRange(resourceId)) {
-            registerDeviceResource(resourceId).toEither { UnprovisionedLED(device, resourceId) }
+            registerDeviceResource(resourceId).toEither { rightSide(resourceId) }
                 .swap()
         } else {
             Either.left(
                 RegisterError(
                     """
-                    Could not make unprovisioned LED with resource id $resourceId because it
-                    is not in the range of resources for device $device.
+                    Could not make an unprovisioned $errorMessageType with resource id
+                    $resourceId because it is not in the range of resources for device $device.
                     """.trimIndent()
                 )
             )
         }
     }
+
+    override fun makeUnprovisionedLED(pinNumber: Int) =
+        makeUnprovisionedResource(pinNumber.toString(), "LED") {
+            UnprovisionedLED(device, it)
+        }
 
     companion object {
 

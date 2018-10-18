@@ -21,17 +21,21 @@ internal class HardwareRegistryTracker
     private val registry: StaticHardwareRegistry
 ) : HardwareRegistry {
 
-    private val registeredDevices: MutableSet<DeviceId> = mutableSetOf()
+    private val internalRegisteredDevices: MutableSet<DeviceId> = mutableSetOf()
 
     @Suppress("UnstableApiUsage")
-    private val registeredDeviceResources: SetMultimap<DeviceId, ResourceId> =
+    private val internalRegisteredDeviceResources: SetMultimap<DeviceId, ResourceId> =
         MultimapBuilder.hashKeys().hashSetValues().build()
+
+    override val registeredDevices = registry.registeredDevices
+
+    override val registeredDeviceResources = registry.registeredDeviceResources
 
     override fun registerDevice(deviceId: DeviceId): Option<RegisterError> {
         val registerError = registry.registerDevice(deviceId)
 
         if (registerError.isEmpty()) {
-            registeredDevices.add(deviceId)
+            internalRegisteredDevices.add(deviceId)
         }
 
         return registerError
@@ -44,7 +48,7 @@ internal class HardwareRegistryTracker
         val registerError = registry.registerDeviceResource(deviceId, resourceId)
 
         if (registerError.isEmpty()) {
-            registeredDeviceResources.put(deviceId, resourceId)
+            internalRegisteredDeviceResources.put(deviceId, resourceId)
         }
 
         return registerError
@@ -54,7 +58,7 @@ internal class HardwareRegistryTracker
         val unregisterError = registry.unregisterDevice(deviceId)
 
         if (unregisterError.isEmpty()) {
-            registeredDevices.remove(deviceId)
+            internalRegisteredDevices.remove(deviceId)
         }
 
         return unregisterError
@@ -67,7 +71,7 @@ internal class HardwareRegistryTracker
         val unregisterError = registry.unregisterDeviceResource(deviceId, resourceId)
 
         if (unregisterError.isEmpty()) {
-            registeredDeviceResources.remove(deviceId, resourceId)
+            internalRegisteredDeviceResources.remove(deviceId, resourceId)
         }
 
         return unregisterError
@@ -79,7 +83,7 @@ internal class HardwareRegistryTracker
      * @return A list of all the errors encountered.
      */
     internal fun unregisterAllHardware(): ImmutableList<UnregisterError> {
-        val unregisterDeviceResourceErrors = registeredDeviceResources.entries()
+        val unregisterDeviceResourceErrors = internalRegisteredDeviceResources.entries()
             .fold(emptyList<UnregisterError>()) { acc, elem ->
                 acc + registry.unregisterDeviceResource(elem.key, elem.value).fold(
                     { emptyList<UnregisterError>() },
@@ -87,17 +91,17 @@ internal class HardwareRegistryTracker
                 )
             }.toImmutableList()
 
-        registeredDeviceResources.clear()
+        internalRegisteredDeviceResources.clear()
 
         val unregisterDeviceErrors =
-            registeredDevices.fold(emptyList<UnregisterError>()) { acc, elem ->
+            internalRegisteredDevices.fold(emptyList<UnregisterError>()) { acc, elem ->
                 acc + registry.unregisterDevice(elem).fold(
                     { emptyList<UnregisterError>() },
                     { listOf(it) }
                 )
             }.toImmutableList()
 
-        registeredDevices.clear()
+        internalRegisteredDevices.clear()
 
         return unregisterDeviceResourceErrors + unregisterDeviceErrors
     }
