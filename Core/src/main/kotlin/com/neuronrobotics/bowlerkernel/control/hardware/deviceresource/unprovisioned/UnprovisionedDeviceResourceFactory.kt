@@ -10,6 +10,9 @@ import com.neuronrobotics.bowlerkernel.control.hardware.registry.RegisterError
 import org.jlleitschuh.guice.module
 import javax.inject.Inject
 
+/**
+ * A facade for making any type of device resource.
+ */
 class UnprovisionedDeviceResourceFactory
 @Inject internal constructor(
     private val registry: HardwareRegistry,

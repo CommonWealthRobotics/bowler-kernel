@@ -9,6 +9,9 @@ import org.jlleitschuh.guice.module
 class KernelHardwareModule {
 
     companion object {
+        /**
+         * This [Injector] is static because it maintains a global [StaticHardwareRegistry].
+         */
         internal val injector: Injector = Guice.createInjector(kernelHardwareModule())
 
         private fun kernelHardwareModule() = module {

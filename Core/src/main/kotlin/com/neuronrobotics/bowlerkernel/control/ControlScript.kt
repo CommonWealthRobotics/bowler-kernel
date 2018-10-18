@@ -10,22 +10,40 @@ import com.neuronrobotics.bowlerkernel.control.hardware.registry.HardwareRegistr
 import org.jlleitschuh.guice.key
 import org.jlleitschuh.guice.module
 
+/**
+ * The script that is responsible for controlling the robot.
+ */
 abstract class ControlScript {
 
+    /**
+     * An [Injector] available for the script to use.
+     */
     protected val injector: Injector = KernelHardwareModule.injector.createChildInjector(
         controlScriptHardwareModule(),
         DeviceFactory.deviceFactoryModule(),
         UnprovisionedDeviceResourceFactory.unprovisionedDeviceResourceFactoryModule()
     )
 
+    /**
+     * Starts the script on the current thread and blocks while it is running.
+     */
     protected abstract fun runScript()
 
+    /**
+     * Signals to the script that it should stop and blocks until it stops.
+     */
     protected abstract fun stopScript()
 
+    /**
+     * Asynchronously starts the script.
+     */
     internal fun start() {
         runScript()
     }
 
+    /**
+     * Synchronously stops the script and unregisters all hardware it registered.
+     */
     internal fun stopAndCleanUp() {
         stopScript()
         injector.getInstance(key<HardwareRegistryTracker>()).unregisterAllHardware()

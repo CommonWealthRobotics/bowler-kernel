@@ -10,6 +10,12 @@ import com.neuronrobotics.bowlerkernel.util.plus
 import com.neuronrobotics.bowlerkernel.util.toImmutableList
 import javax.inject.Inject
 
+/**
+ * A proxy to keep track of all hardware registered through this class. Meant to be used to
+ * unregister any hardware a control script might have registered.
+ *
+ * @param registry The [StaticHardwareRegistry] to proxy and delegate to.
+ */
 internal class HardwareRegistryTracker
 @Inject internal constructor(
     private val registry: StaticHardwareRegistry
@@ -67,6 +73,11 @@ internal class HardwareRegistryTracker
         return unregisterError
     }
 
+    /**
+     * Unregisters all hardware registered through this registry.
+     *
+     * @return A list of all the errors encountered.
+     */
     internal fun unregisterAllHardware(): ImmutableList<UnregisterError> {
         val unregisterDeviceResourceErrors = registeredDeviceResources.entries()
             .fold(emptyList<UnregisterError>()) { acc, elem ->

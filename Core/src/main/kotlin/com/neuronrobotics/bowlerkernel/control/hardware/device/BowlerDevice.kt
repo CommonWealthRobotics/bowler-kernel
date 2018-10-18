@@ -2,6 +2,11 @@ package com.neuronrobotics.bowlerkernel.control.hardware.device
 
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.ResourceId
 
+/**
+ * A Bowler device is a serial device which runs the Bowler RPC protocol.
+ *
+ * @param deviceId The serial port the device is on.
+ */
 class BowlerDevice
 internal constructor(
     override val deviceId: DeviceId

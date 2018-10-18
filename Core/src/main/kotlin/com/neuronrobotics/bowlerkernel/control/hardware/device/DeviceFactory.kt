@@ -4,6 +4,9 @@ import com.neuronrobotics.bowlerkernel.control.hardware.registry.HardwareRegistr
 import org.jlleitschuh.guice.module
 import javax.inject.Inject
 
+/**
+ * A facade for making any type of device.
+ */
 class DeviceFactory
 @Inject internal constructor(
     private val registry: HardwareRegistry

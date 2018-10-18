@@ -6,6 +6,9 @@ import com.google.common.collect.SetMultimap
 import com.neuronrobotics.bowlerkernel.control.hardware.device.DeviceId
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.ResourceId
 
+/**
+ * The base implementation of [HardwareRegistry].
+ */
 internal class StaticHardwareRegistry
 internal constructor() : HardwareRegistry {
 
