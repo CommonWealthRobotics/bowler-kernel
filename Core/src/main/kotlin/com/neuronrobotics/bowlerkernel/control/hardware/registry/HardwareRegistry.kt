@@ -8,8 +8,14 @@ import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.ResourceI
 
 internal interface HardwareRegistry {
 
+    /**
+     * The currently registered devices.
+     */
     val registeredDevices: ImmutableSet<DeviceId>
 
+    /**
+     * The currently registered device resources.
+     */
     val registeredDeviceResources: ImmutableSetMultimap<DeviceId, ResourceId>
 
     /**

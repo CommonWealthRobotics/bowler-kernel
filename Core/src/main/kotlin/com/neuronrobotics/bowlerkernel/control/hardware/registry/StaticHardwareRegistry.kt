@@ -1,8 +1,6 @@
 package com.neuronrobotics.bowlerkernel.control.hardware.registry
 
 import arrow.core.Option
-import com.google.common.collect.ImmutableSet
-import com.google.common.collect.ImmutableSetMultimap
 import com.google.common.collect.MultimapBuilder
 import com.google.common.collect.SetMultimap
 import com.neuronrobotics.bowlerkernel.control.hardware.device.DeviceId
@@ -22,9 +20,10 @@ internal constructor() : HardwareRegistry {
     private val internalRegisteredDeviceResources: SetMultimap<DeviceId, ResourceId> =
         MultimapBuilder.hashKeys().hashSetValues().build()
 
-    override val registeredDevices: ImmutableSet<DeviceId>
+    override val registeredDevices
         get() = internalRegisteredDevices.toImmutableSet()
-    override val registeredDeviceResources: ImmutableSetMultimap<DeviceId, ResourceId>
+
+    override val registeredDeviceResources
         get() = internalRegisteredDeviceResources.toImmutableSetMultimap()
 
     override fun registerDevice(deviceId: DeviceId): Option<RegisterError> {
