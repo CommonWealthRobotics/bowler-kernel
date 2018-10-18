@@ -3,9 +3,9 @@ package com.neuronrobotics.bowlerkernel.control.hardware.registry
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-class StaticHardwareRegistryTest {
+class BaseHardwareRegistryTest {
 
-    private val registry = StaticHardwareRegistry()
+    private val registry = BaseHardwareRegistry()
 
     @Test
     fun `register unregistered device`() {

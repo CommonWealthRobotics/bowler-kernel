@@ -19,7 +19,7 @@ class HardwareRegistryTrackerTest {
 
     @Test
     fun `successfully register a device`() {
-        val mockRegistry = mock<StaticHardwareRegistry> {
+        val mockRegistry = mock<BaseHardwareRegistry> {
             on {
                 registerDevice("A")
             } doReturn Option.empty()
@@ -39,7 +39,7 @@ class HardwareRegistryTrackerTest {
 
     @Test
     fun `fail to register a device`() {
-        val mockRegistry = mock<StaticHardwareRegistry> {
+        val mockRegistry = mock<BaseHardwareRegistry> {
             on {
                 registerDevice("A")
             } doReturn Option.just(RegisterError(""))
@@ -59,7 +59,7 @@ class HardwareRegistryTrackerTest {
 
     @Test
     fun `successfully unregister a device`() {
-        val mockRegistry = mock<StaticHardwareRegistry> {
+        val mockRegistry = mock<BaseHardwareRegistry> {
             on {
                 unregisterDevice("A")
             } doReturn Option.empty()
@@ -79,7 +79,7 @@ class HardwareRegistryTrackerTest {
 
     @Test
     fun `fail to unregister a device`() {
-        val mockRegistry = mock<StaticHardwareRegistry> {
+        val mockRegistry = mock<BaseHardwareRegistry> {
             on {
                 unregisterDevice("A")
             } doReturn Option.just(UnregisterError(""))
@@ -99,7 +99,7 @@ class HardwareRegistryTrackerTest {
 
     @Test
     fun `successfully register a device resource`() {
-        val mockRegistry = mock<StaticHardwareRegistry> {
+        val mockRegistry = mock<BaseHardwareRegistry> {
             on {
                 registerDeviceResource("A", "B")
             } doReturn Option.empty()
@@ -122,7 +122,7 @@ class HardwareRegistryTrackerTest {
 
     @Test
     fun `fail to register a device resource`() {
-        val mockRegistry = mock<StaticHardwareRegistry> {
+        val mockRegistry = mock<BaseHardwareRegistry> {
             on {
                 registerDeviceResource("A", "B")
             } doReturn Option.just(RegisterError(""))
@@ -142,7 +142,7 @@ class HardwareRegistryTrackerTest {
 
     @Test
     fun `successfully unregister a device resource`() {
-        val mockRegistry = mock<StaticHardwareRegistry> {
+        val mockRegistry = mock<BaseHardwareRegistry> {
             on {
                 unregisterDeviceResource("A", "B")
             } doReturn Option.empty()
@@ -165,7 +165,7 @@ class HardwareRegistryTrackerTest {
 
     @Test
     fun `fail to unregister a device resource`() {
-        val mockRegistry = mock<StaticHardwareRegistry> {
+        val mockRegistry = mock<BaseHardwareRegistry> {
             on {
                 unregisterDeviceResource("A", "B")
             } doReturn Option.just(UnregisterError(""))
@@ -185,7 +185,7 @@ class HardwareRegistryTrackerTest {
 
     @Test
     fun `unregister all devices and resources`() {
-        val registry = HardwareRegistryTracker(StaticHardwareRegistry())
+        val registry = HardwareRegistryTracker(BaseHardwareRegistry())
 
         registry.registerDevice("A")
         registry.registerDeviceResource("A", "B")
@@ -196,7 +196,7 @@ class HardwareRegistryTrackerTest {
 
     @Test
     fun `unregister devices and resources never registered`() {
-        val mockRegistry = spy<StaticHardwareRegistry> {
+        val mockRegistry = spy<BaseHardwareRegistry> {
             on {
                 unregisterDevice("A")
             } doReturn Option.just(UnregisterError(""))
@@ -217,7 +217,7 @@ class HardwareRegistryTrackerTest {
     @Nested
     inner class IntegrationTests {
 
-        private val staticRegistry = StaticHardwareRegistry()
+        private val staticRegistry = BaseHardwareRegistry()
         private val registry = HardwareRegistryTracker(staticRegistry)
 
         @Test

@@ -11,7 +11,7 @@ import com.neuronrobotics.bowlerkernel.util.toImmutableSetMultimap
 /**
  * The base implementation of [HardwareRegistry].
  */
-internal class StaticHardwareRegistry
+internal class BaseHardwareRegistry
 internal constructor() : HardwareRegistry {
 
     private val internalRegisteredDevices: MutableSet<DeviceId> = mutableSetOf()
