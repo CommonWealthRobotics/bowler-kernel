@@ -1,6 +1,7 @@
 package com.neuronrobotics.bowlerkernel.control.hardware.device
 
-import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.ResourceId
+import com.neuronrobotics.bowlerkernel.control.hardware.device.deviceid.DeviceId
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
 
 interface Device {
 

@@ -1,6 +1,7 @@
 package com.neuronrobotics.bowlerkernel.control.hardware.device
 
-import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.ResourceId
+import com.neuronrobotics.bowlerkernel.control.hardware.device.deviceid.DeviceId
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.control.hardware.protocol.BowlerRPCProtocol
 
 /**
@@ -33,5 +34,5 @@ internal constructor(
         return true
     }
 
-    override fun toString() = deviceId
+    override fun toString() = deviceId.toString()
 }

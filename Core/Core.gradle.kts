@@ -37,7 +37,7 @@ dependencies {
     )
     implementation(group = "com.google.code.findbugs", name = "annotations", version = "3.0.1")
     implementation(group = "com.natpryce", name = "hamkrest", version = "1.4.2.2")
-    implementation(group = "org.jlleitschuh.guice", name = "kotlin-guiced-core", version = "0.0.4")
+    implementation(group = "org.jlleitschuh.guice", name = "kotlin-guiced-core", version = "0.0.5")
 
     testImplementation(
         group = "com.nhaarman.mockitokotlin2",

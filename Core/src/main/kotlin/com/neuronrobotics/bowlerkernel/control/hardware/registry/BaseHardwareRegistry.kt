@@ -3,8 +3,8 @@ package com.neuronrobotics.bowlerkernel.control.hardware.registry
 import arrow.core.Option
 import com.google.common.collect.MultimapBuilder
 import com.google.common.collect.SetMultimap
-import com.neuronrobotics.bowlerkernel.control.hardware.device.DeviceId
-import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.ResourceId
+import com.neuronrobotics.bowlerkernel.control.hardware.device.deviceid.DeviceId
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.util.toImmutableSet
 import com.neuronrobotics.bowlerkernel.util.toImmutableSetMultimap
 

@@ -1,6 +1,7 @@
 package com.neuronrobotics.bowlerkernel.control.hardware.deviceresource
 
 import com.neuronrobotics.bowlerkernel.control.hardware.device.Device
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
 
 /**
  * A resource attached (physically) to a [Device].

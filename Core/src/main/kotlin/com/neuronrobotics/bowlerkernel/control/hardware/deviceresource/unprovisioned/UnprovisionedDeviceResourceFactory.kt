@@ -4,7 +4,8 @@ import arrow.core.Either
 import com.google.inject.assistedinject.Assisted
 import com.google.inject.assistedinject.FactoryModuleBuilder
 import com.neuronrobotics.bowlerkernel.control.hardware.device.Device
-import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.ResourceId
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.PinNumber
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.control.hardware.registry.HardwareRegistry
 import com.neuronrobotics.bowlerkernel.control.hardware.registry.RegisterError
 import org.jlleitschuh.guice.module
@@ -43,8 +44,8 @@ class UnprovisionedDeviceResourceFactory
         }
     }
 
-    override fun makeUnprovisionedLED(pinNumber: Int) =
-        makeUnprovisionedResource(pinNumber.toString(), "LED") {
+    override fun makeUnprovisionedLED(pinNumber: PinNumber): Either<RegisterError, UnprovisionedLED> =
+        makeUnprovisionedResource(pinNumber, "LED") {
             UnprovisionedLED(device, it)
         }
 

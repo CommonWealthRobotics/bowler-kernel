@@ -5,6 +5,9 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.hasSize
 import com.neuronrobotics.bowlerkernel.control.hardware.device.Device
+import com.neuronrobotics.bowlerkernel.control.hardware.device.deviceid.SimpleDeviceId
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.PinNumber
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.control.hardware.registry.BaseHardwareRegistry
 import com.neuronrobotics.bowlerkernel.control.hardware.registry.RegisterError
 import com.nhaarman.mockitokotlin2.doReturn
@@ -18,11 +21,13 @@ class UnprovisionedDeviceResourceFactoryTest {
 
     @Test
     fun `test all device resource interfaces`() {
-        testRegistry("1") { makeUnprovisionedLED(1) }
+        PinNumber(1).let {
+            testRegistry(it) { makeUnprovisionedLED(it) }
+        }
     }
 
     private fun testRegistry(
-        resourceId: String,
+        resourceId: ResourceId,
         makeResource: UnprovisionedDeviceResourceFactory.() -> Either<RegisterError, UnprovisionedDeviceResource>
     ) {
         testSuccess(resourceId, makeResource)
@@ -30,7 +35,7 @@ class UnprovisionedDeviceResourceFactoryTest {
     }
 
     private fun testSuccess(
-        resourceId: String,
+        resourceId: ResourceId,
         makeResource: UnprovisionedDeviceResourceFactory.() -> Either<RegisterError, UnprovisionedDeviceResource>
     ) {
         val deviceName = "A"
@@ -42,10 +47,16 @@ class UnprovisionedDeviceResourceFactoryTest {
 
             on {
                 deviceId
-            } doReturn deviceName
+            } doReturn SimpleDeviceId(
+                deviceName
+            )
         }
 
-        registry.registerDevice(deviceName)
+        registry.registerDevice(
+            SimpleDeviceId(
+                deviceName
+            )
+        )
         val resource = UnprovisionedDeviceResourceFactory(registry, device).makeResource()
 
         assertTrue(resource.isRight())
@@ -54,7 +65,7 @@ class UnprovisionedDeviceResourceFactoryTest {
     }
 
     private fun testFailure(
-        resourceId: String,
+        resourceId: ResourceId,
         makeResource: UnprovisionedDeviceResourceFactory.() -> Either<RegisterError, UnprovisionedDeviceResource>
     ) {
         val deviceName = "A"
@@ -66,10 +77,16 @@ class UnprovisionedDeviceResourceFactoryTest {
 
             on {
                 deviceId
-            } doReturn deviceName
+            } doReturn SimpleDeviceId(
+                deviceName
+            )
         }
 
-        registry.registerDevice(deviceName)
+        registry.registerDevice(
+            SimpleDeviceId(
+                deviceName
+            )
+        )
         val resource = UnprovisionedDeviceResourceFactory(registry, device).makeResource()
 
         assertTrue(resource.isLeft())

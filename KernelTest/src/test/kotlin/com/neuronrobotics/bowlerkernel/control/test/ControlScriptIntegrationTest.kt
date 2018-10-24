@@ -4,7 +4,9 @@ import arrow.core.getOrHandle
 import com.neuronrobotics.bowlerkernel.control.ControlScript
 import com.neuronrobotics.bowlerkernel.control.KernelOrchestrator
 import com.neuronrobotics.bowlerkernel.control.hardware.device.BowlerDeviceFactory
+import com.neuronrobotics.bowlerkernel.control.hardware.device.deviceid.SimpleDeviceId
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.provisioned.LED
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.PinNumber
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.unprovisioned.UnprovisionedLEDFactory
 import com.neuronrobotics.bowlerkernel.control.hardware.protocol.BowlerRPCProtocol
 import com.nhaarman.mockitokotlin2.mock
@@ -25,12 +27,14 @@ class ControlScriptIntegrationTest {
         init {
             val mockRPC = mock<BowlerRPCProtocol> {}
 
-            val device = bowlerDeviceFactory.makeBowlerDevice("bowler-device-id", mockRPC)
-                .getOrHandle {
-                    throw RuntimeException(it.errorString)
-                }
+            val device =
+                bowlerDeviceFactory.makeBowlerDevice(SimpleDeviceId("bowler-device-id"), mockRPC)
+                    .getOrHandle {
+                        throw RuntimeException(it.errorString)
+                    }
 
-            val unprovisionedLED = unprovisionedLEDFactory.create(device).makeUnprovisionedLED(7)
+            val unprovisionedLED =
+                unprovisionedLEDFactory.create(device).makeUnprovisionedLED(PinNumber(7))
 
             led = unprovisionedLED.fold(
                 {

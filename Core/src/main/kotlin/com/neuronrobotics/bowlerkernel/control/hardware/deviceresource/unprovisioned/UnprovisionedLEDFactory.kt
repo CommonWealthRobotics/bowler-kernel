@@ -2,6 +2,7 @@ package com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.unprovis
 
 import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.control.hardware.device.Device
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.PinNumber
 import com.neuronrobotics.bowlerkernel.control.hardware.registry.RegisterError
 
 interface UnprovisionedLEDFactory {
@@ -9,10 +10,10 @@ interface UnprovisionedLEDFactory {
     /**
      * Makes an LED attached to a device.
      *
-     * @param pinNumber The pin number the LED is attached to.
+     * @param resourceId The resource id of the LED.
      * @return An [UnprovisionedLED] on success, a [RegisterError] on failure.
      */
-    fun makeUnprovisionedLED(pinNumber: Int): Either<RegisterError, UnprovisionedLED>
+    fun makeUnprovisionedLED(pinNumber: PinNumber): Either<RegisterError, UnprovisionedLED>
 
     interface Factory {
 

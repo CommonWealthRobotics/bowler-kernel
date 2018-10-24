@@ -3,8 +3,8 @@ package com.neuronrobotics.bowlerkernel.control.hardware.registry
 import arrow.core.Option
 import com.google.common.collect.ImmutableSet
 import com.google.common.collect.ImmutableSetMultimap
-import com.neuronrobotics.bowlerkernel.control.hardware.device.DeviceId
-import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.ResourceId
+import com.neuronrobotics.bowlerkernel.control.hardware.device.deviceid.DeviceId
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
 
 internal interface HardwareRegistry {
 

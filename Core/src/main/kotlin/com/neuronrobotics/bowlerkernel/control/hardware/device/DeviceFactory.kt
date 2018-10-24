@@ -1,6 +1,7 @@
 package com.neuronrobotics.bowlerkernel.control.hardware.device
 
 import arrow.core.Either
+import com.neuronrobotics.bowlerkernel.control.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.control.hardware.protocol.BowlerRPCProtocol
 import com.neuronrobotics.bowlerkernel.control.hardware.registry.HardwareRegistry
 import com.neuronrobotics.bowlerkernel.control.hardware.registry.RegisterError

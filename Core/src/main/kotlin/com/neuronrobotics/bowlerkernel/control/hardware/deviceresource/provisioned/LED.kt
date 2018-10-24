@@ -1,7 +1,7 @@
 package com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.provisioned
 
 import com.neuronrobotics.bowlerkernel.control.hardware.device.Device
-import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.ResourceId
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
 
 class LED(
     override val device: Device,
