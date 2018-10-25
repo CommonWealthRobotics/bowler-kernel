@@ -19,13 +19,13 @@ interface Device {
 
     /**
      * Open a persistent connection to the device. If the connection is already open, throw an
-     * exception.
+     * exception. If the connection could not be opened, throw an exception.
      */
     fun connect()
 
     /**
      * Close the persistent connection to the device. If there is no connection open, throw an
-     * exception.
+     * exception. If the connection could not be closed, throw an exception.
      */
     fun disconnect()
 
