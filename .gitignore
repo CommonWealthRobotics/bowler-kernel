@@ -1,0 +1,26 @@
+# Created by https://www.gitignore.io/
+
+### Gradle ###
+.gradle
+build/
+build-cache/
+*.class
+
+# Ignore Gradle GUI config
+gradle-app.setting
+
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
+
+### Intellij ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+### NetworkTable Persistence ###
+networktables.ini
+networktables.ini.bak
+CSGdatabase.json
+lib/
