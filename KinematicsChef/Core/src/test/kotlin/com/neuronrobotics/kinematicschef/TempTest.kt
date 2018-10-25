@@ -13,5 +13,6 @@ internal class TempTest {
 
     @Test
     fun `test nothing`() {
+        Temp.main()
     }
 }
