@@ -4,15 +4,19 @@ codecov:
 
 coverage:
   precision: 2
-  round: down
-  range: "70...100"
+  round: nearest
+  range: "60...90"
 
   status:
-    project: no
-    patch: yes
+    project:
+      default:
+        target: 80%
+    patch:
+      default:
+        target: 0%
     changes: no
 
 comment:
-  layout: "diff"
-  behavior: new
-  require_changes: yes
+  layout: "header, diff"
+  behavior: default
+  require_changes: no
