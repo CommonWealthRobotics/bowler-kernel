@@ -12,8 +12,7 @@ test_script:
   - gradlew.bat check --info --no-daemon
 
 branches:
-  only:
-    - master
+  except:
 
 cache:
   - C:\Users\appveyor\.gradle
