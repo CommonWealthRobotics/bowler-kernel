@@ -42,6 +42,8 @@ dependencies {
     implementation(group = "com.natpryce", name = "hamkrest", version = "1.4.2.2")
     implementation(group = "org.jlleitschuh.guice", name = "kotlin-guiced-core", version = "0.0.5")
 
+    compile(files("${rootProject.rootDir}/caliko-1.3.4.jar"))
+
     testImplementation(
         group = "com.nhaarman.mockitokotlin2",
         name = "mockito-kotlin",
