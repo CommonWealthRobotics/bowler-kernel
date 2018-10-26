@@ -11,6 +11,11 @@ import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 
+/**
+ * A [DhInverseSolver] which attempts to generate and cache  an analytic solver by deriving the
+ * chain's Euler angles. If an analytic solver cannot be generated, an iterative solver will be
+ * used instead.
+ */
 class InverseKinematicsEngine : DhInverseSolver {
 
     /**
