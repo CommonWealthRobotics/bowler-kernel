@@ -5,14 +5,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package com.neuronrobotics.kinematicschef
+package com.neuronrobotics.kinematicschef.classifier
 
-import org.junit.jupiter.api.Test
-
-internal class TempTest {
-
-    @Test
-    fun `test nothing`() {
-        Temp.main()
-    }
-}
+/**
+ * An error encountered while running a classifier.
+ */
+internal data class ClassifierError(
+    val errorString: String
+)

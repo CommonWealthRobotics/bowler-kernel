@@ -11,7 +11,10 @@ object Verions {
 }
 
 dependencies {
-    implementation(group = "io.arrow-kt", name = "arrow-core", version = arrow_version)
+    api(group = "com.neuronrobotics", name = "BowlerScriptingKernel", version = "0.32.4")
+    api(group = "org.apache.commons", name = "commons-math3", version = "3.6.1")
+
+    api(group = "io.arrow-kt", name = "arrow-core", version = arrow_version)
     implementation(group = "io.arrow-kt", name = "arrow-syntax", version = arrow_version)
     implementation(group = "io.arrow-kt", name = "arrow-typeclasses", version = arrow_version)
     implementation(group = "io.arrow-kt", name = "arrow-data", version = arrow_version)

@@ -7,9 +7,4 @@
  */
 package com.neuronrobotics.kinematicschef
 
-object Temp {
-
-    @JvmStatic
-    fun main(vararg args: String) {
-    }
-}
+internal class InverseKinematicsEngineTest
