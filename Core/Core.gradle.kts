@@ -1,4 +1,5 @@
 import Core_gradle.Verions.arrow_version
+import Core_gradle.Verions.ktor_version
 
 plugins {
     `java-library`
@@ -8,6 +9,11 @@ description = "The core module."
 
 object Verions {
     const val arrow_version = "0.7.3"
+    const val ktor_version = "1.0.0-beta-2"
+}
+
+repositories {
+    maven { url = uri("https://dl.bintray.com/kotlin/ktor") }
 }
 
 dependencies {
@@ -39,9 +45,18 @@ dependencies {
     implementation(group = "com.natpryce", name = "hamkrest", version = "1.4.2.2")
     implementation(group = "org.jlleitschuh.guice", name = "kotlin-guiced-core", version = "0.0.5")
 
+    implementation(group = "io.ktor", name = "ktor-client-core", version = ktor_version)
+    implementation(group = "io.ktor", name = "ktor-client-core-jvm", version = ktor_version)
+    implementation(group = "io.ktor", name = "ktor-client-apache", version = ktor_version)
+    implementation(group = "io.ktor", name = "ktor-client-auth-basic", version = ktor_version)
+    implementation(group = "io.ktor", name = "ktor-client-json-jvm", version = ktor_version)
+    implementation(group = "io.ktor", name = "ktor-client-gson", version = ktor_version)
+
     testImplementation(
         group = "com.nhaarman.mockitokotlin2",
         name = "mockito-kotlin",
         version = "2.0.0-RC3"
     )
+    testImplementation(group = "io.ktor", name = "ktor-server-tests", version = ktor_version)
+    testImplementation(group = "io.ktor", name = "ktor-client-mock", version = ktor_version)
 }
