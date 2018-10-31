@@ -1,7 +1,6 @@
 import com.github.spotbugs.SpotBugsTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
-import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.gradle.api.tasks.testing.Test
 import org.gradle.util.GFileUtils
@@ -30,9 +29,6 @@ val kotlinProjects = setOf(
 
 val javaProjects = setOf<Project>(
 ) + kotlinProjects
-
-val javafxProjects = setOf(
-)
 
 buildscript {
     repositories {
@@ -229,11 +225,13 @@ configure(kotlinProjects) {
         plugin("io.gitlab.arturbosch.detekt")
     }
 
+    val kotlinVersion = property("kotlin.version") as String
+
     dependencies {
         // Weird syntax, see: https://github.com/gradle/kotlin-dsl/issues/894
-        "compile"(kotlin("stdlib-jdk8"))
-        "compile"(kotlin("reflect"))
-        "compile"(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = "0.22.5")
+        "compile"(kotlin("stdlib", kotlinVersion))
+        "compile"(kotlin("reflect", kotlinVersion))
+//        "compile"(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = "0.22.5")
 
         "testCompile"(kotlin("test"))
         "testCompile"(kotlin("test-junit"))
@@ -241,13 +239,13 @@ configure(kotlinProjects) {
 
     kotlin {
         // Enable coroutines supports for Kotlin.
-        experimental.coroutines = Coroutines.ENABLE
+//        experimental.coroutines = Coroutines.ENABLE
     }
 
     tasks.withType<KotlinCompile> {
         kotlinOptions {
             jvmTarget = "1.8"
-            freeCompilerArgs = listOf("-Xjvm-default=enable")
+            freeCompilerArgs = listOf("-Xjvm-default=enable", "-Xprogressive", "-XXLanguage:+InlineClasses")
         }
     }
 
@@ -297,12 +295,6 @@ configure(kotlinProjects) {
         )
         parallel = true
         config = files("${rootProject.rootDir}/config/detekt/config.yml")
-    }
-}
-
-configure(kotlinProjects.intersect(javafxProjects)) {
-    dependencies {
-        "compile"(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-javafx", version = "0.22.5")
     }
 }
 

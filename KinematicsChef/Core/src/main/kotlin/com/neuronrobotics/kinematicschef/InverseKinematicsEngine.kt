@@ -7,16 +7,21 @@
  */
 package com.neuronrobotics.kinematicschef
 
+import com.neuronrobotics.kinematicschef.classifier.DhClassifier
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
+import javax.inject.Inject
 
 /**
  * A [DhInverseSolver] which attempts to generate and cache  an analytic solver by deriving the
  * chain's Euler angles. If an analytic solver cannot be generated, an iterative solver will be
  * used instead.
  */
-class InverseKinematicsEngine : DhInverseSolver {
+class InverseKinematicsEngine
+@Inject internal constructor(
+    private val dhClassifier: DhClassifier
+) : DhInverseSolver {
 
     /**
      * Calculate the joint angles for the system.
@@ -31,6 +36,10 @@ class InverseKinematicsEngine : DhInverseSolver {
         jointSpaceVector: DoubleArray,
         chain: DHChain
     ): DoubleArray {
+        /**
+         * For each triplet in [chain], check if it is a spherical wrist (and get its Euler
+         * angles) using [dhClassifier].
+         */
         TODO("not implemented")
     }
 }

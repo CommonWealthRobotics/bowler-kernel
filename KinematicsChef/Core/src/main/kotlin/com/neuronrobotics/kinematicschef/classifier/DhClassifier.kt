@@ -8,16 +8,19 @@
 package com.neuronrobotics.kinematicschef.classifier
 
 import arrow.core.Either
+import com.google.common.collect.ImmutableList
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
+import com.neuronrobotics.sdk.addons.kinematics.DHLink
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
 
 internal interface DhClassifier {
 
     /**
      * Determine the Euler angles for a [DHChain]. Returns an error for non-spherical wrists.
+     * This is meant to be called with each potential spherical wrist in a chain.
      *
      * @param chain The chain to classify.
      * @return The Euler angles or an error.
      */
-    fun deriveEulerAngles(chain: DHChain): Either<ClassifierError, RotationOrder>
+    fun deriveEulerAngles(chain: ImmutableList<DHLink>): Either<ClassifierError, RotationOrder>
 }

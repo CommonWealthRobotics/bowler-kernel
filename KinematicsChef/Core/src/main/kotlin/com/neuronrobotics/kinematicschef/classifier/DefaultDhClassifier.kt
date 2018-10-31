@@ -8,12 +8,21 @@
 package com.neuronrobotics.kinematicschef.classifier
 
 import arrow.core.Either
-import com.neuronrobotics.sdk.addons.kinematics.DHChain
+import com.google.common.collect.ImmutableList
+import com.neuronrobotics.sdk.addons.kinematics.DHLink
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
+import javax.inject.Inject
 
-internal class DefaultDhClassifier : DhClassifier {
+internal class DefaultDhClassifier
+@Inject internal constructor(
+    private val wristIdentifier: WristIdentifier
+) : DhClassifier {
 
-    override fun deriveEulerAngles(chain: DHChain): Either<ClassifierError, RotationOrder> {
-        TODO("not implemented")
+    override fun deriveEulerAngles(chain: ImmutableList<DHLink>): Either<ClassifierError, RotationOrder> {
+        if (wristIdentifier.isSphericalWrist(chain)) {
+            TODO("not implemented")
+        } else {
+            return Either.left(ClassifierError("The wrist is not spherical."))
+        }
     }
 }
