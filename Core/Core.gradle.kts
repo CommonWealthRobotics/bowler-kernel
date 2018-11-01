@@ -9,11 +9,12 @@ description = "The core module."
 
 object Verions {
     const val arrow_version = "0.7.3"
-    const val ktor_version = "1.0.0-beta-2"
+    const val ktor_version = "1.0.0-beta-3"
 }
 
 repositories {
     maven { url = uri("https://dl.bintray.com/kotlin/ktor") }
+    maven { url = uri("https://dl.bintray.com/kotlin/kotlinx") }
 }
 
 dependencies {
