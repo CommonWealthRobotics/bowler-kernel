@@ -11,11 +11,13 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.request.get
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class KtorTest {
 
     @Test
+    @Disabled
     fun `ktor test`() {
         val client = HttpClient(Apache)
         runBlocking {

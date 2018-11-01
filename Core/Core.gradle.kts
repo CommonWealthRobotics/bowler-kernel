@@ -12,11 +12,6 @@ object Verions {
     const val ktor_version = "1.0.0-beta-3"
 }
 
-repositories {
-    maven { url = uri("https://dl.bintray.com/kotlin/ktor") }
-    maven { url = uri("https://dl.bintray.com/kotlin/kotlinx") }
-}
-
 dependencies {
     api(group = "io.arrow-kt", name = "arrow-core", version = arrow_version)
     api(group = "io.arrow-kt", name = "arrow-syntax", version = arrow_version)
