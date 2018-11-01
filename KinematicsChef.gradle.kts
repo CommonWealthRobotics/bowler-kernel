@@ -243,8 +243,8 @@ configure(kotlinProjects) {
         "compile"(kotlin("reflect", kotlinVersion))
         "compile"(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = "1.0.0")
 
-        "testCompile"(kotlin("test"))
-        "testCompile"(kotlin("test-junit"))
+        "testCompile"(kotlin("test", kotlinVersion))
+        "testCompile"(kotlin("test-junit", kotlinVersion))
     }
 
     tasks.withType<KotlinCompile> {
