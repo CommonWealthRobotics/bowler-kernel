@@ -13,7 +13,8 @@ import com.google.inject.Singleton
 import com.neuronrobotics.bowlerkernel.control.hardware.registry.BaseHardwareRegistry
 import org.jlleitschuh.guice.module
 
-class KernelHardwareModule {
+class KernelHardwareModule
+private constructor() {
 
     companion object {
         /**

@@ -10,12 +10,12 @@ package com.neuronrobotics.bowlerkernel.control.hardware.protocol
 interface BowlerRPCProtocol {
 
     /**
-     * Temporary write method
+     * Temporary write method.
      */
     fun write()
 
     /**
-     * Temporary read method
+     * Temporary read method.
      */
     fun read()
 }
