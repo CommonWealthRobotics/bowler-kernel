@@ -189,7 +189,7 @@ configure(javaProjects) {
             endWithNewline()
             licenseHeaderFile(
                 "${rootProject.rootDir}/config/spotless/kinematicschef.license",
-                "(package|import)"
+                "(@|package|import)"
             )
         }
     }
@@ -282,7 +282,7 @@ configure(kotlinProjects) {
             endWithNewline()
             licenseHeaderFile(
                 "${rootProject.rootDir}/config/spotless/kinematicschef.license",
-                "(package|import)"
+                "(@|package|import)"
             )
         }
     }
