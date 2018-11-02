@@ -18,25 +18,23 @@ internal object TestUtil {
     /**
      * Generate a random DH param.
      */
-    fun randomDhParam() = DhParam(
-        Random.nextDouble(90.0),
-        Random.nextDouble(90.0),
-        Random.nextDouble(90.0),
-        Random.nextDouble(90.0)
+    fun randomDhParam(upperBound: Double = 90.0) = DhParam(
+        Random.nextDouble(upperBound),
+        Random.nextDouble(upperBound),
+        Random.nextDouble(upperBound),
+        Random.nextDouble(upperBound)
     )
 
     /**
      * Generate [listSize] number of random DH params.
      */
-    fun randomDhParamList(listSize: Int) =
+    fun randomDhParamList(listSize: Int, upperBound: Double = 90.0) =
         (0 until listSize).toList().map {
-            randomDhParam()
+            randomDhParam(upperBound)
         }.toImmutableList()
 }
 
 /**
  * Matches any element not equal to [value].
  */
-fun <T> not(value: T): T {
-    return AdditionalMatchers.not(eq(value))
-}
+fun <T> not(value: T): T = AdditionalMatchers.not(eq(value))
