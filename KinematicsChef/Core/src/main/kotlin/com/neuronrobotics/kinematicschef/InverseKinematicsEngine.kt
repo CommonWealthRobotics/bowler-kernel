@@ -8,6 +8,7 @@
 package com.neuronrobotics.kinematicschef
 
 import com.neuronrobotics.kinematicschef.classifier.DhClassifier
+import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
@@ -40,6 +41,16 @@ class InverseKinematicsEngine
          * For each triplet in [chain], check if it is a spherical wrist (and get its Euler
          * angles) using [dhClassifier].
          */
-        TODO("not implemented")
+        val eulerAngles = dhClassifier.deriveEulerAngles(chain.toDhParams())
+        return eulerAngles.fold(
+            {
+                // TODO: Fallback to the iterative solver
+                jointSpaceVector
+            },
+            {
+                // TODO: Use an analytic solver
+                jointSpaceVector
+            }
+        )
     }
 }

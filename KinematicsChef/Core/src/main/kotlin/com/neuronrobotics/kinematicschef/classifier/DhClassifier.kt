@@ -9,8 +9,8 @@ package com.neuronrobotics.kinematicschef.classifier
 
 import arrow.core.Either
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
-import com.neuronrobotics.sdk.addons.kinematics.DHLink
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
 
 internal interface DhClassifier {
@@ -22,5 +22,5 @@ internal interface DhClassifier {
      * @param chain The chain to classify.
      * @return The Euler angles or an error.
      */
-    fun deriveEulerAngles(chain: ImmutableList<DHLink>): Either<ClassifierError, RotationOrder>
+    fun deriveEulerAngles(chain: ImmutableList<DhParam>): Either<ClassifierError, RotationOrder>
 }

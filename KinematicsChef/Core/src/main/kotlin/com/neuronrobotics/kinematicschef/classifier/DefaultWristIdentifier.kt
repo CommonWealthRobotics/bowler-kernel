@@ -8,11 +8,11 @@
 package com.neuronrobotics.kinematicschef.classifier
 
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.sdk.addons.kinematics.DHLink
+import com.neuronrobotics.kinematicschef.dhparam.DhParam
 
 internal class DefaultWristIdentifier : WristIdentifier {
 
-    override fun isSphericalWrist(chain: ImmutableList<DHLink>): Boolean {
+    override fun isSphericalWrist(chain: ImmutableList<DhParam>): Boolean {
         /**
          * 1. Check there are three links.
          *

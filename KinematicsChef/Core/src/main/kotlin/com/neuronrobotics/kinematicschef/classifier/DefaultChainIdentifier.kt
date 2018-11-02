@@ -8,16 +8,12 @@
 package com.neuronrobotics.kinematicschef.classifier
 
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.kinematicschef.dhparam.DhChainElement
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
-import com.neuronrobotics.sdk.addons.kinematics.DHChain
 
-internal interface WristIdentifier {
+internal class DefaultChainIdentifier : ChainIdentifier {
 
-    /**
-     * Computes whether the [chain] is a spherical wrist.
-     *
-     * @param chain The [DHChain] to analyze.
-     * @return True if the [chain] forms a spherical wrist, false otherwise.
-     */
-    fun isSphericalWrist(chain: ImmutableList<DhParam>): Boolean
+    override fun identifyChain(chain: ImmutableList<DhParam>): ImmutableList<DhChainElement> {
+        TODO("not implemented")
+    }
 }
