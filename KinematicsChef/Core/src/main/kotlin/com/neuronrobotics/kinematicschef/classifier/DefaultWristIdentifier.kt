@@ -7,12 +7,13 @@
  */
 package com.neuronrobotics.kinematicschef.classifier
 
+import arrow.core.Option
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 
 internal class DefaultWristIdentifier : WristIdentifier {
 
-    override fun isSphericalWrist(chain: ImmutableList<DhParam>): Boolean {
+    override fun isSphericalWrist(chain: ImmutableList<DhParam>): Option<ClassifierError> {
         /**
          * 1. Check there are three links.
          *
@@ -21,6 +22,14 @@ internal class DefaultWristIdentifier : WristIdentifier {
          *
          * Then the wrist is spherical.
          */
-        TODO("not implemented")
+        if (chain.size == 3) {
+            TODO("not implemented")
+        } else {
+            return Option.just(
+                ClassifierError(
+                    "A chain of ${chain.size} links cannot form a spherical wrist"
+                )
+            )
+        }
     }
 }

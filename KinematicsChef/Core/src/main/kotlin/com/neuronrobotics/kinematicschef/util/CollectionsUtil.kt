@@ -6,10 +6,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 @file:Suppress("TooManyFunctions", "UndocumentedPublicFunction")
+
 package com.neuronrobotics.kinematicschef.util
 
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableListMultimap
+import com.google.common.collect.ImmutableMap
 import com.google.common.collect.ImmutableSet
 import com.google.common.collect.ImmutableSetMultimap
 import com.google.common.collect.Multimap
@@ -57,6 +59,14 @@ fun <K, V> immutableSetMultimapOf(vararg pairs: Pair<K, V>): ImmutableSetMultima
 }
 
 fun <K, V> emptyImmutableSetMultimap(): ImmutableSetMultimap<K, V> = ImmutableSetMultimap.of()
+
+fun <K, V> Iterable<Pair<K, V>>.toImmutableMap(): ImmutableMap<K, V> =
+    ImmutableMap.copyOf(toMap())
+
+fun <K, V> immutableMapOf(vararg elements: Pair<K, V>): ImmutableMap<K, V> =
+    ImmutableMap.copyOf(elements.toMap())
+
+fun <K, V> emptyImmutableMap(): ImmutableMap<K, V> = ImmutableMap.of()
 
 operator fun <T> ImmutableList<T>.plus(other: ImmutableList<T>): ImmutableList<T> =
     ImmutableList.builder<T>()

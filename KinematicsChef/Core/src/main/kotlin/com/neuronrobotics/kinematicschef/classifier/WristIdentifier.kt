@@ -7,6 +7,7 @@
  */
 package com.neuronrobotics.kinematicschef.classifier
 
+import arrow.core.Option
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
@@ -19,5 +20,5 @@ internal interface WristIdentifier {
      * @param chain The [DHChain] to analyze.
      * @return True if the [chain] forms a spherical wrist, false otherwise.
      */
-    fun isSphericalWrist(chain: ImmutableList<DhParam>): Boolean
+    fun isSphericalWrist(chain: ImmutableList<DhParam>): Option<ClassifierError>
 }

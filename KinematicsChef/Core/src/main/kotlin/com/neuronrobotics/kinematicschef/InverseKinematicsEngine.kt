@@ -7,11 +7,18 @@
  */
 package com.neuronrobotics.kinematicschef
 
+import arrow.core.Either
+import com.google.common.collect.ImmutableMap
+import com.neuronrobotics.kinematicschef.classifier.ChainIdentifier
+import com.neuronrobotics.kinematicschef.classifier.ClassifierError
 import com.neuronrobotics.kinematicschef.classifier.DhClassifier
+import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
+import com.neuronrobotics.kinematicschef.util.toImmutableMap
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
+import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
 import javax.inject.Inject
 
 /**
@@ -21,6 +28,7 @@ import javax.inject.Inject
  */
 class InverseKinematicsEngine
 @Inject internal constructor(
+    private val chainIdentifier: ChainIdentifier,
     private val dhClassifier: DhClassifier
 ) : DhInverseSolver {
 
@@ -37,20 +45,46 @@ class InverseKinematicsEngine
         jointSpaceVector: DoubleArray,
         chain: DHChain
     ): DoubleArray {
-        /**
-         * For each triplet in [chain], check if it is a spherical wrist (and get its Euler
-         * angles) using [dhClassifier].
-         */
-        val eulerAngles = dhClassifier.deriveEulerAngles(chain.toDhParams())
-        return eulerAngles.fold(
-            {
-                // TODO: Fallback to the iterative solver
-                jointSpaceVector
-            },
-            {
-                // TODO: Use an analytic solver
-                jointSpaceVector
+        val chainElements = chainIdentifier.identifyChain(chain.toDhParams())
+        val eulerAngles = chainElements
+            .mapNotNull { it as? SphericalWrist }
+            .map { it to dhClassifier.deriveEulerAngles(it) }
+            .toImmutableMap()
+
+        validateEulerAngles(eulerAngles)
+
+        // TODO: Write the analytic solver here
+        TODO("not implemented")
+    }
+
+    /**
+     * Throw an exception if there was an error while deriving the euler angles.
+     */
+    private fun validateEulerAngles(
+        eulerAngles: ImmutableMap<SphericalWrist, Either<ClassifierError, RotationOrder>>
+    ) {
+        eulerAngles
+            .filterValues { it.isLeft() }
+            .values
+            .mapNotNull { elem ->
+                elem.fold(
+                    {
+                        it.errorString
+                    },
+                    {
+                        null
+                    }
+                )
             }
-        )
+            .fold("") { acc, elem ->
+                """
+                    $acc
+                    $elem
+                """.trimIndent()
+            }.let {
+                if (it.isNotEmpty()) {
+                    throw UnsupportedOperationException(it)
+                }
+            }
     }
 }
