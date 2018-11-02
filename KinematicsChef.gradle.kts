@@ -231,7 +231,7 @@ configure(kotlinProjects) {
         // Weird syntax, see: https://github.com/gradle/kotlin-dsl/issues/894
         "compile"(kotlin("stdlib", kotlinVersion))
         "compile"(kotlin("reflect", kotlinVersion))
-//        "compile"(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = "0.22.5")
+        //"compile"(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = "1.0.0")
 
         "testCompile"(kotlin("test"))
         "testCompile"(kotlin("test-junit"))
@@ -239,7 +239,7 @@ configure(kotlinProjects) {
 
     kotlin {
         // Enable coroutines supports for Kotlin.
-//        experimental.coroutines = Coroutines.ENABLE
+        //experimental.coroutines = Coroutines.ENABLE
     }
 
     tasks.withType<KotlinCompile> {
