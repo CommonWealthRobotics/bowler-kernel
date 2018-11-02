@@ -12,4 +12,10 @@ import com.google.common.collect.ImmutableList
 /**
  * A spherical wrist. Has three DH params.
  */
-internal class SphericalWrist(override val params: ImmutableList<DhParam>) : DhChainElement
+internal data class SphericalWrist(override val params: ImmutableList<DhParam>) : DhChainElement {
+    init {
+        require(params.size == 3) {
+            "A spherical wrist must have exactly 3 DH params, got ${params.size}."
+        }
+    }
+}
