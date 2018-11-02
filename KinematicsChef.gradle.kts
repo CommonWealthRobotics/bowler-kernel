@@ -1,3 +1,5 @@
+import KinematicsChef_gradle.Strings.spotlessLicenseHeaderDelimiter
+import KinematicsChef_gradle.Versions.ktlintVersion
 import com.github.spotbugs.SpotBugsTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
@@ -8,8 +10,8 @@ import org.gradle.util.GFileUtils
 plugins {
     jacoco
     pmd
-    id("com.diffplug.gradle.spotless") version "3.10.0"
-    id("org.jlleitschuh.gradle.ktlint") version "5.0.0"
+    id("com.diffplug.gradle.spotless") version "3.16.0"
+    id("org.jlleitschuh.gradle.ktlint") version "6.2.1"
     id("com.github.spotbugs") version "1.6.4"
     id("io.gitlab.arturbosch.detekt") version "1.0.0.RC9.2"
 }
@@ -29,6 +31,14 @@ val kotlinProjects = setOf(
 
 val javaProjects = setOf<Project>(
 ) + kotlinProjects
+
+object Versions {
+    const val ktlintVersion = "0.29.0"
+}
+
+object Strings {
+    const val spotlessLicenseHeaderDelimiter = "(@|package|import)"
+}
 
 buildscript {
     repositories {
@@ -72,7 +82,7 @@ allprojects {
          * These checks are dependencies of the `check` task.
          */
         kotlinGradle {
-            ktlint("0.23.1")
+            ktlint(ktlintVersion)
             trimTrailingWhitespace()
         }
         freshmark {
@@ -189,7 +199,7 @@ configure(javaProjects) {
             endWithNewline()
             licenseHeaderFile(
                 "${rootProject.rootDir}/config/spotless/kinematicschef.license",
-                "(package|import)"
+                    spotlessLicenseHeaderDelimiter
             )
         }
     }
@@ -231,15 +241,10 @@ configure(kotlinProjects) {
         // Weird syntax, see: https://github.com/gradle/kotlin-dsl/issues/894
         "compile"(kotlin("stdlib", kotlinVersion))
         "compile"(kotlin("reflect", kotlinVersion))
-        //"compile"(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = "1.0.0")
+        "compile"(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = "1.0.0")
 
-        "testCompile"(kotlin("test"))
-        "testCompile"(kotlin("test-junit"))
-    }
-
-    kotlin {
-        // Enable coroutines supports for Kotlin.
-        //experimental.coroutines = Coroutines.ENABLE
+        "testCompile"(kotlin("test", kotlinVersion))
+        "testCompile"(kotlin("test-junit", kotlinVersion))
     }
 
     tasks.withType<KotlinCompile> {
@@ -276,13 +281,13 @@ configure(kotlinProjects) {
 
     spotless {
         kotlin {
-            ktlint("0.23.1")
+            ktlint(ktlintVersion)
             trimTrailingWhitespace()
             indentWithSpaces(2)
             endWithNewline()
             licenseHeaderFile(
                 "${rootProject.rootDir}/config/spotless/kinematicschef.license",
-                "(package|import)"
+                    spotlessLicenseHeaderDelimiter
             )
         }
     }
