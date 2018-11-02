@@ -17,7 +17,11 @@ internal data class DhParam(
     val theta: Double,
     val r: Double,
     val alpha: Double
-)
+) {
+    companion object {
+        val zero = DhParam(0.0, 0.0, 0.0, 0.0)
+    }
+}
 
 internal fun DHLink.toDhParam() = DhParam(d, theta, r, theta)
 
