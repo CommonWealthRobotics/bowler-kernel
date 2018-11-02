@@ -27,7 +27,7 @@ env:
 #    fi
 
 script:
-  - ./gradlew check jacocoTestReport --stacktrace -PlogTests -Pheadless --info
+  - ./gradlew check jacocoTestReport --stacktrace -PlogTests -Pheadless
 
 after_success:
    - bash <(curl -s https://codecov.io/bash)
