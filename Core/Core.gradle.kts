@@ -51,7 +51,7 @@ dependencies {
     testImplementation(
         group = "com.nhaarman.mockitokotlin2",
         name = "mockito-kotlin",
-        version = "2.0.0-RC3"
+        version = "2.0.0"
     )
     testImplementation(group = "io.ktor", name = "ktor-server-tests", version = ktor_version)
     testImplementation(group = "io.ktor", name = "ktor-client-mock", version = ktor_version)

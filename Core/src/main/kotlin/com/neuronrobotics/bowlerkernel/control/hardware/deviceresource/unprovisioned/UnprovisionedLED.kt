@@ -9,13 +9,15 @@ package com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.unprovis
 
 import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.control.hardware.device.Device
-import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.ProvisionError
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.provisioned.LED
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
 
 class UnprovisionedLED(
     override val device: Device,
     override val resourceId: ResourceId
 ) : UnprovisionedDeviceResource {
 
-    override fun provision() = Either.right(LED(device, resourceId))
+    override fun provision(): Either<ProvisionError, LED> =
+        Either.right(LED(device, resourceId))
 }
