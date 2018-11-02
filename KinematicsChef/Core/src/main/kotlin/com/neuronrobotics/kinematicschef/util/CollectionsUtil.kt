@@ -73,3 +73,17 @@ operator fun <T> ImmutableList<T>.plus(other: ImmutableList<T>): ImmutableList<T
         .addAll(this)
         .addAll(other)
         .build()
+
+operator fun <K, V> ImmutableListMultimap<K, V>.plus(other: ImmutableListMultimap<K, V>):
+    ImmutableListMultimap<K, V> =
+    ImmutableListMultimap.builder<K, V>()
+        .putAll(this)
+        .putAll(other)
+        .build()
+
+operator fun <K, V> ImmutableSetMultimap<K, V>.plus(other: ImmutableSetMultimap<K, V>):
+    ImmutableSetMultimap<K, V> =
+    ImmutableSetMultimap.builder<K, V>()
+        .putAll(this)
+        .putAll(other)
+        .build()
