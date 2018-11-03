@@ -7,29 +7,31 @@
  */
 package com.neuronrobotics.kinematicschef.classifier
 
-import com.neuronrobotics.kinematicschef.dhparam.DhParam
-import com.neuronrobotics.kinematicschef.util.immutableListOf
+import com.neuronrobotics.kinematicschef.TestUtil
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 
 internal class DefaultWristIdentifierTest {
 
     private val identifier = DefaultWristIdentifier()
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(ints = [0, 1, 2])
     fun `test a chain less than three links`() {
         assertTrue(
             identifier.isSphericalWrist(
-                immutableListOf(DhParam.zero, DhParam.zero)
+                TestUtil.randomDhParamList(2)
             ).nonEmpty()
         )
     }
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(ints = [4, 5, 6, 7])
     fun `test a chain more than three links`() {
         assertTrue(
             identifier.isSphericalWrist(
-                immutableListOf(DhParam.zero, DhParam.zero, DhParam.zero, DhParam.zero)
+                TestUtil.randomDhParamList(4)
             ).nonEmpty()
         )
     }
