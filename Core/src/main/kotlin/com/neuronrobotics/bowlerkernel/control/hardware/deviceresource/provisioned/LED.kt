@@ -10,7 +10,8 @@ package com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.provisio
 import com.neuronrobotics.bowlerkernel.control.hardware.device.Device
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
 
-class LED(
+class LED
+internal constructor(
     override val device: Device,
     override val resourceId: ResourceId
 ) : DigitalOut {
