@@ -38,3 +38,13 @@ internal object TestUtil {
  * Matches any element not equal to [value].
  */
 fun <T> not(value: T): T = AdditionalMatchers.not(eq(value))
+
+/**
+ * Matches any element equal to [first] or [second].
+ */
+fun <T> or(first: T, second: T): T = AdditionalMatchers.or(eq(first), eq(second))
+
+/**
+ * Matches any element equal to [first] and [second].
+ */
+fun <T> and(first: T, second: T): T = AdditionalMatchers.and(eq(first), eq(second))

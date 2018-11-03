@@ -9,14 +9,17 @@ package com.neuronrobotics.kinematicschef.classifier
 
 import arrow.core.Option
 import com.neuronrobotics.kinematicschef.TestUtil
+import com.neuronrobotics.kinematicschef.and
 import com.neuronrobotics.kinematicschef.dhparam.DhChainElement
 import com.neuronrobotics.kinematicschef.dhparam.RevoluteJoint
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.not
+import com.neuronrobotics.kinematicschef.or
 import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.plus
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -80,7 +83,7 @@ internal class DefaultChainIdentifierTest {
 
         val mockWristIdentifier = mock<WristIdentifier> {
             on { isSphericalWrist(wrist) } doReturn Option.empty()
-            on { isSphericalWrist(pin) } doReturn Option.just(ClassifierError(""))
+            on { isSphericalWrist(not(wrist)) } doReturn Option.just(ClassifierError(""))
         }
 
         val identifier = DefaultChainIdentifier(mockWristIdentifier)
@@ -110,6 +113,59 @@ internal class DefaultChainIdentifierTest {
                 RevoluteJoint(pin),
                 SphericalWrist(wrist),
                 RevoluteJoint(pin2)
+            ),
+            identifier.identifyChain(chain)
+        )
+    }
+
+    @Test
+    fun `test three revolute joints and a spherical wrist`() {
+        val pin = TestUtil.randomDhParamList(1)
+        val pin2 = TestUtil.randomDhParamList(1)
+        val pin3 = TestUtil.randomDhParamList(1)
+        val wrist = TestUtil.randomDhParamList(3)
+        val chain = pin + pin2 + pin3 + wrist
+
+        val mockWristIdentifier = mock<WristIdentifier> {
+            on { isSphericalWrist(wrist) } doReturn Option.empty()
+            on { isSphericalWrist(not(wrist)) } doReturn Option.just(ClassifierError(""))
+        }
+
+        val identifier = DefaultChainIdentifier(mockWristIdentifier)
+
+        assertEquals(
+            immutableListOf(
+                RevoluteJoint(pin),
+                RevoluteJoint(pin2),
+                RevoluteJoint(pin3),
+                SphericalWrist(wrist)
+            ),
+            identifier.identifyChain(chain)
+        )
+    }
+
+    @Test
+    @Disabled
+    fun `test spherical wrist, revolute joint, and a spherical wrist`() {
+        val wrist = TestUtil.randomDhParamList(3)
+        val pin = TestUtil.randomDhParamList(1)
+        val wrist2 = TestUtil.randomDhParamList(3)
+        val chain = wrist + pin + wrist2
+
+        val mockWristIdentifier = mock<WristIdentifier> {
+            on { isSphericalWrist(or(wrist, wrist2)) } doReturn Option.empty()
+            on {
+                isSphericalWrist(and(not(wrist), not(wrist2)))
+            } doReturn Option.just(ClassifierError(""))
+        }
+
+        val identifier = DefaultChainIdentifier(mockWristIdentifier)
+
+        assertEquals(
+            immutableListOf(
+                SphericalWrist(wrist),
+                RevoluteJoint(pin),
+                SphericalWrist(wrist2)
             ),
             identifier.identifyChain(chain)
         )
