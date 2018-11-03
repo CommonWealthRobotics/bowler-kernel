@@ -9,7 +9,6 @@ package com.neuronrobotics.kinematicschef.classifier
 
 import arrow.core.Option
 import com.neuronrobotics.kinematicschef.TestUtil
-import com.neuronrobotics.kinematicschef.and
 import com.neuronrobotics.kinematicschef.dhparam.DhChainElement
 import com.neuronrobotics.kinematicschef.dhparam.RevoluteJoint
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
@@ -17,6 +16,7 @@ import com.neuronrobotics.kinematicschef.not
 import com.neuronrobotics.kinematicschef.or
 import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.plus
+import com.nhaarman.mockitokotlin2.argThat
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Disabled
@@ -155,7 +155,9 @@ internal class DefaultChainIdentifierTest {
         val mockWristIdentifier = mock<WristIdentifier> {
             on { isSphericalWrist(or(wrist, wrist2)) } doReturn Option.empty()
             on {
-                isSphericalWrist(and(not(wrist), not(wrist2)))
+                isSphericalWrist(argThat {
+                    !(equals(wrist) && equals(wrist2))
+                })
             } doReturn Option.just(ClassifierError(""))
         }
 
