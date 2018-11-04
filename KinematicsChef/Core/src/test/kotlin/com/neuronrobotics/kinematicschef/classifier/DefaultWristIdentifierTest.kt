@@ -18,20 +18,20 @@ internal class DefaultWristIdentifierTest {
 
     @ParameterizedTest
     @ValueSource(ints = [0, 1, 2])
-    fun `test a chain less than three links`() {
+    fun `test a chain less than three links`(chainSize: Int) {
         assertTrue(
             identifier.isSphericalWrist(
-                TestUtil.randomDhParamList(2)
+                TestUtil.randomDhParamList(chainSize)
             ).nonEmpty()
         )
     }
 
     @ParameterizedTest
     @ValueSource(ints = [4, 5, 6, 7])
-    fun `test a chain more than three links`() {
+    fun `test a chain more than three links`(chainSize: Int) {
         assertTrue(
             identifier.isSphericalWrist(
-                TestUtil.randomDhParamList(4)
+                TestUtil.randomDhParamList(chainSize)
             ).nonEmpty()
         )
     }
