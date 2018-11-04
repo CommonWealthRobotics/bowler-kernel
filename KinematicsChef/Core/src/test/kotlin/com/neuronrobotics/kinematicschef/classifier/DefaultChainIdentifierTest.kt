@@ -8,18 +8,17 @@
 package com.neuronrobotics.kinematicschef.classifier
 
 import arrow.core.Option
+import com.google.common.collect.ImmutableList
 import com.neuronrobotics.kinematicschef.TestUtil
 import com.neuronrobotics.kinematicschef.dhparam.DhChainElement
+import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.RevoluteJoint
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.not
-import com.neuronrobotics.kinematicschef.or
 import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.plus
-import com.nhaarman.mockitokotlin2.argThat
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -145,13 +144,24 @@ internal class DefaultChainIdentifierTest {
     }
 
     @Test
-    @Disabled
     fun `test spherical wrist, revolute joint, and a spherical wrist`() {
         val wrist = TestUtil.randomDhParamList(3)
         val pin = TestUtil.randomDhParamList(1)
         val wrist2 = TestUtil.randomDhParamList(3)
         val chain = wrist + pin + wrist2
 
+        val mockWristIdentifier = object : WristIdentifier {
+            override fun isSphericalWrist(chain: ImmutableList<DhParam>): Option<ClassifierError> {
+                return if (chain == wrist || chain == wrist2) {
+                    Option.empty()
+                } else {
+                    Option.just(ClassifierError(""))
+                }
+            }
+        }
+
+        // argThat doesn't work currently
+        /*
         val mockWristIdentifier = mock<WristIdentifier> {
             on { isSphericalWrist(or(wrist, wrist2)) } doReturn Option.empty()
             on {
@@ -160,6 +170,7 @@ internal class DefaultChainIdentifierTest {
                 })
             } doReturn Option.just(ClassifierError(""))
         }
+        */
 
         val identifier = DefaultChainIdentifier(mockWristIdentifier)
 
