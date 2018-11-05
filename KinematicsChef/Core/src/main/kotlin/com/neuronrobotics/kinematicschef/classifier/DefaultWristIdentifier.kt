@@ -26,8 +26,7 @@ internal class DefaultWristIdentifier : WristIdentifier {
          * Then the wrist is spherical.
          */
         if (chain.size == 3) {
-            val firstCoR = getLineMatrix(0.0, 0.0, 1.0)
-            firstCoR.print()
+            val firstCoR = getLineVector(0.0, 0.0, 1.0)
 
             val dhMatrices = chain.map {
                 val link1Matrix = SimpleMatrix(4, 4)
@@ -53,8 +52,9 @@ internal class DefaultWristIdentifier : WristIdentifier {
             var currentCoR = firstCoR
             dhMatrices.forEach {
                 val nextCoR = it.mult(currentCoR)
+                println("Next Center of Rotation matrix:")
                 nextCoR.print()
-                println(nextCoR.inner(currentCoR))
+                println("Dot product: ${nextCoR.dot(currentCoR)}\n")
                 currentCoR = nextCoR
             }
 
@@ -109,6 +109,17 @@ internal class DefaultWristIdentifier : WristIdentifier {
         out[0, 3] = x
         out[1, 3] = y
         out[2, 3] = z
+
+        return out
+    }
+
+    private fun getLineVector(x: Double, y: Double, z: Double): SimpleMatrix {
+        val out = SimpleMatrix(4, 1)
+
+        out[0, 0] = x
+        out[1, 0] = y
+        out[2, 0] = z
+        out[3, 0] = 0.0
 
         return out
     }
