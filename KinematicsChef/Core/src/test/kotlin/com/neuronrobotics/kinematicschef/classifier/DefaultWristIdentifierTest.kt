@@ -10,6 +10,7 @@ package com.neuronrobotics.kinematicschef.classifier
 import com.neuronrobotics.kinematicschef.TestUtil
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.util.immutableListOf
+import org.ejml.simple.SimpleMatrix
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -41,8 +42,7 @@ internal class DefaultWristIdentifierTest {
     }
 
     @Test
-    @Disabled
-    fun `test a spherical wrist`() {
+    fun `test baxter's spherical wrist`() {
         val baxterLink5 = DhParam(374.29, 0.0, 0.0, 90.0)
         val baxterLink6 = DhParam(0.0, 72.0, 10.0, -90.0)
         val baxterLink7 = DhParam(0.0, 0.0, 0.0, 90.0)
@@ -50,5 +50,16 @@ internal class DefaultWristIdentifierTest {
         val chain = immutableListOf(baxterLink5, baxterLink6, baxterLink7)
         val result = identifier.isSphericalWrist(chain)
         assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `test a non-spherical modified baxter wrist`() {
+        val baxterLink5 = DhParam(374.29, 0.0, 0.0, 89.0)
+        val baxterLink6 = DhParam(0.0, 72.0, 10.0, -90.0)
+        val baxterLink7 = DhParam(0.0, 0.0, 0.0, 90.0)
+
+        val chain = immutableListOf(baxterLink5, baxterLink6, baxterLink7)
+        val result = identifier.isSphericalWrist(chain)
+        assertTrue(result.nonEmpty())
     }
 }

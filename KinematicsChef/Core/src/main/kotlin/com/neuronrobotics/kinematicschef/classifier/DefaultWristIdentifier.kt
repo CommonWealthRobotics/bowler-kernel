@@ -26,39 +26,54 @@ internal class DefaultWristIdentifier : WristIdentifier {
          * Then the wrist is spherical.
          */
         if (chain.size == 3) {
-            val firstCoR = getLineVector(0.0, 0.0, 1.0)
+            val firstCoR = getPointMatrix(0.0, 0.0, 0.0) to getPointMatrix(0.0, 0.0, 1.0)
 
-            val dhMatrices = chain.map {
-                val link1Matrix = SimpleMatrix(4, 4)
-                link1Matrix[0, 0] = cos(it.theta)
-                link1Matrix[1, 0] = sin(it.theta)
+            val dhMatrices = chain
+                .map {
+                    it.copy(
+                        theta = Math.toRadians(it.theta),
+                        alpha = Math.toRadians(it.alpha)
+                    )
+                }
+                .map {
+                    val link1Matrix = SimpleMatrix(4, 4)
+                    link1Matrix[0, 0] = cos(it.theta)
+                    link1Matrix[1, 0] = sin(it.theta)
 
-                link1Matrix[0, 1] = -sin(it.theta) * cos(it.alpha)
-                link1Matrix[1, 1] = cos(it.theta) * cos(it.alpha)
-                link1Matrix[2, 1] = sin(it.alpha)
+                    link1Matrix[0, 1] = -sin(it.theta) * cos(it.alpha)
+                    link1Matrix[1, 1] = cos(it.theta) * cos(it.alpha)
+                    link1Matrix[2, 1] = sin(it.alpha)
 
-                link1Matrix[0, 2] = sin(it.theta) * sin(it.alpha)
-                link1Matrix[1, 2] = -cos(it.theta) * sin(it.alpha)
-                link1Matrix[2, 2] = cos(it.alpha)
+                    link1Matrix[0, 2] = sin(it.theta) * sin(it.alpha)
+                    link1Matrix[1, 2] = -cos(it.theta) * sin(it.alpha)
+                    link1Matrix[2, 2] = cos(it.alpha)
 
-                link1Matrix[0, 3] = it.r * cos(it.theta)
-                link1Matrix[1, 3] = it.r * sin(it.theta)
-                link1Matrix[2, 3] = it.d
-                link1Matrix[3, 3] = 1.0
+                    link1Matrix[0, 3] = it.r * cos(it.theta)
+                    link1Matrix[1, 3] = it.r * sin(it.theta)
+                    link1Matrix[2, 3] = it.d
+                    link1Matrix[3, 3] = 1.0
 
-                link1Matrix
-            }
+                    link1Matrix
+                }
 
             var currentCoR = firstCoR
-            dhMatrices.forEach {
-                val nextCoR = it.mult(currentCoR)
-                println("Next Center of Rotation matrix:")
-                nextCoR.print()
-                println("Dot product: ${nextCoR.dot(currentCoR)}\n")
+            val nonzeroDotProducts = dhMatrices.map {
+                val nextCoR = it.mult(currentCoR.first) to it.mult(currentCoR.second)
+                val dot = nextCoR.toLine().dot(currentCoR.toLine())
                 currentCoR = nextCoR
+                dot
+            }.filter {
+                it != 0.0
             }
 
-            TODO("not implemented")
+            /**
+             * If any dot products are nonzero, then the wrist is not spherical.
+             */
+            return if (nonzeroDotProducts.isEmpty()) {
+                Option.empty()
+            } else {
+                Option.just(ClassifierError("The centers of rotation are not all orthogonal."))
+            }
         } else {
             return Option.just(
                 ClassifierError(
@@ -68,58 +83,26 @@ internal class DefaultWristIdentifier : WristIdentifier {
         }
     }
 
-    private fun dot(a: SimpleMatrix, b: SimpleMatrix): Double {
-        require(a.numRows() == 4)
-        require(a.numCols() == 4)
-        require(b.numRows() == 4)
-        require(b.numCols() == 4)
+    private fun Pair<SimpleMatrix, SimpleMatrix>.toLine(): SimpleMatrix {
+        val out = SimpleMatrix(3, 1)
 
-        var sum = 0.0
-
-        for (i in 0 until 4) {
-            sum += a[i, 3] * b[i, 3]
+        fun writeIndex(x: Int, y: Int) {
+            out[x, 0] = second[x, y] - first[x, y]
         }
 
-        return sum
-    }
-
-    private fun SimpleMatrix.inner(b: SimpleMatrix): Double {
-        require(b.numRows() == numRows())
-        require(b.numCols() == numCols())
-
-        var sum = 0.0
-
-        for (i in 0 until numRows()) {
-            for (j in 0 until numCols()) {
-                sum += this[i, j] * b[i, j]
-            }
+        for (i in 0 until 3) {
+            writeIndex(i, 3)
         }
-
-        return sum
-    }
-
-    private fun getLineMatrix(x: Double, y: Double, z: Double): SimpleMatrix {
-        val out = SimpleMatrix(4, 4)
-
-        out[0, 0] = 1.0
-        out[1, 1] = 1.0
-        out[2, 2] = 1.0
-        out[3, 3] = 1.0
-
-        out[0, 3] = x
-        out[1, 3] = y
-        out[2, 3] = z
 
         return out
     }
 
-    private fun getLineVector(x: Double, y: Double, z: Double): SimpleMatrix {
-        val out = SimpleMatrix(4, 1)
+    private fun getPointMatrix(x: Double, y: Double, z: Double): SimpleMatrix {
+        val out = SimpleMatrix.identity(4)
 
-        out[0, 0] = x
-        out[1, 0] = y
-        out[2, 0] = z
-        out[3, 0] = 0.0
+        out[0, 3] = x
+        out[1, 3] = y
+        out[2, 3] = z
 
         return out
     }
