@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
 import org.ejml.simple.SimpleMatrix
+import kotlin.math.abs
 
 /**
  * 1. Check there are three links.
@@ -50,8 +51,13 @@ internal class DefaultWristIdentifier : WristIdentifier {
                 val nextCoR = it.mult(currentCoR.first) to it.mult(currentCoR.second)
                 val dot = nextCoR.toLine().dot(currentCoR.toLine())
                 currentCoR = nextCoR
-                dot
-            }.filter { dotProduct -> dotProduct != 0.0 }
+
+                if (abs(dot) < dotProductEpsilon) {
+                    0.0
+                } else {
+                    dot
+                }
+            }.filter { it != 0.0 }
 
         /**
          * If any dot products are nonzero, then the wrist is not spherical.
@@ -110,4 +116,9 @@ internal class DefaultWristIdentifier : WristIdentifier {
             this[1, 3] = y
             this[2, 3] = z
         }
+
+    companion object {
+        // A dot product with a magnitude smaller than this will be considered zero
+        internal const val dotProductEpsilon = 1e-10
+    }
 }

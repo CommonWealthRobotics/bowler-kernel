@@ -60,4 +60,26 @@ internal class DefaultWristIdentifierTest {
         val result = identifier.isSphericalWrist(chain)
         assertTrue(result.nonEmpty())
     }
+
+    @Test
+    fun `test baxter's spherical wrist out of order`() {
+        val baxterLink5 = DhParam(374.29, 0.0, 0.0, 90.0)
+        val baxterLink6 = DhParam(0.0, 72.0, 10.0, -90.0)
+        val baxterLink7 = DhParam(0.0, 0.0, 0.0, 90.0)
+
+        val chain = immutableListOf(baxterLink6, baxterLink5, baxterLink7)
+        val result = identifier.isSphericalWrist(chain)
+        assertTrue(result.nonEmpty())
+    }
+
+    @Test
+    fun `test spong spherical wrist`() {
+        val link1 = DhParam(0.0, 0.0, 0.0, -90.0)
+        val link2 = DhParam(0.0, 0.0, 0.0, 90.0)
+        val link3 = DhParam(0.0, 0.0, 0.0, -90.0)
+
+        val chain = immutableListOf(link1, link2, link3)
+        val result = identifier.isSphericalWrist(chain)
+        assertTrue(result.isEmpty())
+    }
 }
