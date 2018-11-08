@@ -10,9 +10,7 @@ package com.neuronrobotics.kinematicschef.classifier
 import com.neuronrobotics.kinematicschef.TestUtil
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.util.immutableListOf
-import org.ejml.simple.SimpleMatrix
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
