@@ -82,4 +82,17 @@ internal class DefaultWristIdentifierTest {
         val result = identifier.isSphericalWrist(chain)
         assertTrue(result.isEmpty())
     }
+
+    @Test
+    fun `test puma 560 spherical wrist`() {
+        // https://www.researchgate.net/profile/Subir_Saha2/publication/228412877/figure/tbl1/AS:393754302271490@1470889749526/DH-parameters-of-PUMA-560_W840.jpg
+        // https://i.stack.imgur.com/4IZ4x.png
+        val link4 = DhParam(0.432, 0.0, 0.0, -90.0)
+        val link5 = DhParam(0.0, 0.0, 0.0, 90.0)
+        val link6 = DhParam(0.0, 0.0, 0.0, -90.0)
+
+        val chain = immutableListOf(link4, link5, link6)
+        val result = identifier.isSphericalWrist(chain)
+        assertTrue(result.isEmpty())
+    }
 }
