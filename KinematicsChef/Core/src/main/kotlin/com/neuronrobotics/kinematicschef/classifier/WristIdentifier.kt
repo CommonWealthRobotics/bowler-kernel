@@ -15,7 +15,7 @@ import com.neuronrobotics.sdk.addons.kinematics.DHChain
 internal interface WristIdentifier {
 
     /**
-     * Computes whether the [chain] is a spherical wrist.
+     * Computes whether the [chain] is a spherical wrist which is solvable with Euler angles.
      *
      * @param chain The [DHChain] to analyze.
      * @return True if the [chain] forms a spherical wrist, false otherwise.

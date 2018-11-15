@@ -11,14 +11,6 @@ import arrow.core.Option
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 
-/**
- * 1. Check there are three links.
- *
- * 2. Map each link to its center of rotation. Check that a center of rotation n+1 is
- * orthogonal to the center of rotation n.
- *
- * Then the wrist is spherical.
- */
 internal class DefaultWristIdentifier : WristIdentifier {
 
     override fun isSphericalWrist(chain: ImmutableList<DhParam>): Option<ClassifierError> {
