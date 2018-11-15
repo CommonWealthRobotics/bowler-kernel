@@ -47,7 +47,7 @@ internal class DefaultWristIdentifierTest {
 
         val chain = immutableListOf(baxterLink5, baxterLink6, baxterLink7)
         val result = identifier.isSphericalWrist(chain)
-        assertTrue(result.isEmpty())
+        assertTrue(result.nonEmpty())
     }
 
     @Test
@@ -76,7 +76,7 @@ internal class DefaultWristIdentifierTest {
     fun `test spong spherical wrist`() {
         val link1 = DhParam(0.0, 0.0, 0.0, -90.0)
         val link2 = DhParam(0.0, 0.0, 0.0, 90.0)
-        val link3 = DhParam(0.0, 0.0, 0.0, -90.0)
+        val link3 = DhParam(10.0, 0.0, 0.0, 0.0)
 
         val chain = immutableListOf(link1, link2, link3)
         val result = identifier.isSphericalWrist(chain)
@@ -84,12 +84,32 @@ internal class DefaultWristIdentifierTest {
     }
 
     @Test
-    fun `test puma 560 spherical wrist`() {
-        // https://www.researchgate.net/profile/Subir_Saha2/publication/228412877/figure/tbl1/AS:393754302271490@1470889749526/DH-parameters-of-PUMA-560_W840.jpg
-        // https://i.stack.imgur.com/4IZ4x.png
-        val link4 = DhParam(0.432, 0.0, 0.0, -90.0)
+    fun `test puma 560 spherical wrist config 1`() {
+        val link4 = DhParam(10.0, 0.0, 10.0, -90.0)
         val link5 = DhParam(0.0, 0.0, 0.0, 90.0)
         val link6 = DhParam(0.0, 0.0, 0.0, -90.0)
+
+        val chain = immutableListOf(link4, link5, link6)
+        val result = identifier.isSphericalWrist(chain)
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `test puma 560 spherical wrist config 2`() {
+        val link4 = DhParam(0.432, 0.0, 0.0, -90.0)
+        val link5 = DhParam(0.0, 0.0, 0.0, 90.0)
+        val link6 = DhParam(0.056, 0.0, 0.0, 0.0)
+
+        val chain = immutableListOf(link4, link5, link6)
+        val result = identifier.isSphericalWrist(chain)
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `test cmm input arm wrist`() {
+        val link4 = DhParam(128.0, -90.0, 90.0, 90.0)
+        val link5 = DhParam(0.0, 0.0, 0.0, -90.0)
+        val link6 = DhParam(25.0, 90.0, 0.0, 0.0)
 
         val chain = immutableListOf(link4, link5, link6)
         val result = identifier.isSphericalWrist(chain)
