@@ -18,14 +18,19 @@ import kotlin.math.sin
 /**
  * A DH parameter. [theta] and [alpha] must be specified in degrees.
  */
-internal data class DhParam(
+internal data class DhParam
+internal constructor(
     val d: Double,
     val theta: Double,
     val r: Double,
     val alpha: Double
 ) {
+
+    constructor(d: Number, theta: Number, r: Number, alpha: Number) :
+        this(d.toDouble(), theta.toDouble(), r.toDouble(), alpha.toDouble())
+
     companion object {
-        val zero = DhParam(0.0, 0.0, 0.0, 0.0)
+        val zero = DhParam(0, 0, 0, 0)
     }
 }
 

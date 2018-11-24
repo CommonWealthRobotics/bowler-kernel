@@ -18,12 +18,16 @@ import com.google.common.collect.Multimap
 
 fun <T> Iterable<T>.toImmutableList(): ImmutableList<T> = ImmutableList.copyOf(this)
 
+fun <T> Array<out T>.toImmutableList(): ImmutableList<T> = toList().toImmutableList()
+
 fun <T> immutableListOf(vararg elements: T): ImmutableList<T> =
     ImmutableList.copyOf(elements.toList())
 
 fun <T> emptyImmutableList(): ImmutableList<T> = ImmutableList.of()
 
 fun <T> Iterable<T>.toImmutableSet(): ImmutableSet<T> = ImmutableSet.copyOf(this)
+
+fun <T> Array<out T>.toImmutableSet(): ImmutableSet<T> = toSet().toImmutableSet()
 
 fun <T> immutableSetOf(vararg elements: T): ImmutableSet<T> =
     ImmutableSet.copyOf(elements.toSet())

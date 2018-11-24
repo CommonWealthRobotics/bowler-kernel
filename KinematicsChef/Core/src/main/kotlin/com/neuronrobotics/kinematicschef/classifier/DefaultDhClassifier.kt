@@ -8,16 +8,146 @@
 package com.neuronrobotics.kinematicschef.classifier
 
 import arrow.core.Either
+import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
-import javax.inject.Inject
 
 internal class DefaultDhClassifier
-@Inject internal constructor(
-    private val wristIdentifier: WristIdentifier
-) : DhClassifier {
+internal constructor() : DhClassifier {
 
-    override fun deriveEulerAngles(wrist: SphericalWrist): Either<ClassifierError, RotationOrder> {
-        TODO("not implemented")
+    override fun deriveEulerAngles(wrist: SphericalWrist): Either<ClassifierError, RotationOrder> =
+        deriveEulerAngles(wrist.params[0], wrist.params[1], wrist.params[2])
+
+    private fun deriveEulerAngles(
+        link1: DhParam,
+        link2: DhParam,
+        link3: DhParam
+    ): Either<ClassifierError, RotationOrder> {
+        return when {
+            link1.alpha == 0.0 ->
+                handleThreeLinkZeroAlpha(link2, link3, link1)
+            link1.alpha == -90.0 ->
+                handleThreeLinkMinusNinetyAlpha(link2, link3, link1)
+            else ->
+                Either.left(failDerivation(link1, link2, link3))
+        }
+    }
+
+    private fun deriveEulerAngles(
+        link1: DhParam,
+        link2: DhParam,
+        link3: DhParam,
+        link4: DhParam
+    ): Either<ClassifierError, RotationOrder> {
+        return when {
+            link1.alpha == 0.0 ->
+                handleFourLinkZeroAlpha(link2, link3, link4, link1)
+            link1.alpha == -90.0 ->
+                handleFourLinkMinusNinetyAlpha(link2, link3, link4, link1)
+            else ->
+                Either.left(failDerivation(link1, link2, link3, link4))
+        }
+    }
+
+    private fun handleThreeLinkZeroAlpha(
+        link2: DhParam,
+        link3: DhParam,
+        link1: DhParam
+    ): Either<ClassifierError, RotationOrder> {
+        return if (
+            link2.alpha == 90.0 &&
+            link3.alpha == -90.0 &&
+            link1.theta - link3.theta == 180.0
+        ) {
+            Either.right(RotationOrder.ZXZ)
+        } else if (
+            link2.alpha == -90.0 &&
+            link3.alpha == 90.0
+        ) {
+            Either.right(RotationOrder.ZYZ)
+        } else {
+            Either.left(failDerivation(link1, link2, link3))
+        }
+    }
+
+    @SuppressWarnings("ComplexCondition")
+    private fun handleThreeLinkMinusNinetyAlpha(
+        link2: DhParam,
+        link3: DhParam,
+        link1: DhParam
+    ): Either<ClassifierError, RotationOrder> {
+        return if (
+            link2.alpha == 90.0 &&
+            link3.alpha == -90.0 &&
+            link1.theta - link3.theta == 180.0 &&
+            link2.theta - link3.theta == 180.0
+        ) {
+            Either.right(RotationOrder.YXZ)
+        } else {
+            Either.left(failDerivation(link1, link2, link3))
+        }
+    }
+
+    @SuppressWarnings("ComplexCondition")
+    private fun handleFourLinkZeroAlpha(
+        link2: DhParam,
+        link3: DhParam,
+        link4: DhParam,
+        link1: DhParam
+    ): Either<ClassifierError, RotationOrder> {
+        return if (
+            link2.alpha == 90.0 &&
+            link3.alpha == -90.0 &&
+            link4.alpha == 90.0 &&
+            link1.theta - link2.theta == 180.0 &&
+            link1.theta - link3.theta == 180.0 &&
+            link4.theta == 0.0
+        ) {
+            Either.right(RotationOrder.ZXY)
+        } else if (
+            link2.alpha == -90.0 &&
+            link3.alpha == 90.0 &&
+            link4.alpha == -90.0 &&
+            link4.theta == -90.0
+        ) {
+            Either.right(RotationOrder.ZYX)
+        } else {
+            Either.left(failDerivation(link1, link2, link3, link4))
+        }
+    }
+
+    @SuppressWarnings("ComplexCondition")
+    private fun handleFourLinkMinusNinetyAlpha(
+        link2: DhParam,
+        link3: DhParam,
+        link4: DhParam,
+        link1: DhParam
+    ): Either<ClassifierError, RotationOrder> {
+        return if (
+            link2.alpha == 90.0 &&
+            link3.alpha == -90.0 &&
+            link4.alpha == 90.0 &&
+            link1.theta - link3.theta == 180.0
+        ) {
+            Either.right(RotationOrder.YXY)
+        } else if (
+            link2.alpha == 90.0 &&
+            link3.alpha == 90.0 &&
+            link4.alpha == -90.0 &&
+            link4.theta == -90.0
+        ) {
+            Either.right(RotationOrder.YZX)
+        } else {
+            Either.left(failDerivation(link1, link2, link3, link4))
+        }
+    }
+
+    private fun failDerivation(vararg params: DhParam): ClassifierError {
+        return ClassifierError(
+            """
+            The wrist does not have Euler angles:
+            ${params.joinToString(separator = "\n")}
+            """.trimIndent()
+        )
     }
 }
