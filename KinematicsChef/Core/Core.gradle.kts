@@ -27,7 +27,11 @@ dependencies {
     implementation(group = "io.arrow-kt", name = "arrow-effects", version = arrow_version)
     implementation(group = "io.arrow-kt", name = "arrow-effects-rx2", version = arrow_version)
     implementation(group = "io.arrow-kt", name = "arrow-effects-reactor", version = arrow_version)
-    implementation(group = "io.arrow-kt", name = "arrow-effects-kotlinx-coroutines", version = arrow_version)
+    implementation(
+        group = "io.arrow-kt",
+        name = "arrow-effects-kotlinx-coroutines",
+        version = arrow_version
+    )
     implementation(group = "io.arrow-kt", name = "arrow-optics", version = arrow_version)
     implementation(group = "io.arrow-kt", name = "arrow-generic", version = arrow_version)
     implementation(group = "io.arrow-kt", name = "arrow-recursion", version = arrow_version)
@@ -43,7 +47,7 @@ dependencies {
     implementation(group = "com.google.code.findbugs", name = "annotations", version = "3.0.1")
     implementation(group = "com.natpryce", name = "hamkrest", version = "1.4.2.2")
 
-    compile(files("${rootProject.rootDir}/caliko-1.3.4.jar"))
+    compile(files("${rootProject.rootDir}/caliko-1.3.5.jar"))
 
     testImplementation(
         group = "com.nhaarman.mockitokotlin2",
