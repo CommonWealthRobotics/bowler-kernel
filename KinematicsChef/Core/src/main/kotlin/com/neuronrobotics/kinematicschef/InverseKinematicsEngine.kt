@@ -87,4 +87,24 @@ class InverseKinematicsEngine
                 }
             }
     }
+
+    /**
+     * Calculate the position of a spherical wrist's center given a target point and a desired wrist orientation.
+     *
+     * @param target The target position of the end effector
+     * @param eulerAngles The desired wrist orientation, represented as euler angles of the joints
+     * @param wrist The DH parameter chain for the spherical wrist
+     */
+    internal fun wristCenter(
+            target: TransformNR,
+            wrist: SphericalWrist
+    ) : TransformNR {
+        val wristCenter = TransformNR()
+        val boneLength = wrist.params[1].r + wrist.params[2].d
+        wristCenter.x = target.x - boneLength * target.getRotationValue(0, 2)
+        wristCenter.y = target.y - boneLength * target.getRotationValue(1, 2)
+        wristCenter.z = target.z - boneLength * target.getRotationValue(2, 2)
+
+        return wristCenter
+    }
 }

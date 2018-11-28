@@ -13,33 +13,34 @@ import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.toImmutableMap
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DHParameterKinematics
+import com.neuronrobotics.sdk.addons.kinematics.math.RotationNR
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 
 internal class AnalyticSolverTest {
     private val wristIdentifier = DefaultWristIdentifier()
-    private val chainIdentifier = DefaultChainIdentifier(wristIdentifier)
-    private val dhClassifier = DefaultDhClassifier(wristIdentifier)
+    private val ikEngine = InverseKinematicsEngine(
+            DefaultChainIdentifier(wristIdentifier),
+            DefaultDhClassifier(wristIdentifier)
+    )
 
     @Test
-    fun `test wrist solve`() {
-        val chain = immutableListOf(
+    fun `test wrist center`() {
+        val wrist = SphericalWrist(immutableListOf(
                 DhParam(1.0,0.0,0.0,0.0),
                 DhParam(0.0,0.0,1.0,-90.0),
                 DhParam(1.0,0.0,0.0,90.0)
-        )
+        ))
 
-        val target : TransformNR = TransformNR().setX(1.0).setY(0.0).setZ(1.0) //target point
-        val jointSpaceVector = doubleArrayOf(0.0, 0.0, 0.0) //initial joint angles, will play with these later
+        //target frame transformation
+        val target = TransformNR(
+        ).setX(2.0).setY(0.0).setZ(1.0)
+        target.rotation = RotationNR(-90.0, 0.0, 0.0)
 
-        val chainElements = chainIdentifier.identifyChain(chain)
-        val eulerAngles = chainElements
-                .mapNotNull { it as? SphericalWrist }
-                .map { it to dhClassifier.deriveEulerAngles(it) }
-                .toImmutableMap()
-
-        //validateEulerAngles(eulerAngles)
-
-        //TODO: solver alg
+        val wristCenter = ikEngine.wristCenter(target, wrist)
+        assertEquals(2.0, wristCenter.x)
+        assertEquals(-2.0, wristCenter.y)
+        assertEquals(1.0, wristCenter.z)
     }
 }
