@@ -39,8 +39,8 @@ internal class AnalyticSolverTest {
         target.rotation = RotationNR(-90.0, 0.0, 0.0)
 
         val wristCenter = ikEngine.wristCenter(target, wrist)
-        assertEquals(2.0, wristCenter.x)
-        assertEquals(-2.0, wristCenter.y)
-        assertEquals(1.0, wristCenter.z)
+        assertEquals(2.0, Math.floor(100 * wristCenter.x + 0.5)/100.0)
+        assertEquals(-2.0, Math.floor(100 * wristCenter.y + 0.5)/100.0)
+        assertEquals(1.0, Math.floor(100 * wristCenter.z + 0.5)/100.0)
     }
 }

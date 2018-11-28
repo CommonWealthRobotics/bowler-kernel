@@ -19,6 +19,7 @@ import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
+import org.ejml.simple.SimpleMatrix
 import javax.inject.Inject
 
 /**
