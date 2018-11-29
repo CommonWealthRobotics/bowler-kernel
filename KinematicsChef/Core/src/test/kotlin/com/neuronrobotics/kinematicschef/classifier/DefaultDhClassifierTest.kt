@@ -9,6 +9,8 @@ package com.neuronrobotics.kinematicschef.classifier
 
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
+import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
+import com.neuronrobotics.kinematicschef.util.getPointMatrix
 import com.neuronrobotics.kinematicschef.util.toImmutableList
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
 import org.junit.jupiter.api.Test
@@ -75,19 +77,25 @@ class DefaultDhClassifierTest {
         )
     }
 
-    private fun testWrist(expected: RotationOrder, vararg params: DhParam) {
-        assertTrue(
-            classifier.deriveEulerAngles(
-                SphericalWrist(params.toImmutableList())
-            ).exists { it == expected }
-        )
+    private fun testWrist(expected: RotationOrder, vararg paramArray: DhParam) {
+        paramArray.toImmutableList().let { params ->
+            assertTrue(
+                classifier.deriveEulerAngles(
+                    SphericalWrist(params),
+                    getPointMatrix(10, 0, 0),
+                    params.toFrameTransformation()
+                ).exists { it == expected },
+                "The wrist should have the expected Euler angles."
+            )
+        }
     }
 
     private fun testWristFails(vararg params: DhParam) {
         assertTrue(
             classifier.deriveEulerAngles(
                 SphericalWrist(params.toImmutableList())
-            ).isLeft()
+            ).isLeft(),
+            "The wrist should not have any Euler angles."
         )
     }
 }

@@ -91,3 +91,8 @@ internal fun getPointMatrix(x: Number, y: Number, z: Number) =
         this[1, 3] = y.toDouble()
         this[2, 3] = z.toDouble()
     }
+
+/**
+ * Returns a frame transformation which applies no transformation.
+ */
+internal fun identityFrameTransform() = SimpleMatrix.identity(4)
