@@ -34,6 +34,8 @@ fun DoubleArray.toImmutableList(): ImmutableList<Double> = toList().toImmutableL
 
 fun BooleanArray.toImmutableList(): ImmutableList<Boolean> = toList().toImmutableList()
 
+fun <T> Array<out T>.toImmutableList(): ImmutableList<T> = toList().toImmutableList()
+
 fun <T> immutableListOf(vararg elements: T): ImmutableList<T> =
     ImmutableList.copyOf(elements.toList())
 
@@ -56,6 +58,8 @@ fun FloatArray.toImmutableSet(): ImmutableSet<Float> = toSet().toImmutableSet()
 fun DoubleArray.toImmutableSet(): ImmutableSet<Double> = toSet().toImmutableSet()
 
 fun BooleanArray.toImmutableSet(): ImmutableSet<Boolean> = toSet().toImmutableSet()
+
+fun <T> Array<out T>.toImmutableSet(): ImmutableSet<T> = toSet().toImmutableSet()
 
 fun <T> immutableSetOf(vararg elements: T): ImmutableSet<T> =
     ImmutableSet.copyOf(elements.toSet())

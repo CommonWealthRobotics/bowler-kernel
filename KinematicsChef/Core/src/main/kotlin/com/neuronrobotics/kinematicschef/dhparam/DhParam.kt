@@ -8,6 +8,7 @@
 package com.neuronrobotics.kinematicschef.dhparam
 
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.kinematicschef.util.identityFrameTransform
 import com.neuronrobotics.kinematicschef.util.toImmutableList
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
@@ -18,14 +19,19 @@ import kotlin.math.sin
 /**
  * A DH parameter. [theta] and [alpha] must be specified in degrees.
  */
-internal data class DhParam(
+internal data class DhParam
+internal constructor(
     val d: Double,
     val theta: Double,
     val r: Double,
     val alpha: Double
 ) {
+
+    constructor(d: Number, theta: Number, r: Number, alpha: Number) :
+        this(d.toDouble(), theta.toDouble(), r.toDouble(), alpha.toDouble())
+
     companion object {
-        val zero = DhParam(0.0, 0.0, 0.0, 0.0)
+        val zero = DhParam(0, 0, 0, 0)
     }
 }
 
@@ -59,4 +65,13 @@ internal fun DhParam.toFrameTransformation() =
         this[1, 3] = r * sin(thetaRadians)
         this[2, 3] = d
         this[3, 3] = 1.0
+    }
+
+/**
+ * Maps this [Collection] of [DhParam] into a frame transformation representing the transform of
+ * the tip.
+ */
+internal fun Collection<DhParam>.toFrameTransformation() =
+    fold(identityFrameTransform()) { acc, dhParam ->
+        acc.mult(dhParam.toFrameTransformation())
     }
