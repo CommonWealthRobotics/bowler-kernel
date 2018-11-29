@@ -15,6 +15,10 @@ import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DHParameterKinematics
 import com.neuronrobotics.sdk.addons.kinematics.math.RotationNR
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention
+import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
+import org.ejml.simple.SimpleMatrix
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -34,13 +38,23 @@ internal class AnalyticSolverTest {
         ))
 
         //target frame transformation
-        val target = TransformNR(
-        ).setX(2.0).setY(0.0).setZ(1.0)
-        target.rotation = RotationNR(-90.0, 0.0, 0.0)
+        val target = SimpleMatrix(4, 4)
+
+        val rotationMatrix = Rotation(
+            RotationOrder.ZYX,
+            RotationConvention.FRAME_TRANSFORM,
+            0.0,
+            0.0,
+            Math.PI * 0.5
+        ).matrix
+        target.setRow(0, 0, *(rotationMatrix[0] + 2.0))
+        target.setRow(1, 0, *(rotationMatrix[1] + 0.0))
+        target.setRow(2, 0, *(rotationMatrix[2] + 1.0))
+        target[3, 3] = 1.0
 
         val wristCenter = ikEngine.wristCenter(target, wrist)
-        assertEquals(2.0, Math.floor(100 * wristCenter.x + 0.5)/100.0)
-        assertEquals(-2.0, Math.floor(100 * wristCenter.y + 0.5)/100.0)
-        assertEquals(1.0, Math.floor(100 * wristCenter.z + 0.5)/100.0)
+        assert(Math.abs(2.0 - wristCenter.x) < 0.00001)
+        assert(Math.abs(-2.0 - wristCenter.y) < 0.00001)
+        assert(Math.abs(1.0 - wristCenter.z) < 0.00001)
     }
 }

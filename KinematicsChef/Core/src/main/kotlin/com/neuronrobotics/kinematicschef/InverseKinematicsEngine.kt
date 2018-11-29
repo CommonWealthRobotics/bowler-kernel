@@ -97,14 +97,15 @@ class InverseKinematicsEngine
      * @param wrist The DH parameter chain for the spherical wrist
      */
     internal fun wristCenter(
-            target: TransformNR,
+            target: SimpleMatrix,
             wrist: SphericalWrist
     ) : TransformNR {
         val wristCenter = TransformNR()
         val boneLength = wrist.params[1].r + wrist.params[2].d
-        wristCenter.x = target.x - boneLength * target.getRotationValue(0, 2)
-        wristCenter.y = target.y - boneLength * target.getRotationValue(1, 2)
-        wristCenter.z = target.z - boneLength * target.getRotationValue(2, 2)
+
+        wristCenter.x = target[0, 3] - boneLength * target[0, 2]
+        wristCenter.y = target[1, 3] - boneLength * target[1, 2]
+        wristCenter.z = target[2, 3] - boneLength * target[2, 2]
 
         return wristCenter
     }
