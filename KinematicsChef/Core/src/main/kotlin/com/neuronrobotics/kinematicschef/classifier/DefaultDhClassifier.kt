@@ -10,7 +10,6 @@ package com.neuronrobotics.kinematicschef.classifier
 import arrow.core.Either
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
-import com.neuronrobotics.kinematicschef.util.getPointMatrix
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
 import org.ejml.simple.SimpleMatrix
@@ -31,7 +30,7 @@ internal constructor() : DhClassifier {
         target: SimpleMatrix,
         tipTransform: SimpleMatrix
     ): Either<ClassifierError, RotationOrder> {
-        val center = wristCenter(target, wrist)
+        val center = wrist.center(target)
         val centerTransformed = center.mult(tipTransform.invert())
         val centerPosition = centerTransformed.getTranslation()
         return if (centerPosition[1] == 0.0 && centerPosition[2] == 0.0) {
@@ -180,25 +179,5 @@ internal constructor() : DhClassifier {
             ${params.joinToString(separator = "\n")}
             """.trimIndent()
         )
-    }
-
-    /**
-     * Calculate the position of a spherical wrist's center given a target point and a desired wrist orientation.
-     *
-     * @param target The target position of the end effector
-     * @param wrist The DH parameter chain for the spherical wrist
-     */
-    private fun wristCenter(
-        target: SimpleMatrix,
-        wrist: SphericalWrist
-    ): SimpleMatrix {
-        // TODO: Make sure to not duplicate this with Jason's when the branches merge
-        val boneLength = wrist.params[1].r + wrist.params[2].d
-
-        val x = target[0, 3] - boneLength * target[0, 2]
-        val y = target[1, 3] - boneLength * target[1, 2]
-        val z = target[2, 3] - boneLength * target[2, 2]
-
-        return getPointMatrix(x, y, z)
     }
 }
