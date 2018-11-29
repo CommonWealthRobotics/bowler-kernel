@@ -18,12 +18,44 @@ import com.google.common.collect.Multimap
 
 fun <T> Iterable<T>.toImmutableList(): ImmutableList<T> = ImmutableList.copyOf(this)
 
+fun ByteArray.toImmutableList(): ImmutableList<Byte> = toList().toImmutableList()
+
+fun CharArray.toImmutableList(): ImmutableList<Char> = toList().toImmutableList()
+
+fun ShortArray.toImmutableList(): ImmutableList<Short> = toList().toImmutableList()
+
+fun IntArray.toImmutableList(): ImmutableList<Int> = toList().toImmutableList()
+
+fun LongArray.toImmutableList(): ImmutableList<Long> = toList().toImmutableList()
+
+fun FloatArray.toImmutableList(): ImmutableList<Float> = toList().toImmutableList()
+
+fun DoubleArray.toImmutableList(): ImmutableList<Double> = toList().toImmutableList()
+
+fun BooleanArray.toImmutableList(): ImmutableList<Boolean> = toList().toImmutableList()
+
 fun <T> immutableListOf(vararg elements: T): ImmutableList<T> =
     ImmutableList.copyOf(elements.toList())
 
 fun <T> emptyImmutableList(): ImmutableList<T> = ImmutableList.of()
 
 fun <T> Iterable<T>.toImmutableSet(): ImmutableSet<T> = ImmutableSet.copyOf(this)
+
+fun ByteArray.toImmutableSet(): ImmutableSet<Byte> = toSet().toImmutableSet()
+
+fun CharArray.toImmutableSet(): ImmutableSet<Char> = toSet().toImmutableSet()
+
+fun ShortArray.toImmutableSet(): ImmutableSet<Short> = toSet().toImmutableSet()
+
+fun IntArray.toImmutableSet(): ImmutableSet<Int> = toSet().toImmutableSet()
+
+fun LongArray.toImmutableSet(): ImmutableSet<Long> = toSet().toImmutableSet()
+
+fun FloatArray.toImmutableSet(): ImmutableSet<Float> = toSet().toImmutableSet()
+
+fun DoubleArray.toImmutableSet(): ImmutableSet<Double> = toSet().toImmutableSet()
+
+fun BooleanArray.toImmutableSet(): ImmutableSet<Boolean> = toSet().toImmutableSet()
 
 fun <T> immutableSetOf(vararg elements: T): ImmutableSet<T> =
     ImmutableSet.copyOf(elements.toSet())
