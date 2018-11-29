@@ -19,7 +19,6 @@ import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
-import org.ejml.simple.SimpleMatrix
 import javax.inject.Inject
 
 /**
@@ -87,26 +86,5 @@ class InverseKinematicsEngine
                     throw UnsupportedOperationException(it)
                 }
             }
-    }
-
-    /**
-     * Calculate the position of a spherical wrist's center given a target point and a desired wrist orientation.
-     *
-     * @param target The target position of the end effector
-     * @param eulerAngles The desired wrist orientation, represented as euler angles of the joints
-     * @param wrist The DH parameter chain for the spherical wrist
-     */
-    internal fun wristCenter(
-            target: SimpleMatrix,
-            wrist: SphericalWrist
-    ) : TransformNR {
-        val wristCenter = TransformNR()
-        val boneLength = wrist.params[1].r + wrist.params[2].d
-
-        wristCenter.x = target[0, 3] - boneLength * target[0, 2]
-        wristCenter.y = target[1, 3] - boneLength * target[1, 2]
-        wristCenter.z = target[2, 3] - boneLength * target[2, 2]
-
-        return wristCenter
     }
 }

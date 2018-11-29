@@ -7,6 +7,7 @@
  */
 package com.neuronrobotics.kinematicschef.util
 
+import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import org.ejml.simple.SimpleMatrix
 import kotlin.math.sqrt
 
@@ -96,3 +97,19 @@ internal fun getPointMatrix(x: Number, y: Number, z: Number) =
  * Returns a frame transformation which applies no transformation.
  */
 internal fun identityFrameTransform() = SimpleMatrix.identity(4)
+
+/**
+ * Returns a [SimpleMatrix] which is equivalent to the [TransformNR].
+ */
+internal fun TransformNR.toSimpleMatrix(): SimpleMatrix {
+    val out = SimpleMatrix(4, 4)
+
+    val mat = matrixTransform
+    for (row in 0 until mat.rowDimension) {
+        for (col in 0 until mat.columnDimension) {
+            out[row, col] = mat[row, col]
+        }
+    }
+
+    return out
+}

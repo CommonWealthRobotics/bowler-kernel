@@ -13,10 +13,6 @@ import au.edu.federation.caliko.FabrikJoint3D
 import au.edu.federation.utils.Vec3f
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
-import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
-import com.neuronrobotics.kinematicschef.util.getPointMatrix
-import com.neuronrobotics.kinematicschef.util.getTranslation
-import com.neuronrobotics.kinematicschef.util.length
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
@@ -120,21 +116,14 @@ internal class CalikoInverseKinematicsEngine : DhInverseSolver {
     /**
      * Calculates the length of a link from its [DhParam].
      */
-    private fun calculateLinkLength(dhParam: DhParam): Float {
-        val pointBeforeTransform = getPointMatrix(0, 0, 0)
-        val pointAfterTransform = pointBeforeTransform.mult(dhParam.toFrameTransformation())
-
-        val possibleLength = pointAfterTransform.getTranslation()
-            .minus(pointBeforeTransform.getTranslation())
-            .length()
-            .toFloat()
-
-        return if (possibleLength == 0.0f) {
-            defaultBoneLength
-        } else {
-            possibleLength
+    private fun calculateLinkLength(dhParam: DhParam) =
+        dhParam.length().toFloat().also {
+            if (it == 0.0f) {
+                defaultBoneLength
+            } else {
+                return it
+            }
         }
-    }
 
     companion object {
         private const val defaultBoneLength = 10.0f

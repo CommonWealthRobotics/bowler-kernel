@@ -11,6 +11,7 @@ import arrow.core.Either
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.util.getTranslation
+import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
 import org.ejml.simple.SimpleMatrix
 
@@ -31,7 +32,7 @@ internal constructor() : DhClassifier {
         tipTransform: SimpleMatrix
     ): Either<ClassifierError, RotationOrder> {
         val center = wrist.center(target)
-        val centerTransformed = center.mult(tipTransform.invert())
+        val centerTransformed = center.toSimpleMatrix().mult(tipTransform.invert())
         val centerPosition = centerTransformed.getTranslation()
         return if (centerPosition[1] == 0.0 && centerPosition[2] == 0.0) {
             // Wrist lies on the x-axis, therefore its dh params are valid

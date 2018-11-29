@@ -8,7 +8,10 @@
 package com.neuronrobotics.kinematicschef.dhparam
 
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.kinematicschef.util.getPointMatrix
+import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.kinematicschef.util.identityFrameTransform
+import com.neuronrobotics.kinematicschef.util.length
 import com.neuronrobotics.kinematicschef.util.toImmutableList
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
@@ -29,6 +32,18 @@ internal constructor(
 
     constructor(d: Number, theta: Number, r: Number, alpha: Number) :
         this(d.toDouble(), theta.toDouble(), r.toDouble(), alpha.toDouble())
+
+    /**
+     * Calculates the translational length of this [DhParam].
+     */
+    internal fun length(): Double {
+        val pointBeforeTransform = getPointMatrix(0, 0, 0)
+        val pointAfterTransform = pointBeforeTransform.mult(toFrameTransformation())
+
+        return pointAfterTransform.getTranslation()
+            .minus(pointBeforeTransform.getTranslation())
+            .length()
+    }
 
     companion object {
         val zero = DhParam(0, 0, 0, 0)
