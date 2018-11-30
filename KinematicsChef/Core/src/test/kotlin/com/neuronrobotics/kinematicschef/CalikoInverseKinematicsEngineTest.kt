@@ -57,7 +57,7 @@ internal class CalikoInverseKinematicsEngineTest {
                 assertEquals(1, angles.size, "Must have one joint angle")
             },
             {
-                assertEquals(90, toDegrees(angles[0]).roundToInt(), "Joint angle must be 90")
+                assertEquals(0, toDegrees(angles[0]).roundToInt(), "Joint angle must be 0")
             },
             {
                 assertEquals(0, error.roundToInt(), "Solve error should equal 0")
@@ -115,8 +115,37 @@ internal class CalikoInverseKinematicsEngineTest {
 
     @Test
     @Disabled
+    fun `test 2 dof arm on x`() {
+        mockChain.addLink(DHLink(0.0, 0.0, 10.0, -90.0))
+        mockChain.addLink(DHLink(0.0, 0.0, 10.0, 90.0))
+
+        val target = 10
+        val (angles, error) = engine.inverseKinematicsWithError(
+            TransformNR().setX(target.toDouble()),
+            listOf(0.0, 0.0).toDoubleArray(),
+            mockChain
+        )
+
+        assertAll(
+            {
+                assertEquals(2, angles.size, "Must have two joint angles")
+            },
+            {
+                assertEquals(45, toDegrees(angles[0]).roundToInt(), "First joint angle must be 45")
+            },
+            {
+                assertEquals(-45, toDegrees(angles[1]).roundToInt(), "Second joint angle must be -45")
+            },
+            {
+                assertEquals(0, error.roundToInt(), "Solve error should equal 0")
+            }
+        )
+    }
+
+    @Test
+    @Disabled
     fun `basic baxter left arm test`() {
-        mockChain.addLink(DHLink(0.0, 0.0, 0.0, 0.0))
+        mockChain.addLink(DHLink(270.35, 0.0, 0.0, 0.0))
         mockChain.addLink(DHLink(0.0, -31.0 + 90, 69.0, -90.0))
         mockChain.addLink(DHLink(364.35, 0.0, 0.0, 90.0))
         mockChain.addLink(DHLink(0.0, 43.0, 69.0, -90.0))
@@ -131,6 +160,6 @@ internal class CalikoInverseKinematicsEngineTest {
             listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
             mockChain
         )
-        println("Solve error: $error")
+        result.forEach { println(it) }
     }
 }

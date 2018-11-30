@@ -11,7 +11,6 @@ import arrow.core.Either
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.util.getTranslation
-import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
 import org.ejml.simple.SimpleMatrix
 

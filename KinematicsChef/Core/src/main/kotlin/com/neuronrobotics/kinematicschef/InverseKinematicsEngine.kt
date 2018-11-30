@@ -49,7 +49,7 @@ class InverseKinematicsEngine
         val dhParams = chain.toDhParams()
         val targetMatrix = target.toSimpleMatrix()
         val chainElements = chainIdentifier.identifyChain(dhParams)
-        val newJointAngles = Array<Double>(jointSpaceVector.size){0.0}
+        val newJointAngles = Array<Double>(jointSpaceVector.size) { 0.0 }
 
         val eulerAngles = chainElements
             .mapNotNull { it as? SphericalWrist }
@@ -58,26 +58,25 @@ class InverseKinematicsEngine
 
         validateEulerAngles(eulerAngles)
 
-        val wrist = chainElements.last() as? SphericalWrist ?:
-            return CalikoInverseKinematicsEngine().inverseKinematics(target, jointSpaceVector, chain)
+        val wrist = chainElements.last() as? SphericalWrist
+            ?: return CalikoInverseKinematicsEngine().inverseKinematics(target, jointSpaceVector, chain)
 
         val wristCenter = wrist.center(target.toSimpleMatrix())
 
         when (dhParams.first().r) {
             0.0 -> {
-                //next joint is along Z axis of shoulder
+                // next joint is along Z axis of shoulder
 
-                //check for singularity, if so then the shoulder joint angle does not need to change
+                // check for singularity, if so then the shoulder joint angle does not need to change
                 if (targetMatrix[0, 3] == 0.0 && targetMatrix[1, 3] == 0.0) {
                     newJointAngles[0] = jointSpaceVector[0]
                 } else {
                     val theta1 = Math.toDegrees(Math.atan2(targetMatrix[0, 3], targetMatrix[1, 3]))
                     val theta2 = Math.toDegrees(Math.PI + theta1)
-                    
                 }
             }
             else -> {
-                //left/right arm configuration
+                // left/right arm configuration
             }
         }
 

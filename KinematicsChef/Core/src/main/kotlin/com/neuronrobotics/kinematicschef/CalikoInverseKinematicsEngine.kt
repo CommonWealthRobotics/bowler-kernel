@@ -16,7 +16,8 @@ import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
-import kotlin.math.acos
+import java.lang.Math.toDegrees
+import kotlin.math.atan2
 
 /**
  * A [DhInverseSolver] which uses Caliko's iterative solver.
@@ -101,7 +102,8 @@ internal class CalikoInverseKinematicsEngine : DhInverseSolver {
         for (i in 0 until directions.size - 1) {
             val vec1 = directions[i]
             val vec2 = directions[i + 1]
-            angles.add(vec2.angle(vec1))
+            val projection = vec2.projectOntoPlane(vec1)
+            angles.add(toDegrees(atan2(projection.y, projection.x).toDouble()))
         }
 
         return angles.map {
@@ -133,10 +135,6 @@ internal class CalikoInverseKinematicsEngine : DhInverseSolver {
         private val RIGHT_AXIS = Vec3f(0.0f, 1.0f, 0.0f)
     }
 }
-
-private fun Vec3f.angle(vec: Vec3f): Double = acos(dot(vec) / (length() * vec.length()))
-
-private fun Vec3f.dot(vec: Vec3f): Double = (x * vec.x + y * vec.y + z * vec.z).toDouble()
 
 private fun FabrikChain3D.solveForTarget(x: Number, y: Number, z: Number) =
     solveForTarget(x.toFloat(), y.toFloat(), z.toFloat())
