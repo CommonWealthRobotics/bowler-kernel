@@ -15,6 +15,7 @@ import com.neuronrobotics.kinematicschef.classifier.DhClassifier
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.util.toImmutableMap
+import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
@@ -45,7 +46,11 @@ class InverseKinematicsEngine
         jointSpaceVector: DoubleArray,
         chain: DHChain
     ): DoubleArray {
-        val chainElements = chainIdentifier.identifyChain(chain.toDhParams())
+        val dhParams = chain.toDhParams()
+        val targetMatrix = target.toSimpleMatrix()
+        val chainElements = chainIdentifier.identifyChain(dhParams)
+        val newJointAngles = Array<Double>(jointSpaceVector.size){0.0}
+
         val eulerAngles = chainElements
             .mapNotNull { it as? SphericalWrist }
             .map { it to dhClassifier.deriveEulerAngles(it) }
@@ -53,8 +58,30 @@ class InverseKinematicsEngine
 
         validateEulerAngles(eulerAngles)
 
-        // TODO: Write the analytic solver here
-        TODO("not implemented")
+        val wrist = chainElements.last() as? SphericalWrist ?:
+            return CalikoInverseKinematicsEngine().inverseKinematics(target, jointSpaceVector, chain)
+
+        val wristCenter = wrist.center(target.toSimpleMatrix())
+
+        when (dhParams.first().r) {
+            0.0 -> {
+                //next joint is along Z axis of shoulder
+
+                //check for singularity, if so then the shoulder joint angle does not need to change
+                if (targetMatrix[0, 3] == 0.0 && targetMatrix[1, 3] == 0.0) {
+                    newJointAngles[0] = jointSpaceVector[0]
+                } else {
+                    val theta1 = Math.toDegrees(Math.atan2(targetMatrix[0, 3], targetMatrix[1, 3]))
+                    val theta2 = Math.toDegrees(Math.PI + theta1)
+                    
+                }
+            }
+            else -> {
+                //left/right arm configuration
+            }
+        }
+
+        return CalikoInverseKinematicsEngine().inverseKinematics(target, jointSpaceVector, chain)
     }
 
     /**
