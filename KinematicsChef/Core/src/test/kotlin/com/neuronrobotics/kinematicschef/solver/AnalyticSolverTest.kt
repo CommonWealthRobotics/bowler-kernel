@@ -53,8 +53,8 @@ internal class AnalyticSolverTest {
         target[3, 3] = 1.0
 
         val wristCenter = wrist.center(target)
-        assert(Math.abs(2.0 - wristCenter.x) < 0.00001)
-        assert(Math.abs(-2.0 - wristCenter.y) < 0.00001)
-        assert(Math.abs(1.0 - wristCenter.z) < 0.00001)
+        assert(Math.abs(2.0 - wristCenter[0, 0]) < 0.00001)
+        assert(Math.abs(-2.0 - wristCenter[1, 0]) < 0.00001)
+        assert(Math.abs(1.0 - wristCenter[2, 0]) < 0.00001)
     }
 }
