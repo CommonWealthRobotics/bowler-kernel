@@ -41,9 +41,17 @@ internal class CalikoInverseKinematicsEngineTest {
         }
     })
 
+    private fun xyPlane1dofArm(): Unit =
+        mockChain.addLink(DHLink(10.0, 0.0, 0.0, 0.0))
+
+    private fun xyPlane2dofArm() {
+        mockChain.addLink(DHLink(0.0, 0.0, 10.0, -180.0))
+        mockChain.addLink(DHLink(0.0, 0.0, 10.0, 0.0))
+    }
+
     @Test
     fun `test 1 dof arm on x`() {
-        mockChain.addLink(DHLink(10.0, 0.0, 0.0, 0.0))
+        xyPlane1dofArm()
 
         val target = 10
         val (angles, error) = engine.inverseKinematicsWithError(
@@ -57,7 +65,7 @@ internal class CalikoInverseKinematicsEngineTest {
                 assertEquals(1, angles.size, "Must have one joint angle")
             },
             {
-                assertEquals(0, toDegrees(angles[0]).roundToInt(), "Joint angle must be 0")
+                assertEquals(0, angles[0].roundToInt(), "Joint angle must be 0")
             },
             {
                 assertEquals(0, error.roundToInt(), "Solve error should equal 0")
@@ -67,7 +75,7 @@ internal class CalikoInverseKinematicsEngineTest {
 
     @Test
     fun `test 1 dof arm on y`() {
-        mockChain.addLink(DHLink(10.0, 0.0, 0.0, 0.0))
+        xyPlane1dofArm()
 
         val target = 10
         val (angles, error) = engine.inverseKinematicsWithError(
@@ -81,7 +89,7 @@ internal class CalikoInverseKinematicsEngineTest {
                 assertEquals(1, angles.size, "Must have one joint angle")
             },
             {
-                assertEquals(90, toDegrees(angles[0]).roundToInt(), "Joint angle must be 90")
+                assertEquals(90, angles[0].roundToInt(), "Joint angle must be 90")
             },
             {
                 assertEquals(0, error.roundToInt(), "Solve error should equal 0")
@@ -91,7 +99,7 @@ internal class CalikoInverseKinematicsEngineTest {
 
     @Test
     fun `test 1 dof arm on z`() {
-        mockChain.addLink(DHLink(10.0, 0.0, 0.0, 0.0))
+        xyPlane1dofArm()
 
         val target = 10
         val (angles, error) = engine.inverseKinematicsWithError(
@@ -105,7 +113,7 @@ internal class CalikoInverseKinematicsEngineTest {
                 assertEquals(1, angles.size, "Must have one joint angle")
             },
             {
-                assertEquals(0, toDegrees(angles[0]).roundToInt(), "Joint angle must be 0")
+                assertEquals(0, angles[0].roundToInt(), "Joint angle must be 0")
             },
             {
                 assertEquals(target, error.roundToInt(), "Solve error should equal $target")
@@ -116,10 +124,9 @@ internal class CalikoInverseKinematicsEngineTest {
     @Test
     @Disabled
     fun `test 2 dof arm on x`() {
-        mockChain.addLink(DHLink(0.0, 0.0, 10.0, -90.0))
-        mockChain.addLink(DHLink(0.0, 0.0, 10.0, 90.0))
+        xyPlane2dofArm()
 
-        val target = 10
+        val target = 12
         val (angles, error) = engine.inverseKinematicsWithError(
             TransformNR().setX(target.toDouble()),
             listOf(0.0, 0.0).toDoubleArray(),
@@ -131,10 +138,14 @@ internal class CalikoInverseKinematicsEngineTest {
                 assertEquals(2, angles.size, "Must have two joint angles")
             },
             {
-                assertEquals(45, toDegrees(angles[0]).roundToInt(), "First joint angle must be 45")
+                assertEquals(45, angles[0].roundToInt(), "First joint angle must be 45")
             },
             {
-                assertEquals(-45, toDegrees(angles[1]).roundToInt(), "Second joint angle must be -45")
+                assertEquals(
+                    -45,
+                    toDegrees(angles[1]).roundToInt(),
+                    "Second joint angle must be -45"
+                )
             },
             {
                 assertEquals(0, error.roundToInt(), "Solve error should equal 0")

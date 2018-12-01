@@ -13,9 +13,13 @@ import au.edu.federation.caliko.FabrikJoint3D
 import au.edu.federation.utils.Vec3f
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
+import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
+import com.neuronrobotics.kinematicschef.util.getPointMatrix
+import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
+import org.ejml.simple.SimpleMatrix
 import java.lang.Math.toDegrees
 import kotlin.math.atan2
 
@@ -61,7 +65,6 @@ internal class CalikoInverseKinematicsEngine : DhInverseSolver {
 
         val dhParams = chain.toDhParams()
         dhParams.forEachIndexed { index, dhParam ->
-            // TODO: Make this get the actual bone length
             val boneLength: Float =
                 if (index == dhParams.size - 1) {
                     defaultBoneLength
@@ -81,17 +84,21 @@ internal class CalikoInverseKinematicsEngine : DhInverseSolver {
                 fabrikChain.setFreelyRotatingGlobalHingedBasebone(UP_AXIS)
             } else {
                 // TODO: The directionUV could be X or Z depending on if we need to use d or r
-                // TODO: No way to set hinge rotation limits from DH params alone
+                // TODO: Pull hardware limits from the DHChain
                 fabrikChain.addConsecutiveFreelyRotatingHingedBone(
                     FORWARD_AXIS,
                     boneLength,
                     FabrikJoint3D.JointType.LOCAL_HINGE,
-                    UP_AXIS
+                    fabrikChain.chain[index - 1].directionUV.mult(dhParam.toFrameTransformation())
                 )
             }
         }
 
+        println("Before solving:")
+        fabrikChain.chain.forEach { println(it) }
         val solveError = fabrikChain.solveForTarget(target.x, target.y, target.z)
+        println("After solving:")
+        fabrikChain.chain.forEach { println(it) }
 
         // Add a unit vector pointing up as the first element so we can get the angle of the first
         // link
@@ -103,7 +110,7 @@ internal class CalikoInverseKinematicsEngine : DhInverseSolver {
             val vec1 = directions[i]
             val vec2 = directions[i + 1]
             val projection = vec2.projectOntoPlane(vec1)
-            angles.add(toDegrees(atan2(projection.y, projection.x).toDouble()))
+            angles.add(toDegrees(atan2(projection.y, projection.x).toDouble()).modulus(360.0))
         }
 
         return angles.map {
@@ -136,5 +143,13 @@ internal class CalikoInverseKinematicsEngine : DhInverseSolver {
     }
 }
 
+private fun Vec3f.mult(ft: SimpleMatrix): Vec3f {
+    val vecAsMat = getPointMatrix(x, y, z)
+    val result = vecAsMat.mult(ft).getTranslation()
+    return Vec3f(result[0].toFloat(), result[1].toFloat(), result[2].toFloat()).normalise()
+}
+
 private fun FabrikChain3D.solveForTarget(x: Number, y: Number, z: Number) =
     solveForTarget(x.toFloat(), y.toFloat(), z.toFloat())
+
+private fun Double.modulus(rhs: Double) = (rem(rhs) + rhs).rem(rhs)
