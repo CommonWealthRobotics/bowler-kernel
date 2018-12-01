@@ -14,8 +14,8 @@ import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
  * An Euler angle rotation order.
  *
  * @param order The [RotationOrder].
- * @param preRotation A rotation applied before the wrist.
- * @param postRotation A rotation applied after the wrist.
+ * @param preRotation A transform applied before the wrist.
+ * @param postRotation A transform applied after the wrist.
  */
 internal sealed class EulerAngle(
     val order: RotationOrder,

@@ -61,31 +61,25 @@ internal constructor() : DhClassifier {
         return deriveEulerAngles(wrist.params[0], wrist.params[1], wrist.params[2])
     }
 
+    /**
+     * This implementation would also technically work as a [WristIdentifier] but this requires
+     * thetas to be specified as offsets so it is very fragile with respect to the actual value of
+     * theta.
+     */
     private fun deriveEulerAngles(
         link1: DhParam,
         link2: DhParam,
         link3: DhParam
     ): Either<ClassifierError, EulerAngle> {
-        val eulerAngleMap = immutableMapOf(
-            immutableListOf(0, 90, -90, 90, 0, -90) to EulerAngleZXZ,
-            immutableListOf(0, -90, 90, 0, 0, 0) to EulerAngleZYZ,
-            immutableListOf(0, 90, -90, 90, -90, -90) to EulerAngleZXY,
-            immutableListOf(0, -90, 90, 0, 90, 90) to EulerAngleZYX,
-            immutableListOf(-90, 90, -90, 90, 0, -90) to EulerAngleYXY,
-            immutableListOf(-90, 90, -90, 0, 0, 0) to EulerAngleYZY,
-            immutableListOf(-90, 90, -90, 90, 90, -90) to EulerAngleYXZ,
-            immutableListOf(-90, 90, 90, 0, 90, 0) to EulerAngleYZX,
-            immutableListOf(90, -90, 90, -90, 0, 90) to EulerAngleXYX,
-            immutableListOf(90, -90, 90, 0, 0, 0) to EulerAngleXZX,
-            immutableListOf(90, -90, 90, -90, -90, 0) to EulerAngleXYZ,
-            immutableListOf(90, -90, -90, 0, -90, 0) to EulerAngleXZY
-        )
-
+        /**
+         * Map the wrist into the [eulerAngleMap] format.
+         */
         val wristInListFormat = immutableListOf(
             link1.alpha.toInt(), link2.alpha.toInt(), link3.alpha.toInt(),
             link1.theta.toInt(), link2.theta.toInt(), link3.theta.toInt()
         )
 
+        // Use indexing into the map to pattern match the wrist
         return eulerAngleMap[wristInListFormat].let {
             if (it != null) {
                 Either.right(it)
@@ -101,6 +95,29 @@ internal constructor() : DhClassifier {
                 |The wrist does not have Euler angles:
                 |${params.joinToString("\n")}
             """.trimMargin()
+        )
+    }
+
+    companion object {
+        /**
+         * This maps the alphas and thetas for the three links to their Euler angles.
+         *
+         * Format:
+         * alpha 1, alpha 2, alpha 3, theta offset 1, theta offset 2, theta offset 3
+         */
+        private val eulerAngleMap = immutableMapOf(
+            immutableListOf(0, 90, -90, 90, 0, -90) to EulerAngleZXZ,
+            immutableListOf(0, -90, 90, 0, 0, 0) to EulerAngleZYZ,
+            immutableListOf(0, 90, -90, 90, -90, -90) to EulerAngleZXY,
+            immutableListOf(0, -90, 90, 0, 90, 90) to EulerAngleZYX,
+            immutableListOf(-90, 90, -90, 90, 0, -90) to EulerAngleYXY,
+            immutableListOf(-90, 90, -90, 0, 0, 0) to EulerAngleYZY,
+            immutableListOf(-90, 90, -90, 90, 90, -90) to EulerAngleYXZ,
+            immutableListOf(-90, 90, 90, 0, 90, 0) to EulerAngleYZX,
+            immutableListOf(90, -90, 90, -90, 0, 90) to EulerAngleXYX,
+            immutableListOf(90, -90, 90, 0, 0, 0) to EulerAngleXZX,
+            immutableListOf(90, -90, 90, -90, -90, 0) to EulerAngleXYZ,
+            immutableListOf(90, -90, -90, 0, -90, 0) to EulerAngleXZY
         )
     }
 }
