@@ -19,6 +19,14 @@ import org.ejml.simple.SimpleMatrix
 internal class DefaultDhClassifier
 internal constructor() : DhClassifier {
 
+    /**
+     * Determine the Euler angles for a [SphericalWrist].
+     *
+     * @param wrist The wrist to classify.
+     * @param priorChain The links in the chain before the [wrist].
+     * @param tipTransform The frame transformation for the tip of the chain.
+     * @return The Euler angles or an error.
+     */
     override fun deriveEulerAngles(
         wrist: SphericalWrist,
         priorChain: ImmutableList<DhParam>,
@@ -43,6 +51,12 @@ internal constructor() : DhClassifier {
         }
     }
 
+    /**
+     * Determine the Euler angles for a [SphericalWrist].
+     *
+     * @param wrist The wrist to classify.
+     * @return The Euler angles or an error.
+     */
     fun deriveEulerAngles(
         wrist: SphericalWrist
     ) = deriveEulerAngles(wrist.params[0], wrist.params[1], wrist.params[2])

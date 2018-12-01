@@ -53,7 +53,7 @@ internal class CalikoInverseKinematicsEngine : DhInverseSolver {
     @Suppress("MemberVisibilityCanBePrivate")
     fun inverseKinematicsWithError(
         target: TransformNR,
-        @Suppress("UNUSED_PARAMETER") jointSpaceVector: DoubleArray,
+        jointSpaceVector: DoubleArray,
         chain: DHChain
     ): Pair<DoubleArray, Float> {
         require(jointSpaceVector.size == chain.links.size) {

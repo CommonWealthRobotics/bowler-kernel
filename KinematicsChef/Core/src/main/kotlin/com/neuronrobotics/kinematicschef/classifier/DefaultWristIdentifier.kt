@@ -13,6 +13,12 @@ import com.neuronrobotics.kinematicschef.dhparam.DhParam
 
 internal class DefaultWristIdentifier : WristIdentifier {
 
+    /**
+     * Computes whether the [chain] is a spherical wrist which is solvable with Euler angles.
+     *
+     * @param chain The chain to analyze.
+     * @return True if the [chain] forms a spherical wrist, false otherwise.
+     */
     override fun isSphericalWrist(chain: ImmutableList<DhParam>): Option<ClassifierError> {
         return if (chain.size == 3) {
             handleChainOfCorrectLength(chain)

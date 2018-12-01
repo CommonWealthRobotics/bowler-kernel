@@ -21,6 +21,12 @@ internal class DefaultChainIdentifier
     private val wristIdentifier: WristIdentifier
 ) : ChainIdentifier {
 
+    /**
+     * Identify the input [chain] by categorizing its DH params into chain elements.
+     *
+     * @param chain The DH chain to identify.
+     * @return The elements that form the chain.
+     */
     override fun identifyChain(chain: ImmutableList<DhParam>): ImmutableList<DhChainElement> {
         /**
          * No spherical wrist can occur with less than 3 links.
