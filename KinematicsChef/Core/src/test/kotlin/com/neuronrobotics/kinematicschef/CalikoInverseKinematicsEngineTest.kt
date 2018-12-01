@@ -7,8 +7,6 @@
  */
 package com.neuronrobotics.kinematicschef
 
-import com.neuronrobotics.sdk.addons.kinematics.AbstractKinematicsNR
-import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import org.junit.jupiter.api.Disabled
@@ -23,23 +21,7 @@ internal class CalikoInverseKinematicsEngineTest {
 
     private val engine = CalikoInverseKinematicsEngine()
 
-    private val mockChain = DHChain(object : AbstractKinematicsNR() {
-        override fun forwardKinematics(p0: DoubleArray?): TransformNR {
-            TODO("not implemented")
-        }
-
-        override fun disconnectDevice() {
-            TODO("not implemented")
-        }
-
-        override fun inverseKinematics(p0: TransformNR?): DoubleArray {
-            TODO("not implemented")
-        }
-
-        override fun connectDevice(): Boolean {
-            TODO("not implemented")
-        }
-    })
+    private val mockChain = TestUtil.makeMockChain()
 
     private fun xyPlane1dofArm(): Unit =
         mockChain.addLink(DHLink(10.0, 0.0, 0.0, 0.0))

@@ -49,7 +49,6 @@ class InverseKinematicsEngine
         val dhParams = chain.toDhParams()
         val targetMatrix = target.toSimpleMatrix()
         val chainElements = chainIdentifier.identifyChain(dhParams)
-        val newJointAngles = Array(jointSpaceVector.size) { 0.0 }
 
         val eulerAngles = chainElements
             .mapNotNull { it as? SphericalWrist }
@@ -68,6 +67,7 @@ class InverseKinematicsEngine
             )
 
         val wristCenter = wrist.center(target.toSimpleMatrix())
+        val newJointAngles = DoubleArray(jointSpaceVector.size) { 0.0 }
 
         when (dhParams.first().r) {
             0.0 -> {
@@ -96,23 +96,15 @@ class InverseKinematicsEngine
         eulerAngles: ImmutableMap<SphericalWrist, Either<ClassifierError, EulerAngle>>
     ) {
         eulerAngles
-            .filterValues { it.isLeft() }
             .values
             .mapNotNull { elem ->
-                elem.fold(
-                    {
-                        it.errorString
-                    },
-                    {
-                        null
-                    }
-                )
+                elem.fold({ it.errorString }, { null })
             }
             .fold("") { acc, elem ->
                 """
-                    $acc
-                    $elem
-                """.trimIndent()
+                    |$acc
+                    |$elem
+                """.trimMargin().trimStart() // Trim the start to remove the initial newline
             }.let {
                 if (it.isNotEmpty()) {
                     throw UnsupportedOperationException(it)
