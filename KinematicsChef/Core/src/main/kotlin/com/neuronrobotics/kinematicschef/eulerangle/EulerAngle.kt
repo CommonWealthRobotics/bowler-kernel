@@ -11,7 +11,8 @@ import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
 
 /**
- * An Euler angle rotation order.
+ * An Euler angle rotation order. These values taken from "Denavit-Hartenberg Parameterization of
+ * Euler Angles" by S. V. Shah, S. K. Saha, and J. K. Dutt.
  *
  * @param order The [RotationOrder].
  * @param preRotation A transform applied before the wrist.

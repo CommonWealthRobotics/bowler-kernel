@@ -101,6 +101,8 @@ internal constructor() : DhClassifier {
     companion object {
         /**
          * This maps the alphas and thetas for the three links to their Euler angles.
+         * These values taken from "Denavit-Hartenberg Parameterization of Euler Angles" by S. V.
+         * Shah, S. K. Saha, and J. K. Dutt.
          *
          * Format:
          * alpha 1, alpha 2, alpha 3, theta offset 1, theta offset 2, theta offset 3
