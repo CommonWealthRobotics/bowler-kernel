@@ -359,7 +359,7 @@ configure(publishedProjects) {
             create<MavenPublication>(publicationName) {
                 artifactId = "kinematicschef-${this@configure.name.toLowerCase()}"
                 from(components["java"])
-                // artifact(tasks["shadowJar"])
+                artifact(tasks["shadowJar"])
                 artifact(tasks["sourcesJar"])
                 artifact(tasks["javadocJar"])
             }
