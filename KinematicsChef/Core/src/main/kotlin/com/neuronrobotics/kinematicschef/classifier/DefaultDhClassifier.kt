@@ -10,6 +10,7 @@ package com.neuronrobotics.kinematicschef.classifier
 import arrow.core.Either
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
+import com.neuronrobotics.kinematicschef.util.asPointMatrix
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
 import org.ejml.simple.SimpleMatrix
@@ -30,7 +31,7 @@ internal constructor() : DhClassifier {
         target: SimpleMatrix,
         tipTransform: SimpleMatrix
     ): Either<ClassifierError, RotationOrder> {
-        val center = wrist.center(target)
+        val center = wrist.center(target).asPointMatrix()
         val centerTransformed = center.mult(tipTransform.invert())
         val centerPosition = centerTransformed.getTranslation()
         return if (centerPosition[1] == 0.0 && centerPosition[2] == 0.0) {

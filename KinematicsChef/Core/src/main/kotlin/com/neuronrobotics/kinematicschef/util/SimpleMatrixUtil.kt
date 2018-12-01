@@ -94,6 +94,15 @@ internal fun getPointMatrix(x: Number, y: Number, z: Number) =
     }
 
 /**
+ * Treats the receiver matrix as a point matrix and returns it as a 4x4 frame transformation.
+ */
+internal fun SimpleMatrix.asPointMatrix(): SimpleMatrix {
+    require(numRows() == 3)
+    require(numCols() == 1)
+    return getPointMatrix(this[0, 0], this[1, 0], this[2, 0])
+}
+
+/**
  * Returns a frame transformation which applies no transformation.
  */
 internal fun identityFrameTransform() = SimpleMatrix.identity(4)
