@@ -45,12 +45,14 @@ internal constructor(
             .length()
     }
 
+    internal fun toDHLink() = DHLink(d, theta, r, alpha)
+
     companion object {
         val zero = DhParam(0, 0, 0, 0)
     }
 }
 
-internal fun DHLink.toDhParam() = DhParam(d, theta, r, theta)
+internal fun DHLink.toDhParam() = DhParam(d, theta, r, alpha)
 
 internal fun ImmutableList<DHLink>.toDhParams() = map { it.toDhParam() }.toImmutableList()
 

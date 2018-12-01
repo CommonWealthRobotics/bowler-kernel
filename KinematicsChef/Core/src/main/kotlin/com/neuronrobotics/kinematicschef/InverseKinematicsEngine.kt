@@ -9,9 +9,14 @@ package com.neuronrobotics.kinematicschef
 
 import arrow.core.Either
 import com.google.common.collect.ImmutableMap
+import com.google.inject.Guice
 import com.neuronrobotics.kinematicschef.classifier.ChainIdentifier
 import com.neuronrobotics.kinematicschef.classifier.ClassifierError
+import com.neuronrobotics.kinematicschef.classifier.DefaultChainIdentifier
+import com.neuronrobotics.kinematicschef.classifier.DefaultDhClassifier
+import com.neuronrobotics.kinematicschef.classifier.DefaultWristIdentifier
 import com.neuronrobotics.kinematicschef.classifier.DhClassifier
+import com.neuronrobotics.kinematicschef.classifier.WristIdentifier
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngle
@@ -20,6 +25,8 @@ import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
+import org.jlleitschuh.guice.key
+import org.jlleitschuh.guice.module
 import javax.inject.Inject
 
 /**
@@ -87,6 +94,19 @@ class InverseKinematicsEngine
         }
 
         return CalikoInverseKinematicsEngine().inverseKinematics(target, jointSpaceVector, chain)
+    }
+
+    companion object {
+        internal fun inverseKinematicsEngineModule() = module {
+            bind<ChainIdentifier>().to<DefaultChainIdentifier>()
+            bind<DhClassifier>().to<DefaultDhClassifier>()
+            bind<WristIdentifier>().to<DefaultWristIdentifier>()
+        }
+
+        fun getInstance(): InverseKinematicsEngine {
+            return Guice.createInjector(inverseKinematicsEngineModule())
+                .getInstance(key<InverseKinematicsEngine>())
+        }
     }
 
     /**
