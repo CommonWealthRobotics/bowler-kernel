@@ -11,9 +11,9 @@ plugins {
     jacoco
     pmd
     id("com.diffplug.gradle.spotless") version "3.16.0"
-    id("org.jlleitschuh.gradle.ktlint") version "6.2.1"
-    id("com.github.spotbugs") version "1.6.4"
-    id("io.gitlab.arturbosch.detekt") version "1.0.0.RC9.2"
+    id("org.jlleitschuh.gradle.ktlint") version "6.3.1"
+    id("com.github.spotbugs") version "1.6.5"
+    id("io.gitlab.arturbosch.detekt") version "1.0.0-RC11"
 }
 
 allprojects {
@@ -64,7 +64,7 @@ allprojects {
     pluginManager.withPlugin("jacoco") {
         // If this project has the plugin applied, configure the tool version.
         jacoco {
-            toolVersion = "0.8.0"
+            toolVersion = "0.8.2"
         }
     }
 
@@ -204,11 +204,11 @@ configure(javaProjects) {
     }
 
     checkstyle {
-        toolVersion = "8.1"
+        toolVersion = "8.15"
     }
 
     spotbugs {
-        toolVersion = "3.1.3"
+        toolVersion = "3.1.9"
         excludeFilter = file("${rootProject.rootDir}/config/spotbugs/spotbugs-excludeFilter.xml")
     }
 
@@ -221,7 +221,7 @@ configure(javaProjects) {
     }
 
     pmd {
-        toolVersion = "6.3.0"
+        toolVersion = "6.9.0"
         ruleSets = emptyList() // Needed so PMD only uses our custom ruleset
         ruleSetFiles = files("${rootProject.rootDir}/config/pmd/pmd-ruleset.xml")
     }
@@ -292,52 +292,13 @@ configure(kotlinProjects) {
     }
 
     detekt {
-        toolVersion = "1.0.0.RC9.2"
+        toolVersion = "1.0.0-RC11"
         input = files(
             "src/main/kotlin",
             "src/test/kotlin"
         )
         parallel = true
         config = files("${rootProject.rootDir}/config/detekt/config.yml")
-    }
-}
-
-val jacocoTestResultTaskName = "jacocoTestReport"
-
-val jacocoRootReport = task<JacocoReport>("jacocoRootReport") {
-    group = LifecycleBasePlugin.VERIFICATION_GROUP
-    description = "Generates code coverage report for all sub-projects."
-
-    val jacocoReportTasks =
-        javaProjects
-            .filter {
-                // Filter out source sets that don't have tests in them
-                // Otherwise, Jacoco tries to generate coverage data for tests that don't exist
-                !it.java.sourceSets["test"].allSource.isEmpty
-            }
-            .map { it.tasks[jacocoTestResultTaskName] as JacocoReport }
-    dependsOn(jacocoReportTasks)
-
-    val allExecutionData = jacocoReportTasks.map { it.executionData }
-    executionData(*allExecutionData.toTypedArray())
-
-    // Pre-initialize these to empty collections to prevent NPE on += call below.
-    additionalSourceDirs = files()
-    sourceDirectories = files()
-    classDirectories = files()
-
-    javaProjects.forEach { testedProject ->
-        val sourceSets = testedProject.java.sourceSets
-        this@task.additionalSourceDirs =
-            this@task.additionalSourceDirs?.plus(files(sourceSets["main"].allSource.srcDirs))
-        this@task.sourceDirectories += files(sourceSets["main"].allSource.srcDirs)
-        this@task.classDirectories += files(sourceSets["main"].output)
-    }
-
-    reports {
-        html.isEnabled = true
-        xml.isEnabled = true
-        csv.isEnabled = false
     }
 }
 
@@ -357,8 +318,8 @@ configure(javaProjects + kotlinProjects) {
     buildTask.dependsOn(tasks.getByName("build"))
 }
 
-task<Wrapper>("wrapper") {
-    gradleVersion = "4.10"
+tasks.wrapper {
+    gradleVersion = "5.0"
     distributionType = Wrapper.DistributionType.ALL
 
     doLast {
