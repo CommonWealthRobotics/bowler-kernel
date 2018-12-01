@@ -11,7 +11,7 @@ import arrow.core.Either
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
+import com.neuronrobotics.kinematicschef.eulerangle.EulerAngle
 import org.ejml.simple.SimpleMatrix
 
 internal interface DhClassifier {
@@ -28,5 +28,5 @@ internal interface DhClassifier {
         wrist: SphericalWrist,
         priorChain: ImmutableList<DhParam>,
         tipTransform: SimpleMatrix
-    ): Either<ClassifierError, RotationOrder>
+    ): Either<ClassifierError, EulerAngle>
 }

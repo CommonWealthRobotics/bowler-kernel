@@ -10,9 +10,12 @@ package com.neuronrobotics.kinematicschef.classifier
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
+import com.neuronrobotics.kinematicschef.eulerangle.EulerAngle
+import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleYXZ
+import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZXZ
+import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZYZ
 import com.neuronrobotics.kinematicschef.util.emptyImmutableList
 import com.neuronrobotics.kinematicschef.util.toImmutableList
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
 import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue
 
@@ -23,7 +26,7 @@ class DefaultDhClassifierTest {
     @Test
     fun `test ZXZ wrist`() {
         testWrist(
-            RotationOrder.ZXZ,
+            EulerAngleZXZ,
             DhParam(0, 90, 0, 0),
             DhParam(0, 0, 0, 90),
             DhParam(0, -90, 0, -90)
@@ -42,7 +45,7 @@ class DefaultDhClassifierTest {
     @Test
     fun `test ZYZ wrist`() {
         testWrist(
-            RotationOrder.ZYZ,
+            EulerAngleZYZ,
             DhParam(0, 0, 0, 0),
             DhParam(0, 0, 0, -90),
             DhParam(0, 0, 0, 90)
@@ -52,7 +55,7 @@ class DefaultDhClassifierTest {
     @Test
     fun `test YXZ wrist`() {
         testWrist(
-            RotationOrder.YXZ,
+            EulerAngleYXZ,
             DhParam(0, 90, 0, -90),
             DhParam(0, 90, 0, 90),
             DhParam(0, -90, 0, -90)
@@ -77,7 +80,7 @@ class DefaultDhClassifierTest {
         )
     }
 
-    private fun testWrist(expected: RotationOrder, vararg paramArray: DhParam) {
+    private fun testWrist(expected: EulerAngle, vararg paramArray: DhParam) {
         paramArray.toImmutableList().let { params ->
             assertTrue(
                 classifier.deriveEulerAngles(

@@ -16,12 +16,12 @@ import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDhParamList
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
+import com.neuronrobotics.kinematicschef.eulerangle.EulerAngle
 import com.neuronrobotics.kinematicschef.util.toImmutableMap
 import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
 import javax.inject.Inject
 
 /**
@@ -100,7 +100,7 @@ class InverseKinematicsEngine
      * Throw an exception if there was an error while deriving the euler angles.
      */
     private fun validateEulerAngles(
-        eulerAngles: ImmutableMap<SphericalWrist, Either<ClassifierError, RotationOrder>>
+        eulerAngles: ImmutableMap<SphericalWrist, Either<ClassifierError, EulerAngle>>
     ) {
         eulerAngles
             .filterValues { it.isLeft() }
