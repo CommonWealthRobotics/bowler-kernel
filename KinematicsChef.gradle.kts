@@ -1,6 +1,9 @@
 import KinematicsChef_gradle.Strings.spotlessLicenseHeaderDelimiter
+import KinematicsChef_gradle.Versions.kinematicsChefVersion
 import KinematicsChef_gradle.Versions.ktlintVersion
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.spotbugs.SpotBugsTask
+import com.jfrog.bintray.gradle.tasks.BintrayUploadTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -14,10 +17,19 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "6.3.1"
     id("com.github.spotbugs") version "1.6.5"
     id("io.gitlab.arturbosch.detekt") version "1.0.0-RC11"
+    `maven-publish`
+    id("com.jfrog.bintray") version "1.8.4"
+    `java-library`
+    id("com.github.johnrengelman.shadow") version "4.0.3"
+}
+
+object Versions {
+    const val ktlintVersion = "0.29.0"
+    const val kinematicsChefVersion = "0.0.6"
 }
 
 allprojects {
-    version = "0.0.0"
+    version = kinematicsChefVersion
     group = "com.neuronrobotics"
 }
 
@@ -31,9 +43,9 @@ val kotlinProjects = setOf(
 
 val javaProjects = setOf<Project>() + kotlinProjects
 
-object Versions {
-    const val ktlintVersion = "0.29.0"
-}
+val publishedProjects = setOf(
+    kinematicsChefCoreProject
+)
 
 object Strings {
     const val spotlessLicenseHeaderDelimiter = "(@|package|import)"
@@ -122,7 +134,11 @@ configure(javaProjects) {
         "testCompile"(group = "com.google.guava", name = "guava-testlib", version = "23.0")
         "testCompile"(group = "org.mockito", name = "mockito-core", version = "2.12.0")
 
-        "testRuntime"(group = "org.junit.platform", name = "junit-platform-launcher", version = "1.0.0")
+        "testRuntime"(
+            group = "org.junit.platform",
+            name = "junit-platform-launcher",
+            version = "1.0.0"
+        )
         "testRuntime"(testFx(name = "openjfx-monocle", version = "8u76-b04"))
     }
 
@@ -170,7 +186,12 @@ configure(javaProjects) {
         }
 
         testLogging {
-            events(TestLogEvent.FAILED, TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.STARTED)
+            events(
+                TestLogEvent.FAILED,
+                TestLogEvent.PASSED,
+                TestLogEvent.SKIPPED,
+                TestLogEvent.STARTED
+            )
             displayGranularity = 0
             showExceptions = true
             showCauses = true
@@ -198,7 +219,7 @@ configure(javaProjects) {
             endWithNewline()
             licenseHeaderFile(
                 "${rootProject.rootDir}/config/spotless/kinematicschef.license",
-                    spotlessLicenseHeaderDelimiter
+                spotlessLicenseHeaderDelimiter
             )
         }
     }
@@ -240,7 +261,11 @@ configure(kotlinProjects) {
         // Weird syntax, see: https://github.com/gradle/kotlin-dsl/issues/894
         "compile"(kotlin("stdlib", kotlinVersion))
         "compile"(kotlin("reflect", kotlinVersion))
-        "compile"(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = "1.0.0")
+        "compile"(
+            group = "org.jetbrains.kotlinx",
+            name = "kotlinx-coroutines-core",
+            version = "1.0.0"
+        )
 
         "testCompile"(kotlin("test", kotlinVersion))
         "testCompile"(kotlin("test-junit", kotlinVersion))
@@ -249,7 +274,8 @@ configure(kotlinProjects) {
     tasks.withType<KotlinCompile> {
         kotlinOptions {
             jvmTarget = "1.8"
-            freeCompilerArgs = listOf("-Xjvm-default=enable", "-progressive", "-XXLanguage:+InlineClasses")
+            freeCompilerArgs =
+                listOf("-Xjvm-default=enable", "-progressive", "-XXLanguage:+InlineClasses")
         }
     }
 
@@ -286,7 +312,7 @@ configure(kotlinProjects) {
             endWithNewline()
             licenseHeaderFile(
                 "${rootProject.rootDir}/config/spotless/kinematicschef.license",
-                    spotlessLicenseHeaderDelimiter
+                spotlessLicenseHeaderDelimiter
             )
         }
     }
@@ -299,6 +325,71 @@ configure(kotlinProjects) {
         )
         parallel = true
         config = files("${rootProject.rootDir}/config/detekt/config.yml")
+    }
+}
+
+configure(publishedProjects) {
+    apply {
+        plugin("com.jfrog.bintray")
+        plugin("maven-publish")
+        plugin("java-library")
+        plugin("com.github.johnrengelman.shadow")
+    }
+
+    tasks.withType<ShadowJar> {
+        baseName = "kinematicschef"
+    }
+
+    task<Jar>("sourcesJar") {
+        from(sourceSets.main.get().allSource)
+        classifier = "sources"
+        baseName = "kinematicschef-${this@configure.name.toLowerCase()}"
+    }
+
+    task<Jar>("javadocJar") {
+        from(tasks.javadoc)
+        classifier = "javadoc"
+        baseName = "kinematicschef-${this@configure.name.toLowerCase()}"
+    }
+
+    val publicationName = "publication-kinematicschef-${name.toLowerCase()}"
+
+    publishing {
+        publications {
+            create<MavenPublication>(publicationName) {
+                artifactId = "kinematicschef-${this@configure.name.toLowerCase()}"
+                from(components["java"])
+                // artifact(tasks["shadowJar"])
+                artifact(tasks["sourcesJar"])
+                artifact(tasks["javadocJar"])
+            }
+        }
+    }
+
+    bintray {
+        user = System.getenv("BINTRAY_USER")
+        key = System.getenv("BINTRAY_API_KEY")
+        setPublications(publicationName)
+        with(pkg) {
+            repo = "maven-artifacts"
+            name = "KinematicsChef"
+            userOrg = "commonwealthrobotics"
+            publish = true
+            setLicenses("MPL-2.0")
+            vcsUrl = "https://github.com/CommonWealthRobotics/KinematicsChef.git"
+            githubRepo = "https://github.com/CommonWealthRobotics/KinematicsChef"
+            with(version) {
+                name = kinematicsChefVersion
+                desc = "Cooking up kinematics solutions."
+            }
+        }
+    }
+}
+
+kinematicsChefProject.configure {
+    tasks.withType<BintrayUploadTask> {
+        // Don't run in this empty project to avoid errors
+        enabled = false
     }
 }
 
