@@ -1,3 +1,10 @@
+/*
+ * Copyright 2018 Ryan Benasutti
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package com.neuronrobotics.kinematicschef.eulerangle
 
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
@@ -14,7 +21,14 @@ internal sealed class EulerAngle(
     val order: RotationOrder,
     val preRotation: DhParam?,
     val postRotation: DhParam?
-)
+) {
+    override fun toString() =
+        """
+            |Order: $order
+            |Pre-rotation: $preRotation
+            |Post-rotation: $postRotation
+        """.trimMargin()
+}
 
 internal object EulerAngleZXZ : EulerAngle(RotationOrder.ZXZ, null, null)
 

@@ -13,9 +13,7 @@ import com.neuronrobotics.kinematicschef.classifier.ChainIdentifier
 import com.neuronrobotics.kinematicschef.classifier.ClassifierError
 import com.neuronrobotics.kinematicschef.classifier.DhClassifier
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
-import com.neuronrobotics.kinematicschef.dhparam.toDhParamList
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
-import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngle
 import com.neuronrobotics.kinematicschef.util.toImmutableMap
 import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
@@ -53,15 +51,10 @@ class InverseKinematicsEngine
         val chainElements = chainIdentifier.identifyChain(dhParams)
         val newJointAngles = Array(jointSpaceVector.size) { 0.0 }
 
-        val tipTransform = dhParams.toFrameTransformation()
         val eulerAngles = chainElements
             .mapNotNull { it as? SphericalWrist }
             .map {
-                it to dhClassifier.deriveEulerAngles(
-                    it,
-                    chainElements.subList(0, chainElements.indexOf(it)).toDhParamList(),
-                    tipTransform
-                )
+                it to dhClassifier.deriveEulerAngles(it)
             }
             .toImmutableMap()
 

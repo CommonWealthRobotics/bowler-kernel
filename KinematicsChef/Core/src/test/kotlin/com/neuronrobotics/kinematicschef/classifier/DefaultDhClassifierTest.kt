@@ -9,12 +9,19 @@ package com.neuronrobotics.kinematicschef.classifier
 
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
-import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngle
+import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleXYX
+import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleXYZ
+import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleXZX
+import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleXZY
+import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleYXY
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleYXZ
+import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleYZX
+import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleYZY
+import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZXY
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZXZ
+import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZYX
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZYZ
-import com.neuronrobotics.kinematicschef.util.emptyImmutableList
 import com.neuronrobotics.kinematicschef.util.toImmutableList
 import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue
@@ -43,12 +50,70 @@ class DefaultDhClassifierTest {
     }
 
     @Test
+    fun `test ZXZ wrist with wrong link 2 alpha`() {
+        testWristFails(
+            DhParam(0, 91, 0, 0),
+            DhParam(0, 0, 0, 89.9),
+            DhParam(0, -90, 0, -90)
+        )
+    }
+
+    @Test
     fun `test ZYZ wrist`() {
         testWrist(
             EulerAngleZYZ,
             DhParam(0, 0, 0, 0),
             DhParam(0, 0, 0, -90),
             DhParam(0, 0, 0, 90)
+        )
+    }
+
+    @Test
+    fun `test ZXY wrist`() {
+        testWrist(
+            EulerAngleZXY,
+            DhParam(0, 90, 0, 0),
+            DhParam(0, -90, 0, 90),
+            DhParam(0, -90, 0, -90)
+        )
+    }
+
+    @Test
+    fun `test ZXY wrist with wrong thetas`() {
+        testWristFails(
+            DhParam(0, 0, 0, 0),
+            DhParam(0, 0, 0, 90),
+            DhParam(0, 0, 0, -90)
+        )
+    }
+
+    @Test
+    fun `test ZYX wrist`() {
+        testWrist(
+            EulerAngleZYX,
+            DhParam(0, 0, 0, 0),
+            DhParam(0, 90, 0, -90),
+            DhParam(0, 90, 0, 90)
+        )
+    }
+
+    @Test
+    fun `test YXY wrist`() {
+        testWrist(
+            EulerAngleYXY,
+            DhParam(0, 90, 0, -90),
+            DhParam(0, 0, 0, 90),
+            DhParam(0, -90, 0, -90)
+        )
+    }
+
+    @Test
+    fun `test YZY wrist`() {
+        testWrist(
+            EulerAngleYZY,
+            DhParam(0, 0, 0, -90),
+            DhParam(0, 0, 0, 90),
+            DhParam(0, 0, 0, -90)
         )
     }
 
@@ -80,25 +145,83 @@ class DefaultDhClassifierTest {
         )
     }
 
+    @Test
+    fun `test YZX wrist`() {
+        testWrist(
+            EulerAngleYZX,
+            DhParam(0, 0, 0, -90),
+            DhParam(0, 90, 0, 90),
+            DhParam(0, 0, 0, 90)
+        )
+    }
+
+    @Test
+    fun `test XYX wrist`() {
+        testWrist(
+            EulerAngleXYX,
+            DhParam(0, -90, 0, 90),
+            DhParam(0, 0, 0, -90),
+            DhParam(0, 90, 0, 90)
+        )
+    }
+
+    @Test
+    fun `test XZX wrist`() {
+        testWrist(
+            EulerAngleXZX,
+            DhParam(0, 0, 0, 90),
+            DhParam(0, 0, 0, -90),
+            DhParam(0, 0, 0, 90)
+        )
+    }
+
+    @Test
+    fun `test XYZ wrist`() {
+        testWrist(
+            EulerAngleXYZ,
+            DhParam(0, -90, 0, 90),
+            DhParam(0, -90, 0, -90),
+            DhParam(0, 0, 0, 90)
+        )
+    }
+
+    @Test
+    fun `test XZY wrist`() {
+        testWrist(
+            EulerAngleXZY,
+            DhParam(0, 0, 0, 90),
+            DhParam(0, -90, 0, -90),
+            DhParam(0, 0, 0, -90)
+        )
+    }
+
     private fun testWrist(expected: EulerAngle, vararg paramArray: DhParam) {
         paramArray.toImmutableList().let { params ->
+            val result = classifier.deriveEulerAngles(
+                SphericalWrist(params)
+            )
+
             assertTrue(
-                classifier.deriveEulerAngles(
-                    SphericalWrist(params),
-                    emptyImmutableList(), // No prior links because this is just a wrist
-                    params.toFrameTransformation()
-                ).exists { it == expected },
-                "The wrist should have the expected Euler angles."
+                result.exists { it == expected },
+                """
+                    |The wrist should have the expected Euler angles. Got:
+                    |$result
+                """.trimMargin()
             )
         }
     }
 
     private fun testWristFails(vararg params: DhParam) {
+        val result = classifier.deriveEulerAngles(
+            SphericalWrist(params.toImmutableList())
+        )
+
         assertTrue(
-            classifier.deriveEulerAngles(
-                SphericalWrist(params.toImmutableList())
-            ).isLeft(),
-            "The wrist should not have any Euler angles."
+            result.isLeft(),
+            """
+                |The wrist should not have any Euler angles. Got:
+                |$result
+            """.trimMargin()
         )
     }
 }

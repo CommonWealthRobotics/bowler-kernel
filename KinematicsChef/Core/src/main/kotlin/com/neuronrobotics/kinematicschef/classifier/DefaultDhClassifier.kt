@@ -10,7 +10,6 @@
 package com.neuronrobotics.kinematicschef.classifier
 
 import arrow.core.Either
-import com.google.common.collect.ImmutableList
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngle
@@ -26,11 +25,8 @@ import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZXY
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZXZ
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZYX
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZYZ
-import com.neuronrobotics.kinematicschef.util.asPointMatrix
-import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.immutableMapOf
-import org.ejml.simple.SimpleMatrix
 
 internal class DefaultDhClassifier
 internal constructor() : DhClassifier {
@@ -38,42 +34,10 @@ internal constructor() : DhClassifier {
     /**
      * Determine the Euler angles for a [SphericalWrist].
      *
-     * @param wrist The wrist to classify.
-     * @param priorChain The links in the chain before the [wrist].
-     * @param tipTransform The frame transformation for the tip of the chain.
+     * @param wrist The wrist to classify. The thetas must be specified as offsets.
      * @return The Euler angles or an error.
      */
     override fun deriveEulerAngles(
-        wrist: SphericalWrist,
-        priorChain: ImmutableList<DhParam>,
-        tipTransform: SimpleMatrix
-    ): Either<ClassifierError, EulerAngle> {
-        val center = wrist.centerHomed(priorChain).asPointMatrix()
-        val centerTransformed = center.mult(tipTransform.invert())
-        val centerPosition = centerTransformed.getTranslation()
-
-        return if (centerPosition[1] == 0.0 && centerPosition[2] == 0.0) {
-            // Wrist lies on the x-axis, therefore its dh params are valid
-            deriveEulerAngles(wrist)
-        } else {
-            Either.left(
-                ClassifierError(
-                    """
-                    The wrist does not have valid DH Parameters. Transformed center position:
-                    $centerPosition
-                    """.trimIndent()
-                )
-            )
-        }
-    }
-
-    /**
-     * Determine the Euler angles for a [SphericalWrist].
-     *
-     * @param wrist The wrist to classify.
-     * @return The Euler angles or an error.
-     */
-    fun deriveEulerAngles(
         wrist: SphericalWrist
     ): Either<ClassifierError, EulerAngle> {
         fun validateAlpha(alpha: Double) = alpha == 0.0 || alpha == 90.0 || alpha == -90.0
@@ -87,9 +51,9 @@ internal constructor() : DhClassifier {
             return Either.left(
                 ClassifierError(
                     """
-                    The following DhParams are invalid:
-                    ${invalidParams.joinToString("\n")}
-                    """.trimIndent()
+                        |The following DhParams are invalid:
+                        |${invalidParams.joinToString("\n")}
+                    """.trimMargin()
                 )
             )
         }
@@ -134,9 +98,9 @@ internal constructor() : DhClassifier {
     private fun failDerivation(vararg params: DhParam): ClassifierError {
         return ClassifierError(
             """
-            The wrist does not have Euler angles:
-            ${params.joinToString(separator = "\n")}
-            """.trimIndent()
+                |The wrist does not have Euler angles:
+                |${params.joinToString("\n")}
+            """.trimMargin()
         )
     }
 }

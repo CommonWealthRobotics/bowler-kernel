@@ -57,7 +57,11 @@ internal class CalikoInverseKinematicsEngine : DhInverseSolver {
         chain: DHChain
     ): Pair<DoubleArray, Float> {
         require(jointSpaceVector.size == chain.links.size) {
-            "The joint angles and DH params must have equal size."
+            """
+                |The joint angles and DH params must have equal size.
+                |Number of joint angles: ${jointSpaceVector.size}
+                |Number of DH params: ${chain.links.size}
+            """.trimMargin()
         }
 
         val fabrikChain = FabrikChain3D()
