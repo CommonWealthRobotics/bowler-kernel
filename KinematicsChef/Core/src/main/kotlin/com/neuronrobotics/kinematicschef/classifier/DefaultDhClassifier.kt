@@ -8,6 +8,7 @@
 package com.neuronrobotics.kinematicschef.classifier
 
 import arrow.core.Either
+import com.google.common.collect.ImmutableList
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.util.asPointMatrix
@@ -18,22 +19,15 @@ import org.ejml.simple.SimpleMatrix
 internal class DefaultDhClassifier
 internal constructor() : DhClassifier {
 
-    override fun deriveEulerAngles(wrist: SphericalWrist) =
-        deriveEulerAngles(wrist.params[0], wrist.params[1], wrist.params[2])
-
-    /**
-     * @param wrist The wrist.
-     * @param target The target tip transform.
-     * @param tipTransform The tip transform from the DhParams
-     */
-    fun deriveEulerAngles(
+    override fun deriveEulerAngles(
         wrist: SphericalWrist,
-        target: SimpleMatrix,
+        priorChain: ImmutableList<DhParam>,
         tipTransform: SimpleMatrix
     ): Either<ClassifierError, RotationOrder> {
-        val center = wrist.center(target).asPointMatrix()
+        val center = wrist.centerHomed(priorChain).asPointMatrix()
         val centerTransformed = center.mult(tipTransform.invert())
         val centerPosition = centerTransformed.getTranslation()
+
         return if (centerPosition[1] == 0.0 && centerPosition[2] == 0.0) {
             // Wrist lies on the x-axis, therefore its dh params are valid
             deriveEulerAngles(wrist)
@@ -48,6 +42,10 @@ internal constructor() : DhClassifier {
             )
         }
     }
+
+    fun deriveEulerAngles(
+        wrist: SphericalWrist
+    ) = deriveEulerAngles(wrist.params[0], wrist.params[1], wrist.params[2])
 
     private fun deriveEulerAngles(
         link1: DhParam,

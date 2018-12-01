@@ -8,8 +8,11 @@
 package com.neuronrobotics.kinematicschef.classifier
 
 import arrow.core.Either
+import com.google.common.collect.ImmutableList
+import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
+import org.ejml.simple.SimpleMatrix
 
 internal interface DhClassifier {
 
@@ -17,7 +20,13 @@ internal interface DhClassifier {
      * Determine the Euler angles for a [SphericalWrist].
      *
      * @param wrist The wrist to classify.
+     * @param priorChain The links in the chain before the [wrist].
+     * @param tipTransform The frame transformation for the tip of the chain.
      * @return The Euler angles or an error.
      */
-    fun deriveEulerAngles(wrist: SphericalWrist): Either<ClassifierError, RotationOrder>
+    fun deriveEulerAngles(
+        wrist: SphericalWrist,
+        priorChain: ImmutableList<DhParam>,
+        tipTransform: SimpleMatrix
+    ): Either<ClassifierError, RotationOrder>
 }

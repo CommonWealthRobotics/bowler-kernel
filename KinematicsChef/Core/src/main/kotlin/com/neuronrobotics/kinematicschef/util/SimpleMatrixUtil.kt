@@ -37,6 +37,8 @@ internal fun Pair<SimpleMatrix, SimpleMatrix>.toLine(): SimpleMatrix {
 
 /**
  * Extracts the translation component from a 4x4 frame transformation.
+ *
+ * @return A 3x1 translation matrix.
  */
 internal fun SimpleMatrix.getTranslation(): SimpleMatrix {
     require(numRows() == 4)

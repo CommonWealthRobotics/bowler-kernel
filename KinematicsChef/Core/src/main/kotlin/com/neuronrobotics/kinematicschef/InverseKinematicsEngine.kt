@@ -13,7 +13,9 @@ import com.neuronrobotics.kinematicschef.classifier.ChainIdentifier
 import com.neuronrobotics.kinematicschef.classifier.ClassifierError
 import com.neuronrobotics.kinematicschef.classifier.DhClassifier
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
+import com.neuronrobotics.kinematicschef.dhparam.toDhParamList
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
+import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
 import com.neuronrobotics.kinematicschef.util.toImmutableMap
 import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
@@ -49,17 +51,28 @@ class InverseKinematicsEngine
         val dhParams = chain.toDhParams()
         val targetMatrix = target.toSimpleMatrix()
         val chainElements = chainIdentifier.identifyChain(dhParams)
-        val newJointAngles = Array<Double>(jointSpaceVector.size) { 0.0 }
+        val newJointAngles = Array(jointSpaceVector.size) { 0.0 }
 
+        val tipTransform = dhParams.toFrameTransformation()
         val eulerAngles = chainElements
             .mapNotNull { it as? SphericalWrist }
-            .map { it to dhClassifier.deriveEulerAngles(it) }
+            .map {
+                it to dhClassifier.deriveEulerAngles(
+                    it,
+                    chainElements.subList(0, chainElements.indexOf(it)).toDhParamList(),
+                    tipTransform
+                )
+            }
             .toImmutableMap()
 
         validateEulerAngles(eulerAngles)
 
         val wrist = chainElements.last() as? SphericalWrist
-            ?: return CalikoInverseKinematicsEngine().inverseKinematics(target, jointSpaceVector, chain)
+            ?: return CalikoInverseKinematicsEngine().inverseKinematics(
+                target,
+                jointSpaceVector,
+                chain
+            )
 
         val wristCenter = wrist.center(target.toSimpleMatrix())
 

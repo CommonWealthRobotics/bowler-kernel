@@ -10,7 +10,7 @@ package com.neuronrobotics.kinematicschef.classifier
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
-import com.neuronrobotics.kinematicschef.util.getPointMatrix
+import com.neuronrobotics.kinematicschef.util.emptyImmutableList
 import com.neuronrobotics.kinematicschef.util.toImmutableList
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
 import org.junit.jupiter.api.Test
@@ -82,7 +82,7 @@ class DefaultDhClassifierTest {
             assertTrue(
                 classifier.deriveEulerAngles(
                     SphericalWrist(params),
-                    getPointMatrix(10, 0, 0),
+                    emptyImmutableList(), // No prior links because this is just a wrist
                     params.toFrameTransformation()
                 ).exists { it == expected },
                 "The wrist should have the expected Euler angles."
