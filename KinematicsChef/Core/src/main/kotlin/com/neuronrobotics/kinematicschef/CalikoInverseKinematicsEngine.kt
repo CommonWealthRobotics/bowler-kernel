@@ -136,7 +136,7 @@ internal class CalikoInverseKinematicsEngine : DhInverseSolver {
 
     companion object {
         private const val defaultBoneLength = 10.0f
-        private const val defaultBoneLengthDelta = 1e-2
+        private const val defaultBoneLengthDelta = 1e-6
         private val baseUnitVector = Vec3f(0.0f, 0.0f, 1.0f).normalise()
         private val UP_AXIS = Vec3f(0.0f, 0.0f, 1.0f)
         private val FORWARD_AXIS = Vec3f(1.0f, 0.0f, 0.0f)
