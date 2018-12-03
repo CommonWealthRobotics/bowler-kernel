@@ -154,5 +154,6 @@ internal class CalikoInverseKinematicsEngineTest {
             mockChain
         )
         result.forEach { println(it) }
+        println("Error: $error")
     }
 }

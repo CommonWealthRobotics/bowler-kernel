@@ -21,6 +21,7 @@ import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import org.ejml.simple.SimpleMatrix
 import java.lang.Math.toDegrees
+import kotlin.math.abs
 import kotlin.math.atan2
 
 /**
@@ -64,17 +65,13 @@ internal class CalikoInverseKinematicsEngine : DhInverseSolver {
             """.trimMargin()
         }
 
-        val fabrikChain = FabrikChain3D()
-        fabrikChain.setFixedBaseMode(true)
+        val fabrikChain = FabrikChain3D().apply {
+            setFixedBaseMode(true)
+        }
 
         val dhParams = chain.toDhParams()
         dhParams.forEachIndexed { index, dhParam ->
-            val boneLength: Float =
-                if (index == dhParams.size - 1) {
-                    defaultBoneLength
-                } else {
-                    calculateLinkLength(dhParam)
-                }
+            val boneLength: Float = calculateLinkLength(dhParam)
 
             if (index == 0) {
                 // The first link can't be added using addConsecutiveBone()
@@ -131,15 +128,15 @@ internal class CalikoInverseKinematicsEngine : DhInverseSolver {
      */
     private fun calculateLinkLength(dhParam: DhParam) =
         dhParam.length().toFloat().also {
-            if (it == 0.0f) {
-                defaultBoneLength
-            } else {
-                return it
+            return when {
+                abs(it) < defaultBoneLengthDelta -> defaultBoneLength
+                else -> abs(it)
             }
         }
 
     companion object {
         private const val defaultBoneLength = 10.0f
+        private const val defaultBoneLengthDelta = 1e-2
         private val baseUnitVector = Vec3f(0.0f, 0.0f, 1.0f).normalise()
         private val UP_AXIS = Vec3f(0.0f, 0.0f, 1.0f)
         private val FORWARD_AXIS = Vec3f(1.0f, 0.0f, 0.0f)
