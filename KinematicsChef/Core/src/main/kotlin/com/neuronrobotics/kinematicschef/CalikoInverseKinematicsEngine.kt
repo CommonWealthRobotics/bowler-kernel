@@ -90,7 +90,7 @@ internal class CalikoInverseKinematicsEngine : DhInverseSolver {
                     FORWARD_AXIS,
                     boneLength,
                     FabrikJoint3D.JointType.LOCAL_HINGE,
-                    fabrikChain.chain[index - 1].directionUV.mult(dhParam.toFrameTransformation())
+                    fabrikChain.chain[index - 1].directionUV
                 )
             }
         }
