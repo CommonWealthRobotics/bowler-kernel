@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import kotlin.math.roundToInt
-import kotlin.math.sqrt
 import kotlin.test.assertEquals
 
 internal class CalikoInverseKinematicsEngineTest {
@@ -26,7 +25,7 @@ internal class CalikoInverseKinematicsEngineTest {
         mockChain.addLink(DHLink(0.0, 0.0, 10.0, 0.0))
 
     private fun xyPlane2dofArm() {
-        mockChain.addLink(DHLink(0.0, 0.0, 10.0, -180.0))
+        mockChain.addLink(DHLink(0.0, 0.0, 10.0, 0.0))
         mockChain.addLink(DHLink(0.0, 0.0, 10.0, 0.0))
     }
 
@@ -132,27 +131,5 @@ internal class CalikoInverseKinematicsEngineTest {
                 assertEquals(0, error.roundToInt(), "Solve error should equal 0")
             }
         )
-    }
-
-    @Test
-    @Disabled
-    fun `basic baxter left arm test`() {
-        mockChain.addLink(DHLink(270.35, 0.0, 0.0, 0.0))
-        mockChain.addLink(DHLink(0.0, -31.0 + 90, 69.0, -90.0))
-        mockChain.addLink(DHLink(364.35, 0.0, 0.0, 90.0))
-        mockChain.addLink(DHLink(0.0, 43.0, 69.0, -90.0))
-        mockChain.addLink(DHLink(368.30, 0.0, 0.0, 90.0))
-        mockChain.addLink(DHLink(0.0, 72.0, 10.0, -90.0))
-        mockChain.addLink(DHLink(0.0, 0.0, 0.0, 90.0))
-
-        val baxterArmHypot = 69 + 364.35 + 374.29 + 368.3
-        val triangeLegLength = baxterArmHypot / sqrt(2.0)
-        val (result, error) = engine.inverseKinematicsWithError(
-            TransformNR().setX(triangeLegLength).setY(triangeLegLength).setZ(270.35 - 69 - 10),
-            listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
-            mockChain
-        )
-        result.forEach { println(it) }
-        println("Error: $error")
     }
 }

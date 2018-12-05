@@ -129,7 +129,7 @@ internal class CalikoInverseKinematicsEngine : DhInverseSolver {
      * Calculates the length of a link from its [DhParam].
      */
     private fun calculateLinkLength(dhParam: DhParam) =
-        dhParam.length().toFloat().also {
+        dhParam.length.toFloat().also {
             return when {
                 abs(it) < defaultBoneLengthDelta -> defaultBoneLength
                 else -> abs(it)

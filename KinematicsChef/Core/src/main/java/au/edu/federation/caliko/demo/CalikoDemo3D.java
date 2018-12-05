@@ -101,8 +101,8 @@ public class CalikoDemo3D implements CalikoDemo
 		Mat4f mvpMatrix = Application.window.getMvpMatrix();
 
 		// Draw our grids
-    lowerGrid.draw(mvpMatrix);
-    upperGrid.draw(mvpMatrix);
+//    lowerGrid.draw(mvpMatrix);
+//    upperGrid.draw(mvpMatrix);
 
     // If we're not paused then step the target and solve the structure for the new target location
     if (!Application.paused)

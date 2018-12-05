@@ -46,11 +46,18 @@ internal fun Pair<SimpleMatrix, SimpleMatrix>.toLine(): SimpleMatrix {
 internal fun SimpleMatrix.getTranslation(): SimpleMatrix {
     require(numRows() == 4)
     require(numCols() == 4)
-    return SimpleMatrix(3, 1).apply {
-        this[0, 0] = this@getTranslation[0, 3]
-        this[1, 0] = this@getTranslation[1, 3]
-        this[2, 0] = this@getTranslation[2, 3]
-    }
+    return extractMatrix(0, 3, 3, 4)
+}
+
+/**
+ * Extracts the rotation component from a 4x4 frame transformation.
+ *
+ * @return a 3x3 rotation matrix.
+ */
+internal fun SimpleMatrix.getRotation(): SimpleMatrix {
+    require(numRows() == 4)
+    require(numCols() == 4)
+    return extractMatrix(0, 3, 0, 3)
 }
 
 /**

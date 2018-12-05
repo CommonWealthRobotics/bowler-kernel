@@ -2,14 +2,16 @@ package com.neuronrobotics.kinematicschef
 
 import au.edu.federation.caliko.FabrikBone3D
 import au.edu.federation.caliko.FabrikChain3D
+import au.edu.federation.caliko.FabrikJoint3D
 import au.edu.federation.caliko.FabrikStructure3D
 import au.edu.federation.caliko.demo3d.CalikoDemoStructure3D
 import au.edu.federation.utils.Mat4f
 import au.edu.federation.utils.Vec3f
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
-import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
 import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
+import com.neuronrobotics.kinematicschef.util.getRotation
+import com.neuronrobotics.kinematicschef.util.getRotationMatrix
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.sdk.addons.kinematics.AbstractKinematicsNR
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
@@ -24,7 +26,7 @@ class CalikoDemoTest : CalikoDemoStructure3D() {
     val chain: DHChain
 
     init {
-        jointSpaceVector = listOf(0.0, 0.0).toDoubleArray()
+        jointSpaceVector = listOf(0.0, 0.0, 0.0).toDoubleArray()
 
         val mockChain = DHChain(object : AbstractKinematicsNR() {
             override fun forwardKinematics(p0: DoubleArray?): TransformNR {
@@ -44,10 +46,14 @@ class CalikoDemoTest : CalikoDemoStructure3D() {
             }
         })
 
+//        mockChain.addLink(DHLink(0.0, 0.0, 10.0, 0.0))
 
 //        mockChain.addLink(DHLink(0.0, 0.0, 10.0, 0.0))
-        mockChain.addLink(DHLink(0.0, 0.0, 10.0, 0.0))
-        mockChain.addLink(DHLink(0.0, 0.0, 10.0, 0.0))
+//        mockChain.addLink(DHLink(0.0, 0.0, 10.0, 0.0))
+
+        mockChain.addLink(DHLink(135.0, 0.0, 0.0, -90.0))
+        mockChain.addLink(DHLink(0.0, 0.0, 175.0, 0.0))
+        mockChain.addLink(DHLink(0.0, 90.0, 169.28, 0.0))
 
         chain = mockChain
     }
@@ -65,49 +71,53 @@ class CalikoDemoTest : CalikoDemoStructure3D() {
             setFixedBaseMode(true)
         }
 
+        var previousLinkRotationAxis = Vec3f()
         val dhParams = chain.toDhParams()
         dhParams.forEachIndexed { index, dhParam ->
-            val boneLength: Float = calculateLinkLength(dhParam)
+            val boneLength: Float = calculateLinkLength(dhParam)/10
 
             if (index == 0) {
                 // The first link can't be added using addConsecutiveBone()
                 fabrikChain.addBone(
                     FabrikBone3D(
                         Vec3f(0.0f),
-                        X_AXIS.times(boneLength)
+                        X_AXIS.mult3(
+                            dhParam.frameTransformation.getRotation()
+                        ).times(boneLength)
                     )
                 )
 
-                fabrikChain.setFreelyRotatingGlobalHingedBasebone(
-                    Z_AXIS
-                        .mult4(
-                        dhParam.toFrameTransformation()
+                previousLinkRotationAxis = Z_AXIS.mult3(
+                    dhParam.frameTransformation.getRotation()
+                )
+                fabrikChain.setGlobalHingedBasebone(
+                    previousLinkRotationAxis,
+                    chain.getlowerLimits()?.get(index)?.toFloat() ?: 180.0f,
+                    chain.upperLimits?.get(index)?.toFloat() ?: 180.0f,
+                    previousLinkRotationAxis.mult3(
+                        getRotationMatrix(90, 0, 0)
                     )
-//                        .mult3(
-//                        getRotationMatrix(0, 0, 90)
-//                    )
                 )
             } else {
                 // TODO: The directionUV could be X or Z depending on if we need to use d or r
                 // TODO: Pull hardware limits from the DHChain
-//                fabrikChain.addConsecutiveHingedBone(
-//                    X_AXIS,
-//                    boneLength,
-//                    FabrikJoint3D.JointType.LOCAL_HINGE,
-//                    fabrikChain.chain[index - 1].directionUV.mult4(
-//                        dhParam.toFrameTransformation()
-//                    ),
-////                    fabrikChain.chain[index - 1].directionUV.mult3(
-////                        getRotationMatrix(90, 0, 0)
-////                    ),
-//                    chain.getlowerLimits()?.get(index)?.toFloat() ?: 180.0f,
-//                    chain.upperLimits?.get(index)?.toFloat() ?: 180.0f,
-//                    fabrikChain.chain[index - 1].directionUV.mult4(
-//                        dhParam.toFrameTransformation()
-//                    ).mult3(
-//                        getRotationMatrix(90, 0, 0)
-//                    )
-//                )
+                fabrikChain.addConsecutiveHingedBone(
+                    X_AXIS.mult3(
+                        dhParam.frameTransformation.getRotation()
+                    ),
+                    boneLength,
+                    FabrikJoint3D.JointType.LOCAL_HINGE,
+                    previousLinkRotationAxis.mult3(
+                        dhParam.frameTransformation.getRotation()
+                    ),
+                    chain.getlowerLimits()?.get(index)?.toFloat() ?: 180.0f,
+                    chain.upperLimits?.get(index)?.toFloat() ?: 180.0f,
+                    previousLinkRotationAxis.mult3(
+                        dhParam.frameTransformation.getRotation()
+                    ).mult3(
+                        getRotationMatrix(90, 0, 0)
+                    )
+                )
             }
         }
 
@@ -122,7 +132,7 @@ class CalikoDemoTest : CalikoDemoStructure3D() {
      * Calculates the length of a link from its [DhParam].
      */
     private fun calculateLinkLength(dhParam: DhParam) =
-        dhParam.length().toFloat().also {
+        dhParam.length.toFloat().also {
             return when {
                 abs(it) < defaultBoneLengthDelta -> defaultBoneLength
                 else -> abs(it)
