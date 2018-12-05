@@ -47,7 +47,9 @@ dependencies {
     implementation(group = "com.google.code.findbugs", name = "annotations", version = "3.0.1")
     implementation(group = "com.natpryce", name = "hamkrest", version = "1.4.2.2")
 
-    compile(files("${rootProject.rootDir}/caliko-1.3.5.jar"))
+    compile(files("${rootProject.rootDir}/au.edu.federation.caliko-1.3.5.jar"))
+    compile(files("${rootProject.rootDir}/au.edu.federation.caliko-visualisation-1.3.5.jar"))
+    compile(files("${rootProject.rootDir}/au.edu.federation.caliko-demo-1.3.5-jar-with-dependencies.jar"))
 
     testImplementation(
         group = "com.nhaarman.mockitokotlin2",

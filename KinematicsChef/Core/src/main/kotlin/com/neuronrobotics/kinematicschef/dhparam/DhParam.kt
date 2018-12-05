@@ -8,7 +8,7 @@
 package com.neuronrobotics.kinematicschef.dhparam
 
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.kinematicschef.util.getPointMatrix
+import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.kinematicschef.util.identityFrameTransform
 import com.neuronrobotics.kinematicschef.util.length
@@ -37,7 +37,7 @@ internal constructor(
      * Calculates the translational length of this [DhParam].
      */
     internal fun length(): Double {
-        val pointBeforeTransform = getPointMatrix(0, 0, 0)
+        val pointBeforeTransform = getFrameTranslationMatrix(0, 0, 0)
         val pointAfterTransform = pointBeforeTransform.mult(toFrameTransformation())
 
         return pointAfterTransform.getTranslation()
@@ -63,7 +63,7 @@ internal fun DHChain.toDhParams() = links.toImmutableList().toDhParams()
  * to be specified in degrees.
  */
 internal fun DhParam.toFrameTransformation() =
-    SimpleMatrix(4, 4).apply {
+    SimpleMatrix.identity(4).apply {
         val thetaRadians = Math.toRadians(theta)
         val alphaRadians = Math.toRadians(alpha)
 
@@ -81,7 +81,6 @@ internal fun DhParam.toFrameTransformation() =
         this[0, 3] = r * cos(thetaRadians)
         this[1, 3] = r * sin(thetaRadians)
         this[2, 3] = d
-        this[3, 3] = 1.0
     }
 
 /**

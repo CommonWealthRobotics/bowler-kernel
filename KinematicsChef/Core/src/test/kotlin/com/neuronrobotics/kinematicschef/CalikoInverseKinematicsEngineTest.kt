@@ -12,7 +12,6 @@ import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import java.lang.Math.toDegrees
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.test.assertEquals
@@ -24,7 +23,7 @@ internal class CalikoInverseKinematicsEngineTest {
     private val mockChain = TestUtil.makeMockChain()
 
     private fun xyPlane1dofArm(): Unit =
-        mockChain.addLink(DHLink(10.0, 0.0, 0.0, 0.0))
+        mockChain.addLink(DHLink(0.0, 0.0, 10.0, 0.0))
 
     private fun xyPlane2dofArm() {
         mockChain.addLink(DHLink(0.0, 0.0, 10.0, -180.0))
@@ -125,7 +124,7 @@ internal class CalikoInverseKinematicsEngineTest {
             {
                 assertEquals(
                     -45,
-                    toDegrees(angles[1]).roundToInt(),
+                    angles[1].roundToInt(),
                     "Second joint angle must be -45"
                 )
             },

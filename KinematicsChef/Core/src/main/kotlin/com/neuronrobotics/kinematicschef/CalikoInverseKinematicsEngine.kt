@@ -13,8 +13,7 @@ import au.edu.federation.caliko.FabrikJoint3D
 import au.edu.federation.utils.Vec3f
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
-import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
-import com.neuronrobotics.kinematicschef.util.getPointMatrix
+import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
@@ -86,11 +85,14 @@ internal class CalikoInverseKinematicsEngine : DhInverseSolver {
             } else {
                 // TODO: The directionUV could be X or Z depending on if we need to use d or r
                 // TODO: Pull hardware limits from the DHChain
-                fabrikChain.addConsecutiveFreelyRotatingHingedBone(
+                fabrikChain.addConsecutiveHingedBone(
                     FORWARD_AXIS,
                     boneLength,
                     FabrikJoint3D.JointType.LOCAL_HINGE,
-                    fabrikChain.chain[index - 1].directionUV
+                    fabrikChain.chain[index - 1].directionUV,
+                    chain.getlowerLimits()?.get(index)?.toFloat() ?: 180.0f,
+                    chain.upperLimits?.get(index)?.toFloat() ?: 180.0f,
+                    RIGHT_AXIS
                 )
             }
         }
@@ -145,7 +147,7 @@ internal class CalikoInverseKinematicsEngine : DhInverseSolver {
 }
 
 private fun Vec3f.mult(ft: SimpleMatrix): Vec3f {
-    val vecAsMat = getPointMatrix(x, y, z)
+    val vecAsMat = getFrameTranslationMatrix(x, y, z)
     val result = vecAsMat.mult(ft).getTranslation()
     return Vec3f(result[0].toFloat(), result[1].toFloat(), result[2].toFloat()).normalise()
 }
