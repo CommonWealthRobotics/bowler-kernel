@@ -1,6 +1,8 @@
 import KinematicsChef_gradle.Strings.spotlessLicenseHeaderDelimiter
+import KinematicsChef_gradle.Versions.kinematicsChefVersion
 import KinematicsChef_gradle.Versions.ktlintVersion
 import com.github.spotbugs.SpotBugsTask
+import com.jfrog.bintray.gradle.tasks.BintrayUploadTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -11,13 +13,21 @@ plugins {
     jacoco
     pmd
     id("com.diffplug.gradle.spotless") version "3.16.0"
-    id("org.jlleitschuh.gradle.ktlint") version "6.2.1"
-    id("com.github.spotbugs") version "1.6.4"
-    id("io.gitlab.arturbosch.detekt") version "1.0.0.RC9.2"
+    id("org.jlleitschuh.gradle.ktlint") version "6.3.1"
+    id("com.github.spotbugs") version "1.6.5"
+    id("io.gitlab.arturbosch.detekt") version "1.0.0-RC11"
+    `maven-publish`
+    id("com.jfrog.bintray") version "1.8.4"
+    `java-library`
+}
+
+object Versions {
+    const val ktlintVersion = "0.29.0"
+    const val kinematicsChefVersion = "0.0.8"
 }
 
 allprojects {
-    version = "0.0.0"
+    version = kinematicsChefVersion
     group = "com.neuronrobotics"
 }
 
@@ -31,9 +41,9 @@ val kotlinProjects = setOf(
 
 val javaProjects = setOf<Project>() + kotlinProjects
 
-object Versions {
-    const val ktlintVersion = "0.29.0"
-}
+val publishedProjects = setOf(
+    kinematicsChefCoreProject
+)
 
 object Strings {
     const val spotlessLicenseHeaderDelimiter = "(@|package|import)"
@@ -64,7 +74,7 @@ allprojects {
     pluginManager.withPlugin("jacoco") {
         // If this project has the plugin applied, configure the tool version.
         jacoco {
-            toolVersion = "0.8.0"
+            toolVersion = "0.8.2"
         }
     }
 
@@ -122,7 +132,11 @@ configure(javaProjects) {
         "testCompile"(group = "com.google.guava", name = "guava-testlib", version = "23.0")
         "testCompile"(group = "org.mockito", name = "mockito-core", version = "2.12.0")
 
-        "testRuntime"(group = "org.junit.platform", name = "junit-platform-launcher", version = "1.0.0")
+        "testRuntime"(
+            group = "org.junit.platform",
+            name = "junit-platform-launcher",
+            version = "1.0.0"
+        )
         "testRuntime"(testFx(name = "openjfx-monocle", version = "8u76-b04"))
     }
 
@@ -170,7 +184,12 @@ configure(javaProjects) {
         }
 
         testLogging {
-            events(TestLogEvent.FAILED, TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.STARTED)
+            events(
+                TestLogEvent.FAILED,
+                TestLogEvent.PASSED,
+                TestLogEvent.SKIPPED,
+                TestLogEvent.STARTED
+            )
             displayGranularity = 0
             showExceptions = true
             showCauses = true
@@ -198,17 +217,17 @@ configure(javaProjects) {
             endWithNewline()
             licenseHeaderFile(
                 "${rootProject.rootDir}/config/spotless/kinematicschef.license",
-                    spotlessLicenseHeaderDelimiter
+                spotlessLicenseHeaderDelimiter
             )
         }
     }
 
     checkstyle {
-        toolVersion = "8.1"
+        toolVersion = "8.15"
     }
 
     spotbugs {
-        toolVersion = "3.1.3"
+        toolVersion = "3.1.9"
         excludeFilter = file("${rootProject.rootDir}/config/spotbugs/spotbugs-excludeFilter.xml")
     }
 
@@ -221,7 +240,7 @@ configure(javaProjects) {
     }
 
     pmd {
-        toolVersion = "6.3.0"
+        toolVersion = "6.9.0"
         ruleSets = emptyList() // Needed so PMD only uses our custom ruleset
         ruleSetFiles = files("${rootProject.rootDir}/config/pmd/pmd-ruleset.xml")
     }
@@ -240,7 +259,11 @@ configure(kotlinProjects) {
         // Weird syntax, see: https://github.com/gradle/kotlin-dsl/issues/894
         "compile"(kotlin("stdlib", kotlinVersion))
         "compile"(kotlin("reflect", kotlinVersion))
-        "compile"(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = "1.0.0")
+        "compile"(
+            group = "org.jetbrains.kotlinx",
+            name = "kotlinx-coroutines-core",
+            version = "1.0.0"
+        )
 
         "testCompile"(kotlin("test", kotlinVersion))
         "testCompile"(kotlin("test-junit", kotlinVersion))
@@ -249,7 +272,8 @@ configure(kotlinProjects) {
     tasks.withType<KotlinCompile> {
         kotlinOptions {
             jvmTarget = "1.8"
-            freeCompilerArgs = listOf("-Xjvm-default=enable", "-progressive", "-XXLanguage:+InlineClasses")
+            freeCompilerArgs =
+                listOf("-Xjvm-default=enable", "-progressive", "-XXLanguage:+InlineClasses")
         }
     }
 
@@ -286,13 +310,13 @@ configure(kotlinProjects) {
             endWithNewline()
             licenseHeaderFile(
                 "${rootProject.rootDir}/config/spotless/kinematicschef.license",
-                    spotlessLicenseHeaderDelimiter
+                spotlessLicenseHeaderDelimiter
             )
         }
     }
 
     detekt {
-        toolVersion = "1.0.0.RC9.2"
+        toolVersion = "1.0.0-RC11"
         input = files(
             "src/main/kotlin",
             "src/test/kotlin"
@@ -302,42 +326,62 @@ configure(kotlinProjects) {
     }
 }
 
-val jacocoTestResultTaskName = "jacocoTestReport"
-
-val jacocoRootReport = task<JacocoReport>("jacocoRootReport") {
-    group = LifecycleBasePlugin.VERIFICATION_GROUP
-    description = "Generates code coverage report for all sub-projects."
-
-    val jacocoReportTasks =
-        javaProjects
-            .filter {
-                // Filter out source sets that don't have tests in them
-                // Otherwise, Jacoco tries to generate coverage data for tests that don't exist
-                !it.java.sourceSets["test"].allSource.isEmpty
-            }
-            .map { it.tasks[jacocoTestResultTaskName] as JacocoReport }
-    dependsOn(jacocoReportTasks)
-
-    val allExecutionData = jacocoReportTasks.map { it.executionData }
-    executionData(*allExecutionData.toTypedArray())
-
-    // Pre-initialize these to empty collections to prevent NPE on += call below.
-    additionalSourceDirs = files()
-    sourceDirectories = files()
-    classDirectories = files()
-
-    javaProjects.forEach { testedProject ->
-        val sourceSets = testedProject.java.sourceSets
-        this@task.additionalSourceDirs =
-            this@task.additionalSourceDirs?.plus(files(sourceSets["main"].allSource.srcDirs))
-        this@task.sourceDirectories += files(sourceSets["main"].allSource.srcDirs)
-        this@task.classDirectories += files(sourceSets["main"].output)
+configure(publishedProjects) {
+    apply {
+        plugin("com.jfrog.bintray")
+        plugin("maven-publish")
+        plugin("java-library")
     }
 
-    reports {
-        html.isEnabled = true
-        xml.isEnabled = true
-        csv.isEnabled = false
+    task<Jar>("sourcesJar") {
+        from(sourceSets.main.get().allSource)
+        classifier = "sources"
+        baseName = "kinematicschef-${this@configure.name.toLowerCase()}"
+    }
+
+    task<Jar>("javadocJar") {
+        from(tasks.javadoc)
+        classifier = "javadoc"
+        baseName = "kinematicschef-${this@configure.name.toLowerCase()}"
+    }
+
+    val publicationName = "publication-kinematicschef-${name.toLowerCase()}"
+
+    publishing {
+        publications {
+            create<MavenPublication>(publicationName) {
+                artifactId = "kinematicschef-${this@configure.name.toLowerCase()}"
+                from(components["java"])
+                artifact(tasks["sourcesJar"])
+                artifact(tasks["javadocJar"])
+            }
+        }
+    }
+
+    bintray {
+        user = System.getenv("BINTRAY_USER")
+        key = System.getenv("BINTRAY_API_KEY")
+        setPublications(publicationName)
+        with(pkg) {
+            repo = "maven-artifacts"
+            name = "KinematicsChef"
+            userOrg = "commonwealthrobotics"
+            publish = true
+            setLicenses("MPL-2.0")
+            vcsUrl = "https://github.com/CommonWealthRobotics/KinematicsChef.git"
+            githubRepo = "https://github.com/CommonWealthRobotics/KinematicsChef"
+            with(version) {
+                name = kinematicsChefVersion
+                desc = "Cooking up kinematics solutions."
+            }
+        }
+    }
+}
+
+kinematicsChefProject.configure {
+    tasks.withType<BintrayUploadTask> {
+        // Don't run in this empty project to avoid errors
+        enabled = false
     }
 }
 
@@ -357,8 +401,8 @@ configure(javaProjects + kotlinProjects) {
     buildTask.dependsOn(tasks.getByName("build"))
 }
 
-task<Wrapper>("wrapper") {
-    gradleVersion = "4.10"
+tasks.wrapper {
+    gradleVersion = "5.0"
     distributionType = Wrapper.DistributionType.ALL
 
     doLast {

@@ -9,15 +9,15 @@ package com.neuronrobotics.kinematicschef.classifier
 
 import arrow.core.Either
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
+import com.neuronrobotics.kinematicschef.eulerangle.EulerAngle
 
 internal interface DhClassifier {
 
     /**
      * Determine the Euler angles for a [SphericalWrist].
      *
-     * @param wrist The wrist to classify.
+     * @param wrist The wrist to classify. The thetas must be specified as offsets.
      * @return The Euler angles or an error.
      */
-    fun deriveEulerAngles(wrist: SphericalWrist): Either<ClassifierError, RotationOrder>
+    fun deriveEulerAngles(wrist: SphericalWrist): Either<ClassifierError, EulerAngle>
 }

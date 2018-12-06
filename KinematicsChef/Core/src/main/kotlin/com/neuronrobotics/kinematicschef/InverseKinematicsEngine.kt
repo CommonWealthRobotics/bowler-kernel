@@ -9,17 +9,24 @@ package com.neuronrobotics.kinematicschef
 
 import arrow.core.Either
 import com.google.common.collect.ImmutableMap
+import com.google.inject.Guice
 import com.neuronrobotics.kinematicschef.classifier.ChainIdentifier
 import com.neuronrobotics.kinematicschef.classifier.ClassifierError
+import com.neuronrobotics.kinematicschef.classifier.DefaultChainIdentifier
+import com.neuronrobotics.kinematicschef.classifier.DefaultDhClassifier
+import com.neuronrobotics.kinematicschef.classifier.DefaultWristIdentifier
 import com.neuronrobotics.kinematicschef.classifier.DhClassifier
+import com.neuronrobotics.kinematicschef.classifier.WristIdentifier
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
+import com.neuronrobotics.kinematicschef.eulerangle.EulerAngle
 import com.neuronrobotics.kinematicschef.util.toImmutableMap
 import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
+import org.jlleitschuh.guice.key
+import org.jlleitschuh.guice.module
 import javax.inject.Inject
 
 /**
@@ -49,65 +56,75 @@ class InverseKinematicsEngine
         val dhParams = chain.toDhParams()
         val targetMatrix = target.toSimpleMatrix()
         val chainElements = chainIdentifier.identifyChain(dhParams)
-        val newJointAngles = Array<Double>(jointSpaceVector.size){0.0}
 
         val eulerAngles = chainElements
             .mapNotNull { it as? SphericalWrist }
-            .map { it to dhClassifier.deriveEulerAngles(it) }
+            .map {
+                it to dhClassifier.deriveEulerAngles(it)
+            }
             .toImmutableMap()
 
         validateEulerAngles(eulerAngles)
 
-        val wrist = chainElements.last() as? SphericalWrist ?:
-            return CalikoInverseKinematicsEngine().inverseKinematics(target, jointSpaceVector, chain)
+        val wrist = chainElements.last() as? SphericalWrist
+            ?: return CalikoInverseKinematicsEngine().inverseKinematics(
+                target,
+                jointSpaceVector,
+                chain
+            )
 
         val wristCenter = wrist.center(target.toSimpleMatrix())
+        val newJointAngles = DoubleArray(jointSpaceVector.size) { 0.0 }
 
         when (dhParams.first().r) {
             0.0 -> {
-                //next joint is along Z axis of shoulder
+                // next joint is along Z axis of shoulder
 
-                //check for singularity, if so then the shoulder joint angle does not need to change
+                // check for singularity, if so then the shoulder joint angle does not need to change
                 if (targetMatrix[0, 3] == 0.0 && targetMatrix[1, 3] == 0.0) {
                     newJointAngles[0] = jointSpaceVector[0]
                 } else {
                     val theta1 = Math.toDegrees(Math.atan2(targetMatrix[0, 3], targetMatrix[1, 3]))
                     val theta2 = Math.toDegrees(Math.PI + theta1)
-
                 }
             }
             else -> {
-                //left/right arm configuration
+                // left/right arm configuration
             }
         }
 
         return CalikoInverseKinematicsEngine().inverseKinematics(target, jointSpaceVector, chain)
     }
 
+    companion object {
+        internal fun inverseKinematicsEngineModule() = module {
+            bind<ChainIdentifier>().to<DefaultChainIdentifier>()
+            bind<DhClassifier>().to<DefaultDhClassifier>()
+            bind<WristIdentifier>().to<DefaultWristIdentifier>()
+        }
+
+        fun getInstance(): InverseKinematicsEngine {
+            return Guice.createInjector(inverseKinematicsEngineModule())
+                .getInstance(key<InverseKinematicsEngine>())
+        }
+    }
+
     /**
      * Throw an exception if there was an error while deriving the euler angles.
      */
     private fun validateEulerAngles(
-        eulerAngles: ImmutableMap<SphericalWrist, Either<ClassifierError, RotationOrder>>
+        eulerAngles: ImmutableMap<SphericalWrist, Either<ClassifierError, EulerAngle>>
     ) {
         eulerAngles
-            .filterValues { it.isLeft() }
             .values
             .mapNotNull { elem ->
-                elem.fold(
-                    {
-                        it.errorString
-                    },
-                    {
-                        null
-                    }
-                )
+                elem.fold({ it.errorString }, { null })
             }
             .fold("") { acc, elem ->
                 """
-                    $acc
-                    $elem
-                """.trimIndent()
+                    |$acc
+                    |$elem
+                """.trimMargin().trimStart() // Trim the start to remove the initial newline
             }.let {
                 if (it.isNotEmpty()) {
                     throw UnsupportedOperationException(it)

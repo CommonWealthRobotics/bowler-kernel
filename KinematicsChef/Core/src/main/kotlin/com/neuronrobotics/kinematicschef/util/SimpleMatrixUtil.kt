@@ -9,6 +9,9 @@ package com.neuronrobotics.kinematicschef.util
 
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import org.ejml.simple.SimpleMatrix
+import java.lang.Math.toRadians
+import kotlin.math.cos
+import kotlin.math.sin
 import kotlin.math.sqrt
 
 /**
@@ -37,15 +40,24 @@ internal fun Pair<SimpleMatrix, SimpleMatrix>.toLine(): SimpleMatrix {
 
 /**
  * Extracts the translation component from a 4x4 frame transformation.
+ *
+ * @return A 3x1 translation matrix.
  */
 internal fun SimpleMatrix.getTranslation(): SimpleMatrix {
     require(numRows() == 4)
     require(numCols() == 4)
-    return SimpleMatrix(3, 1).apply {
-        this[0, 0] = this@getTranslation[0, 3]
-        this[1, 0] = this@getTranslation[1, 3]
-        this[2, 0] = this@getTranslation[2, 3]
-    }
+    return extractMatrix(0, 3, 3, 4)
+}
+
+/**
+ * Extracts the rotation component from a 4x4 frame transformation.
+ *
+ * @return a 3x3 rotation matrix.
+ */
+internal fun SimpleMatrix.getRotation(): SimpleMatrix {
+    require(numRows() == 4)
+    require(numCols() == 4)
+    return extractMatrix(0, 3, 0, 3)
 }
 
 /**
@@ -70,28 +82,81 @@ internal fun SimpleMatrix.length(): Double {
 }
 
 /**
- * Creates a 4x4 matrix representing a line.
- *
- * @param xDiff The displacement along the x-axis.
- * @param yDiff The displacement along the y-axis.
- * @param zDiff The displacement along the z-axis.
- */
-internal fun getLine(xDiff: Number, yDiff: Number, zDiff: Number) =
-    getPointMatrix(0.0, 0.0, 0.0) to getPointMatrix(xDiff, yDiff, zDiff)
-
-/**
- * Creates a 4x4 matrix representing a point.
+ * Creates a 4x4 frame transformation representing a translation.
  *
  * @param x The distance along the x-axis.
  * @param y The distance along the y-axis.
  * @param z The distance along the z-axis.
  */
-internal fun getPointMatrix(x: Number, y: Number, z: Number) =
+internal fun getFrameTranslationMatrix(x: Number, y: Number, z: Number) =
     SimpleMatrix.identity(4).apply {
         this[0, 3] = x.toDouble()
         this[1, 3] = y.toDouble()
         this[2, 3] = z.toDouble()
     }
+
+/**
+ * Creates a 4x4 frame transformation representing a rotation.
+ *
+ * @param x The rotation around the x-axis in degrees.
+ * @param y The rotation around the y-axis in degrees.
+ * @param z The rotation around the z-axis in degrees.
+ */
+internal fun getFrameRotationMatrix(x: Number, y: Number, z: Number) =
+    SimpleMatrix.identity(4).apply {
+        val rotMat = getRotationMatrix(x, y, z)
+        for (row in 0 until rotMat.numRows()) {
+            for (col in 0 until rotMat.numCols()) {
+                this[row, col] = rotMat[row, col]
+            }
+        }
+    }
+
+/**
+ * Creates a 3x3 matrix representing a rotation.
+ *
+ * @param x The rotation around the x-axis in degrees.
+ * @param y The rotation around the y-axis in degrees.
+ * @param z The rotation around the z-axis in degrees.
+ */
+internal fun getRotationMatrix(x: Number, y: Number, z: Number): SimpleMatrix {
+    val xRad = toRadians(x.toDouble())
+    val yRad = toRadians(y.toDouble())
+    val zRad = toRadians(z.toDouble())
+
+    val zMat = SimpleMatrix.identity(3).apply {
+        this[0, 0] = cos(zRad)
+        this[0, 1] = -sin(zRad)
+        this[1, 0] = sin(zRad)
+        this[1, 1] = cos(zRad)
+    }
+
+    val yMat = SimpleMatrix.identity(3).apply {
+        this[0, 0] = cos(yRad)
+        this[0, 2] = sin(yRad)
+        this[2, 0] = -sin(yRad)
+        this[2, 2] = cos(yRad)
+    }
+
+    val xMat = SimpleMatrix.identity(3).apply {
+        this[1, 1] = cos(xRad)
+        this[1, 2] = -sin(xRad)
+        this[2, 1] = sin(xRad)
+        this[2, 2] = cos(xRad)
+    }
+
+    return zMat.mult(yMat).mult(xMat)
+}
+
+/**
+ * Treats the receiver matrix as a 3x1 translation column vector and returns it as a 4x4 frame
+ * transformation.
+ */
+internal fun SimpleMatrix.asPointMatrix(): SimpleMatrix {
+    require(numRows() == 3)
+    require(numCols() == 1)
+    return getFrameTranslationMatrix(this[0, 0], this[1, 0], this[2, 0])
+}
 
 /**
  * Returns a frame transformation which applies no transformation.

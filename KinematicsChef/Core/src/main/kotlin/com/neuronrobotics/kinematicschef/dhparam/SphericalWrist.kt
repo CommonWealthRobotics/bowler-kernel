@@ -8,7 +8,7 @@
 package com.neuronrobotics.kinematicschef.dhparam
 
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
+import com.neuronrobotics.kinematicschef.util.getTranslation
 import org.ejml.simple.SimpleMatrix
 
 /**
@@ -22,10 +22,10 @@ internal data class SphericalWrist(override val params: ImmutableList<DhParam>) 
     }
 
     /**
-     * Calculate the position of a spherical wrist's center given a target point and a desired
-     * wrist orientation.
+     * Calculate the position of this wrist's center given a target point and a desired orientation.
      *
      * @param target The target position of the end effector.
+     * @return A 3x1 position matrix.
      */
     internal fun center(target: SimpleMatrix): SimpleMatrix {
         val wristCenter = SimpleMatrix(3, 1)
@@ -37,4 +37,15 @@ internal data class SphericalWrist(override val params: ImmutableList<DhParam>) 
 
         return wristCenter
     }
+
+    /**
+     * Calculate the position of the wrist's center in its home position.
+     *
+     * @param priorLinks The links that come before the wrist in the chain.
+     * @return A 3x1 position matrix.
+     */
+    internal fun centerHomed(priorLinks: ImmutableList<DhParam>) =
+        priorLinks.toFrameTransformation().mult(
+            params.subList(0, 2).toFrameTransformation()
+        ).getTranslation()
 }

@@ -13,10 +13,15 @@ import au.edu.federation.caliko.FabrikJoint3D
 import au.edu.federation.utils.Vec3f
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
+import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
+import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
-import kotlin.math.acos
+import org.ejml.simple.SimpleMatrix
+import java.lang.Math.toDegrees
+import kotlin.math.abs
+import kotlin.math.atan2
 
 /**
  * A [DhInverseSolver] which uses Caliko's iterative solver.
@@ -48,25 +53,24 @@ internal class CalikoInverseKinematicsEngine : DhInverseSolver {
     @Suppress("MemberVisibilityCanBePrivate")
     fun inverseKinematicsWithError(
         target: TransformNR,
-        @Suppress("UNUSED_PARAMETER") jointSpaceVector: DoubleArray,
+        jointSpaceVector: DoubleArray,
         chain: DHChain
     ): Pair<DoubleArray, Float> {
         require(jointSpaceVector.size == chain.links.size) {
-            "The joint angles and DH params must have equal size."
+            """
+                |The joint angles and DH params must have equal size.
+                |Number of joint angles: ${jointSpaceVector.size}
+                |Number of DH params: ${chain.links.size}
+            """.trimMargin()
         }
 
-        val fabrikChain = FabrikChain3D()
-        fabrikChain.setFixedBaseMode(true)
+        val fabrikChain = FabrikChain3D().apply {
+            setFixedBaseMode(true)
+        }
 
         val dhParams = chain.toDhParams()
         dhParams.forEachIndexed { index, dhParam ->
-            // TODO: Make this get the actual bone length
-            val boneLength: Float =
-                if (index == dhParams.size - 1) {
-                    defaultBoneLength
-                } else {
-                    calculateLinkLength(dhParam)
-                }
+            val boneLength: Float = calculateLinkLength(dhParam)
 
             if (index == 0) {
                 // The first link can't be added using addConsecutiveBone()
@@ -80,17 +84,24 @@ internal class CalikoInverseKinematicsEngine : DhInverseSolver {
                 fabrikChain.setFreelyRotatingGlobalHingedBasebone(UP_AXIS)
             } else {
                 // TODO: The directionUV could be X or Z depending on if we need to use d or r
-                // TODO: No way to set hinge rotation limits from DH params alone
-                fabrikChain.addConsecutiveFreelyRotatingHingedBone(
+                // TODO: Pull hardware limits from the DHChain
+                fabrikChain.addConsecutiveHingedBone(
                     FORWARD_AXIS,
                     boneLength,
                     FabrikJoint3D.JointType.LOCAL_HINGE,
-                    UP_AXIS
+                    fabrikChain.chain[index - 1].directionUV,
+                    chain.getlowerLimits()?.get(index)?.toFloat() ?: 180.0f,
+                    chain.upperLimits?.get(index)?.toFloat() ?: 180.0f,
+                    RIGHT_AXIS
                 )
             }
         }
 
+        println("Before solving:")
+        fabrikChain.chain.forEach { println(it) }
         val solveError = fabrikChain.solveForTarget(target.x, target.y, target.z)
+        println("After solving:")
+        fabrikChain.chain.forEach { println(it) }
 
         // Add a unit vector pointing up as the first element so we can get the angle of the first
         // link
@@ -101,7 +112,8 @@ internal class CalikoInverseKinematicsEngine : DhInverseSolver {
         for (i in 0 until directions.size - 1) {
             val vec1 = directions[i]
             val vec2 = directions[i + 1]
-            angles.add(vec2.angle(vec1))
+            val projection = vec2.projectOntoPlane(vec1)
+            angles.add(toDegrees(atan2(projection.y, projection.x).toDouble()).modulus(360.0))
         }
 
         return angles.map {
@@ -117,16 +129,16 @@ internal class CalikoInverseKinematicsEngine : DhInverseSolver {
      * Calculates the length of a link from its [DhParam].
      */
     private fun calculateLinkLength(dhParam: DhParam) =
-        dhParam.length().toFloat().also {
-            if (it == 0.0f) {
-                defaultBoneLength
-            } else {
-                return it
+        dhParam.length.toFloat().also {
+            return when {
+                abs(it) < defaultBoneLengthDelta -> defaultBoneLength
+                else -> abs(it)
             }
         }
 
     companion object {
         private const val defaultBoneLength = 10.0f
+        private const val defaultBoneLengthDelta = 1e-6
         private val baseUnitVector = Vec3f(0.0f, 0.0f, 1.0f).normalise()
         private val UP_AXIS = Vec3f(0.0f, 0.0f, 1.0f)
         private val FORWARD_AXIS = Vec3f(1.0f, 0.0f, 0.0f)
@@ -134,9 +146,13 @@ internal class CalikoInverseKinematicsEngine : DhInverseSolver {
     }
 }
 
-private fun Vec3f.angle(vec: Vec3f): Double = acos(dot(vec) / (length() * vec.length()))
-
-private fun Vec3f.dot(vec: Vec3f): Double = (x * vec.x + y * vec.y + z * vec.z).toDouble()
+private fun Vec3f.mult(ft: SimpleMatrix): Vec3f {
+    val vecAsMat = getFrameTranslationMatrix(x, y, z)
+    val result = vecAsMat.mult(ft).getTranslation()
+    return Vec3f(result[0].toFloat(), result[1].toFloat(), result[2].toFloat()).normalise()
+}
 
 private fun FabrikChain3D.solveForTarget(x: Number, y: Number, z: Number) =
     solveForTarget(x.toFloat(), y.toFloat(), z.toFloat())
+
+private fun Double.modulus(rhs: Double) = (rem(rhs) + rhs).rem(rhs)
