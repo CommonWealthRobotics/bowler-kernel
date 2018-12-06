@@ -5,6 +5,7 @@
  */
 package com.neuronrobotics.kinematicschef.classifier
 
+import arrow.core.Either
 import arrow.core.Option
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.kinematicschef.TestUtil
@@ -17,6 +18,7 @@ import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.plus
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
+import org.ejml.simple.SimpleMatrix
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -155,6 +157,14 @@ internal class DefaultChainIdentifierTest {
                 } else {
                     Option.just(ClassifierError(""))
                 }
+            }
+
+            override fun isSphericalWrist(
+                chain: ImmutableList<DhParam>,
+                priorChain: ImmutableList<DhParam>,
+                inverseTipTransform: SimpleMatrix
+            ): Either<ClassifierError, ImmutableList<DhParam>> {
+                TODO("not implemented")
             }
         }
 
