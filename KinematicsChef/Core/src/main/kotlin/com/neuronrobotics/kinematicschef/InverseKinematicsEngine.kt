@@ -36,8 +36,8 @@ import javax.inject.Inject
  */
 class InverseKinematicsEngine
 @Inject internal constructor(
-    private val chainIdentifier: ChainIdentifier,
-    private val dhClassifier: DhClassifier
+        private val chainIdentifier: ChainIdentifier,
+        private val dhClassifier: DhClassifier
 ) : DhInverseSolver {
 
     /**
@@ -49,29 +49,29 @@ class InverseKinematicsEngine
      * @return The joint angles necessary to meet the target.
      */
     override fun inverseKinematics(
-        target: TransformNR,
-        jointSpaceVector: DoubleArray,
-        chain: DHChain
+            target: TransformNR,
+            jointSpaceVector: DoubleArray,
+            chain: DHChain
     ): DoubleArray {
         val dhParams = chain.toDhParams()
         val targetMatrix = target.toSimpleMatrix()
         val chainElements = chainIdentifier.identifyChain(dhParams)
 
         val eulerAngles = chainElements
-            .mapNotNull { it as? SphericalWrist }
-            .map {
-                it to dhClassifier.deriveEulerAngles(it)
-            }
-            .toImmutableMap()
+                .mapNotNull { it as? SphericalWrist }
+                .map {
+                    it to dhClassifier.deriveEulerAngles(it)
+                }
+                .toImmutableMap()
 
         validateEulerAngles(eulerAngles)
 
         val wrist = chainElements.last() as? SphericalWrist
-            ?: return CalikoInverseKinematicsEngine().inverseKinematics(
-                target,
-                jointSpaceVector,
-                chain
-            )
+                ?: return CalikoInverseKinematicsEngine().inverseKinematics(
+                        target,
+                        jointSpaceVector,
+                        chain
+                )
 
         val wristCenter = wrist.center(target.toSimpleMatrix())
         val newJointAngles = DoubleArray(jointSpaceVector.size) { 0.0 }
@@ -89,14 +89,14 @@ class InverseKinematicsEngine
 
                     when {
                         chain.jointAngleInBounds(theta1SolutionA, 0)
-                            && chain.jointAngleInBounds(theta1SolutionB, 0) -> {
-                                val comparison = Math.abs(jointSpaceVector[0] - theta1SolutionA)
-                                        .compareTo(Math.abs(jointSpaceVector[0] - theta1SolutionB))
+                                && chain.jointAngleInBounds(theta1SolutionB, 0) -> {
+                            val comparison = Math.abs(jointSpaceVector[0] - theta1SolutionA)
+                                    .compareTo(Math.abs(jointSpaceVector[0] - theta1SolutionB))
 
-                                newJointAngles[0] = when {
-                                    comparison > 0 -> theta1SolutionB
-                                    else -> theta1SolutionA
-                                }
+                            newJointAngles[0] = when {
+                                comparison > 0 -> theta1SolutionB
+                                else -> theta1SolutionA
+                            }
                         }
 
                         chain.jointAngleInBounds(theta1SolutionA, 0) -> newJointAngles[0] = theta1SolutionA
@@ -107,7 +107,7 @@ class InverseKinematicsEngine
                                 target,
                                 jointSpaceVector,
                                 chain
-                            )
+                        )
                     }
                 }
             }
@@ -115,20 +115,21 @@ class InverseKinematicsEngine
                 // left/right arm configuration
                 val phi = Math.atan2(targetMatrix[0, 3], targetMatrix[1, 3])
                 val theta1Left = Math.toDegrees(phi
-                    - Math.atan2(Math.sqrt(targetMatrix[0, 3] * targetMatrix[0, 3]
+                        - Math.atan2(Math.sqrt(targetMatrix[0, 3] * targetMatrix[0, 3]
                         + targetMatrix[1, 3] * targetMatrix[1, 3] - dhParams.first().r * dhParams.first().r),
                         dhParams.first().r
-                    )
+                )
                 )
 
                 val theta1Right = Math.toDegrees(phi
-                    + Math.atan2(-Math.sqrt(targetMatrix[0, 3] * targetMatrix[0, 3]
+                        + Math.atan2(-Math.sqrt(targetMatrix[0, 3] * targetMatrix[0, 3]
                         + targetMatrix[1, 3] * targetMatrix[1, 3] - dhParams.first().r * dhParams.first().r),
                         dhParams.first().r * -1
-                    )
+                )
                 )
 
-                //TODO: Implement left and right arm detection. Assuming left arm configuration for now.
+                //TODO: Pick between the left and right arm solutions
+                //Using just left arm solution for now.
 
                 if (chain.jointAngleInBounds(theta1Left, 0)) jointSpaceVector[0] = theta1Left
                 else return CalikoInverseKinematicsEngine().inverseKinematics(
@@ -144,18 +145,78 @@ class InverseKinematicsEngine
 
         //(xc^2 + yc^2 - d^2 + zc^2 - a2^2 - a3^2)/(2(a2)(a3))
         val cosTheta3 = (targetMatrix[0, 3] * targetMatrix[0, 3]
-            + targetMatrix[1, 3] * targetMatrix[1, 3]
-            - dhParams.first().r * dhParams.first().r
-            + targetMatrix[2, 3] * targetMatrix[2, 3]
-            - dhParams[1].r * dhParams[1].r
-            - dhParams[2].r * dhParams[2].r) / (
-                    2.0 * dhParams[1].r * dhParams[2].r
+                + targetMatrix[1, 3] * targetMatrix[1, 3]
+                - dhParams.first().r * dhParams.first().r
+                + targetMatrix[2, 3] * targetMatrix[2, 3]
+                - dhParams[1].r * dhParams[1].r
+                - dhParams[2].r * dhParams[2].r) / (
+                2.0 * dhParams[1].r * dhParams[2].r
                 )
 
         val theta3ElbowUp = Math.atan2(cosTheta3, Math.sqrt(1 - cosTheta3 * cosTheta3))
         val theta3ElbowDown = Math.atan2(cosTheta3, -Math.sqrt(1 - cosTheta3 * cosTheta3))
 
-        return CalikoInverseKinematicsEngine().inverseKinematics(target, jointSpaceVector, chain)
+        val theta2ElbowUp = Math.atan2(Math.sqrt(targetMatrix[0, 3] * targetMatrix[0, 3]
+                + targetMatrix[1, 3] * targetMatrix[1, 3]
+                - dhParams.first().r * dhParams.first().r),
+                targetMatrix[2, 3]
+        ) - Math.atan2(dhParams[1].r + dhParams[2].r * Math.cos(theta3ElbowUp),
+                dhParams[2].r * Math.sin(theta3ElbowUp)
+        )
+
+        val theta2ElbowDown = Math.atan2(Math.sqrt(targetMatrix[0, 3] * targetMatrix[0, 3]
+                + targetMatrix[1, 3] * targetMatrix[1, 3]
+                - dhParams.first().r * dhParams.first().r),
+                targetMatrix[2, 3]
+        ) - Math.atan2(dhParams[1].r + dhParams[2].r * Math.cos(theta3ElbowUp),
+                dhParams[2].r * Math.sin(theta3ElbowUp)
+        )
+
+        //select elbow up or down based on smallest valid delta in theta2
+        when {
+            chain.jointAngleInBounds(theta2ElbowDown, 1)
+                    && chain.jointAngleInBounds(theta2ElbowUp, 1) -> {
+                val comparison = Math.abs(jointSpaceVector[1] - theta2ElbowDown)
+                        .compareTo(Math.abs(jointSpaceVector[1] - theta2ElbowUp))
+
+                newJointAngles[1] = when {
+                    comparison > 0 -> theta2ElbowUp.also { newJointAngles[2] = theta3ElbowUp }
+                    else -> theta2ElbowDown.also { newJointAngles[2] = theta3ElbowDown }
+                }
+            }
+
+            chain.jointAngleInBounds(theta2ElbowDown, 1) -> {
+                newJointAngles[1] = theta2ElbowDown
+                newJointAngles[2] = theta3ElbowDown
+            }
+
+            chain.jointAngleInBounds(theta2ElbowUp, 1) -> {
+                newJointAngles[1] = theta2ElbowUp
+                newJointAngles[2] = theta3ElbowUp
+            }
+
+            else -> return CalikoInverseKinematicsEngine().inverseKinematics(
+                    target,
+                    jointSpaceVector,
+                    chain
+            )
+        }
+
+        if (!chain.jointAngleInBounds(newJointAngles[2], 2)) {
+            return CalikoInverseKinematicsEngine().inverseKinematics(
+                target,
+                jointSpaceVector,
+                chain
+            )
+        }
+
+        //TODO: Implement solver for computing wrist joint angles
+        //using previous angles for now
+        newJointAngles[3] = jointSpaceVector[3]
+        newJointAngles[4] = jointSpaceVector[4]
+        newJointAngles[5] = jointSpaceVector[5]
+
+        return jointSpaceVector
     }
 
     companion object {
@@ -167,7 +228,7 @@ class InverseKinematicsEngine
 
         fun getInstance(): InverseKinematicsEngine {
             return Guice.createInjector(inverseKinematicsEngineModule())
-                .getInstance(key<InverseKinematicsEngine>())
+                    .getInstance(key<InverseKinematicsEngine>())
         }
     }
 
@@ -175,23 +236,23 @@ class InverseKinematicsEngine
      * Throw an exception if there was an error while deriving the euler angles.
      */
     private fun validateEulerAngles(
-        eulerAngles: ImmutableMap<SphericalWrist, Either<ClassifierError, EulerAngle>>
+            eulerAngles: ImmutableMap<SphericalWrist, Either<ClassifierError, EulerAngle>>
     ) {
         eulerAngles
-            .values
-            .mapNotNull { elem ->
-                elem.fold({ it.errorString }, { null })
-            }
-            .fold("") { acc, elem ->
-                """
+                .values
+                .mapNotNull { elem ->
+                    elem.fold({ it.errorString }, { null })
+                }
+                .fold("") { acc, elem ->
+                    """
                     |$acc
                     |$elem
                 """.trimMargin().trimStart() // Trim the start to remove the initial newline
-            }.let {
-                if (it.isNotEmpty()) {
-                    throw UnsupportedOperationException(it)
+                }.let {
+                    if (it.isNotEmpty()) {
+                        throw UnsupportedOperationException(it)
+                    }
                 }
-            }
     }
 
     /**
@@ -202,7 +263,7 @@ class InverseKinematicsEngine
      *
      * @return A [Boolean] indicating whether or not the given joint angle is within the valid range of motion.
      */
-    internal fun DHChain.jointAngleInBounds(jointAngle : Double, index : Int) : Boolean {
+    private fun DHChain.jointAngleInBounds(jointAngle: Double, index: Int): Boolean {
         return jointAngle <= this.upperLimits[index] && jointAngle >= this.getlowerLimits()[index]
     }
 }
