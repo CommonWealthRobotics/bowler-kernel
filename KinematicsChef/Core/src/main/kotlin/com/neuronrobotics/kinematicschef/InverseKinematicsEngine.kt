@@ -85,11 +85,49 @@ class InverseKinematicsEngine
                     newJointAngles[0] = jointSpaceVector[0]
                 } else {
                     val theta1 = Math.toDegrees(Math.atan2(targetMatrix[0, 3], targetMatrix[1, 3]))
-                    val theta2 = Math.toDegrees(Math.PI + theta1)
+                    val theta2 = Math.toDegrees(Math.PI) + theta1
+
+                    when {
+                        chain.jointAngleInBounds(theta1, 0) && chain.jointAngleInBounds(theta2, 0) -> {
+                            val comparison = Math.abs(jointSpaceVector[0] - theta1)
+                                    .compareTo(Math.abs(jointSpaceVector[0] - theta2))
+
+                            newJointAngles[0] = when {
+                                comparison > 0 -> theta2
+                                else -> theta1
+                            }
+                        }
+
+                        chain.jointAngleInBounds(theta1, 0) -> newJointAngles[0] = theta1
+
+                        chain.jointAngleInBounds(theta2, 0) -> newJointAngles[0] = theta2
+
+                        else -> return CalikoInverseKinematicsEngine().inverseKinematics(
+                                target,
+                                jointSpaceVector,
+                                chain
+                            )
+                    }
                 }
             }
             else -> {
                 // left/right arm configuration
+                val phi = Math.atan2(targetMatrix[0, 3], targetMatrix[1, 3])
+                val theta1 = Math.toDegrees(phi
+                    - Math.atan2(Math.sqrt(targetMatrix[0, 3] * targetMatrix[0, 3]
+                        + targetMatrix[1, 3] * targetMatrix[1, 3] - dhParams.first().r * dhParams.first().r),
+                        dhParams.first().r
+                    )
+                )
+
+                val theta2 = Math.toDegrees(phi
+                    + Math.atan2(-Math.sqrt(targetMatrix[0, 3] * targetMatrix[0, 3]
+                        + targetMatrix[1, 3] * targetMatrix[1, 3] - dhParams.first().r * dhParams.first().r),
+                        dhParams.first().r * -1
+                    )
+                )
+
+
             }
         }
 
@@ -130,5 +168,17 @@ class InverseKinematicsEngine
                     throw UnsupportedOperationException(it)
                 }
             }
+    }
+
+    /**
+     * Checks to see if a given joint angle is within the user-specified range of motion.
+     *
+     * @param jointAngle the joint angle to check against
+     * @param index the index of the joint in the DH chain
+     *
+     * @return A [Boolean] indicating whether or not the given joint angle is within the valid range of motion.
+     */
+    internal fun DHChain.jointAngleInBounds(jointAngle : Double, index : Int) : Boolean {
+        return jointAngle <= this.upperLimits[index] && jointAngle >= this.getlowerLimits()[index]
     }
 }
