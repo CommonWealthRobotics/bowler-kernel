@@ -110,29 +110,27 @@ class InverseKinematicsEngine
                 // left/right arm configuration
                 val phi = Math.atan2(targetMatrix[0, 3], targetMatrix[1, 3])
                 val theta1Left = Math.toDegrees(
-                    phi
-                        - Math.atan2(
+                    phi - Math.atan2(
                         Math.sqrt(
-                            targetMatrix[0, 3] * targetMatrix[0, 3]
-                                + targetMatrix[1, 3] * targetMatrix[1, 3] - dhParams.first().r * dhParams.first().r
+                            targetMatrix[0, 3] * targetMatrix[0, 3] +
+                                targetMatrix[1, 3] * targetMatrix[1, 3] - dhParams.first().r * dhParams.first().r
                         ),
                         dhParams.first().r
                     )
                 )
 
                 val theta1Right = Math.toDegrees(
-                    phi
-                        + Math.atan2(
+                    phi + Math.atan2(
                         -Math.sqrt(
-                            targetMatrix[0, 3] * targetMatrix[0, 3]
-                                + targetMatrix[1, 3] * targetMatrix[1, 3] - dhParams.first().r * dhParams.first().r
+                            targetMatrix[0, 3] * targetMatrix[0, 3] +
+                                targetMatrix[1, 3] * targetMatrix[1, 3] - dhParams.first().r * dhParams.first().r
                         ),
                         dhParams.first().r * -1
                     )
                 )
 
-                //TODO: Pick between the left and right arm solutions
-                //Using just left arm solution for now.
+                // TODO: Pick between the left and right arm solutions
+                // Using just left arm solution for now.
 
                 if (chain.jointAngleInBounds(theta1Left, 0)) {
                     jointSpaceVector[0] = theta1Left
@@ -142,16 +140,16 @@ class InverseKinematicsEngine
             }
         }
 
-        //TODO: Implement offset addition when joints 2 and/or 3 have a non-zero d value (DH param)
-        //compute theta3, then theta 2
+        // TODO: Implement offset addition when joints 2 and/or 3 have a non-zero d value (DH param)
+        // compute theta3, then theta 2
 
-        //(xc^2 + yc^2 - d^2 + zc^2 - a2^2 - a3^2)/(2(a2)(a3))
-        val cosTheta3 = (targetMatrix[0, 3] * targetMatrix[0, 3]
-            + targetMatrix[1, 3] * targetMatrix[1, 3]
-            - dhParams.first().r * dhParams.first().r
-            + targetMatrix[2, 3] * targetMatrix[2, 3]
-            - dhParams[1].r * dhParams[1].r
-            - dhParams[2].r * dhParams[2].r) / (
+        // (xc^2 + yc^2 - d^2 + zc^2 - a2^2 - a3^2)/(2(a2)(a3))
+        val cosTheta3 = (targetMatrix[0, 3] * targetMatrix[0, 3] +
+            targetMatrix[1, 3] * targetMatrix[1, 3] -
+            dhParams.first().r * dhParams.first().r +
+            targetMatrix[2, 3] * targetMatrix[2, 3] -
+            dhParams[1].r * dhParams[1].r -
+            dhParams[2].r * dhParams[2].r) / (
             2.0 * dhParams[1].r * dhParams[2].r
             )
 
@@ -160,9 +158,9 @@ class InverseKinematicsEngine
 
         val theta2ElbowUp = Math.atan2(
             Math.sqrt(
-                targetMatrix[0, 3] * targetMatrix[0, 3]
-                    + targetMatrix[1, 3] * targetMatrix[1, 3]
-                    - dhParams.first().r * dhParams.first().r
+                targetMatrix[0, 3] * targetMatrix[0, 3] +
+                    targetMatrix[1, 3] * targetMatrix[1, 3] -
+                    dhParams.first().r * dhParams.first().r
             ),
             targetMatrix[2, 3]
         ) - Math.atan2(
@@ -172,9 +170,9 @@ class InverseKinematicsEngine
 
         val theta2ElbowDown = Math.atan2(
             Math.sqrt(
-                targetMatrix[0, 3] * targetMatrix[0, 3]
-                    + targetMatrix[1, 3] * targetMatrix[1, 3]
-                    - dhParams.first().r * dhParams.first().r
+                targetMatrix[0, 3] * targetMatrix[0, 3] +
+                    targetMatrix[1, 3] * targetMatrix[1, 3] -
+                    dhParams.first().r * dhParams.first().r
             ),
             targetMatrix[2, 3]
         ) - Math.atan2(
@@ -182,7 +180,7 @@ class InverseKinematicsEngine
             dhParams[2].r * Math.sin(theta3ElbowUp)
         )
 
-        //select elbow up or down based on smallest valid delta in theta2
+        // select elbow up or down based on smallest valid delta in theta2
         when {
             chain.jointAngleInBounds(theta2ElbowDown, 1)
                 && chain.jointAngleInBounds(theta2ElbowUp, 1) -> {
@@ -212,26 +210,13 @@ class InverseKinematicsEngine
             failMustBeSolvedIteratively()
         }
 
-        //TODO: Implement solver for computing wrist joint angles
-        //using previous angles for now
+        // TODO: Implement solver for computing wrist joint angles
+        // using previous angles for now
         newJointAngles[3] = jointSpaceVector[3]
         newJointAngles[4] = jointSpaceVector[4]
         newJointAngles[5] = jointSpaceVector[5]
 
         return jointSpaceVector
-    }
-
-    companion object {
-        internal fun inverseKinematicsEngineModule() = module {
-            bind<ChainIdentifier>().to<DefaultChainIdentifier>()
-            bind<DhClassifier>().to<DefaultDhClassifier>()
-            bind<WristIdentifier>().to<DefaultWristIdentifier>()
-        }
-
-        fun getInstance(): InverseKinematicsEngine {
-            return Guice.createInjector(inverseKinematicsEngineModule())
-                .getInstance(key<InverseKinematicsEngine>())
-        }
     }
 
     /**
@@ -260,16 +245,29 @@ class InverseKinematicsEngine
     /**
      * Checks to see if a given joint angle is within the user-specified range of motion.
      *
-     * @param jointAngle the joint angle to check against
-     * @param index the index of the joint in the DH chain
+     * @param jointAngle The joint angle to check against.
+     * @param index The index of the joint in the DH chain.
      *
-     * @return A [Boolean] indicating whether or not the given joint angle is within the valid range of motion.
+     * @return Whether or not the given joint angle is within the valid range of motion.
      */
     private fun DHChain.jointAngleInBounds(jointAngle: Double, index: Int): Boolean {
-        return jointAngle <= upperLimits[index] && jointAngle >= getlowerLimits()[index]
+        val link = factory.getLink(factory.linkConfigurations[index])
+        return jointAngle <= link.maxEngineeringUnits && jointAngle >= link.minEngineeringUnits
     }
 
-    private fun failMustBeSolvedIteratively(): Nothing {
+    private fun failMustBeSolvedIteratively(): Nothing =
         throw IllegalStateException("The chain must be solved iteratively.")
+
+    companion object {
+        internal fun inverseKinematicsEngineModule() = module {
+            bind<ChainIdentifier>().to<DefaultChainIdentifier>()
+            bind<DhClassifier>().to<DefaultDhClassifier>()
+            bind<WristIdentifier>().to<DefaultWristIdentifier>()
+        }
+
+        fun getInstance(): InverseKinematicsEngine {
+            return Guice.createInjector(inverseKinematicsEngineModule())
+                .getInstance(key<InverseKinematicsEngine>())
+        }
     }
 }
