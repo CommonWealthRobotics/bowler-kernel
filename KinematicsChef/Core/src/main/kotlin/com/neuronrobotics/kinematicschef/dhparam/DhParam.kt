@@ -35,7 +35,7 @@ internal constructor(
 
     /**
      * The 4x4 center of rotation frame transformation this [DhParam] represents. Computes using
-     * the normal convention (CoR n-1 to CoR n).
+     * the normal convention (CoR n to CoR n+1).
      */
     internal val frameTransformation by lazy {
         SimpleMatrix.identity(4).apply {

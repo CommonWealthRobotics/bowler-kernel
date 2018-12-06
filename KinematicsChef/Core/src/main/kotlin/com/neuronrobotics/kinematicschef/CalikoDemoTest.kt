@@ -11,7 +11,6 @@ import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
 import com.neuronrobotics.kinematicschef.util.getRotation
-import com.neuronrobotics.kinematicschef.util.getRotationMatrix
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.sdk.addons.kinematics.AbstractKinematicsNR
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
@@ -72,52 +71,54 @@ class CalikoDemoTest : CalikoDemoStructure3D() {
         }
 
         var previousLinkRotationAxis = Vec3f()
+        var previousDhParam = DhParam.zero
         val dhParams = chain.toDhParams()
         dhParams.forEachIndexed { index, dhParam ->
-            val boneLength: Float = calculateLinkLength(dhParam)/10
+            val boneLength: Float = calculateLinkLength(dhParam) / 10
 
             if (index == 0) {
-                // The first link can't be added using addConsecutiveBone()
+                val linkDirection = X_AXIS
+
+                val thisLinkRotationAxis = Z_AXIS
+
                 fabrikChain.addBone(
                     FabrikBone3D(
                         Vec3f(0.0f),
-                        X_AXIS.mult3(
-                            dhParam.frameTransformation.getRotation()
-                        ).times(boneLength)
+                        linkDirection.times(boneLength)
                     )
                 )
 
-                previousLinkRotationAxis = Z_AXIS.mult3(
-                    dhParam.frameTransformation.getRotation()
-                )
+                // TODO: Use the engineering units from the abstract link instead
                 fabrikChain.setGlobalHingedBasebone(
-                    previousLinkRotationAxis,
+                    thisLinkRotationAxis,
                     chain.getlowerLimits()?.get(index)?.toFloat() ?: 180.0f,
                     chain.upperLimits?.get(index)?.toFloat() ?: 180.0f,
-                    previousLinkRotationAxis.mult3(
-                        getRotationMatrix(90, 0, 0)
-                    )
+                    linkDirection
                 )
+
+                previousLinkRotationAxis = thisLinkRotationAxis
+                previousDhParam = dhParam
             } else {
-                // TODO: The directionUV could be X or Z depending on if we need to use d or r
-                // TODO: Pull hardware limits from the DHChain
+                val linkDirection = fabrikChain.chain[index - 1].directionUV.mult3(
+                    previousDhParam.frameTransformation.getRotation()
+                )
+                val thisLinkRotationAxis = previousLinkRotationAxis.mult3(
+                    previousDhParam.frameTransformation.getRotation()
+                )
+
+                // TODO: Use the engineering units from the abstract link instead
                 fabrikChain.addConsecutiveHingedBone(
-                    X_AXIS.mult3(
-                        dhParam.frameTransformation.getRotation()
-                    ),
+                    linkDirection,
                     boneLength,
                     FabrikJoint3D.JointType.LOCAL_HINGE,
-                    previousLinkRotationAxis.mult3(
-                        dhParam.frameTransformation.getRotation()
-                    ),
+                    thisLinkRotationAxis,
                     chain.getlowerLimits()?.get(index)?.toFloat() ?: 180.0f,
                     chain.upperLimits?.get(index)?.toFloat() ?: 180.0f,
-                    previousLinkRotationAxis.mult3(
-                        dhParam.frameTransformation.getRotation()
-                    ).mult3(
-                        getRotationMatrix(90, 0, 0)
-                    )
+                    linkDirection
                 )
+
+                previousLinkRotationAxis = thisLinkRotationAxis
+                previousDhParam = dhParam
             }
         }
 
