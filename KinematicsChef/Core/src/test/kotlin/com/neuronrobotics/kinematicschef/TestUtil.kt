@@ -34,6 +34,7 @@ internal object TestUtil {
             randomDhParam(upperBound)
         }.toImmutableList()
 
+    // TODO: Somehow work around AbstractKinematicsNR so we don't need JavaFX installed
     internal fun makeMockChain() = DHChain(object : AbstractKinematicsNR() {
         override fun forwardKinematics(p0: DoubleArray?): TransformNR {
             TODO("not implemented")
