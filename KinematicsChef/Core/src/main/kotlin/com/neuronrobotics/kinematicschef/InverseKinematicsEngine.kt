@@ -84,23 +84,24 @@ class InverseKinematicsEngine
                 if (targetMatrix[0, 3] == 0.0 && targetMatrix[1, 3] == 0.0) {
                     newJointAngles[0] = jointSpaceVector[0]
                 } else {
-                    val theta1 = Math.toDegrees(Math.atan2(targetMatrix[0, 3], targetMatrix[1, 3]))
-                    val theta2 = Math.toDegrees(Math.PI) + theta1
+                    val theta1SolutionA = Math.toDegrees(Math.atan2(targetMatrix[0, 3], targetMatrix[1, 3]))
+                    val theta1SolutionB = Math.toDegrees(Math.PI) + theta1SolutionA
 
                     when {
-                        chain.jointAngleInBounds(theta1, 0) && chain.jointAngleInBounds(theta2, 0) -> {
-                            val comparison = Math.abs(jointSpaceVector[0] - theta1)
-                                    .compareTo(Math.abs(jointSpaceVector[0] - theta2))
+                        chain.jointAngleInBounds(theta1SolutionA, 0)
+                            && chain.jointAngleInBounds(theta1SolutionB, 0) -> {
+                                val comparison = Math.abs(jointSpaceVector[0] - theta1SolutionA)
+                                        .compareTo(Math.abs(jointSpaceVector[0] - theta1SolutionB))
 
-                            newJointAngles[0] = when {
-                                comparison > 0 -> theta2
-                                else -> theta1
-                            }
+                                newJointAngles[0] = when {
+                                    comparison > 0 -> theta1SolutionB
+                                    else -> theta1SolutionA
+                                }
                         }
 
-                        chain.jointAngleInBounds(theta1, 0) -> newJointAngles[0] = theta1
+                        chain.jointAngleInBounds(theta1SolutionA, 0) -> newJointAngles[0] = theta1SolutionA
 
-                        chain.jointAngleInBounds(theta2, 0) -> newJointAngles[0] = theta2
+                        chain.jointAngleInBounds(theta1SolutionB, 0) -> newJointAngles[0] = theta1SolutionB
 
                         else -> return CalikoInverseKinematicsEngine().inverseKinematics(
                                 target,
@@ -113,23 +114,46 @@ class InverseKinematicsEngine
             else -> {
                 // left/right arm configuration
                 val phi = Math.atan2(targetMatrix[0, 3], targetMatrix[1, 3])
-                val theta1 = Math.toDegrees(phi
+                val theta1Left = Math.toDegrees(phi
                     - Math.atan2(Math.sqrt(targetMatrix[0, 3] * targetMatrix[0, 3]
                         + targetMatrix[1, 3] * targetMatrix[1, 3] - dhParams.first().r * dhParams.first().r),
                         dhParams.first().r
                     )
                 )
 
-                val theta2 = Math.toDegrees(phi
+                val theta1Right = Math.toDegrees(phi
                     + Math.atan2(-Math.sqrt(targetMatrix[0, 3] * targetMatrix[0, 3]
                         + targetMatrix[1, 3] * targetMatrix[1, 3] - dhParams.first().r * dhParams.first().r),
                         dhParams.first().r * -1
                     )
                 )
 
+                //TODO: Implement left and right arm detection. Assuming left arm configuration for now.
 
+                if (chain.jointAngleInBounds(theta1Left, 0)) jointSpaceVector[0] = theta1Left
+                else return CalikoInverseKinematicsEngine().inverseKinematics(
+                        target,
+                        jointSpaceVector,
+                        chain
+                )
             }
         }
+
+        //TODO: Implement offset addition when joints 2 and/or 3 have a non-zero d value (DH param)
+        //compute theta3, then theta 2
+
+        //(xc^2 + yc^2 - d^2 + zc^2 - a2^2 - a3^2)/(2(a2)(a3))
+        val cosTheta3 = (targetMatrix[0, 3] * targetMatrix[0, 3]
+            + targetMatrix[1, 3] * targetMatrix[1, 3]
+            - dhParams.first().r * dhParams.first().r
+            + targetMatrix[2, 3] * targetMatrix[2, 3]
+            - dhParams[1].r * dhParams[1].r
+            - dhParams[2].r * dhParams[2].r) / (
+                    2.0 * dhParams[1].r * dhParams[2].r
+                )
+
+        val theta3ElbowUp = Math.atan2(cosTheta3, Math.sqrt(1 - cosTheta3 * cosTheta3))
+        val theta3ElbowDown = Math.atan2(cosTheta3, -Math.sqrt(1 - cosTheta3 * cosTheta3))
 
         return CalikoInverseKinematicsEngine().inverseKinematics(target, jointSpaceVector, chain)
     }
