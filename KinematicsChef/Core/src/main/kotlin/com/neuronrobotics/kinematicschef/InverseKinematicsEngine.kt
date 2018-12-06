@@ -73,7 +73,7 @@ class InverseKinematicsEngine
                 } else {
                     val theta1 = Math.toDegrees(Math.atan2(targetMatrix[0, 3], targetMatrix[1, 3]))
                     val theta2 = Math.toDegrees(Math.PI + theta1)
-                    
+
                 }
             }
             else -> {
