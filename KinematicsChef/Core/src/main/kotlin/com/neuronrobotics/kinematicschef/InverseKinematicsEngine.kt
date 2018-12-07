@@ -51,7 +51,7 @@ class InverseKinematicsEngine
         val targetMatrix = target.toSimpleMatrix()
         val chainElements = chainIdentifier.identifyChain(dhParams)
 
-        val eulerAngles = chainElements
+        /*val eulerAngles = chainElements
             .mapNotNull { it as? SphericalWrist }
             .map { it to dhClassifier.deriveEulerAngles(it) }
             .toImmutableMap()
@@ -60,7 +60,7 @@ class InverseKinematicsEngine
         // solve the chain analytically
         if (eulerAngles.filter { it.value.isLeft() }.isNotEmpty()) {
             useIterativeSolver()
-        }
+        }*/
 
         val wrist = chainElements.last() as? SphericalWrist ?: useIterativeSolver()
 

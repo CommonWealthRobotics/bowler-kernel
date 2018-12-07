@@ -11,15 +11,13 @@ import com.neuronrobotics.kinematicschef.classifier.ChainIdentifier
 import com.neuronrobotics.kinematicschef.classifier.ClassifierError
 import com.neuronrobotics.kinematicschef.classifier.DhClassifier
 import com.neuronrobotics.kinematicschef.classifier.WristIdentifier
-import com.neuronrobotics.kinematicschef.dhparam.DhChainElement
-import com.neuronrobotics.kinematicschef.dhparam.RevoluteJoint
-import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
-import com.neuronrobotics.kinematicschef.dhparam.toDhParams
+import com.neuronrobotics.kinematicschef.dhparam.*
 import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -57,16 +55,18 @@ internal class InverseKinematicsEngineTest {
         }
     }
 
-    /*@Test
+    @Test
+    @Disabled
     fun `test 6DOF inverse kinematics` () {
         val chain = TestUtil.makeMockChain(arrayListOf(
-                DHLink(0.0, 0.0, 0.0, 0.0),
-                DHLink(0.0, 0.0, 0.0, 0.0),
-                DHLink(0.0, 0.0, 0.0, 0.0),
-                DHLink(0.0, 0.0, 0.0, 0.0),
-                DHLink(0.0, 0.0, 0.0, 0.0),
-                DHLink(0.0, 0.0, 0.0, 0.0)
+            DHLink(13.0, 180.0, 32.0, -90.0),
+            DHLink(25.0, -90.0, 93.0, 180.0),
+            DHLink(11.0, 90.0, 24.0, 90.0),
+            DHLink(128.0, -90.0, 0.0, 90.0),
+            DHLink(0.0, 0.0, 0.0, -90.0),
+            DHLink(25.0, 90.0, 0.0, 0.0)
         ))
+
         val dhParams = chain.toDhParams()
 
         val mockChainIdentifier = mock<ChainIdentifier> () {
@@ -86,7 +86,5 @@ internal class InverseKinematicsEngineTest {
                 mockChainIdentifier,
                 mockDhClassifier
         )
-
-        val chainElements = mockChainIdentifier.identifyChain(dhParams)
-    }*/
+    }
 }
