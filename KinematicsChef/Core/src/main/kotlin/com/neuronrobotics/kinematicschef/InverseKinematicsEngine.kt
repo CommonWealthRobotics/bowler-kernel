@@ -235,6 +235,7 @@ class InverseKinematicsEngine
             bind<WristIdentifier>().to<DefaultWristIdentifier>()
         }
 
+        @JvmStatic
         fun getInstance(): InverseKinematicsEngine {
             return Guice.createInjector(inverseKinematicsEngineModule())
                 .getInstance(key<InverseKinematicsEngine>())
