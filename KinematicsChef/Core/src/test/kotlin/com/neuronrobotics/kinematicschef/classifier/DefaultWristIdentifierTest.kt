@@ -12,7 +12,7 @@ import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.util.asPointMatrix
 import com.neuronrobotics.kinematicschef.util.emptyImmutableList
 import com.neuronrobotics.kinematicschef.util.immutableListOf
-import com.neuronrobotics.kinematicschef.util.toImmutableList
+import org.ejml.simple.SimpleMatrix
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -27,83 +27,91 @@ internal class DefaultWristIdentifierTest {
     @ParameterizedTest
     @ValueSource(ints = [0, 1, 2])
     fun `test a chain less than three links`(chainSize: Int) {
-        assertTrue(
-            identifier.isSphericalWrist(
-                TestUtil.randomDhParamList(chainSize)
-            ).nonEmpty()
-        )
+        testWristFails(TestUtil.randomDhParamList(chainSize))
+        testWristFixFails(TestUtil.randomDhParamList(chainSize))
     }
 
     @ParameterizedTest
     @ValueSource(ints = [4, 5, 6, 7])
     fun `test a chain more than three links`(chainSize: Int) {
-        assertTrue(
-            identifier.isSphericalWrist(
-                TestUtil.randomDhParamList(chainSize)
-            ).nonEmpty()
-        )
+        testWristFails(TestUtil.randomDhParamList(chainSize))
+        testWristFixFails(TestUtil.randomDhParamList(chainSize))
     }
 
     @Test
     fun `test baxter's spherical wrist`() {
         testWristFails(
-            DhParam(374.29, 0, 0, 90),
-            DhParam(0, 72, 10, -90),
-            DhParam(0, 0, 0, 90)
+            immutableListOf(
+                DhParam(374.29, 0, 0, 90),
+                DhParam(0, 72, 10, -90),
+                DhParam(0, 0, 0, 90)
+            )
         )
     }
 
     @Test
     fun `test a non-spherical modified baxter wrist`() {
         testWristFails(
-            DhParam(374.29, 0, 0, 89),
-            DhParam(0, 0, 10, -90),
-            DhParam(0, 0, 0, 90)
+            immutableListOf(
+                DhParam(374.29, 0, 0, 89),
+                DhParam(0, 0, 10, -90),
+                DhParam(0, 0, 0, 90)
+            )
         )
     }
 
     @Test
     fun `test baxter's spherical wrist out of order`() {
         testWristFails(
-            DhParam(0, 0, 10, -90),
-            DhParam(374.29, 0, 0, 90),
-            DhParam(0, 0, 0, 90)
+            immutableListOf(
+                DhParam(0, 0, 10, -90),
+                DhParam(374.29, 0, 0, 90),
+                DhParam(0, 0, 0, 90)
+            )
         )
     }
 
     @Test
     fun `test spong spherical wrist`() {
         testWrist(
-            DhParam(0, 0, 0, -90),
-            DhParam(0, 0, 0, 90),
-            DhParam(10, 0, 0, 0)
+            immutableListOf(
+                DhParam(0, 0, 0, -90),
+                DhParam(0, 0, 0, 90),
+                DhParam(10, 0, 0, 0)
+            )
         )
     }
 
     @Test
     fun `test puma 560 spherical wrist config 1`() {
         testWrist(
-            DhParam(10, 0, 10, -90),
-            DhParam(0, 0, 0, 90),
-            DhParam(10, 0, 0, -90)
+            immutableListOf(
+                DhParam(10, 0, 10, -90),
+                DhParam(0, 0, 0, 90),
+                DhParam(10, 0, 0, -90)
+            )
         )
     }
 
     @Test
     fun `test puma 560 spherical wrist config 2`() {
         testWrist(
-            DhParam(0.432, 0, 0, -90),
-            DhParam(0, 0, 0, 90),
-            DhParam(0.056, 0, 0, 0)
+            immutableListOf(
+                DhParam(0.432, 0, 0, -90),
+                DhParam(0, 0, 0, 90),
+                DhParam(0.056, 0, 0, 0)
+            )
         )
     }
 
     @Test
     fun `test cmm input arm wrist`() {
         testWrist(
-            DhParam(128, -90, 90, 90),
-            DhParam(0, 0, 0, -90),
-            DhParam(25, 90, 0, 0)
+            immutableListOf(
+                DhParam(128, -90, 90, 90),
+                DhParam(0, 0, 0, -90),
+                DhParam(25, 90, 0, 0)
+            )
         )
     }
 
@@ -140,14 +148,12 @@ internal class DefaultWristIdentifierTest {
         )
     }
 
-    private fun testWrist(vararg params: DhParam) {
-        val chain = params.toImmutableList()
+    private fun testWrist(chain: ImmutableList<DhParam>) {
         val result = identifier.isSphericalWrist(chain)
         assertTrue(result.isEmpty())
     }
 
-    private fun testWristFails(vararg params: DhParam) {
-        val chain = params.toImmutableList()
+    private fun testWristFails(chain: ImmutableList<DhParam>) {
         val result = identifier.isSphericalWrist(chain)
         assertTrue(result.nonEmpty())
     }
@@ -181,7 +187,10 @@ internal class DefaultWristIdentifierTest {
         val result = identifier.isSphericalWrist(
             chain,
             priorParams,
-            SphericalWrist(chain).centerHomed(priorParams).asPointMatrix().invert()
+            if (chain.size == 3)
+                SphericalWrist(chain).centerHomed(priorParams).asPointMatrix().invert()
+            else
+                SimpleMatrix.identity(4)
         )
         assertTrue(result.isLeft())
     }
