@@ -16,7 +16,6 @@ import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -45,20 +44,12 @@ internal class InverseKinematicsEngineTest {
 
         val engine = InverseKinematicsEngine(mockChainIdentifier, mockDhClassifier)
 
-        val exception = assertThrows<UnsupportedOperationException> {
+        assertThrows<NotImplementedError> {
             engine.inverseKinematics(
                 TransformNR(),
                 listOf(0.0, 0.0, 0.0).toDoubleArray(),
                 chain
             )
         }
-
-        assertEquals(
-            """
-                |Wrist 1 invalid.
-                |Wrist 2 invalid.
-            """.trimMargin(),
-            exception.message
-        )
     }
 }

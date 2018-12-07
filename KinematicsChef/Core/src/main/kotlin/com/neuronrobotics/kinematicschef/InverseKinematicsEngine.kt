@@ -5,11 +5,8 @@
  */
 package com.neuronrobotics.kinematicschef
 
-import arrow.core.Either
-import com.google.common.collect.ImmutableMap
 import com.google.inject.Guice
 import com.neuronrobotics.kinematicschef.classifier.ChainIdentifier
-import com.neuronrobotics.kinematicschef.classifier.ClassifierError
 import com.neuronrobotics.kinematicschef.classifier.DefaultChainIdentifier
 import com.neuronrobotics.kinematicschef.classifier.DefaultDhClassifier
 import com.neuronrobotics.kinematicschef.classifier.DefaultWristIdentifier
@@ -17,7 +14,6 @@ import com.neuronrobotics.kinematicschef.classifier.DhClassifier
 import com.neuronrobotics.kinematicschef.classifier.WristIdentifier
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
-import com.neuronrobotics.kinematicschef.eulerangle.EulerAngle
 import com.neuronrobotics.kinematicschef.util.toImmutableMap
 import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
@@ -57,15 +53,16 @@ class InverseKinematicsEngine
 
         val eulerAngles = chainElements
             .mapNotNull { it as? SphericalWrist }
-            .map {
-                it to dhClassifier.deriveEulerAngles(it)
-            }
+            .map { it to dhClassifier.deriveEulerAngles(it) }
             .toImmutableMap()
 
-        validateEulerAngles(eulerAngles)
+        // If there were any problems while deriving the spherical wrists' Euler angles we can't
+        // solve the chain analytically
+        if (eulerAngles.filter { it.value.isLeft() }.isNotEmpty()) {
+            useIterativeSolver()
+        }
 
-        val wrist = chainElements.last() as? SphericalWrist
-            ?: failMustBeSolvedIteratively()
+        val wrist = chainElements.last() as? SphericalWrist ?: useIterativeSolver()
 
         val wristCenter = wrist.center(target.toSimpleMatrix())
         val newJointAngles = DoubleArray(jointSpaceVector.size) { 0.0 }
@@ -133,7 +130,7 @@ class InverseKinematicsEngine
                 if (chain.jointAngleInBounds(theta1Left, 0)) {
                     jointSpaceVector[0] = theta1Left
                 } else {
-                    failMustBeSolvedIteratively()
+                    useIterativeSolver()
                 }
             }
         }
@@ -201,11 +198,11 @@ class InverseKinematicsEngine
                 newJointAngles[2] = theta3ElbowUp
             }
 
-            else -> failMustBeSolvedIteratively()
+            else -> useIterativeSolver()
         }
 
         if (!chain.jointAngleInBounds(newJointAngles[2], 2)) {
-            failMustBeSolvedIteratively()
+            useIterativeSolver()
         }
 
         // TODO: Implement solver for computing wrist joint angles
@@ -215,29 +212,6 @@ class InverseKinematicsEngine
         newJointAngles[5] = jointSpaceVector[5]
 
         return jointSpaceVector
-    }
-
-    /**
-     * Throw an exception if there was an error while deriving the euler angles.
-     */
-    private fun validateEulerAngles(
-        eulerAngles: ImmutableMap<SphericalWrist, Either<ClassifierError, EulerAngle>>
-    ) {
-        eulerAngles
-            .values
-            .mapNotNull { elem ->
-                elem.fold({ it.errorString }, { null })
-            }
-            .fold("") { acc, elem ->
-                """
-                    |$acc
-                    |$elem
-                """.trimMargin().trimStart() // Trim the start to remove the initial newline
-            }.let {
-                if (it.isNotEmpty()) {
-                    throw UnsupportedOperationException(it)
-                }
-            }
     }
 
     /**
@@ -253,8 +227,7 @@ class InverseKinematicsEngine
         return jointAngle <= link.maxEngineeringUnits && jointAngle >= link.minEngineeringUnits
     }
 
-    private fun failMustBeSolvedIteratively(): Nothing =
-        throw IllegalStateException("The chain must be solved iteratively.")
+    private fun useIterativeSolver(): Nothing = TODO("The chain must be solved iteratively.")
 
     companion object {
         internal fun inverseKinematicsEngineModule() = module {
