@@ -7,7 +7,11 @@ package com.neuronrobotics.kinematicschef.classifier
 
 import com.neuronrobotics.kinematicschef.TestUtil
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
+import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
+import com.neuronrobotics.kinematicschef.util.asPointMatrix
+import com.neuronrobotics.kinematicschef.util.emptyImmutableList
 import com.neuronrobotics.kinematicschef.util.immutableListOf
+import com.neuronrobotics.kinematicschef.util.toImmutableList
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -39,78 +43,96 @@ internal class DefaultWristIdentifierTest {
 
     @Test
     fun `test baxter's spherical wrist`() {
-        val baxterLink5 = DhParam(374.29, 0, 0, 90)
-        val baxterLink6 = DhParam(0, 72, 10, -90)
-        val baxterLink7 = DhParam(0, 0, 0, 90)
-
-        val chain = immutableListOf(baxterLink5, baxterLink6, baxterLink7)
-        val result = identifier.isSphericalWrist(chain)
-        assertTrue(result.nonEmpty())
+        testWristFails(
+            DhParam(374.29, 0, 0, 90),
+            DhParam(0, 72, 10, -90),
+            DhParam(0, 0, 0, 90)
+        )
     }
 
     @Test
     fun `test a non-spherical modified baxter wrist`() {
-        val baxterLink5 = DhParam(374.29, 0, 0, 89)
-        val baxterLink6 = DhParam(0, 72, 10, -90)
-        val baxterLink7 = DhParam(0, 0, 0, 90)
-
-        val chain = immutableListOf(baxterLink5, baxterLink6, baxterLink7)
-        val result = identifier.isSphericalWrist(chain)
-        assertTrue(result.nonEmpty())
+        testWristFails(
+            DhParam(374.29, 0, 0, 89),
+            DhParam(0, 72, 10, -90),
+            DhParam(0, 0, 0, 90)
+        )
     }
 
     @Test
     fun `test baxter's spherical wrist out of order`() {
-        val baxterLink5 = DhParam(374.29, 0, 0, 90)
-        val baxterLink6 = DhParam(0, 72, 10, -90)
-        val baxterLink7 = DhParam(0, 0, 0, 90)
-
-        val chain = immutableListOf(baxterLink6, baxterLink5, baxterLink7)
-        val result = identifier.isSphericalWrist(chain)
-        assertTrue(result.nonEmpty())
+        testWristFails(
+            DhParam(0, 72, 10, -90),
+            DhParam(374.29, 0, 0, 90),
+            DhParam(0, 0, 0, 90)
+        )
     }
 
     @Test
     fun `test spong spherical wrist`() {
-        val link1 = DhParam(0, 0, 0, -90)
-        val link2 = DhParam(0, 0, 0, 90)
-        val link3 = DhParam(10, 0, 0, 0)
-
-        val chain = immutableListOf(link1, link2, link3)
-        val result = identifier.isSphericalWrist(chain)
-        assertTrue(result.isEmpty())
+        testWrist(
+            DhParam(0, 0, 0, -90),
+            DhParam(0, 0, 0, 90),
+            DhParam(10, 0, 0, 0)
+        )
     }
 
     @Test
     fun `test puma 560 spherical wrist config 1`() {
-        val link4 = DhParam(10, 0, 10, -90)
-        val link5 = DhParam(0, 0, 0, 90)
-        val link6 = DhParam(0, 0, 0, -90)
-
-        val chain = immutableListOf(link4, link5, link6)
-        val result = identifier.isSphericalWrist(chain)
-        assertTrue(result.isEmpty())
+        testWrist(
+            DhParam(10, 0, 10, -90),
+            DhParam(0, 0, 0, 90),
+            DhParam(10, 0, 0, -90)
+        )
     }
 
     @Test
     fun `test puma 560 spherical wrist config 2`() {
-        val link4 = DhParam(0.432, 0, 0, -90)
-        val link5 = DhParam(0, 0, 0, 90)
-        val link6 = DhParam(0.056, 0, 0, 0)
-
-        val chain = immutableListOf(link4, link5, link6)
-        val result = identifier.isSphericalWrist(chain)
-        assertTrue(result.isEmpty())
+        testWrist(
+            DhParam(0.432, 0, 0, -90),
+            DhParam(0, 0, 0, 90),
+            DhParam(0.056, 0, 0, 0)
+        )
     }
 
     @Test
     fun `test cmm input arm wrist`() {
-        val link4 = DhParam(128, -90, 90, 90)
-        val link5 = DhParam(0, 0, 0, -90)
-        val link6 = DhParam(25, 90, 0, 0)
+        testWrist(
+            DhParam(128, -90, 90, 90),
+            DhParam(0, 0, 0, -90),
+            DhParam(25, 90, 0, 0)
+        )
+    }
 
-        val chain = immutableListOf(link4, link5, link6)
+    private fun testWrist(vararg params: DhParam) {
+        val chain = params.toImmutableList()
         val result = identifier.isSphericalWrist(chain)
         assertTrue(result.isEmpty())
+    }
+
+    private fun testWristFails(vararg params: DhParam) {
+        val chain = params.toImmutableList()
+        val result = identifier.isSphericalWrist(chain)
+        assertTrue(result.nonEmpty())
+    }
+
+    private fun testWristIsFixed(vararg params: DhParam) {
+        val chain = params.toImmutableList()
+        val result = identifier.isSphericalWrist(
+            chain,
+            emptyImmutableList(),
+            SphericalWrist(chain).centerHomed(emptyImmutableList()).asPointMatrix().invert()
+        )
+        assertTrue(result.isRight())
+    }
+
+    private fun testWristFixFails(vararg params: DhParam) {
+        val chain = params.toImmutableList()
+        val result = identifier.isSphericalWrist(
+            chain,
+            emptyImmutableList(),
+            SphericalWrist(chain).centerHomed(emptyImmutableList()).asPointMatrix().invert()
+        )
+        assertTrue(result.isLeft())
     }
 }

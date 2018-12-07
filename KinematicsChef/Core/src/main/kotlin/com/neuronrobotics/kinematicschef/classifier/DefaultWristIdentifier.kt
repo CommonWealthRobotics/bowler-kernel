@@ -10,6 +10,7 @@ import arrow.core.Option
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
+import com.neuronrobotics.kinematicschef.util.asPointMatrix
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import org.ejml.simple.SimpleMatrix
 
@@ -61,8 +62,9 @@ internal class DefaultWristIdentifier : WristIdentifier {
             isSphericalWrist(chain).fold(
                 { Either.right(chain) },
                 {
-                    val wristCenter = SphericalWrist(chain).centerHomed(priorChain)
+                    val wristCenter = SphericalWrist(chain).centerHomed(priorChain).asPointMatrix()
                     val position = wristCenter.mult(inverseTipTransform).getTranslation()
+                    position.print()
                     if (position[1, 0] == 0.0 && position[2, 0] == 0.0) {
                         // The center of the wrist lies on the x-axis so it is spherical
                         TODO("Not implemented")
