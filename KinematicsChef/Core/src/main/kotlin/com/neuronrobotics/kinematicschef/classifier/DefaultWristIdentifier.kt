@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.util.asPointMatrix
+import com.neuronrobotics.kinematicschef.util.emptyImmutableList
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import org.ejml.simple.SimpleMatrix
 

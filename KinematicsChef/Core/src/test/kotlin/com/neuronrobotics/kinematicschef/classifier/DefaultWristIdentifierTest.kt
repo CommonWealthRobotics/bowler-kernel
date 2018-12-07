@@ -5,6 +5,7 @@
  */
 package com.neuronrobotics.kinematicschef.classifier
 
+import com.google.common.collect.ImmutableList
 import com.neuronrobotics.kinematicschef.TestUtil
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
@@ -14,8 +15,10 @@ import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.toImmutableList
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import kotlin.test.assertEquals
 
 internal class DefaultWristIdentifierTest {
 
@@ -54,7 +57,7 @@ internal class DefaultWristIdentifierTest {
     fun `test a non-spherical modified baxter wrist`() {
         testWristFails(
             DhParam(374.29, 0, 0, 89),
-            DhParam(0, 72, 10, -90),
+            DhParam(0, 0, 10, -90),
             DhParam(0, 0, 0, 90)
         )
     }
@@ -62,7 +65,7 @@ internal class DefaultWristIdentifierTest {
     @Test
     fun `test baxter's spherical wrist out of order`() {
         testWristFails(
-            DhParam(0, 72, 10, -90),
+            DhParam(0, 0, 10, -90),
             DhParam(374.29, 0, 0, 90),
             DhParam(0, 0, 0, 90)
         )
@@ -104,6 +107,39 @@ internal class DefaultWristIdentifierTest {
         )
     }
 
+    @Test
+    fun `test correct spherical wrist returns the same DH params`() {
+        testWristIsFixed(
+            immutableListOf(
+                DhParam(0, 0, 0, -90),
+                DhParam(0, 0, 0, 90),
+                DhParam(10, 0, 0, 0)
+            ),
+            immutableListOf(
+                DhParam(0, 0, 0, -90),
+                DhParam(0, 0, 0, 90),
+                DhParam(10, 0, 0, 0)
+            )
+        )
+    }
+
+    @Test
+    fun `test baxter arm fix fails`() {
+        testWristFixFails(
+            immutableListOf(
+                DhParam(374.29, 0, 0, 90),
+                DhParam(0, 0, 10, -90),
+                DhParam(0, 0, 0, 90)
+            ),
+            immutableListOf(
+                DhParam(0, 0, 0, 0),
+                DhParam(0, 90, 69, -90),
+                DhParam(364.35, 0, 0, 90),
+                DhParam(0, 0, 69, -90)
+            )
+        )
+    }
+
     private fun testWrist(vararg params: DhParam) {
         val chain = params.toImmutableList()
         val result = identifier.isSphericalWrist(chain)
@@ -116,22 +152,36 @@ internal class DefaultWristIdentifierTest {
         assertTrue(result.nonEmpty())
     }
 
-    private fun testWristIsFixed(vararg params: DhParam) {
-        val chain = params.toImmutableList()
+    private fun testWristIsFixed(
+        chain: ImmutableList<DhParam>,
+        correctParams: ImmutableList<DhParam>,
+        priorParams: ImmutableList<DhParam> = emptyImmutableList()
+    ) {
         val result = identifier.isSphericalWrist(
             chain,
-            emptyImmutableList(),
-            SphericalWrist(chain).centerHomed(emptyImmutableList()).asPointMatrix().invert()
+            priorParams,
+            SphericalWrist(chain).centerHomed(priorParams).asPointMatrix().invert()
         )
-        assertTrue(result.isRight())
+
+        assertAll(
+            { assertTrue(result.isRight()) },
+            {
+                assertEquals(correctParams, result.fold(
+                    { emptyImmutableList<DhParam>() },
+                    { it }
+                ))
+            }
+        )
     }
 
-    private fun testWristFixFails(vararg params: DhParam) {
-        val chain = params.toImmutableList()
+    private fun testWristFixFails(
+        chain: ImmutableList<DhParam>,
+        priorParams: ImmutableList<DhParam> = emptyImmutableList()
+    ) {
         val result = identifier.isSphericalWrist(
             chain,
-            emptyImmutableList(),
-            SphericalWrist(chain).centerHomed(emptyImmutableList()).asPointMatrix().invert()
+            priorParams,
+            SphericalWrist(chain).centerHomed(priorParams).asPointMatrix().invert()
         )
         assertTrue(result.isLeft())
     }
