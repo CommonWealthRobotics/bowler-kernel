@@ -6,13 +6,17 @@
 package com.neuronrobotics.kinematicschef
 
 import arrow.core.Either
+import arrow.core.Option
 import com.neuronrobotics.kinematicschef.classifier.ChainIdentifier
 import com.neuronrobotics.kinematicschef.classifier.ClassifierError
 import com.neuronrobotics.kinematicschef.classifier.DhClassifier
+import com.neuronrobotics.kinematicschef.classifier.WristIdentifier
 import com.neuronrobotics.kinematicschef.dhparam.DhChainElement
+import com.neuronrobotics.kinematicschef.dhparam.RevoluteJoint
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.util.immutableListOf
+import com.neuronrobotics.sdk.addons.kinematics.DHLink
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
@@ -52,4 +56,37 @@ internal class InverseKinematicsEngineTest {
             )
         }
     }
+
+    /*@Test
+    fun `test 6DOF inverse kinematics` () {
+        val chain = TestUtil.makeMockChain(arrayListOf(
+                DHLink(0.0, 0.0, 0.0, 0.0),
+                DHLink(0.0, 0.0, 0.0, 0.0),
+                DHLink(0.0, 0.0, 0.0, 0.0),
+                DHLink(0.0, 0.0, 0.0, 0.0),
+                DHLink(0.0, 0.0, 0.0, 0.0),
+                DHLink(0.0, 0.0, 0.0, 0.0)
+        ))
+        val dhParams = chain.toDhParams()
+
+        val mockChainIdentifier = mock<ChainIdentifier> () {
+            on { identifyChain(dhParams) } doReturn immutableListOf(
+                    RevoluteJoint (dhParams.subList(0, 1)),
+                    RevoluteJoint(dhParams.subList(1, 2)),
+                    RevoluteJoint(dhParams.subList(2, 3)),
+                    SphericalWrist(dhParams.subList(3, 6))
+            )
+        }
+
+        val mockDhClassifier = mock<DhClassifier> () {
+
+        }
+
+        val ikEngine = InverseKinematicsEngine(
+                mockChainIdentifier,
+                mockDhClassifier
+        )
+
+        val chainElements = mockChainIdentifier.identifyChain(dhParams)
+    }*/
 }

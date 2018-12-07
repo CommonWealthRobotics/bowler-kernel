@@ -3,14 +3,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package com.neuronrobotics.kinematicschef.solver
+package com.neuronrobotics.kinematicschef.dhparam
 
-import com.neuronrobotics.kinematicschef.InverseKinematicsEngine
-import com.neuronrobotics.kinematicschef.classifier.DefaultChainIdentifier
-import com.neuronrobotics.kinematicschef.classifier.DefaultDhClassifier
-import com.neuronrobotics.kinematicschef.classifier.DefaultWristIdentifier
-import com.neuronrobotics.kinematicschef.dhparam.DhParam
-import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.util.immutableListOf
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation
 import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention
@@ -18,13 +12,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
 import org.ejml.simple.SimpleMatrix
 import org.junit.jupiter.api.Test
 
-internal class AnalyticSolverTest {
-    private val wristIdentifier = DefaultWristIdentifier()
-    private val ikEngine = InverseKinematicsEngine(
-        DefaultChainIdentifier(wristIdentifier),
-        DefaultDhClassifier()
-    )
-
+internal class SphericalWristTest {
     @Test
     fun `test wrist center`() {
         val wrist = SphericalWrist(
