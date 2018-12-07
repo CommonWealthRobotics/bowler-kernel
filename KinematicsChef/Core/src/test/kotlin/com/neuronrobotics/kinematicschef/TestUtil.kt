@@ -6,6 +6,7 @@
 package com.neuronrobotics.kinematicschef
 
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
+import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.toImmutableList
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
@@ -38,6 +39,15 @@ internal object TestUtil {
     internal fun makeMockChain(links: ArrayList<DHLink>) = mock<DHChain> {
         on { getLinks() } doReturn links
     }
+
+    internal val cmmInputArmDhParams = immutableListOf(
+        DhParam(13, 180, 32, -90),
+        DhParam(25, -90, 93, 180),
+        DhParam(11, 90, 24, 90),
+        DhParam(128, -90, 0, 90),
+        DhParam(0, 0, 0, -90),
+        DhParam(25, 90, 0, 0)
+    )
 }
 
 /**
