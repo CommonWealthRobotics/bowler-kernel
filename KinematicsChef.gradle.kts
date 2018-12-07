@@ -1,6 +1,7 @@
 import KinematicsChef_gradle.Strings.spotlessLicenseHeaderDelimiter
 import KinematicsChef_gradle.Versions.kinematicsChefVersion
 import KinematicsChef_gradle.Versions.ktlintVersion
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.spotbugs.SpotBugsTask
 import com.jfrog.bintray.gradle.tasks.BintrayUploadTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
@@ -19,6 +20,7 @@ plugins {
     `maven-publish`
     id("com.jfrog.bintray") version "1.8.4"
     `java-library`
+    id("com.github.johnrengelman.shadow") version "4.0.3"
 }
 
 object Versions {
@@ -331,6 +333,7 @@ configure(publishedProjects) {
         plugin("com.jfrog.bintray")
         plugin("maven-publish")
         plugin("java-library")
+        plugin("com.github.johnrengelman.shadow")
     }
 
     task<Jar>("sourcesJar") {
@@ -345,6 +348,12 @@ configure(publishedProjects) {
         baseName = "kinematicschef-${this@configure.name.toLowerCase()}"
     }
 
+    tasks {
+        "shadowJar"(ShadowJar::class) {
+            baseName = "kinematicschef-${this@configure.name.toLowerCase()}"
+        }
+    }
+
     val publicationName = "publication-kinematicschef-${name.toLowerCase()}"
 
     publishing {
@@ -354,6 +363,7 @@ configure(publishedProjects) {
                 from(components["java"])
                 artifact(tasks["sourcesJar"])
                 artifact(tasks["javadocJar"])
+                artifact(tasks["shadowJar"])
             }
         }
     }
