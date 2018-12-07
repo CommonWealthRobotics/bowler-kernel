@@ -5,12 +5,11 @@
  */
 package com.neuronrobotics.kinematicschef.dhparam
 
-import com.neuronrobotics.kinematicschef.assertEquals
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import kotlin.math.sqrt
 import kotlin.random.Random
-import kotlin.test.assertEquals
 
 internal class DhParamTest {
 

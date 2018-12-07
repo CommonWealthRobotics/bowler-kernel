@@ -12,7 +12,6 @@ import com.neuronrobotics.sdk.addons.kinematics.DHLink
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
-import org.junit.Assert
 import org.mockito.AdditionalMatchers
 import kotlin.random.Random
 
@@ -55,9 +54,3 @@ internal fun <T> or(first: T, second: T): T = AdditionalMatchers.or(eq(first), e
  * Matches any element equal to [first] and [second].
  */
 internal fun <T> and(first: T, second: T): T = AdditionalMatchers.and(eq(first), eq(second))
-
-/**
- * Asserts that the [expected] value is equal to the [actual] value within [delta].
- */
-fun <T : Number> assertEquals(expected: T, actual: T, delta: T) =
-    Assert.assertEquals(expected.toDouble(), actual.toDouble(), delta.toDouble())
