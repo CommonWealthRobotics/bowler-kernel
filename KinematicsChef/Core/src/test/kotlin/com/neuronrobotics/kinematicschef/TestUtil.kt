@@ -48,6 +48,22 @@ internal object TestUtil {
         DhParam(0, 0, 0, -90),
         DhParam(25, 90, 0, 0)
     )
+
+    internal val hephaestusArmDhParams = immutableListOf(
+        DhParam(135, 0, 0, -90),
+        DhParam(0, 0, 175, 0),
+        DhParam(0, 90, 169.28, 0)
+    )
+
+    internal val baxterArmDhParams = immutableListOf(
+        DhParam(270.35, 0, 69, -90),
+        DhParam(0, 90, 0, 90),
+        DhParam(364.35, 0, 69, -90),
+        DhParam(0, 0, 0, 90),
+        DhParam(374.29, 0, 10, -90),
+        DhParam(0, 0, 0, 90),
+        DhParam(229.525, 0, 0, 0)
+    )
 }
 
 /**
