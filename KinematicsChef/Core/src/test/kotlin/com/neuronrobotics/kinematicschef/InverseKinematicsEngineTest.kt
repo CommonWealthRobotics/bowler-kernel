@@ -24,7 +24,7 @@ internal class InverseKinematicsEngineTest {
 
     @Test
     fun `test for error when validating euler angles`() {
-        val chain = TestUtil.makeMockChain()
+        val chain = TestUtil.makeMockChain(arrayListOf())
 
         // Use random dh params because we don't care about their values
         val wrist1 = SphericalWrist(TestUtil.randomDhParamList(3))

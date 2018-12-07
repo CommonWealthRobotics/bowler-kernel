@@ -7,10 +7,11 @@ package com.neuronrobotics.kinematicschef
 
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.util.toImmutableList
-import com.neuronrobotics.sdk.addons.kinematics.AbstractKinematicsNR
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
-import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
+import com.neuronrobotics.sdk.addons.kinematics.DHLink
+import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.eq
+import com.nhaarman.mockitokotlin2.mock
 import org.mockito.AdditionalMatchers
 import kotlin.random.Random
 
@@ -34,24 +35,9 @@ internal object TestUtil {
             randomDhParam(upperBound)
         }.toImmutableList()
 
-    // TODO: Somehow work around AbstractKinematicsNR so we don't need JavaFX installed
-    internal fun makeMockChain() = DHChain(object : AbstractKinematicsNR() {
-        override fun forwardKinematics(p0: DoubleArray?): TransformNR {
-            TODO("not implemented")
-        }
-
-        override fun disconnectDevice() {
-            TODO("not implemented")
-        }
-
-        override fun inverseKinematics(p0: TransformNR?): DoubleArray {
-            TODO("not implemented")
-        }
-
-        override fun connectDevice(): Boolean {
-            TODO("not implemented")
-        }
-    })
+    internal fun makeMockChain(links: ArrayList<DHLink>) = mock<DHChain> {
+        on { getLinks() } doReturn links
+    }
 }
 
 /**

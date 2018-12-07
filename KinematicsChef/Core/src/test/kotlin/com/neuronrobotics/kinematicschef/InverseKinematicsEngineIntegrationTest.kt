@@ -15,11 +15,13 @@ class InverseKinematicsEngineIntegrationTest {
 
     @Test
     fun `one invalid spherical wrist`() {
-        val chain = TestUtil.makeMockChain().apply {
-            addLink(DHLink(10.0, 0.0, 0.0, -90.0))
-            addLink(DHLink(0.0, 0.0, 0.0, 90.0))
-            addLink(DHLink(10.0, 0.0, 0.0, 0.0))
-        }
+        val chain = TestUtil.makeMockChain(
+            arrayListOf(
+                DHLink(10.0, 0.0, 0.0, -90.0),
+                DHLink(0.0, 0.0, 0.0, 90.0),
+                DHLink(10.0, 0.0, 0.0, 0.0)
+            )
+        )
 
         val engine = InverseKinematicsEngine.getInstance()
 
