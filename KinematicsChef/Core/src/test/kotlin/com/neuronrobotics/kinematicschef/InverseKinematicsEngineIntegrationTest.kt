@@ -51,10 +51,12 @@ class InverseKinematicsEngineIntegrationTest {
 
         val engine = InverseKinematicsEngine.getInstance()
 
-        engine.inverseKinematics(
+        val jointAngles = engine.inverseKinematics(
             params.toFrameTransformation().toTransformNR(),
             listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
             cmmInputArm.base.appendages[0].chain
         )
+
+        println(jointAngles.joinToString())
     }
 }

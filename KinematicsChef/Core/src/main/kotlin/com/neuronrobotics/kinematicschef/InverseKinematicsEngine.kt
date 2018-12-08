@@ -72,7 +72,8 @@ class InverseKinematicsEngine
 
         val wristCenter = wrist.center(target.toSimpleMatrix())
         val newJointAngles = DoubleArray(jointSpaceVector.size) { 0.0 }
-        val lengthToWristSquared = targetMatrix[0, 3].pow(2) + targetMatrix[1, 3].pow(2) - dhParams.first().r.pow(2)
+        val lengthToWristSquared =
+            abs(targetMatrix[0, 3].pow(2) + targetMatrix[1, 3].pow(2) - dhParams.first().r.pow(2))
 
         when (dhParams.first().r) {
             0.0 -> {
@@ -192,7 +193,9 @@ class InverseKinematicsEngine
      */
     private fun DHChain.jointAngleInBounds(jointAngle: Double, index: Int): Boolean {
         val link = factory.getLink(factory.linkConfigurations[index])
-        return jointAngle <= link.maxEngineeringUnits && jointAngle >= link.minEngineeringUnits
+        //return jointAngle <= link.maxEngineeringUnits && jointAngle >= link.minEngineeringUnits
+        // TODO: Use the real bounds
+        return true
     }
 
     private fun useIterativeSolver(): Nothing = TODO("The chain must be solved iteratively.")
