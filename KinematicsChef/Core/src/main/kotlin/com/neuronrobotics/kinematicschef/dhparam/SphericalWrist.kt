@@ -6,6 +6,7 @@
 package com.neuronrobotics.kinematicschef.dhparam
 
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.kinematicschef.util.getRotation
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import org.ejml.simple.SimpleMatrix
 
@@ -28,10 +29,12 @@ internal data class SphericalWrist(override val params: ImmutableList<DhParam>) 
     internal fun center(target: SimpleMatrix): SimpleMatrix {
         val wristCenter = SimpleMatrix(3, 1)
         val boneLength = params[1].r + params[2].d
+        val translation = target.getTranslation()
+        val rotation = target.getRotation()
 
-        wristCenter[0, 0] = target[0, 3] - boneLength * target[0, 2]
-        wristCenter[1, 0] = target[1, 3] - boneLength * target[1, 2]
-        wristCenter[2, 0] = target[2, 3] - boneLength * target[2, 2]
+        wristCenter[0] = translation[0] - boneLength * rotation[0, 2]
+        wristCenter[1] = translation[1] - boneLength * rotation[1, 2]
+        wristCenter[2] = translation[2] - boneLength * rotation[2, 2]
 
         return wristCenter
     }
