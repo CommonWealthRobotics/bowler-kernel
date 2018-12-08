@@ -176,3 +176,20 @@ internal fun TransformNR.toSimpleMatrix(): SimpleMatrix {
 
     return out
 }
+
+/**
+ * Returns a [TransformNR] which is equivalent to the [SimpleMatrix].
+ */
+internal fun SimpleMatrix.toTransformNR(): TransformNR {
+    val translationMat = getTranslation()
+    val rotationMat = getRotation()
+
+    val translation = DoubleArray(3) { translationMat[it] }
+    val rotation = Array(3) { row ->
+        DoubleArray(3) { col ->
+            rotationMat[row, col]
+        }
+    }
+
+    return TransformNR(translation, rotation)
+}

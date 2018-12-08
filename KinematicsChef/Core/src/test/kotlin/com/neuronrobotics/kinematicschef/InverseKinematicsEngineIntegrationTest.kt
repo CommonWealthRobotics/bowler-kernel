@@ -5,8 +5,14 @@
  */
 package com.neuronrobotics.kinematicschef
 
+import com.neuronrobotics.bowlerstudio.creature.MobileBaseLoader
+import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine
+import com.neuronrobotics.kinematicschef.dhparam.toDHLinks
+import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
+import com.neuronrobotics.kinematicschef.util.toTransformNR
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -31,5 +37,25 @@ class InverseKinematicsEngineIntegrationTest {
                 chain
             )
         }
+    }
+
+    @Test
+    @Disabled
+    fun `test cmm input arm`() {
+        val cmmInputArm = ScriptingEngine.gitScriptRun(
+            "https://gist.github.com/98892e87253005adbe4a.git",
+            "TrobotMaster.xml",
+            null
+        ) as MobileBaseLoader
+
+        val params = TestUtil.cmmInputArmDhParams
+
+        val engine = InverseKinematicsEngine.getInstance()
+
+        engine.inverseKinematics(
+            params.toFrameTransformation().toTransformNR(),
+            listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+            cmmInputArm.base.appendages[0].chain
+        )
     }
 }

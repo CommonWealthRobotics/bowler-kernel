@@ -12,6 +12,7 @@ import com.neuronrobotics.kinematicschef.classifier.DhClassifier
 import com.neuronrobotics.kinematicschef.dhparam.DhChainElement
 import com.neuronrobotics.kinematicschef.dhparam.RevoluteJoint
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
+import com.neuronrobotics.kinematicschef.dhparam.toDHLinks
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
@@ -59,20 +60,11 @@ internal class InverseKinematicsEngineTest {
     @Test
     @Disabled
     fun `test 6DOF inverse kinematics`() {
-        val chain = TestUtil.makeMockChain(
-            arrayListOf(
-                DHLink(13.0, 180.0, 32.0, -90.0),
-                DHLink(25.0, -90.0, 93.0, 180.0),
-                DHLink(11.0, 90.0, 24.0, 90.0),
-                DHLink(128.0, -90.0, 0.0, 90.0),
-                DHLink(0.0, 0.0, 0.0, -90.0),
-                DHLink(25.0, 90.0, 0.0, 0.0)
-            )
-        )
+        val chain = TestUtil.makeMockChain(ArrayList(TestUtil.cmmInputArmDhParams.toDHLinks()))
 
         val dhParams = chain.toDhParams()
 
-        val mockChainIdentifier = mock<ChainIdentifier>() {
+        val mockChainIdentifier = mock<ChainIdentifier> {
             on { identifyChain(dhParams) } doReturn immutableListOf(
                 RevoluteJoint(dhParams.subList(0, 1)),
                 RevoluteJoint(dhParams.subList(1, 2)),
@@ -81,7 +73,7 @@ internal class InverseKinematicsEngineTest {
             )
         }
 
-        val mockDhClassifier = mock<DhClassifier>() {
+        val mockDhClassifier = mock<DhClassifier> {
         }
 
         val ikEngine = InverseKinematicsEngine(

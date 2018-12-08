@@ -5,7 +5,6 @@
  */
 package com.neuronrobotics.kinematicschef.dhparam
 
-import com.google.common.collect.ImmutableList
 import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.kinematicschef.util.identityFrameTransform
@@ -14,6 +13,8 @@ import com.neuronrobotics.kinematicschef.util.toImmutableList
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
 import org.ejml.simple.SimpleMatrix
+import java.lang.Math.toDegrees
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -85,8 +86,26 @@ internal fun Collection<DhParam>.toFrameTransformation() =
         acc.mult(dhParam.frameTransformation)
     }
 
-internal fun DHLink.toDhParam() = DhParam(d, theta, r, alpha)
+/**
+ * Maps the [DHLink] into a [DhParam]. If the [DHLink] appears to have both [DHLink.theta] and
+ * [DHLink.alpha] specified in radians, they will be converted to degrees.
+ */
+internal fun DHLink.toDhParam(): DhParam {
+    val epsilon = 1e-14
 
-internal fun ImmutableList<DHLink>.toDhParams() = map { it.toDhParam() }.toImmutableList()
+    // Check for PI, PI/2, and 0
+    fun checkValueIsRadians(value: Double) =
+        abs(abs(value) - Math.PI) < epsilon || abs(abs(value) - (Math.PI / 2)) < epsilon || abs(value) < epsilon
+
+    return if (checkValueIsRadians(theta) && checkValueIsRadians(alpha)) {
+        DhParam(d, toDegrees(theta), r, toDegrees(alpha))
+    } else {
+        DhParam(d, theta, r, alpha)
+    }
+}
+
+internal fun Collection<DHLink>.toDhParams() = map { it.toDhParam() }.toImmutableList()
 
 internal fun DHChain.toDhParams() = links.toImmutableList().toDhParams()
+
+internal fun Collection<DhParam>.toDHLinks() = map { it.toDHLink() }.toImmutableList()

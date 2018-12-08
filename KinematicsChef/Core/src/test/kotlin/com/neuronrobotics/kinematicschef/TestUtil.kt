@@ -8,8 +8,10 @@ package com.neuronrobotics.kinematicschef
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.toImmutableList
+import com.neuronrobotics.sdk.addons.kinematics.AbstractKinematicsNR
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
+import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
@@ -39,6 +41,24 @@ internal object TestUtil {
     internal fun makeMockChain(links: ArrayList<DHLink>) = mock<DHChain> {
         on { getLinks() } doReturn links
     }
+
+    internal fun makeFullMockChain(links: ArrayList<DHLink>) = DHChain(object : AbstractKinematicsNR() {
+        override fun forwardKinematics(p0: DoubleArray?): TransformNR {
+            TODO("not implemented")
+        }
+
+        override fun disconnectDevice() {
+            TODO("not implemented")
+        }
+
+        override fun inverseKinematics(p0: TransformNR?): DoubleArray {
+            TODO("not implemented")
+        }
+
+        override fun connectDevice(): Boolean {
+            TODO("not implemented")
+        }
+    }).apply { setLinks(links) }
 
     internal val cmmInputArmDhParams = immutableListOf(
         DhParam(13, 180, 32, -90),

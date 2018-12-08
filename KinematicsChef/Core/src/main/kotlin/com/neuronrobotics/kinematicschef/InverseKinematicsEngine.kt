@@ -125,7 +125,6 @@ class InverseKinematicsEngine
 
                 // TODO: Pick between the left and right arm solutions
                 // Using just left arm solution for now.
-
                 if (chain.jointAngleInBounds(theta1Left, 0)) {
                     jointSpaceVector[0] = theta1Left
                 } else {
