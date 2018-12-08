@@ -14,7 +14,6 @@ import com.neuronrobotics.kinematicschef.classifier.DhClassifier
 import com.neuronrobotics.kinematicschef.classifier.WristIdentifier
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
-import com.neuronrobotics.kinematicschef.util.toImmutableMap
 import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
@@ -73,9 +72,7 @@ class InverseKinematicsEngine
 
         val wristCenter = wrist.center(target.toSimpleMatrix())
         val newJointAngles = DoubleArray(jointSpaceVector.size) { 0.0 }
-
-        // TODO: JMM please verify this variable name, idk what this length actually is
-        val lengthToWrist = targetMatrix[0, 3].pow(2) + targetMatrix[1, 3].pow(2) - dhParams.first().r.pow(2)
+        val lengthToWristSquared = targetMatrix[0, 3].pow(2) + targetMatrix[1, 3].pow(2) - dhParams.first().r.pow(2)
 
         when (dhParams.first().r) {
             0.0 -> {
@@ -114,7 +111,7 @@ class InverseKinematicsEngine
             else -> {
                 // left/right arm configuration
                 val phi = atan2(targetMatrix[0, 3], targetMatrix[1, 3])
-                val length = sqrt(lengthToWrist)
+                val length = sqrt(lengthToWristSquared)
 
                 val theta1Left = toDegrees(phi - atan2(length, dhParams.first().r))
                 val theta1Right = toDegrees(phi + atan2(-1 * length, -1 * dhParams.first().r))
@@ -134,15 +131,15 @@ class InverseKinematicsEngine
 
         // spong 4.29 (xc^2 + yc^2 - d^2 + zc^2 - a2^2 - a3^2)/(2(a2)(a3))
         val cosTheta3 =
-            (lengthToWrist + targetMatrix[2, 3].pow(2) - dhParams[1].r.pow(2) - dhParams[2].r.pow(2)) / (2.0 * dhParams[1].r * dhParams[2].r)
+            (lengthToWristSquared + targetMatrix[2, 3].pow(2) - dhParams[1].r.pow(2) - dhParams[2].r.pow(2)) / (2.0 * dhParams[1].r * dhParams[2].r)
 
         val theta3ElbowUp = atan2(cosTheta3, sqrt(1 - cosTheta3.pow(2)))
         val theta3ElbowDown = atan2(cosTheta3, -1 * sqrt(1 - cosTheta3.pow(2)))
 
-        val theta2ElbowUp = atan2(sqrt(lengthToWrist), targetMatrix[2, 3]) - atan2(
+        val theta2ElbowUp = atan2(sqrt(lengthToWristSquared), targetMatrix[2, 3]) - atan2(
             dhParams[1].r + dhParams[2].r * cos(theta3ElbowUp), dhParams[2].r * sin(theta3ElbowUp)
         )
-        val theta2ElbowDown = atan2(sqrt(lengthToWrist), targetMatrix[2, 3]) - atan2(
+        val theta2ElbowDown = atan2(sqrt(lengthToWristSquared), targetMatrix[2, 3]) - atan2(
             dhParams[1].r + dhParams[2].r * cos(theta3ElbowDown), dhParams[2].r * sin(theta3ElbowDown)
         )
 
