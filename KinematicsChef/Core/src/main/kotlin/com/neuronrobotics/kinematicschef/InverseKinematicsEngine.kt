@@ -58,29 +58,28 @@ class InverseKinematicsEngine
         val targetMatrix = target.toSimpleMatrix()
         val chainElements = chainIdentifier.identifyChain(dhParams)
 
-        val eulerAngles = chainElements
-            .mapNotNull { it as? SphericalWrist }
-            .map { it to dhClassifier.deriveEulerAngles(it) }
-            .toImmutableMap()
-
-        // If there were any problems while deriving the spherical wrists' Euler angles we can't
-        // solve the chain analytically
-        if (eulerAngles.filter { it.value.isLeft() }.isNotEmpty()) {
-            useIterativeSolver()
-        }
+//        val eulerAngles = chainElements
+//            .mapNotNull { it as? SphericalWrist }
+//            .map { it to dhClassifier.deriveEulerAngles(it) }
+//            .toImmutableMap()
+//
+//        // If there were any problems while deriving the spherical wrists' Euler angles we can't
+//        // solve the chain analytically
+//        if (eulerAngles.filter { it.value.isLeft() }.isNotEmpty()) {
+//            useIterativeSolver()
+//        }
 
         val wrist = chainElements.last() as? SphericalWrist ?: useIterativeSolver()
 
         val wristCenter = wrist.center(target.toSimpleMatrix())
         val newJointAngles = DoubleArray(jointSpaceVector.size) { 0.0 }
 
-        // TODO: Jason please verify this variable name, idk what this length actually is
+        // TODO: JMM please verify this variable name, idk what this length actually is
         val lengthToWrist = targetMatrix[0, 3].pow(2) + targetMatrix[1, 3].pow(2) - dhParams.first().r.pow(2)
 
         when (dhParams.first().r) {
             0.0 -> {
                 // next joint is along Z axis of shoulder
-
                 // check for singularity, if so then the shoulder joint angle does not need to change
                 if (targetMatrix[0, 3] == 0.0 && targetMatrix[1, 3] == 0.0) {
                     newJointAngles[0] = jointSpaceVector[0]
@@ -115,9 +114,7 @@ class InverseKinematicsEngine
             else -> {
                 // left/right arm configuration
                 val phi = atan2(targetMatrix[0, 3], targetMatrix[1, 3])
-                val length = sqrt(
-                    lengthToWrist
-                )
+                val length = sqrt(lengthToWrist)
 
                 val theta1Left = toDegrees(phi - atan2(length, dhParams.first().r))
                 val theta1Right = toDegrees(phi + atan2(-1 * length, -1 * dhParams.first().r))

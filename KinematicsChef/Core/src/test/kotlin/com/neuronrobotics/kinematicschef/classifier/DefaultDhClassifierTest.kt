@@ -20,6 +20,7 @@ import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZXY
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZXZ
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZYX
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZYZ
+import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.toImmutableList
 import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue
@@ -190,6 +191,16 @@ class DefaultDhClassifierTest {
             DhParam(0, 0, 0, 90),
             DhParam(0, -90, 0, -90),
             DhParam(0, 0, 0, -90)
+        )
+    }
+
+    @Test
+    fun `test cmm input arm wrist`() {
+        testWrist(
+            EulerAngleXYX,
+            DhParam(128, -90, 90, 90),
+            DhParam(0, 0, 0, -90),
+            DhParam(25, 90, 0, 0)
         )
     }
 
