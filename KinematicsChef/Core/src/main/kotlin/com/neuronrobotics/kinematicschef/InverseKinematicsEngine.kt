@@ -110,10 +110,11 @@ class InverseKinematicsEngine
             else -> {
                 // left/right arm configuration
                 val phi = atan2(wristCenter[0], wristCenter[1])
-                val length = sqrt(lengthToWristSquared)
+                val d = dhParams[0].r + dhParams[1].d + dhParams[2].d
+                val length = sqrt(abs(lengthToWristSquared - d.pow(2)))
 
-                val theta1Left = toDegrees(phi - atan2(length, dhParams.first().r))
-                val theta1Right = toDegrees(phi + atan2(-1 * length, -1 * dhParams.first().r))
+                val theta1Left = toDegrees(phi - atan2(length, d))
+                val theta1Right = toDegrees(phi + atan2(-1 * length, -1 * d))
 
                 // TODO: Pick between the left and right arm solutions
                 // Using just left arm solution for now.
