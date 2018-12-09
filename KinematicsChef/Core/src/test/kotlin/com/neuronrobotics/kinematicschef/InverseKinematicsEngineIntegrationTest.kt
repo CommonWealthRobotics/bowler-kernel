@@ -42,8 +42,10 @@ class InverseKinematicsEngineIntegrationTest {
     @Disabled
     fun `test cmm input arm`() {
         val cmmInputArm = ScriptingEngine.gitScriptRun(
-            "https://gist.github.com/98892e87253005adbe4a.git",
-            "TrobotMaster.xml",
+//            "https://gist.github.com/98892e87253005adbe4a.git",
+//            "TrobotMaster.xml",
+            "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
+            "InputArmBase_copy.xml",
             null
         ) as MobileBaseLoader
 
@@ -55,6 +57,28 @@ class InverseKinematicsEngineIntegrationTest {
             params.toFrameTransformation().toTransformNR(),
             listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
             cmmInputArm.base.appendages[0].chain
+        )
+
+        println(jointAngles.joinToString())
+    }
+
+    @Test
+    @Disabled
+    fun `test puma arm`() {
+        val pumaArm = ScriptingEngine.gitScriptRun(
+            "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
+            "InputArmBase_copy.xml",
+            null
+        ) as MobileBaseLoader
+
+        val params = TestUtil.pumaArmDhParams
+
+        val engine = InverseKinematicsEngine.getInstance()
+
+        val jointAngles = engine.inverseKinematics(
+            params.toFrameTransformation().toTransformNR(),
+            listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+            pumaArm.base.appendages[1].chain
         )
 
         println(jointAngles.joinToString())

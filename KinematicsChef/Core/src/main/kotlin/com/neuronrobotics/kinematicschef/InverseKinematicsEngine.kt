@@ -113,6 +113,9 @@ class InverseKinematicsEngine
                 val d = dhParams[0].r + dhParams[1].d + dhParams[2].d
                 val length = sqrt(abs(lengthToWristSquared - d.pow(2)))
 
+//                val pointBeforeWrist = dhParams.subList(0, 3).toFrameTransformation().getTranslation()
+//                val length = sqrt(pointBeforeWrist[0].pow(2) + pointBeforeWrist[1].pow(2))
+
                 val theta1Left = toDegrees(phi - atan2(length, d))
                 val theta1Right = toDegrees(phi + atan2(-1 * length, -1 * d))
 

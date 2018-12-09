@@ -84,6 +84,15 @@ internal object TestUtil {
         DhParam(0, 0, 0, 90),
         DhParam(229.525, 0, 0, 0)
     )
+
+    internal val pumaArmDhParams = immutableListOf(
+        DhParam(0, 0, 0, -90),
+        DhParam(14.9, 0, 43.2, 0),
+        DhParam(0, 0, 2, 90),
+        DhParam(43.2, 0, 0, -90),
+        DhParam(0, 0, 0, 90),
+        DhParam(5.6, 0, 0, 0)
+    )
 }
 
 /**
