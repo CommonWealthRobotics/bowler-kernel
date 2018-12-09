@@ -7,7 +7,9 @@ package com.neuronrobotics.kinematicschef
 
 import com.neuronrobotics.bowlerstudio.creature.MobileBaseLoader
 import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine
+import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
+import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
 import com.neuronrobotics.kinematicschef.util.toTransformNR
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
@@ -49,14 +51,14 @@ class InverseKinematicsEngineIntegrationTest {
             null
         ) as MobileBaseLoader
 
-        val params = TestUtil.cmmInputArmDhParams
+        val chain = cmmInputArm.base.appendages[0].chain
 
         val engine = InverseKinematicsEngine.getInstance()
 
         val jointAngles = engine.inverseKinematics(
-            params.toFrameTransformation().toTransformNR(),
+            chain.toDhParams().toFrameTransformation().toTransformNR(),
             listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
-            cmmInputArm.base.appendages[0].chain
+            chain
         )
 
         println(jointAngles.joinToString())
@@ -71,16 +73,34 @@ class InverseKinematicsEngineIntegrationTest {
             null
         ) as MobileBaseLoader
 
-        val params = TestUtil.pumaArmDhParams
+        val chain = pumaArm.base.appendages[1].chain
+        val homeTarget = chain.toDhParams().toFrameTransformation()
 
         val engine = InverseKinematicsEngine.getInstance()
 
-        val jointAngles = engine.inverseKinematics(
-            params.toFrameTransformation().toTransformNR(),
-            listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
-            pumaArm.base.appendages[1].chain
-        )
+        for (i in 0..100) {
+            val jointAngles = engine.inverseKinematics(
+                homeTarget.mult(getFrameTranslationMatrix(i, 0, 0)).toTransformNR(),
+                listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+                chain
+            )
 
-        println(jointAngles.joinToString())
+            println(jointAngles.joinToString())
+        }
+
+//        for (i in -100..100) {
+//            for (j in -100..100) {
+//                for (k in -100..100) {
+//                    val jointAngles = engine.inverseKinematics(
+//                        homeTarget.mult(getFrameTranslationMatrix(i, 0, 0)).toTransformNR(),
+//                        listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+//                        chain
+//                    )
+//                    if (jointAngles[0] != 0.0) {
+//                        println(jointAngles.joinToString())
+//                    }
+//                }
+//            }
+//        }
     }
 }
