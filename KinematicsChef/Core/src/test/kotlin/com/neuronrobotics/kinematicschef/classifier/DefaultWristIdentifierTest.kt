@@ -12,6 +12,7 @@ import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.util.asPointMatrix
 import com.neuronrobotics.kinematicschef.util.emptyImmutableList
 import com.neuronrobotics.kinematicschef.util.immutableListOf
+import com.neuronrobotics.kinematicschef.util.toImmutableList
 import org.ejml.simple.SimpleMatrix
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -148,10 +149,167 @@ internal class DefaultWristIdentifierTest {
         )
     }
 
+    @Test
+    fun `test ZXZ wrist`() {
+        testWrist(
+            DhParam(0, 90, 0, 0),
+            DhParam(0, 0, 0, 90),
+            DhParam(0, -90, 0, -90)
+        )
+    }
+
+    @Test
+    fun `test ZXZ wrist with wrong link 1 theta`() {
+        testWrist(
+            DhParam(0, 91, 0, 0),
+            DhParam(0, 0, 0, 90),
+            DhParam(0, -90, 0, -90)
+        )
+    }
+
+    @Test
+    fun `test ZXZ wrist with wrong link 2 alpha`() {
+        testWristFails(
+            DhParam(0, 91, 0, 0),
+            DhParam(0, 0, 0, 89.9),
+            DhParam(0, -90, 0, -90)
+        )
+    }
+
+    @Test
+    fun `test ZYZ wrist`() {
+        testWrist(
+            DhParam(0, 0, 0, 0),
+            DhParam(0, 0, 0, -90),
+            DhParam(0, 0, 0, 90)
+        )
+    }
+
+    @Test
+    fun `test ZXY wrist`() {
+        testWrist(
+            DhParam(0, 90, 0, 0),
+            DhParam(0, -90, 0, 90),
+            DhParam(0, -90, 0, -90)
+        )
+    }
+
+    @Test
+    fun `test ZXY wrist with wrong thetas`() {
+        testWrist(
+            DhParam(0, 0, 0, 0),
+            DhParam(0, 0, 0, 90),
+            DhParam(0, 0, 0, -90)
+        )
+    }
+
+    @Test
+    fun `test ZYX wrist`() {
+        testWrist(
+            DhParam(0, 0, 0, 0),
+            DhParam(0, 90, 0, -90),
+            DhParam(0, 90, 0, 90)
+        )
+    }
+
+    @Test
+    fun `test YXY wrist`() {
+        testWrist(
+            DhParam(0, 90, 0, -90),
+            DhParam(0, 0, 0, 90),
+            DhParam(0, -90, 0, -90)
+        )
+    }
+
+    @Test
+    fun `test YZY wrist`() {
+        testWrist(
+            DhParam(0, 0, 0, -90),
+            DhParam(0, 0, 0, 90),
+            DhParam(0, 0, 0, -90)
+        )
+    }
+
+    @Test
+    fun `test YXZ wrist`() {
+        testWrist(
+            DhParam(0, 90, 0, -90),
+            DhParam(0, 90, 0, 90),
+            DhParam(0, -90, 0, -90)
+        )
+    }
+
+    @Test
+    fun `test YXZ wrist with wrong link 1 theta`() {
+        testWrist(
+            DhParam(0, 91, 0, -90),
+            DhParam(0, 90, 0, 90),
+            DhParam(0, -90, 0, -90)
+        )
+    }
+
+    @Test
+    fun `test YXZ wrist with wrong link 2 theta`() {
+        testWrist(
+            DhParam(0, 90, 0, -90),
+            DhParam(0, 91, 0, 90),
+            DhParam(0, -90, 0, -90)
+        )
+    }
+
+    @Test
+    fun `test YZX wrist`() {
+        testWrist(
+            DhParam(0, 0, 0, -90),
+            DhParam(0, 90, 0, 90),
+            DhParam(0, 0, 0, 90)
+        )
+    }
+
+    @Test
+    fun `test XYX wrist`() {
+        testWrist(
+            DhParam(0, -90, 0, 90),
+            DhParam(0, 0, 0, -90),
+            DhParam(0, 90, 0, 90)
+        )
+    }
+
+    @Test
+    fun `test XZX wrist`() {
+        testWrist(
+            DhParam(0, 0, 0, 90),
+            DhParam(0, 0, 0, -90),
+            DhParam(0, 0, 0, 90)
+        )
+    }
+
+    @Test
+    fun `test XYZ wrist`() {
+        testWrist(
+            DhParam(0, -90, 0, 90),
+            DhParam(0, -90, 0, -90),
+            DhParam(0, 0, 0, 90)
+        )
+    }
+
+    @Test
+    fun `test XZY wrist`() {
+        testWrist(
+            DhParam(0, 0, 0, 90),
+            DhParam(0, -90, 0, -90),
+            DhParam(0, 0, 0, -90)
+        )
+    }
+
+    private fun testWrist(vararg chain: DhParam) = testWrist(chain.toImmutableList())
+
     private fun testWrist(chain: ImmutableList<DhParam>) {
         val result = identifier.isSphericalWrist(chain)
         assertTrue(result.isEmpty())
     }
+
+    private fun testWristFails(vararg chain: DhParam) = testWristFails(chain.toImmutableList())
 
     private fun testWristFails(chain: ImmutableList<DhParam>) {
         val result = identifier.isSphericalWrist(chain)
