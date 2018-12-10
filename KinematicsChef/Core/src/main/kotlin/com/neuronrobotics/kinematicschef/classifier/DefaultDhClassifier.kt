@@ -135,13 +135,16 @@ internal constructor() : DhClassifier {
         }
     }
 
+    /**
+     * Fail because the wrist does not have Euler angles.
+     */
     private fun failDerivation(params: ImmutableList<DhParam>) =
         Either.left(
             ClassifierError(
                 """
                 |The wrist does not have Euler angles:
                 |${params.joinToString("\n")}
-            """.trimMargin()
+                """.trimMargin()
             )
         )
 

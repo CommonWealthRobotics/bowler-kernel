@@ -14,6 +14,7 @@ import com.neuronrobotics.kinematicschef.classifier.DhClassifier
 import com.neuronrobotics.kinematicschef.classifier.WristIdentifier
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
+import com.neuronrobotics.kinematicschef.util.toImmutableMap
 import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
@@ -56,16 +57,20 @@ class InverseKinematicsEngine
         val dhParams = chain.toDhParams()
         val chainElements = chainIdentifier.identifyChain(dhParams)
 
-//        val eulerAngles = chainElements
-//            .mapNotNull { it as? SphericalWrist }
-//            .map { it to dhClassifier.deriveEulerAngles(it) }
-//            .toImmutableMap()
-//
-//        // If there were any problems while deriving the spherical wrists' Euler angles we can't
-//        // solve the chain analytically
-//        if (eulerAngles.filter { it.value.isLeft() }.isNotEmpty()) {
-//            useIterativeSolver()
-//        }
+        val eulerAngles = chainElements
+            .mapNotNull { it as? SphericalWrist }
+            .map { it to dhClassifier.deriveEulerAngles(
+                it,
+                chainElements.subList(0, chainElements.indexOf(it)),
+                chainElements.subList(chainElements.indexOf(it) + 1, chainElements.size)
+            ) }
+            .toImmutableMap()
+
+        // If there were any problems while deriving the spherical wrists' Euler angles we can't
+        // solve the chain analytically
+        if (eulerAngles.filter { it.value.isLeft() }.isNotEmpty()) {
+            useIterativeSolver()
+        }
 
         val wrist = chainElements.last() as? SphericalWrist ?: useIterativeSolver()
 

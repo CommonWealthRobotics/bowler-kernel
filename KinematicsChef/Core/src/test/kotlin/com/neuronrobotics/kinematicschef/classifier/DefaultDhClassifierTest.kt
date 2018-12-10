@@ -5,6 +5,9 @@
  */
 package com.neuronrobotics.kinematicschef.classifier
 
+import com.google.common.collect.ImmutableList
+import com.neuronrobotics.kinematicschef.TestUtil
+import com.neuronrobotics.kinematicschef.dhparam.DhChainElement
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngle
@@ -21,7 +24,6 @@ import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZXZ
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZYX
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZYZ
 import com.neuronrobotics.kinematicschef.util.emptyImmutableList
-import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.toImmutableList
 import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue
@@ -197,24 +199,17 @@ class DefaultDhClassifierTest {
 
     @Test
     fun `test cmm input arm wrist`() {
-        val result = classifier.deriveEulerAngles(
-            SphericalWrist(
-                immutableListOf(
-                    DhParam(128, -90, 90, 90),
-                    DhParam(0, 0, 0, -90),
-                    DhParam(25, 90, 0, 0)
-                )
-            ),
-            emptyImmutableList(),
-            emptyImmutableList()
+        testWristIsFixable(
+            EulerAngleXYX,
+            TestUtil.cmmInputArmDhParams.subList(3, 6)
         )
+    }
 
-        assertTrue(
-            result.exists { it == EulerAngleXYX },
-            """
-                    |The wrist should have the expected Euler angles. Got:
-                    |$result
-                """.trimMargin()
+    @Test
+    fun `test puma arm wrist`() {
+        testWristIsFixable(
+            EulerAngleYZY,
+            TestUtil.pumaArmDhParams.subList(3, 6)
         )
     }
 
@@ -227,8 +222,8 @@ class DefaultDhClassifierTest {
             assertTrue(
                 result.exists { it == expected },
                 """
-                    |The wrist should have the expected Euler angles. Got:
-                    |$result
+                |The wrist should have the expected Euler angles. Got:
+                |$result
                 """.trimMargin()
             )
         }
@@ -242,8 +237,29 @@ class DefaultDhClassifierTest {
         assertTrue(
             result.isLeft(),
             """
-                |The wrist should not have any Euler angles. Got:
-                |$result
+            |The wrist should not have any Euler angles. Got:
+            |$result
+            """.trimMargin()
+        )
+    }
+
+    private fun testWristIsFixable(
+        expected: EulerAngle,
+        params: ImmutableList<DhParam>,
+        priorLinks: ImmutableList<DhChainElement> = emptyImmutableList(),
+        followingLinks: ImmutableList<DhChainElement> = emptyImmutableList()
+    ) {
+        val result = classifier.deriveEulerAngles(
+            SphericalWrist(params),
+            priorLinks,
+            followingLinks
+        )
+
+        assertTrue(
+            result.exists { it == expected },
+            """
+            |The wrist should have the expected Euler angles. Got:
+            |$result
             """.trimMargin()
         )
     }
