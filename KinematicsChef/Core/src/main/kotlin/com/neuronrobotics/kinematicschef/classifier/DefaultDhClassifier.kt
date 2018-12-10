@@ -8,6 +8,8 @@
 package com.neuronrobotics.kinematicschef.classifier
 
 import arrow.core.Either
+import com.google.common.collect.ImmutableList
+import com.neuronrobotics.kinematicschef.dhparam.DhChainElement
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngle
@@ -25,6 +27,7 @@ import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZYX
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZYZ
 import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.immutableMapOf
+import com.neuronrobotics.kinematicschef.util.toImmutableList
 
 internal class DefaultDhClassifier
 internal constructor() : DhClassifier {
@@ -46,17 +49,62 @@ internal constructor() : DhClassifier {
         }
 
         if (invalidParams.isNotEmpty()) {
-            return Either.left(
-                ClassifierError(
-                    """
-                        |The following DhParams are invalid:
-                        |${invalidParams.joinToString("\n")}
-                    """.trimMargin()
-                )
-            )
+            return failDerivation(invalidParams.toImmutableList())
         }
 
         return deriveEulerAngles(wrist.params[0], wrist.params[1], wrist.params[2])
+    }
+
+    /**
+     * Determine the Euler angles for a [SphericalWrist].
+     *
+     * @param wrist The wrist to classify. The thetas must be specified as offsets.
+     * @param priorChain The chain elements before the wrist.
+     * @param followingChain The chain elements after the wrist.
+     * @return The Euler angles or an error.
+     */
+    override fun deriveEulerAngles(
+        wrist: SphericalWrist,
+        priorChain: ImmutableList<DhChainElement>,
+        followingChain: ImmutableList<DhChainElement>
+    ): Either<ClassifierError, EulerAngle> {
+        return deriveEulerAngles(wrist).fold(
+            {
+                if (followingChain.isEmpty()) {
+                    // If the wrist is the last in the chain, then the 3rd link alpha is effectively a free parameter
+                    // So if the wrist matches except for the last alpha, then it still technically matches
+                    val newAngles = listOf(-90, 0, 90).map { newAlpha ->
+                        deriveEulerAngles(
+                            SphericalWrist(
+                                immutableListOf(
+                                    wrist.params[0],
+                                    wrist.params[1],
+                                    wrist.params[2].copy(
+                                        alpha = newAlpha.toDouble()
+                                    )
+                                )
+                            )
+                        )
+                    }.mapNotNull { newEulerAngles ->
+                        newEulerAngles.fold(
+                            { null },
+                            { it }
+                        )
+                    }
+
+                    when {
+                        newAngles.size == 1 -> Either.right(newAngles.first())
+                        else -> failDerivation(wrist.params)
+                    }
+                } else {
+                    // The wrist is not the last in the chain, so the 3rd link alpha is not a free parameter
+                    failDerivation(wrist.params)
+                }
+            },
+            {
+                Either.right(it)
+            }
+        )
     }
 
     /**
@@ -82,19 +130,20 @@ internal constructor() : DhClassifier {
             if (it != null) {
                 Either.right(it)
             } else {
-                Either.left(failDerivation(link1, link2, link3))
+                failDerivation(immutableListOf(link1, link2, link3))
             }
         }
     }
 
-    private fun failDerivation(vararg params: DhParam): ClassifierError {
-        return ClassifierError(
-            """
+    private fun failDerivation(params: ImmutableList<DhParam>) =
+        Either.left(
+            ClassifierError(
+                """
                 |The wrist does not have Euler angles:
                 |${params.joinToString("\n")}
             """.trimMargin()
+            )
         )
-    }
 
     companion object {
         /**

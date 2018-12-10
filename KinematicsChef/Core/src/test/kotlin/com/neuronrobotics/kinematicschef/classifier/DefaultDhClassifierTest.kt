@@ -20,6 +20,7 @@ import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZXY
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZXZ
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZYX
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZYZ
+import com.neuronrobotics.kinematicschef.util.emptyImmutableList
 import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.toImmutableList
 import org.junit.jupiter.api.Test
@@ -196,11 +197,24 @@ class DefaultDhClassifierTest {
 
     @Test
     fun `test cmm input arm wrist`() {
-        testWrist(
-            EulerAngleXYX,
-            DhParam(128, -90, 90, 90),
-            DhParam(0, 0, 0, -90),
-            DhParam(25, 90, 0, 0)
+        val result = classifier.deriveEulerAngles(
+            SphericalWrist(
+                immutableListOf(
+                    DhParam(128, -90, 90, 90),
+                    DhParam(0, 0, 0, -90),
+                    DhParam(25, 90, 0, 0)
+                )
+            ),
+            emptyImmutableList(),
+            emptyImmutableList()
+        )
+
+        assertTrue(
+            result.exists { it == EulerAngleXYX },
+            """
+                    |The wrist should have the expected Euler angles. Got:
+                    |$result
+                """.trimMargin()
         )
     }
 
