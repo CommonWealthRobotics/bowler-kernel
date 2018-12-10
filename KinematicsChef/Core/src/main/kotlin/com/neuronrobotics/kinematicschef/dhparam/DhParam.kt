@@ -95,7 +95,7 @@ internal fun DHLink.toDhParam(): DhParam {
 
     // Check for PI, PI/2, and 0
     fun checkValueIsRadians(value: Double) =
-        abs(abs(value) - Math.PI) < epsilon || abs(abs(value) - (Math.PI / 2)) < epsilon || abs(value) < epsilon
+        abs(abs(value) - Math.PI) < epsilon || abs(abs(value) - Math.PI / 2) < epsilon || abs(value) < epsilon
 
     return if (checkValueIsRadians(theta) && checkValueIsRadians(alpha)) {
         DhParam(d, toDegrees(theta), r, toDegrees(alpha))

@@ -16,6 +16,7 @@ import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.fail
 
 class InverseKinematicsEngineIntegrationTest {
 
@@ -49,7 +50,7 @@ class InverseKinematicsEngineIntegrationTest {
             "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
             "InputArmBase_copy.xml",
             null
-        ) as MobileBaseLoader
+        ) as? MobileBaseLoader ?: fail { "The script did not return a MobileBaseLoader." }
 
         val chain = cmmInputArm.base.appendages[0].chain
 
@@ -71,7 +72,7 @@ class InverseKinematicsEngineIntegrationTest {
             "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
             "InputArmBase_copy.xml",
             null
-        ) as MobileBaseLoader
+        ) as? MobileBaseLoader ?: fail { "The script did not return a MobileBaseLoader." }
 
         val chain = pumaArm.base.appendages[1].chain
         val homeTarget = chain.toDhParams().toFrameTransformation()

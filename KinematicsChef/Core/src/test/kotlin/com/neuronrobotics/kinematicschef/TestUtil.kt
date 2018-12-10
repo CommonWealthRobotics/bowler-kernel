@@ -8,10 +8,11 @@ package com.neuronrobotics.kinematicschef
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.toImmutableList
-import com.neuronrobotics.sdk.addons.kinematics.AbstractKinematicsNR
+import com.neuronrobotics.sdk.addons.kinematics.AbstractLink
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
-import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
+import com.neuronrobotics.sdk.addons.kinematics.LinkConfiguration
+import com.neuronrobotics.sdk.addons.kinematics.LinkFactory
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
@@ -38,27 +39,46 @@ internal object TestUtil {
             randomDhParam(upperBound)
         }.toImmutableList()
 
+    fun makeMockChain(links: Collection<DHLink>) = makeMockChain(ArrayList(links))
+
     internal fun makeMockChain(links: ArrayList<DHLink>) = mock<DHChain> {
         on { getLinks() } doReturn links
+        on { factory } doReturn object : LinkFactory() {
+            override fun getLink(c: LinkConfiguration?) = makeMockAbstractLink()
+
+            override fun getLinkConfigurations() =
+                ArrayList(links.map { makeMockAbstractLink().linkConfiguration })
+        }
     }
 
-    internal fun makeFullMockChain(links: ArrayList<DHLink>) = DHChain(object : AbstractKinematicsNR() {
-        override fun forwardKinematics(p0: DoubleArray?): TransformNR {
+    internal fun makeMockAbstractLink(
+        upperBound: Double = 180.0,
+        lowerBound: Double = -180.0
+    ) = object : AbstractLink(LinkConfiguration()) {
+
+        override fun getMaxEngineeringUnits() = upperBound
+
+        override fun getMinEngineeringUnits() = lowerBound
+
+        override fun getCurrentPosition(): Double {
             TODO("not implemented")
         }
 
-        override fun disconnectDevice() {
+        override fun cacheTargetValueDevice() {
             TODO("not implemented")
         }
 
-        override fun inverseKinematics(p0: TransformNR?): DoubleArray {
+        override fun flushAllDevice(p0: Double) {
             TODO("not implemented")
         }
 
-        override fun connectDevice(): Boolean {
+        override fun flushDevice(p0: Double) {
             TODO("not implemented")
         }
-    }).apply { setLinks(links) }
+    }
+
+    internal fun makeFullMockChain(links: ArrayList<DHLink>) =
+        DHChain(null).apply { setLinks(links) }
 
     internal val cmmInputArmDhParams = immutableListOf(
         DhParam(13, 180, 32, -90),

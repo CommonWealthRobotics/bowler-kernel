@@ -71,7 +71,8 @@ class InverseKinematicsEngine
 
         val wristCenter = wrist.center(target.toSimpleMatrix())
         val newJointAngles = DoubleArray(jointSpaceVector.size) { 0.0 }
-        val lengthToWristSquared = abs(wristCenter[0].pow(2) + wristCenter[1].pow(2) - dhParams.first().r.pow(2))
+        val lengthToWristSquared =
+            abs(wristCenter[0].pow(2) + wristCenter[1].pow(2) - dhParams.first().r.pow(2))
 
         when (dhParams.first().r) {
             0.0 -> {
@@ -134,7 +135,9 @@ class InverseKinematicsEngine
 
         // spong 4.29 (xc^2 + yc^2 - d^2 + zc^2 - a2^2 - a3^2)/(2(a2)(a3))
         val cosTheta3 =
-            (lengthToWristSquared + wristCenter[2].pow(2) - dhParams[1].r.pow(2) - dhParams[2].r.pow(2)) / (2.0 * dhParams[1].r * dhParams[2].r)
+            (lengthToWristSquared + wristCenter[2].pow(2) - dhParams[1].r.pow(2) - dhParams[2].r.pow(
+                2
+            )) / (2.0 * dhParams[1].r * dhParams[2].r)
 
         val theta3ElbowUp = atan2(cosTheta3, sqrt(1 - cosTheta3.pow(2)))
         val theta3ElbowDown = atan2(cosTheta3, -1 * sqrt(1 - cosTheta3.pow(2)))
@@ -143,7 +146,8 @@ class InverseKinematicsEngine
             dhParams[1].r + dhParams[2].r * cos(theta3ElbowUp), dhParams[2].r * sin(theta3ElbowUp)
         )
         val theta2ElbowDown = atan2(sqrt(lengthToWristSquared), wristCenter[2]) - atan2(
-            dhParams[1].r + dhParams[2].r * cos(theta3ElbowDown), dhParams[2].r * sin(theta3ElbowDown)
+            dhParams[1].r + dhParams[2].r * cos(theta3ElbowDown),
+            dhParams[2].r * sin(theta3ElbowDown)
         )
 
         // select elbow up or down based on smallest valid delta in theta2
@@ -194,8 +198,8 @@ class InverseKinematicsEngine
      * @return Whether or not the given joint angle is within the valid range of motion.
      */
     private fun DHChain.jointAngleInBounds(jointAngle: Double, index: Int): Boolean {
-        val link = factory.getLink(factory.linkConfigurations[index])
-        //return jointAngle <= link.maxEngineeringUnits && jointAngle >= link.minEngineeringUnits
+        // val link = factory.getLink(factory.linkConfigurations[index])
+        // return jointAngle <= link.maxEngineeringUnits && jointAngle >= link.minEngineeringUnits
         // TODO: Use the real bounds
         return true
     }
@@ -209,6 +213,9 @@ class InverseKinematicsEngine
             bind<WristIdentifier>().to<DefaultWristIdentifier>()
         }
 
+        /**
+         * Get an instance of the [InverseKinematicsEngine].
+         */
         @JvmStatic
         fun getInstance(): InverseKinematicsEngine {
             return Guice.createInjector(inverseKinematicsEngineModule())
