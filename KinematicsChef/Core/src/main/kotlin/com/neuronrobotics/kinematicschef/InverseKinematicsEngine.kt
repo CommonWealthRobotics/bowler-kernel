@@ -94,8 +94,7 @@ class InverseKinematicsEngine
             0, 1
         ).projectionOntoVector(
             // TODO: Should this be along alpha or theta?
-            // In the context of the cmm arm, alpha is the y component and theta is the x
-            // component
+            // In the context of the cmm arm, alpha is the y component and theta is the x component
             SimpleMatrix(2, 1).apply {
                 this[0, 0] = cos(toRadians(dhParams[0].alpha))
                 this[1, 0] = sin(toRadians(dhParams[0].alpha))
@@ -122,7 +121,8 @@ class InverseKinematicsEngine
                 if (wristCenter[0] == 0.0 && wristCenter[1] == 0.0) {
                     newJointAngles[0] = jointSpaceVector[0]
                 } else {
-                    val theta1SolutionA = toDegrees(atan2(wristCenter[0], wristCenter[1]))
+                    // Normal atan2, spong writes his atan2 as (x, y) for some reason
+                    val theta1SolutionA = toDegrees(atan2(wristCenter[1], wristCenter[0]))
                     val theta1SolutionB = 180 + theta1SolutionA
 
                     when {
@@ -151,12 +151,12 @@ class InverseKinematicsEngine
 
             else -> {
                 // left/right arm configuration
-                val phi = atan2(wristCenter[0], wristCenter[1])
+                val phi = atan2(wristCenter[1], wristCenter[0])
 //                val d = dhParams[0].r + dhParams[1].d + dhParams[2].d
-                val length = sqrt(abs(lengthToWristSquared - dOffset.pow(2)))
+                val length = sqrt(lengthToWristSquared)
 
-                val theta1Left = toDegrees(phi - atan2(length, dOffset))
-                val theta1Right = toDegrees(phi + atan2(-1 * length, -1 * dOffset))
+                val theta1Left = toDegrees(phi - atan2(dOffset, length))
+                val theta1Right = toDegrees(phi + atan2(-1 * dOffset, -1 * length))
 
                 // TODO: Pick between the left and right arm solutions
                 // Using just left arm solution for now.
@@ -177,23 +177,23 @@ class InverseKinematicsEngine
                 2
             )) / (2.0 * dhParams[1].r * dhParams[2].r)
 
-        val theta3ElbowUp = atan2(cosTheta3, sqrt(1 - cosTheta3.pow(2)))
-        val theta3ElbowDown = atan2(cosTheta3, -1 * sqrt(1 - cosTheta3.pow(2)))
+        val theta3ElbowUp = atan2(sqrt(1 - cosTheta3.pow(2)), cosTheta3)
+        val theta3ElbowDown = atan2(-1 * sqrt(1 - cosTheta3.pow(2)), cosTheta3)
 
-        val theta2ElbowUp = atan2(sqrt(lengthToWristSquared), wristCenter[2]) - atan2(
-            dhParams[1].r + dhParams[2].r * cos(theta3ElbowUp), dhParams[2].r * sin(theta3ElbowUp)
+        val theta2ElbowUp = atan2(wristCenter[2], sqrt(lengthToWristSquared)) - atan2(
+            dhParams[2].r * sin(theta3ElbowUp), dhParams[1].r + dhParams[2].r * cos(theta3ElbowUp)
         )
         val theta2ElbowDown = atan2(sqrt(lengthToWristSquared), wristCenter[2]) - atan2(
-            dhParams[1].r + dhParams[2].r * cos(theta3ElbowDown),
-            dhParams[2].r * sin(theta3ElbowDown)
+            dhParams[2].r * sin(theta3ElbowDown),
+            dhParams[1].r + dhParams[2].r * cos(theta3ElbowDown)
         )
 
         // select elbow up or down based on smallest valid delta in theta2
         when {
             chain.jointAngleInBounds(theta2ElbowDown, 1)
                 && chain.jointAngleInBounds(theta2ElbowUp, 1) -> {
-                val comparison = Math.abs(jointSpaceVector[1] - theta2ElbowDown)
-                    .compareTo(Math.abs(jointSpaceVector[1] - theta2ElbowUp))
+                val comparison = abs(jointSpaceVector[1] - theta2ElbowDown)
+                    .compareTo(abs(jointSpaceVector[1] - theta2ElbowUp))
 
                 newJointAngles[1] = when {
                     comparison > 0 -> theta2ElbowUp.also { newJointAngles[2] = theta3ElbowUp }
