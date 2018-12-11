@@ -150,7 +150,7 @@ internal fun getRotationMatrix(x: Number, y: Number, z: Number): SimpleMatrix {
  * Treats the receiver matrix as a 3x1 translation column vector and returns it as a 4x4 frame
  * transformation.
  */
-internal fun SimpleMatrix.asPointMatrix(): SimpleMatrix {
+internal fun SimpleMatrix.toTranslation(): SimpleMatrix {
     require(numRows() == 3)
     require(numCols() == 1)
     return getFrameTranslationMatrix(this[0, 0], this[1, 0], this[2, 0])
@@ -192,4 +192,27 @@ internal fun SimpleMatrix.toTransformNR(): TransformNR {
     }
 
     return TransformNR(translation, rotation)
+}
+
+/**
+ * Projects the receiver vector onto the plane specified by [planeNormal].
+ */
+internal fun SimpleMatrix.projectionOntoPlane(planeNormal: SimpleMatrix): SimpleMatrix {
+    val projectionTerm = planeNormal.elementMult(this.dot(planeNormal.divide(planeNormal.length())))
+    return this.minus(projectionTerm)
+}
+
+/**
+ * Elementwise multiplication between the receiver matrix and [term].
+ */
+internal fun SimpleMatrix.elementMult(term: Double): SimpleMatrix {
+    val termMat = SimpleMatrix(numRows(), numCols()).apply {
+        for (row in 0 until numRows()) {
+            for (col in 0 until numCols()) {
+                this[row, col] = term
+            }
+        }
+    }
+
+    return elementMult(termMat)
 }

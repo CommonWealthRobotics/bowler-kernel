@@ -13,12 +13,15 @@ import com.neuronrobotics.kinematicschef.classifier.DefaultWristIdentifier
 import com.neuronrobotics.kinematicschef.classifier.DhClassifier
 import com.neuronrobotics.kinematicschef.classifier.WristIdentifier
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
+import com.neuronrobotics.kinematicschef.dhparam.toDhParamList
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
+import com.neuronrobotics.kinematicschef.util.projectionOntoPlane
 import com.neuronrobotics.kinematicschef.util.toImmutableMap
 import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
+import org.ejml.simple.SimpleMatrix
 import org.jlleitschuh.guice.key
 import org.jlleitschuh.guice.module
 import java.lang.Math.toDegrees
@@ -59,12 +62,13 @@ class InverseKinematicsEngine
 
         val eulerAngles = chainElements
             .mapNotNull { it as? SphericalWrist }
-            .map { it to dhClassifier.deriveEulerAngles(
-                it,
-                chainElements.subList(0, chainElements.indexOf(it)),
-                chainElements.subList(chainElements.indexOf(it) + 1, chainElements.size)
-            ) }
-            .toImmutableMap()
+            .map {
+                it to dhClassifier.deriveEulerAngles(
+                    it,
+                    chainElements.subList(0, chainElements.indexOf(it)),
+                    chainElements.subList(chainElements.indexOf(it) + 1, chainElements.size)
+                )
+            }.toImmutableMap()
 
         // If there were any problems while deriving the spherical wrists' Euler angles we can't
         // solve the chain analytically
@@ -76,8 +80,23 @@ class InverseKinematicsEngine
 
         val wristCenter = wrist.center(target.toSimpleMatrix())
         val newJointAngles = DoubleArray(jointSpaceVector.size) { 0.0 }
-        val lengthToWristSquared =
-            abs(wristCenter[0].pow(2) + wristCenter[1].pow(2) - dhParams.first().r.pow(2))
+
+        // TODO: Taking the absolute value of the y component will work for the cmm input arm ONLY
+        // For the real thing, we need to project the 2d vector onto the vector pointing in the
+        // direction of the first link's r term which can be derived from its theta
+        val dOffset = abs(
+            wrist.centerHomed(
+                chainElements.subList(0, chainElements.indexOf(wrist) + 1).toDhParamList()
+            ).projectionOntoPlane(
+                SimpleMatrix(3, 1).apply {
+                    this[2, 0] = 1.0
+                }
+            )[1, 0]
+        )
+//        val lengthToWristSquared =
+//            abs(wristCenter[0].pow(2) + wristCenter[1].pow(2) - dhParams.first().r.pow(2))
+
+        val lengthToWristSquared = wristCenter[0].pow(2) + wristCenter[1].pow(2) - dOffset.pow(2)
 
         when (dhParams.first().r) {
             0.0 -> {
@@ -116,14 +135,11 @@ class InverseKinematicsEngine
             else -> {
                 // left/right arm configuration
                 val phi = atan2(wristCenter[0], wristCenter[1])
-                val d = dhParams[0].r + dhParams[1].d + dhParams[2].d
-                val length = sqrt(abs(lengthToWristSquared - d.pow(2)))
+//                val d = dhParams[0].r + dhParams[1].d + dhParams[2].d
+                val length = sqrt(abs(lengthToWristSquared - dOffset.pow(2)))
 
-//                val pointBeforeWrist = dhParams.subList(0, 3).toFrameTransformation().getTranslation()
-//                val length = sqrt(pointBeforeWrist[0].pow(2) + pointBeforeWrist[1].pow(2))
-
-                val theta1Left = toDegrees(phi - atan2(length, d))
-                val theta1Right = toDegrees(phi + atan2(-1 * length, -1 * d))
+                val theta1Left = toDegrees(phi - atan2(length, dOffset))
+                val theta1Right = toDegrees(phi + atan2(-1 * length, -1 * dOffset))
 
                 // TODO: Pick between the left and right arm solutions
                 // Using just left arm solution for now.

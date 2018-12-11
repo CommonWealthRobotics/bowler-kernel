@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableList
 import com.neuronrobotics.kinematicschef.TestUtil
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
-import com.neuronrobotics.kinematicschef.util.asPointMatrix
+import com.neuronrobotics.kinematicschef.util.toTranslation
 import com.neuronrobotics.kinematicschef.util.emptyImmutableList
 import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.toImmutableList
@@ -324,7 +324,7 @@ internal class DefaultWristIdentifierTest {
         val result = identifier.isSphericalWrist(
             chain,
             priorParams,
-            SphericalWrist(chain).centerHomed(priorParams).asPointMatrix().invert()
+            SphericalWrist(chain).centerHomed(priorParams).toTranslation().invert()
         )
 
         assertAll(
@@ -346,7 +346,7 @@ internal class DefaultWristIdentifierTest {
             chain,
             priorParams,
             if (chain.size == 3)
-                SphericalWrist(chain).centerHomed(priorParams).asPointMatrix().invert()
+                SphericalWrist(chain).centerHomed(priorParams).toTranslation().invert()
             else
                 SimpleMatrix.identity(4)
         )
