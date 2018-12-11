@@ -88,28 +88,28 @@ class InverseKinematicsEngine
         val wristCenter = wrist.center(target.toSimpleMatrix())
         val newJointAngles = DoubleArray(jointSpaceVector.size) { 0.0 }
 
-        val dOffset = 0.0
-//            wrist.centerHomed(
-//            chainElements.subList(0, chainElements.indexOf(wrist) + 1).toDhParamList()
-//        ).projectionOntoPlane(
-//            SimpleMatrix(3, 1).apply {
-//                this[2, 0] = 1.0
-//            }
-//        ).extractMatrix(
-//            0, 2,
-//            0, 1
-//        ).projectionOntoVector(
-//            // TODO: Should this be along alpha or theta?
-//            // In the context of the cmm arm, alpha is the y component and theta is the x component
-//            SimpleMatrix(2, 1).apply {
-//                this[0, 0] = cos(toRadians(dhParams[0].alpha))
-//                this[1, 0] = sin(toRadians(dhParams[0].alpha))
-//            }
-//        )
+        val dOffset = abs(
+            wrist.centerHomed(
+            chainElements.subList(0, chainElements.indexOf(wrist) + 1).toDhParamList()
+        ).projectionOntoPlane(
+            SimpleMatrix(3, 1).apply {
+                this[2, 0] = 1.0
+            }
+        ).extractMatrix(
+            0, 2,
+            0, 1
+        ).projectionOntoVector(
+            // TODO: Should this be along alpha or theta?
+            // In the context of the cmm arm, alpha is the y component and theta is the x component
+            SimpleMatrix(2, 1).apply {
+                this[0, 0] = cos(toRadians(dhParams[0].alpha))
+                this[1, 0] = sin(toRadians(dhParams[0].alpha))
+            }
+        ))
 
-//        require(dOffset > 0) {
-//            "dOffset was negative: $dOffset"
-//        }
+        require(dOffset >= 0) {
+            "dOffset was negative: $dOffset"
+        }
 
         val lengthToWristSquared = wristCenter[0].pow(2) + wristCenter[1].pow(2) - dOffset.pow(2)
 
@@ -119,7 +119,7 @@ class InverseKinematicsEngine
 
         val heightOfFirstElbow = dhParams.subList(0, 2).toFrameTransformation().getTranslation()[2]
 
-        when (dhParams.first().r) {
+        when (dOffset) {
             0.0 -> {
                 // next joint is along Z axis of shoulder
                 // check for singularity, if so then the shoulder joint angle does not need to change
