@@ -155,13 +155,13 @@ class InverseKinematicsEngine
 //                val d = dhParams[0].r + dhParams[1].d + dhParams[2].d
                 val length = sqrt(lengthToWristSquared)
 
-                val theta1Left = toDegrees(phi - atan2(dOffset, length))
-                val theta1Right = toDegrees(phi + atan2(-1 * dOffset, -1 * length))
+                val theta1Left = phi - atan2(dOffset, length)
+                val theta1Right = phi + atan2(-1 * dOffset, -1 * length)
 
                 // TODO: Pick between the left and right arm solutions
                 // Using just left arm solution for now.
                 if (chain.jointAngleInBounds(theta1Left, 0)) {
-                    jointSpaceVector[0] = theta1Left
+                    newJointAngles[0] = theta1Left
                 } else {
                     useIterativeSolver()
                 }
@@ -172,9 +172,9 @@ class InverseKinematicsEngine
         // compute theta3, then theta 2
 
         // spong 4.29 (xc^2 + yc^2 - d^2 + zc^2 - a2^2 - a3^2)/(2(a2)(a3))
-        val cosTheta3 =
-            (lengthToWristSquared + wristCenter[2].pow(2) - dhParams[1].length.pow(2) -
-                dhParams[2].length.pow(2)) / (2.0 * dhParams[1].length * dhParams[2].length)
+        val cosTheta3 = 0.0
+//            (lengthToWristSquared + wristCenter[2].pow(2) - dhParams[1].length.pow(2) -
+//                dhParams[2].length.pow(2)) / (2 * dhParams[1].length * dhParams[2].length)
 
         val theta3ElbowUp = atan2(sqrt(1 - cosTheta3.pow(2)), cosTheta3)
         val theta3ElbowDown = atan2(-1 * sqrt(1 - cosTheta3.pow(2)), cosTheta3)
@@ -185,7 +185,7 @@ class InverseKinematicsEngine
                 dhParams[1].length + dhParams[2].length * cos(theta3ElbowUp)
             )
 
-        val theta2ElbowDown = atan2(sqrt(lengthToWristSquared), wristCenter[2]) -
+        val theta2ElbowDown = atan2(wristCenter[2], sqrt(lengthToWristSquared)) -
             atan2(
                 dhParams[2].length * sin(theta3ElbowDown),
                 dhParams[1].length + dhParams[2].length * cos(theta3ElbowDown)
@@ -227,7 +227,7 @@ class InverseKinematicsEngine
         newJointAngles[4] = jointSpaceVector[4]
         newJointAngles[5] = jointSpaceVector[5]
 
-        return jointSpaceVector
+        return newJointAngles.map { toDegrees(it) }.toDoubleArray()
     }
 
     /**
