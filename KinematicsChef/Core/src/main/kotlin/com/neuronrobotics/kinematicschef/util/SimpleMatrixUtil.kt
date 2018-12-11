@@ -198,9 +198,28 @@ internal fun SimpleMatrix.toTransformNR(): TransformNR {
  * Projects the receiver vector onto the plane specified by [planeNormal].
  */
 internal fun SimpleMatrix.projectionOntoPlane(planeNormal: SimpleMatrix): SimpleMatrix {
-    val projectionTerm = planeNormal.elementMult(this.dot(planeNormal.divide(planeNormal.length())))
-    return this.minus(projectionTerm)
+    require(numRows() == 3)
+    require(numCols() == 1)
+    require(planeNormal.numRows() == 3)
+    require(planeNormal.numCols() == 1)
+    return minus(planeNormal.elementMult(dot(planeNormal.normalize())))
 }
+
+/**
+ * Projects the receiver vector onto [unitVector].
+ */
+internal fun SimpleMatrix.projectionOntoVector(unitVector: SimpleMatrix): Double {
+    require(numRows() == 2)
+    require(numCols() == 1)
+    require(unitVector.numRows() == 2)
+    require(unitVector.numCols() == 1)
+    return dot(unitVector.normalize())
+}
+
+/**
+ * Returns a normalized version of the receiver matrix.
+ */
+private fun SimpleMatrix.normalize() = divide(length())
 
 /**
  * Elementwise multiplication between the receiver matrix and [term].

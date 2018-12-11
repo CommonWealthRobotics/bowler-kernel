@@ -16,6 +16,7 @@ import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDhParamList
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.util.projectionOntoPlane
+import com.neuronrobotics.kinematicschef.util.projectionOntoVector
 import com.neuronrobotics.kinematicschef.util.toImmutableMap
 import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
@@ -25,6 +26,7 @@ import org.ejml.simple.SimpleMatrix
 import org.jlleitschuh.guice.key
 import org.jlleitschuh.guice.module
 import java.lang.Math.toDegrees
+import java.lang.Math.toRadians
 import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -81,9 +83,6 @@ class InverseKinematicsEngine
         val wristCenter = wrist.center(target.toSimpleMatrix())
         val newJointAngles = DoubleArray(jointSpaceVector.size) { 0.0 }
 
-        // TODO: Taking the absolute value of the y component will work for the cmm input arm ONLY
-        // For the real thing, we need to project the 2d vector onto the vector pointing in the
-        // direction of the first link's r term which can be derived from its theta
         val dOffset = abs(
             wrist.centerHomed(
                 chainElements.subList(0, chainElements.indexOf(wrist) + 1).toDhParamList()
@@ -91,8 +90,20 @@ class InverseKinematicsEngine
                 SimpleMatrix(3, 1).apply {
                     this[2, 0] = 1.0
                 }
-            )[1, 0]
+            ).extractMatrix(
+                0, 2,
+                0, 1
+            ).projectionOntoVector(
+                // TODO: Should this be along alpha or theta?
+                // In the context of the cmm arm, alpha is the y component and theta is the x
+                // component
+                SimpleMatrix(2, 1).apply {
+                    this[0, 0] = cos(toRadians(dhParams[0].alpha))
+                    this[1, 0] = sin(toRadians(dhParams[0].alpha))
+                }
+            )
         )
+
 //        val lengthToWristSquared =
 //            abs(wristCenter[0].pow(2) + wristCenter[1].pow(2) - dhParams.first().r.pow(2))
 
