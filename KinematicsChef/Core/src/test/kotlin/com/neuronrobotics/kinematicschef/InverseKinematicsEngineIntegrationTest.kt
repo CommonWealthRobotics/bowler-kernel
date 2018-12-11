@@ -59,9 +59,8 @@ class InverseKinematicsEngineIntegrationTest {
         val engine = InverseKinematicsEngine.getInstance()
 
         val jointAngles = engine.inverseKinematics(
-            TransformNR().setX(14.0).setY(14.0).setZ(259.0),//chain.toDhParams()
-            // .toFrameTransformation()
-            // .toTransformNR(),
+//            TransformNR().setX(14.0).setY(14.0).setZ(259.0),
+            chain.toDhParams().toFrameTransformation().toTransformNR(),
             listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
             chain
         )
@@ -139,12 +138,16 @@ class InverseKinematicsEngineIntegrationTest {
 
         val engine = InverseKinematicsEngine.getInstance()
 
-        val jointAngles = engine.inverseKinematics(
-            chain.toDhParams().toFrameTransformation().toTransformNR(),
-            listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
-            chain
-        )
+        for (i in 0..10) {
+            val jointAngles = engine.inverseKinematics(
+                chain.toDhParams().toFrameTransformation().toTransformNR().apply {
+                    x += i
+                },
+                listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+                chain
+            )
 
-        println(jointAngles.joinToString())
+            println("${jointAngles.joinToString()}\n")
+        }
     }
 }

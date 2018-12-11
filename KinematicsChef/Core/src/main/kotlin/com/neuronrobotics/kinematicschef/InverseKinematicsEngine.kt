@@ -94,6 +94,7 @@ class InverseKinematicsEngine
         val wrist = chainElements.last() as? SphericalWrist ?: useIterativeSolver()
 
         val wristCenter = wrist.center(target.toSimpleMatrix())
+        println("wristCenter: $wristCenter")
         val newJointAngles = DoubleArray(jointSpaceVector.size) { 0.0 }
 
         val dOffset = abs(
@@ -114,17 +115,10 @@ class InverseKinematicsEngine
                     this[1, 0] = sin(toRadians(dhParams[0].alpha))
                 }
             ))
+        println("dOffset: $dOffset")
 
-        require(dOffset >= 0) {
-            "dOffset was negative: $dOffset"
-        }
-
-        wristCenter.print()
         val lengthToWristSquared = wristCenter[0].pow(2) + wristCenter[1].pow(2) - dOffset.pow(2)
-
-        require(lengthToWristSquared > 0) {
-            "lengthToWristSquared was negative: $lengthToWristSquared"
-        }
+        println("lengthToWristSquared: $lengthToWristSquared")
 
         val heightOfFirstElbow = dhParams.subList(0, 2).toFrameTransformation().getTranslation()[2]
 
@@ -191,8 +185,29 @@ class InverseKinematicsEngine
             (lengthToWristSquared + adjustedWristHeight.pow(2) - dhParams[1].length.pow(2) -
                 dhParams[2].length.pow(2)) / (2 * dhParams[1].length * dhParams[2].length)
 
-        val theta3ElbowUp = atan2(sqrt(1 - cosTheta3.pow(2)), cosTheta3)
-        val theta3ElbowDown = atan2(-1 * sqrt(1 - cosTheta3.pow(2)), cosTheta3)
+        val theta3R = wristCenter.minus(dhParams[0].frameTransformation.getTranslation()).let {
+            it.print()
+            it[2, 0] = 0.0
+            it.length()
+        }
+//            wristCenter[0].pow(2) + wristCenter[1].pow(2) - dOffset.pow(2)
+        println("theta3R: $theta3R")
+
+        val theta3BigD = (theta3R +
+            wristCenter[2].pow(2) - dhParams[1].r.pow(2) - dhParams[2].r.pow(2)) /
+            (2 * dhParams[1].r * dhParams[2].r)
+
+        val theta3ElbowUp = atan2(
+            sqrt(1 - theta3BigD.pow(2)),
+            theta3BigD
+        )
+        val theta3ElbowDown = atan2(
+            -1 * sqrt(1 - theta3BigD.pow(2)),
+            theta3BigD
+        )
+        println("theta3ElbowUp: $theta3ElbowUp, theta3ElbowDown: $theta3ElbowDown")
+//        val theta3ElbowUp = atan2(sqrt(1 - cosTheta3.pow(2)), cosTheta3)
+//        val theta3ElbowDown = atan2(-1 * sqrt(1 - cosTheta3.pow(2)), cosTheta3)
 
         val theta2ElbowUp = atan2(adjustedWristHeight, sqrt(lengthToWristSquared)) -
             atan2(
