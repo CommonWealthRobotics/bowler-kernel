@@ -173,20 +173,23 @@ class InverseKinematicsEngine
 
         // spong 4.29 (xc^2 + yc^2 - d^2 + zc^2 - a2^2 - a3^2)/(2(a2)(a3))
         val cosTheta3 =
-            (lengthToWristSquared + wristCenter[2].pow(2) - dhParams[1].r.pow(2) - dhParams[2].r.pow(
-                2
-            )) / (2.0 * dhParams[1].r * dhParams[2].r)
+            (lengthToWristSquared + wristCenter[2].pow(2) - dhParams[1].length.pow(2) -
+                dhParams[2].length.pow(2)) / (2.0 * dhParams[1].length * dhParams[2].length)
 
         val theta3ElbowUp = atan2(sqrt(1 - cosTheta3.pow(2)), cosTheta3)
         val theta3ElbowDown = atan2(-1 * sqrt(1 - cosTheta3.pow(2)), cosTheta3)
 
-        val theta2ElbowUp = atan2(wristCenter[2], sqrt(lengthToWristSquared)) - atan2(
-            dhParams[2].r * sin(theta3ElbowUp), dhParams[1].r + dhParams[2].r * cos(theta3ElbowUp)
-        )
-        val theta2ElbowDown = atan2(sqrt(lengthToWristSquared), wristCenter[2]) - atan2(
-            dhParams[2].r * sin(theta3ElbowDown),
-            dhParams[1].r + dhParams[2].r * cos(theta3ElbowDown)
-        )
+        val theta2ElbowUp = atan2(wristCenter[2], sqrt(lengthToWristSquared)) -
+            atan2(
+                dhParams[2].length * sin(theta3ElbowUp),
+                dhParams[1].length + dhParams[2].length * cos(theta3ElbowUp)
+            )
+
+        val theta2ElbowDown = atan2(sqrt(lengthToWristSquared), wristCenter[2]) -
+            atan2(
+                dhParams[2].length * sin(theta3ElbowDown),
+                dhParams[1].length + dhParams[2].length * cos(theta3ElbowDown)
+            )
 
         // select elbow up or down based on smallest valid delta in theta2
         when {
