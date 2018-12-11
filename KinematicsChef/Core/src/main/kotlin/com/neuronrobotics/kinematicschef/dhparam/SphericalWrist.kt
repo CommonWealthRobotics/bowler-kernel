@@ -27,6 +27,9 @@ internal data class SphericalWrist(override val params: ImmutableList<DhParam>) 
      * @return A 3x1 position matrix.
      */
     internal fun center(target: SimpleMatrix): SimpleMatrix {
+        require(target.numRows() == 4)
+        require(target.numCols() == 4)
+
         val wristCenter = SimpleMatrix(3, 1)
         val boneLength = params[1].r + params[2].d
         val translation = target.getTranslation()

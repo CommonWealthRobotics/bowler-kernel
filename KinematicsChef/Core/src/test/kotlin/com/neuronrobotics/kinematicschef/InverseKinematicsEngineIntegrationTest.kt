@@ -59,7 +59,9 @@ class InverseKinematicsEngineIntegrationTest {
         val engine = InverseKinematicsEngine.getInstance()
 
         val jointAngles = engine.inverseKinematics(
-            chain.toDhParams().toFrameTransformation().toTransformNR(),
+            TransformNR().setX(14.0).setY(14.0).setZ(259.0),//chain.toDhParams()
+            // .toFrameTransformation()
+            // .toTransformNR(),
             listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
             chain
         )
@@ -91,7 +93,7 @@ class InverseKinematicsEngineIntegrationTest {
         val engine = InverseKinematicsEngine.getInstance()
 
         val jointAngles = engine.inverseKinematics(
-            tempTarget,//chain.toDhParams().toFrameTransformation().toTransformNR(),
+            chain.toDhParams().toFrameTransformation().toTransformNR(),
             listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
             chain
         )
@@ -122,5 +124,40 @@ class InverseKinematicsEngineIntegrationTest {
 //                }
 //            }
 //        }
+    }
+
+    @Test
+    @Disabled
+    fun `test ma-2000 arm`() {
+        val cmmInputArm = ScriptingEngine.gitScriptRun(
+            "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
+            "InputArmBase_copy.xml",
+            null
+        ) as? MobileBaseLoader ?: fail { "The script did not return a MobileBaseLoader." }
+
+        val params = immutableListOf(
+            DhParam(40, 0, 0, 90),
+            DhParam(0, 0, 30, 0),
+            DhParam(0, 0, 40, 0),
+            DhParam(0, 0, 40, 90),
+            DhParam(0, 0, 0, 90),
+            DhParam(10, 0, 0, 0)
+        )
+
+        val chain = cmmInputArm.base.appendages[0].chain
+        chain.links.clear()
+        params.forEach {
+            chain.addLink(it.toDHLink())
+        }
+
+        val engine = InverseKinematicsEngine.getInstance()
+
+        val jointAngles = engine.inverseKinematics(
+            chain.toDhParams().toFrameTransformation().toTransformNR(),
+            listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+            chain
+        )
+
+        println(jointAngles.joinToString())
     }
 }
