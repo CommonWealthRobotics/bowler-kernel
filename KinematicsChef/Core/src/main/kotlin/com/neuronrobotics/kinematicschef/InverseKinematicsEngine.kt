@@ -163,13 +163,13 @@ class InverseKinematicsEngine
 //                val d = dhParams[0].r + dhParams[1].d + dhParams[2].d
                 val length = sqrt(lengthToWristSquared)
 
-                val theta1Left = phi - atan2(dOffset, length)
-                val theta1Right = phi + atan2(-1 * dOffset, -1 * length)
+//                val theta1Left = phi - atan2(dOffset, length)
+//                val theta1Right = phi + atan2(-1 * dOffset, -1 * length)
 
                 // TODO: Pick between the left and right arm solutions
                 // Using just left arm solution for now.
-                if (chain.jointAngleInBounds(theta1Left, 0)) {
-                    newJointAngles[0] = theta1Left
+                if (chain.jointAngleInBounds(phi, 0)) {
+                    newJointAngles[0] = phi
                 } else {
                     useIterativeSolver()
                 }
@@ -185,11 +185,12 @@ class InverseKinematicsEngine
             (lengthToWristSquared + adjustedWristHeight.pow(2) - dhParams[1].length.pow(2) -
                 dhParams[2].length.pow(2)) / (2 * dhParams[1].length * dhParams[2].length)
 
-        val theta3R = wristCenter.minus(dhParams[0].frameTransformation.getTranslation()).let {
-            it.print()
-            it[2, 0] = 0.0
-            it.length()
-        }
+        val theta3R = wristCenter[0].pow(2) + wristCenter[1].pow(2) - dOffset.pow(2)
+//            wristCenter.minus(dhParams[0].frameTransformation.getTranslation()).let {
+//                it.print()
+//                it[2, 0] = 0.0
+//                it.length()
+//            }
 //            wristCenter[0].pow(2) + wristCenter[1].pow(2) - dOffset.pow(2)
         println("theta3R: $theta3R")
 

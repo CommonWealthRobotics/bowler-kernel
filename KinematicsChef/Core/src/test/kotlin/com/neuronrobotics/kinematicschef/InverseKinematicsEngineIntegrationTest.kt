@@ -125,29 +125,35 @@ class InverseKinematicsEngineIntegrationTest {
 //        }
     }
 
-    @Test
-    @Disabled
-    fun `test full spong arm`() {
-        val spongArm = ScriptingEngine.gitScriptRun(
-            "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
-            "InputArmBase_copy.xml",
-            null
-        ) as? MobileBaseLoader ?: fail { "The script did not return a MobileBaseLoader." }
-
-        val chain = spongArm.base.appendages[2].chain
-
-        val engine = InverseKinematicsEngine.getInstance()
-
-        for (i in 0..10) {
-            val jointAngles = engine.inverseKinematics(
-                chain.toDhParams().toFrameTransformation().toTransformNR().apply {
-                    x += i
-                },
-                listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
-                chain
-            )
-
-            println("${jointAngles.joinToString()}\n")
-        }
-    }
+//    @Test
+//    @Disabled
+//    fun `test full spong arm`() {
+//        val spongArm = ScriptingEngine.gitScriptRun(
+//            "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
+//            "InputArmBase_copy.xml",
+//            null
+//        ) as? MobileBaseLoader ?: fail { "The script did not return a MobileBaseLoader." }
+//
+//        val chain = spongArm.base.appendages[2].chain
+//
+//        val engine = InverseKinematicsEngine.getInstance()
+//
+//        for (i in 0..10) {
+//            val jointAngles = engine.inverseKinematics(
+//                chain.toDhParams().toFrameTransformation().toTransformNR().apply {
+//                    x += i
+//                },
+//                listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+//                chain
+//            )
+//
+//            println("${jointAngles.joinToString()}\n")
+//
+//            chain.toDhParams().zip(jointAngles.toList()).map {
+//                it.first.copy(theta = it.second)
+//            }.let {
+//                it.toFrameTransformation().print()
+//            }
+//        }
+//    }
 }
