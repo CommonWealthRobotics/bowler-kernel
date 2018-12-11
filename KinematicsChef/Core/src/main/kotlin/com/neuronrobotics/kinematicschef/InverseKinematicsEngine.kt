@@ -15,10 +15,14 @@ import com.neuronrobotics.kinematicschef.classifier.WristIdentifier
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDhParamList
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
+import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
+import com.neuronrobotics.kinematicschef.util.getTranslation
+import com.neuronrobotics.kinematicschef.util.length
 import com.neuronrobotics.kinematicschef.util.projectionOntoPlane
 import com.neuronrobotics.kinematicschef.util.projectionOntoVector
 import com.neuronrobotics.kinematicschef.util.toImmutableMap
 import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
+import com.neuronrobotics.kinematicschef.util.toTranslation
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
@@ -28,6 +32,7 @@ import org.jlleitschuh.guice.module
 import java.lang.Math.toDegrees
 import java.lang.Math.toRadians
 import javax.inject.Inject
+import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -83,36 +88,36 @@ class InverseKinematicsEngine
         val wristCenter = wrist.center(target.toSimpleMatrix())
         val newJointAngles = DoubleArray(jointSpaceVector.size) { 0.0 }
 
-        val dOffset = wrist.centerHomed(
-            chainElements.subList(0, chainElements.indexOf(wrist) + 1).toDhParamList()
-        ).projectionOntoPlane(
-            SimpleMatrix(3, 1).apply {
-                this[2, 0] = 1.0
-            }
-        ).extractMatrix(
-            0, 2,
-            0, 1
-        ).projectionOntoVector(
-            // TODO: Should this be along alpha or theta?
-            // In the context of the cmm arm, alpha is the y component and theta is the x component
-            SimpleMatrix(2, 1).apply {
-                this[0, 0] = cos(toRadians(dhParams[0].alpha))
-                this[1, 0] = sin(toRadians(dhParams[0].alpha))
-            }
-        )
+        val dOffset = 0.0
+//            wrist.centerHomed(
+//            chainElements.subList(0, chainElements.indexOf(wrist) + 1).toDhParamList()
+//        ).projectionOntoPlane(
+//            SimpleMatrix(3, 1).apply {
+//                this[2, 0] = 1.0
+//            }
+//        ).extractMatrix(
+//            0, 2,
+//            0, 1
+//        ).projectionOntoVector(
+//            // TODO: Should this be along alpha or theta?
+//            // In the context of the cmm arm, alpha is the y component and theta is the x component
+//            SimpleMatrix(2, 1).apply {
+//                this[0, 0] = cos(toRadians(dhParams[0].alpha))
+//                this[1, 0] = sin(toRadians(dhParams[0].alpha))
+//            }
+//        )
 
-        require(dOffset > 0) {
-            "dOffset was negative: $dOffset"
-        }
-
-//        val lengthToWristSquared =
-//            abs(wristCenter[0].pow(2) + wristCenter[1].pow(2) - dhParams.first().r.pow(2))
+//        require(dOffset > 0) {
+//            "dOffset was negative: $dOffset"
+//        }
 
         val lengthToWristSquared = wristCenter[0].pow(2) + wristCenter[1].pow(2) - dOffset.pow(2)
 
         require(lengthToWristSquared > 0) {
             "lengthToWristSquared was negative: $lengthToWristSquared"
         }
+
+        val heightOfFirstElbow = dhParams.subList(0, 2).toFrameTransformation().getTranslation()[2]
 
         when (dhParams.first().r) {
             0.0 -> {
@@ -122,8 +127,8 @@ class InverseKinematicsEngine
                     newJointAngles[0] = jointSpaceVector[0]
                 } else {
                     // Normal atan2, spong writes his atan2 as (x, y) for some reason
-                    val theta1SolutionA = toDegrees(atan2(wristCenter[1], wristCenter[0]))
-                    val theta1SolutionB = 180 + theta1SolutionA
+                    val theta1SolutionA = atan2(wristCenter[1], wristCenter[0])
+                    val theta1SolutionB = PI + theta1SolutionA
 
                     when {
                         chain.jointAngleInBounds(theta1SolutionA, 0) &&
@@ -172,20 +177,46 @@ class InverseKinematicsEngine
         // compute theta3, then theta 2
 
         // spong 4.29 (xc^2 + yc^2 - d^2 + zc^2 - a2^2 - a3^2)/(2(a2)(a3))
-        val cosTheta3 = 0.0
-//            (lengthToWristSquared + wristCenter[2].pow(2) - dhParams[1].length.pow(2) -
-//                dhParams[2].length.pow(2)) / (2 * dhParams[1].length * dhParams[2].length)
+        val adjustedWristHeight = wristCenter[2] - heightOfFirstElbow
+        val cosTheta3 =
+            (lengthToWristSquared + adjustedWristHeight.pow(2) - dhParams[1].length.pow(2) -
+                dhParams[2].length.pow(2)) / (2 * dhParams[1].length * dhParams[2].length)
 
         val theta3ElbowUp = atan2(sqrt(1 - cosTheta3.pow(2)), cosTheta3)
         val theta3ElbowDown = atan2(-1 * sqrt(1 - cosTheta3.pow(2)), cosTheta3)
 
-        val theta2ElbowUp = atan2(wristCenter[2], sqrt(lengthToWristSquared)) -
+//        for (a2 in 0..400) {
+//            for (a3 in 0..400) {
+//                for (len in 0..400) {
+//                    val theta2ElbowUp = atan2(adjustedWristHeight, sqrt(len.toDouble())) -
+//                        atan2(
+//                            a3 * sin(theta3ElbowUp),
+//                            a2 + a3 * cos(theta3ElbowUp)
+//                        )
+//
+//                    val theta2ElbowDown = atan2(adjustedWristHeight, sqrt(len.toDouble())) -
+//                        atan2(
+//                            a3 * sin(theta3ElbowDown),
+//                            a2 + a3 * cos(theta3ElbowDown)
+//                        )
+//
+//                    if (
+//                        abs(abs(toDegrees(theta2ElbowUp)) - 90) < 5 ||
+//                        abs(abs(toDegrees(theta2ElbowDown)) - 90) < 5
+//                    ) {
+//                        println("a2: $a2, a3: $a3, t2Up: ${toDegrees(theta2ElbowUp)}, t2Down: ${toDegrees(theta2ElbowDown)}")
+//                    }
+//                }
+//            }
+//        }
+
+        val theta2ElbowUp = atan2(adjustedWristHeight, sqrt(lengthToWristSquared)) -
             atan2(
                 dhParams[2].length * sin(theta3ElbowUp),
                 dhParams[1].length + dhParams[2].length * cos(theta3ElbowUp)
             )
 
-        val theta2ElbowDown = atan2(wristCenter[2], sqrt(lengthToWristSquared)) -
+        val theta2ElbowDown = atan2(adjustedWristHeight, sqrt(lengthToWristSquared)) -
             atan2(
                 dhParams[2].length * sin(theta3ElbowDown),
                 dhParams[1].length + dhParams[2].length * cos(theta3ElbowDown)
@@ -241,7 +272,7 @@ class InverseKinematicsEngine
     private fun DHChain.jointAngleInBounds(jointAngle: Double, index: Int): Boolean {
         // val link = factory.getLink(factory.linkConfigurations[index])
         // return jointAngle <= link.maxEngineeringUnits && jointAngle >= link.minEngineeringUnits
-        // TODO: Use the real bounds
+        // TODO: Convert jointAngle to degrees and use the real bounds
         return true
     }
 

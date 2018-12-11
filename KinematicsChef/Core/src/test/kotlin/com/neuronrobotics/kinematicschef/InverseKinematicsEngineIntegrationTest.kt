@@ -7,9 +7,11 @@ package com.neuronrobotics.kinematicschef
 
 import com.neuronrobotics.bowlerstudio.creature.MobileBaseLoader
 import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine
+import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
 import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
+import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.toTransformNR
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
@@ -77,17 +79,34 @@ class InverseKinematicsEngineIntegrationTest {
         val chain = pumaArm.base.appendages[1].chain
         val homeTarget = chain.toDhParams().toFrameTransformation()
 
+        val tempTarget = immutableListOf(
+            DhParam(0, 18.24, 0, -90),
+            DhParam(14.9, 0, 43.2, 0),
+            DhParam(0, 0, 2, 90),
+            DhParam(43.2, 0, 0, -90),
+            DhParam(0, 0, 0, 90),
+            DhParam(5.6, 0, 0, 0)
+        ).toFrameTransformation().toTransformNR()
+
         val engine = InverseKinematicsEngine.getInstance()
 
-        for (i in 0..100) {
-            val jointAngles = engine.inverseKinematics(
-                homeTarget.mult(getFrameTranslationMatrix(i, 0, 0)).toTransformNR(),
-                listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
-                chain
-            )
+        val jointAngles = engine.inverseKinematics(
+            tempTarget,//chain.toDhParams().toFrameTransformation().toTransformNR(),
+            listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+            chain
+        )
 
-            println(jointAngles.joinToString())
-        }
+        println(jointAngles.joinToString())
+
+//        for (i in 0..100) {
+//            val jointAngles = engine.inverseKinematics(
+//                homeTarget.mult(getFrameTranslationMatrix(i, 0, 0)).toTransformNR(),
+//                listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+//                chain
+//            )
+//
+//            println(jointAngles.joinToString())
+//        }
 
 //        for (i in -100..100) {
 //            for (j in -100..100) {
