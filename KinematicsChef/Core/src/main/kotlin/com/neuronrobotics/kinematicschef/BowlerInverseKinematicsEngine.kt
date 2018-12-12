@@ -70,6 +70,7 @@ class BowlerInverseKinematicsEngine
         jointSpaceVector: DoubleArray,
         chain: DHChain
     ): DoubleArray {
+        target[1, 3] = -14.0
         println("target: $target")
         val dhParams = chain.toDhParams()
         val chainElements = immutableListOf(
