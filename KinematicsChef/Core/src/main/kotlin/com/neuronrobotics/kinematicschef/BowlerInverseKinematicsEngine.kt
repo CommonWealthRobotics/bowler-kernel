@@ -5,6 +5,7 @@
  */
 package com.neuronrobotics.kinematicschef
 
+import com.google.common.collect.ImmutableList
 import com.google.inject.Guice
 import com.neuronrobotics.kinematicschef.classifier.ChainIdentifier
 import com.neuronrobotics.kinematicschef.classifier.DefaultChainIdentifier
@@ -12,6 +13,7 @@ import com.neuronrobotics.kinematicschef.classifier.DefaultDhClassifier
 import com.neuronrobotics.kinematicschef.classifier.DefaultWristIdentifier
 import com.neuronrobotics.kinematicschef.classifier.DhClassifier
 import com.neuronrobotics.kinematicschef.classifier.WristIdentifier
+import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.RevoluteJoint
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDhParamList
@@ -39,6 +41,7 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 /**
  * A [DhInverseSolver] which attempts to generate and cache an analytic solver by deriving the
@@ -122,25 +125,6 @@ class BowlerInverseKinematicsEngine
             ))
         println("offsetFromShoulderCoRToWristCoR: $offsetFromShoulderCoRToWristCoR")
 
-        val lengthFromShoulderToWristCenter = wristCenter.length()
-
-        // from https://www.mathsisfun.com/algebra/trig-solving-sss-triangles.html
-        val a = dhParams[2].r
-        val b = dhParams[1].r
-
-        val triangleSideA = acos(
-            (b.pow(2) + lengthFromShoulderToWristCenter.pow(2) - a.pow(2)) /
-                (2 * b * lengthFromShoulderToWristCenter)
-        )
-
-        val triangleSideB = acos(
-            (lengthFromShoulderToWristCenter.pow(2) + a.pow(2) - b.pow(2)) /
-                (2 * a * lengthFromShoulderToWristCenter)
-        )
-
-        val triangleSideC = PI - triangleSideA - triangleSideB // rule of triangles
-        val elevation = asin(wristCenter[2] / lengthFromShoulderToWristCenter)
-
         // Angle of shoulder
         val angleFromFirstLinkToWristCoR = wrist.centerHomed(dhParams.subList(0, 3)).let {
             toDegrees(atan2(it[1], it[0]))
@@ -149,30 +133,9 @@ class BowlerInverseKinematicsEngine
         newJointAngles[0] = toDegrees(atan2(wristCenter[1], wristCenter[0])) -
             angleFromFirstLinkToWristCoR + dhParams[0].theta
 
-        newJointAngles[1] = -toDegrees(triangleSideA + elevation + toRadians(dhParams[1].theta))
-
-        if (dhParams[1].alpha.toInt() == 180) {
-            // interior angle of the triangle, map to external angle
-            newJointAngles[2] = toDegrees(triangleSideC) - 180 - dhParams[2].theta
-        } else if (dhParams[1].alpha.toInt() == 0) {
-            newJointAngles[2] = -toDegrees(triangleSideC) + dhParams[2].theta
-        }
-
-        if (dhParams.size > 3) {
-            // keep it parallel
-            // the wrist twist will always be 0 for this model because we assume that 3 links won't have a twist
-            newJointAngles[3] = -(newJointAngles[1] + newJointAngles[2])
-        } else if (dhParams.size > 4) {
-            // keep the tool orientation parallel to the base
-            // this link points in the same direction as the first link
-            newJointAngles[4] = newJointAngles[0]
-        }
-
-        for (i in 0 until newJointAngles.size) {
-            if (abs(newJointAngles[i]) < 0.01) {
-                newJointAngles[i] = 0.0
-            }
-        }
+        val (elbow1, elbow2) = solveElbows(dhParams, wristCenter)
+        newJointAngles[1] = elbow1
+        newJointAngles[2] = elbow2
 
         return newJointAngles
             .map { if (!it.isFinite()) 0.0 else it }
@@ -181,6 +144,33 @@ class BowlerInverseKinematicsEngine
             .also {
                 println("jointAngles: ${it.joinToString()}")
             }
+    }
+
+    private fun solveElbows(
+        dhParams: ImmutableList<DhParam>,
+        wristCenter: SimpleMatrix
+    ): Pair<Double, Double> {
+        val Cx = wristCenter[0]
+        val Cy = wristCenter[2] - dhParams[3].d
+
+        val AC = sqrt(Cx.pow(2) + Cy.pow(2))
+        val ac_angle = atan2(Cy, Cx)
+        val AB = dhParams[1].r
+        val BC = dhParams[2].r
+
+        if (AB + BC <= AC || AB + AC <= BC || BC + AC <= AB) {
+            println("Elbow solution not possible")
+        }
+
+        val littleS = (AB + BC + AC) / 2
+        val S_squared = littleS * (littleS - AB) * (littleS - BC) * (littleS - AC)
+        val S = if (abs(S_squared) < 1e-6) 0.0 else sqrt(S_squared)
+
+        val A = asin((2 * S) / (AB * AC))
+        val B = asin((2 * S) / (AB * BC))
+        val C = asin((2 * S) / (AC * BC))
+
+        return toDegrees(ac_angle + A) to toDegrees(B)
     }
 
     /**

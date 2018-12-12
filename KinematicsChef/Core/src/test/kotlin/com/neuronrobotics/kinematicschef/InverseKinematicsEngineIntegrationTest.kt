@@ -110,9 +110,9 @@ class InverseKinematicsEngineIntegrationTest {
             }
         }
 
-        testTheta1OnRadius(params[0].length / 4) // Inside home radius
-        testTheta1OnRadius(params[0].length / 2) // The radius for the home position
-        testTheta1OnRadius(params[0].length / 1) // Outside the home radius
+//        testTheta1OnRadius(params[0].length / 4) // Inside home radius
+//        testTheta1OnRadius(params[0].length / 2) // The radius for the home position
+//        testTheta1OnRadius(params[0].length / 1) // Outside the home radius
         testTheta1OnXAxis()
     }
 
