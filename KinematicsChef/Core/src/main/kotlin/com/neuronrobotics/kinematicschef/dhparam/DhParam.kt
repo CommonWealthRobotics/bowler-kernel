@@ -15,6 +15,7 @@ import com.neuronrobotics.sdk.addons.kinematics.DHLink
 import org.ejml.simple.SimpleMatrix
 import java.lang.Math.toDegrees
 import kotlin.math.abs
+import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -68,6 +69,15 @@ internal constructor(
         pointAfterTransform.getTranslation()
             .minus(pointBeforeTransform.getTranslation())
             .length()
+    }
+
+    /**
+     * The angle the translation points in.
+     */
+    internal val angle by lazy {
+        frameTransformation.getTranslation().let {
+            toDegrees(atan2(it[1], it[0]))
+        }
     }
 
     internal fun toDHLink() = DHLink(d, theta, r, alpha)

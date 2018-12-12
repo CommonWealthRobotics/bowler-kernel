@@ -141,42 +141,13 @@ class BowlerInverseKinematicsEngine
         val triangleSideC = PI - triangleSideA - triangleSideB // rule of triangles
         val elevation = asin(wristCenter[2] / lengthFromShoulderToWristCenter)
 
-        val targetTranslation = target.getTranslation()
-
-        // Length to the target from the origin in the XY plane
-        val lengthXYPlaneVec = sqrt(targetTranslation[0].pow(2) + targetTranslation[1].pow(2))
-
-        // Angle from link 0 to link 1
-        val angleXYPlaneVec = asin(targetTranslation[1] / lengthXYPlaneVec)
-
-        // Angle to target (I think?)
-        val angleRectangleAdjustedXY = asin(offsetFromShoulderCoRToWristCoR / lengthXYPlaneVec)
-
         // Angle of shoulder
-        val orientation = toDegrees(angleXYPlaneVec - angleRectangleAdjustedXY)
-
-        val firstLinkAngle = dhParams[0].frameTransformation.getTranslation().let {
-            toDegrees(atan2(it[1], it[0]))
-        }
-
         val angleFromFirstLinkToWristCoR = wrist.centerHomed(dhParams.subList(0, 3)).let {
             toDegrees(atan2(it[1], it[0]))
         }
 
-        val angleFromFirstLinkToSecondLink = dhParams.subList(1, 3)
-            .toFrameTransformation()
-            .getTranslation()
-            .let {
-                toDegrees(atan2(it[1], it[0]))
-            }
-
         newJointAngles[0] = toDegrees(atan2(wristCenter[1], wristCenter[0])) -
             angleFromFirstLinkToWristCoR + dhParams[0].theta
-//            if (abs(orientation) < 0.01) {
-//            0.0 + dhParams[0].theta
-//        } else {
-//            orientation + dhParams[0].theta
-//        }
 
         newJointAngles[1] = -toDegrees(triangleSideA + elevation + toRadians(dhParams[1].theta))
 
