@@ -78,8 +78,6 @@ class InverseKinematicsEngineIntegrationTest {
                     chain
                 )
 
-                println(jointAngles.joinToString())
-
                 // Test that the first link is correct. Need to remap the target angle according to the
                 // wrist offset and the theta param on the link. The wrist offset is 120 degrees.
                 assertTrue(abs(abs(i + 120 + params[0].theta) - jointAngles[0]).modulus(360) < 0.5)
@@ -99,8 +97,6 @@ class InverseKinematicsEngineIntegrationTest {
                     listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
                     chain
                 )
-
-                println("joint angles: ${jointAngles.joinToString()}\n")
 
                 if (i < 0) {
                     // Wrist offset is 120 deg, so the shoulder needs to rotate 120 deg to put

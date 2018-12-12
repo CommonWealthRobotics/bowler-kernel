@@ -174,7 +174,13 @@ class BowlerInverseKinematicsEngine
             }
         }
 
-        return newJointAngles.map { it.modulus(360) }.toDoubleArray()
+        return newJointAngles
+            .map { if (!it.isFinite()) 0.0 else it }
+            .map { it.modulus(360) }
+            .toDoubleArray()
+            .also {
+                println("jointAngles: ${it.joinToString()}")
+            }
     }
 
     /**
