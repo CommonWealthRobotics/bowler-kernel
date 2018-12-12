@@ -10,10 +10,10 @@ import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
-import com.neuronrobotics.kinematicschef.util.getFrameRotationMatrix
 import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.kinematicschef.util.immutableListOf
+import com.neuronrobotics.kinematicschef.util.step
 import com.neuronrobotics.kinematicschef.util.toTransformNR
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
@@ -26,8 +26,6 @@ import java.lang.Math.toRadians
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
-import kotlin.math.sqrt
-import kotlin.test.assertEquals
 
 class InverseKinematicsEngineIntegrationTest {
 
@@ -61,32 +59,35 @@ class InverseKinematicsEngineIntegrationTest {
         ) as? MobileBaseLoader ?: fail { "The script did not return a MobileBaseLoader." }
 
         val chain = cmmInputArm.base.appendages[0].chain
+        val params = chain.toDhParams()
 
         val engine = BowlerInverseKinematicsEngine.getInstance()
 
-        for (i in -180..180) {
-            val params = chain.toDhParams()
+        fun testTheta1(targetRadius: Double) {
+            for (i in -180.0..180.0 step 0.1) {
+                val targetHeight = params.toFrameTransformation().getTranslation()[2]
 
-            // The radius of the circle the target will move around
-            val targetRadius = params[0].length / 2
-            val targetHeight = params.toFrameTransformation().getTranslation()[2]
+                val jointAngles = engine.inverseKinematics(
+                    getFrameTranslationMatrix(
+                        targetRadius * cos(toRadians(i)),
+                        targetRadius * sin(toRadians(i)),
+                        targetHeight
+                    ),
+                    listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+                    chain
+                )
 
-            val jointAngles = engine.inverseKinematics(
-                getFrameTranslationMatrix(
-                    targetRadius * cos(toRadians(i.toDouble())),
-                    targetRadius * sin(toRadians(i.toDouble())),
-                    targetHeight
-                ),
-                listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
-                chain
-            )
+                println(jointAngles.joinToString())
 
-            println(jointAngles.joinToString())
-
-            // Test that the first link is correct. Need to remap the target angle according to the
-            // wrist offset and the theta param on the link. The wrist offset is 120 degrees.
-            assertTrue(abs(abs(i.toDouble() + 120 + params[0].theta) - jointAngles[0]) < 1)
+                // Test that the first link is correct. Need to remap the target angle according to the
+                // wrist offset and the theta param on the link. The wrist offset is 120 degrees.
+                assertTrue(abs(abs(i + 120 + params[0].theta) - jointAngles[0]) < 0.5)
+            }
         }
+
+        testTheta1(params[0].length / 4) // Inside home radius
+        testTheta1(params[0].length / 2) // The radius for the home position
+        testTheta1(params[0].length / 1) // Outside the home radius
     }
 
     @Test
