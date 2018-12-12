@@ -18,12 +18,17 @@ import com.neuronrobotics.kinematicschef.dhparam.RevoluteJoint
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDhParamList
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
+import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
+import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
+import com.neuronrobotics.kinematicschef.util.getRotation
+import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.length
 import com.neuronrobotics.kinematicschef.util.modulus
 import com.neuronrobotics.kinematicschef.util.projectionOntoPlane
 import com.neuronrobotics.kinematicschef.util.projectionOntoVector
 import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
+import com.neuronrobotics.kinematicschef.util.toTranslation
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
@@ -33,9 +38,7 @@ import org.jlleitschuh.guice.module
 import java.lang.Math.toDegrees
 import java.lang.Math.toRadians
 import javax.inject.Inject
-import kotlin.math.PI
 import kotlin.math.abs
-import kotlin.math.acos
 import kotlin.math.asin
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -133,9 +136,9 @@ class BowlerInverseKinematicsEngine
         newJointAngles[0] = toDegrees(atan2(wristCenter[1], wristCenter[0])) -
             angleFromFirstLinkToWristCoR + dhParams[0].theta
 
-        val (elbow1, elbow2) = solveElbows(dhParams, wristCenter)
-        newJointAngles[1] = elbow1
-        newJointAngles[2] = elbow2
+        val (elbow1, elbow2) = solveElbows(dhParams, wristCenter, target)
+        newJointAngles[1] = elbow1 + dhParams[1].theta
+        newJointAngles[2] = elbow2 + dhParams[2].theta
 
         return newJointAngles
             .map { if (!it.isFinite()) 0.0 else it }
@@ -148,29 +151,43 @@ class BowlerInverseKinematicsEngine
 
     private fun solveElbows(
         dhParams: ImmutableList<DhParam>,
-        wristCenter: SimpleMatrix
+        wristCenter: SimpleMatrix,
+        target: SimpleMatrix
     ): Pair<Double, Double> {
-        val Cx = wristCenter[0]
-        val Cy = wristCenter[2] - dhParams[3].d
+//        val target = wristCenter.toTranslation()
+//        val Cx = target[0]
+//        val Cy = target[2]
+//
+//        val AC = sqrt(Cx.pow(2) + Cy.pow(2))
+//        val ac_angle = atan2(Cy, Cx)
+//        val AB = dhParams[1].r
+//        val BC = dhParams[2].r
+//
+//        if (AB + BC <= AC || AB + AC <= BC || BC + AC <= AB) {
+//            println("Elbow solution not possible")
+//        }
+//
+//        val littleS = (AB + BC + AC) / 2
+//        val S_squared = littleS * (littleS - AB) * (littleS - BC) * (littleS - AC)
+//        val S = if (abs(S_squared) < 1e-6) 0.0 else sqrt(S_squared)
+//
+//        val A = asin((2 * S) / (AB * AC))
+//        val B = asin((2 * S) / (AB * BC))
+//        val C = asin((2 * S) / (AC * BC))
+//
+//        return toDegrees(ac_angle + A) to toDegrees(B)
+        val wristOriented = target.getRotation().mult(wristCenter)
 
-        val AC = sqrt(Cx.pow(2) + Cy.pow(2))
-        val ac_angle = atan2(Cy, Cx)
-        val AB = dhParams[1].r
-        val BC = dhParams[2].r
+        val elbow2Position = wristCenter.toTranslation().mult(
+            dhParams[3].frameTransformation.invert()
+        ).getTranslation()
 
-        if (AB + BC <= AC || AB + AC <= BC || BC + AC <= AB) {
-            println("Elbow solution not possible")
-        }
-
-        val littleS = (AB + BC + AC) / 2
-        val S_squared = littleS * (littleS - AB) * (littleS - BC) * (littleS - AC)
-        val S = if (abs(S_squared) < 1e-6) 0.0 else sqrt(S_squared)
-
-        val A = asin((2 * S) / (AB * AC))
-        val B = asin((2 * S) / (AB * BC))
-        val C = asin((2 * S) / (AC * BC))
-
-        return toDegrees(ac_angle + A) to toDegrees(B)
+        val elbow2Angle = toDegrees(
+            atan2(
+                elbow2Position[2], elbow2Position[0]
+            )
+        )
+        TODO()
     }
 
     /**
