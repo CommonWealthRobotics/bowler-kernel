@@ -16,10 +16,9 @@ import com.neuronrobotics.kinematicschef.dhparam.RevoluteJoint
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDhParamList
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
-import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
-import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.length
+import com.neuronrobotics.kinematicschef.util.modulus
 import com.neuronrobotics.kinematicschef.util.projectionOntoPlane
 import com.neuronrobotics.kinematicschef.util.projectionOntoVector
 import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
@@ -40,7 +39,6 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
-import kotlin.math.sqrt
 
 /**
  * A [DhInverseSolver] which attempts to generate and cache an analytic solver by deriving the
@@ -72,6 +70,7 @@ class BowlerInverseKinematicsEngine
         jointSpaceVector: DoubleArray,
         chain: DHChain
     ): DoubleArray {
+        println("target: $target")
         val dhParams = chain.toDhParams()
         val chainElements = immutableListOf(
             RevoluteJoint(immutableListOf(dhParams[0])),
@@ -174,8 +173,7 @@ class BowlerInverseKinematicsEngine
             }
         }
 
-//        return newJointAngles.map { toDegrees(it) }.toDoubleArray()
-        return newJointAngles
+        return newJointAngles.map { it.modulus(360) }.toDoubleArray()
     }
 
     /**

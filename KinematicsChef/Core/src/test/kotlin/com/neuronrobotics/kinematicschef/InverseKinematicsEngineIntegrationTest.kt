@@ -13,6 +13,7 @@ import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
 import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.kinematicschef.util.immutableListOf
+import com.neuronrobotics.kinematicschef.util.modulus
 import com.neuronrobotics.kinematicschef.util.step
 import com.neuronrobotics.kinematicschef.util.toTransformNR
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
@@ -63,7 +64,7 @@ class InverseKinematicsEngineIntegrationTest {
 
         val engine = BowlerInverseKinematicsEngine.getInstance()
 
-        fun testTheta1(targetRadius: Double) {
+        fun testTheta1OnRadius(targetRadius: Double) {
             for (i in -180.0..180.0 step 0.1) {
                 val targetHeight = params.toFrameTransformation().getTranslation()[2]
 
@@ -81,13 +82,42 @@ class InverseKinematicsEngineIntegrationTest {
 
                 // Test that the first link is correct. Need to remap the target angle according to the
                 // wrist offset and the theta param on the link. The wrist offset is 120 degrees.
-                assertTrue(abs(abs(i + 120 + params[0].theta) - jointAngles[0]) < 0.5)
+                assertTrue(abs(abs(i + 120 + params[0].theta) - jointAngles[0]).modulus(360) < 0.5)
             }
         }
 
-        testTheta1(params[0].length / 4) // Inside home radius
-        testTheta1(params[0].length / 2) // The radius for the home position
-        testTheta1(params[0].length / 1) // Outside the home radius
+        fun testTheta1OnXAxis() {
+            for (i in -10..10) {
+                val targetHeight = params.toFrameTransformation().getTranslation()[2]
+
+                val jointAngles = engine.inverseKinematics(
+                    getFrameTranslationMatrix(
+                        i,
+                        0,
+                        targetHeight
+                    ),
+                    listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+                    chain
+                )
+
+                println("joint angles: ${jointAngles.joinToString()}\n")
+
+                if (i < 0) {
+                    // Wrist offset is 120 deg, so the shoulder needs to rotate 120 deg to put
+                    // the wrist on x
+                    assertTrue((120 - jointAngles[0]).modulus(360) < 0.5)
+                } else if (i > 0) {
+                    // Wrist offset is 120 deg, so the shoulder needs to rotate 120 + 180 deg to
+                    // put the wrist on x
+                    assertTrue(((120 + 180) - jointAngles[0]).modulus(360) < 0.5)
+                }
+            }
+        }
+
+        testTheta1OnRadius(params[0].length / 4) // Inside home radius
+        testTheta1OnRadius(params[0].length / 2) // The radius for the home position
+        testTheta1OnRadius(params[0].length / 1) // Outside the home radius
+        testTheta1OnXAxis()
     }
 
     @Test
