@@ -10,14 +10,24 @@ import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
+import com.neuronrobotics.kinematicschef.util.getFrameRotationMatrix
+import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
+import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.toTransformNR
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
+import java.lang.Math.toRadians
+import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
+import kotlin.test.assertEquals
 
 class InverseKinematicsEngineIntegrationTest {
 
@@ -43,11 +53,8 @@ class InverseKinematicsEngineIntegrationTest {
     }
 
     @Test
-    @Disabled
     fun `test cmm input arm`() {
         val cmmInputArm = ScriptingEngine.gitScriptRun(
-//            "https://gist.github.com/98892e87253005adbe4a.git",
-//            "TrobotMaster.xml",
             "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
             "InputArmBase_copy.xml",
             null
@@ -57,14 +64,29 @@ class InverseKinematicsEngineIntegrationTest {
 
         val engine = BowlerInverseKinematicsEngine.getInstance()
 
-        val jointAngles = engine.inverseKinematics(
-//            TransformNR().setX(14.0).setY(14.0).setZ(259.0),
-            chain.toDhParams().toFrameTransformation().toTransformNR(),
-            listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
-            chain
-        )
+        for (i in -180..180) {
+            val params = chain.toDhParams()
 
-        println(jointAngles.joinToString())
+            // The radius of the circle the target will move around
+            val targetRadius = params[0].length / 2
+            val targetHeight = params.toFrameTransformation().getTranslation()[2]
+
+            val jointAngles = engine.inverseKinematics(
+                getFrameTranslationMatrix(
+                    targetRadius * cos(toRadians(i.toDouble())),
+                    targetRadius * sin(toRadians(i.toDouble())),
+                    targetHeight
+                ),
+                listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+                chain
+            )
+
+            println(jointAngles.joinToString())
+
+            // Test that the first link is correct. Need to remap the target angle according to the
+            // wrist offset and the theta param on the link. The wrist offset is 120 degrees.
+            assertTrue(abs(abs(i.toDouble() + 120 + params[0].theta) - jointAngles[0]) < 1)
+        }
     }
 
     @Test

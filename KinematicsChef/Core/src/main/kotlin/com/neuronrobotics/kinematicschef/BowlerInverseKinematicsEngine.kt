@@ -16,6 +16,8 @@ import com.neuronrobotics.kinematicschef.dhparam.RevoluteJoint
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDhParamList
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
+import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
+import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.length
 import com.neuronrobotics.kinematicschef.util.projectionOntoPlane
@@ -63,6 +65,12 @@ class BowlerInverseKinematicsEngine
         target: TransformNR,
         jointSpaceVector: DoubleArray,
         chain: DHChain
+    ) = inverseKinematics(target.toSimpleMatrix(), jointSpaceVector, chain)
+
+    fun inverseKinematics(
+        target: SimpleMatrix,
+        jointSpaceVector: DoubleArray,
+        chain: DHChain
     ): DoubleArray {
         val dhParams = chain.toDhParams()
         val chainElements = immutableListOf(
@@ -91,7 +99,7 @@ class BowlerInverseKinematicsEngine
 
         val wrist = chainElements.last() as? SphericalWrist ?: useIterativeSolver()
 
-        val wristCenter = wrist.center(target.toSimpleMatrix())
+        val wristCenter = wrist.center(target)
         println("wristCenter: $wristCenter")
 
         val newJointAngles = jointSpaceVector.copyOf()
@@ -133,18 +141,37 @@ class BowlerInverseKinematicsEngine
         val triangleSideC = PI - triangleSideA - triangleSideB // rule of triangles
         val elevation = asin(wristCenter[2] / lengthFromShoulderToWristCenter)
 
+        val targetTranslation = target.getTranslation()
+
         // Length to the target from the origin in the XY plane
-        val lengthXYPlaneVec = sqrt(target.x.pow(2) + target.y.pow(2))
+        val lengthXYPlaneVec = sqrt(targetTranslation[0].pow(2) + targetTranslation[1].pow(2))
 
         // Angle from link 0 to link 1
-        val angleXYPlaneVec = asin(target.y / lengthXYPlaneVec)
+        val angleXYPlaneVec = asin(targetTranslation[1] / lengthXYPlaneVec)
 
         // Angle to target (I think?)
         val angleRectangleAdjustedXY = asin(offsetFromShoulderCoRToWristCoR / lengthXYPlaneVec)
 
         // Angle of shoulder
         val orientation = toDegrees(angleXYPlaneVec - angleRectangleAdjustedXY)
-        newJointAngles[0] = toDegrees(atan2(wristCenter[1], wristCenter[0])) + dhParams[0].theta
+
+        val firstLinkAngle = dhParams[0].frameTransformation.getTranslation().let {
+            toDegrees(atan2(it[1], it[0]))
+        }
+
+        val angleFromFirstLinkToWristCoR = wrist.centerHomed(dhParams.subList(0, 3)).let {
+            toDegrees(atan2(it[1], it[0]))
+        }
+
+        val angleFromFirstLinkToSecondLink = dhParams.subList(1, 3)
+            .toFrameTransformation()
+            .getTranslation()
+            .let {
+                toDegrees(atan2(it[1], it[0]))
+            }
+
+        newJointAngles[0] = toDegrees(atan2(wristCenter[1], wristCenter[0])) -
+            angleFromFirstLinkToWristCoR + dhParams[0].theta
 //            if (abs(orientation) < 0.01) {
 //            0.0 + dhParams[0].theta
 //        } else {
