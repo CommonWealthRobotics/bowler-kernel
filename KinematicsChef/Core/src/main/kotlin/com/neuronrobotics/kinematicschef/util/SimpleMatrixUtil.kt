@@ -9,6 +9,7 @@ import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import org.ejml.simple.SimpleMatrix
 import java.lang.Math.toRadians
 import kotlin.math.cos
+import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -68,11 +69,11 @@ internal fun SimpleMatrix.length(): Double {
 
     if (numRows() == 1) {
         for (i in 0 until numCols()) {
-            sum += this[0, i] * this[0, i]
+            sum += this[0, i].pow(2)
         }
     } else {
         for (i in 0 until numRows()) {
-            sum += this[i, 0] * this[i, 0]
+            sum += this[i, 0].pow(2)
         }
     }
 

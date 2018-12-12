@@ -10,7 +10,6 @@ import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
-import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
 import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.toTransformNR
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
@@ -56,7 +55,7 @@ class InverseKinematicsEngineIntegrationTest {
 
         val chain = cmmInputArm.base.appendages[0].chain
 
-        val engine = InverseKinematicsEngine.getInstance()
+        val engine = BowlerInverseKinematicsEngine.getInstance()
 
         val jointAngles = engine.inverseKinematics(
 //            TransformNR().setX(14.0).setY(14.0).setZ(259.0),
