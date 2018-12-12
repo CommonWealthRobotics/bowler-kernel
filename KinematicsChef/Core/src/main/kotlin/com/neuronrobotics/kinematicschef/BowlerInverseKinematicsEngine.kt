@@ -43,7 +43,7 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 /**
- * A [DhnewJointAngleserseSolver] which attempts to generate and cache an analytic solver by deriving the
+ * A [DhInverseSolver] which attempts to generate and cache an analytic solver by deriving the
  * chain's Euler angles. If an analytic solver cannot be generated, an iterative solver will be
  * used instead.
  */
