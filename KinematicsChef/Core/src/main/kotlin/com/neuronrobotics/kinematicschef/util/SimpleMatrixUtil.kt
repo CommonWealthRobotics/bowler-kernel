@@ -247,7 +247,7 @@ internal fun SimpleMatrix.approxEquals(other: SimpleMatrix?, delta: Double = 1e-
     } else {
         for (row in 0 until numRows()) {
             for (col in 0 until numCols()) {
-                if (abs(this[row, col] - other[row, col]) > delta) {
+                if (abs(abs(this[row, col]) - abs(other[row, col])) > delta) {
                     return false
                 }
             }

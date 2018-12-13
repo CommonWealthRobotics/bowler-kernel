@@ -178,12 +178,13 @@ class InverseKinematicsEngine
 //                }
 
                 // Angle of shoulder
-                val angleFromFirstLinkToWristCoR = wrist.centerHomed(dhParams.subList(0, 3)).let {
-                    atan2(it[1], it[0])
-                }
+                val angleFromFirstLinkToWristCoR =
+                    wrist.centerHomed(dhParams.subList(0, 3)).let {
+                        atan2(it[1], it[0])
+                    }
 
-                newJointAngles[0] = atan2(wristCenter[1], wristCenter[0]) -
-                    angleFromFirstLinkToWristCoR
+                newJointAngles[0] =
+                    atan2(wristCenter[1], wristCenter[0]) - angleFromFirstLinkToWristCoR + PI
             }
         }
 
@@ -258,7 +259,8 @@ class InverseKinematicsEngine
 
         return newJointAngles.mapIndexed { index, elem ->
             when {
-                index == 0 || index > 2 -> toDegrees(elem)
+//                index == 0 ||
+                index > 2 -> toDegrees(elem)
                 else -> toDegrees(elem) + dhParams[index].theta
             }
         }.map {
