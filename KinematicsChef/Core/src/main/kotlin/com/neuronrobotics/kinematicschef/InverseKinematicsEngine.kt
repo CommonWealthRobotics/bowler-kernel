@@ -19,6 +19,7 @@ import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.kinematicschef.util.immutableListOf
+import com.neuronrobotics.kinematicschef.util.length
 import com.neuronrobotics.kinematicschef.util.modulus
 import com.neuronrobotics.kinematicschef.util.projectionOntoPlane
 import com.neuronrobotics.kinematicschef.util.projectionOntoVector
@@ -102,32 +103,35 @@ class InverseKinematicsEngine
         println("wristCenter: $wristCenter")
         val newJointAngles = DoubleArray(jointSpaceVector.size) { 0.0 }
 
-        val dOffset = abs(
-            wrist.centerHomed(
+        val dOffset = wrist.centerHomed(
                 chainElements.subList(0, chainElements.indexOf(wrist) + 1).toDhParamList()
             ).projectionOntoPlane(
                 SimpleMatrix(3, 1).apply {
                     this[2, 0] = 1.0
                 }
             ).extractMatrix(
-                0, 2,
-                0, 1
+            0, 2,
+            0, 1
             ).projectionOntoVector(
-                // TODO: Should this be along alpha or theta?
-                // In the context of the cmm arm, alpha is the y component and theta is the x component
-                SimpleMatrix(2, 1).apply {
-                    this[0, 0] = cos(toRadians(dhParams[0].alpha))
-                    this[1, 0] = sin(toRadians(dhParams[0].alpha))
-                }
-            ))
-        println("dOffset: $dOffset")
 
-        val lengthToWristSquared = wristCenter[0].pow(2) + wristCenter[1].pow(2) - dOffset.pow(2)
+            // TODO: Should this be along alpha or theta?
+            // In the context of the cmm arm, alpha is the y component and theta is the x component
+            SimpleMatrix(2, 1).apply {
+                this[0, 0] = cos(toRadians(dhParams[0].alpha))
+                this[1, 0] = sin(toRadians(dhParams[0].alpha))
+            }
+        )
+
+        val absDOffset = abs(dOffset)
+
+        println("dOffset: $absDOffset")
+
+        val lengthToWristSquared = wristCenter[0].pow(2) + wristCenter[1].pow(2) - absDOffset.pow(2)
         println("lengthToWristSquared: $lengthToWristSquared")
 
         val heightOfFirstElbow = dhParams.subList(0, 2).toFrameTransformation().getTranslation()[2]
 
-        when (dOffset) {
+        when (absDOffset) {
             0.0 -> {
                 // next joint is along Z axis of shoulder
                 // check for singularity, if so then the shoulder joint angle does not need to change
@@ -195,8 +199,12 @@ class InverseKinematicsEngine
         val a3 = dhParams[2].r
         val elbowTarget = dhParams.subList(0, 3).toFrameTransformation().getTranslation() -
             dhParams.subList(0, 1).toFrameTransformation().getTranslation()
-        val r = elbowTarget[0]
+
         val s = elbowTarget[2]
+        elbowTarget[2] = 0.0
+        elbowTarget[1] -= dOffset*cos(newJointAngles[0])
+        elbowTarget[0] += dOffset*sin(newJointAngles[0])
+        val r = elbowTarget.length()
 
         val adjustedWristHeight = wristCenter[2] - heightOfFirstElbow
         val cosTheta3 = (r.pow(2) + s.pow(2) - a2.pow(2) - a3.pow(2)) / (2 * a2 * a3)
@@ -248,7 +256,17 @@ class InverseKinematicsEngine
 
         // TODO: Implement solver for computing wrist joint angles
         // using previous angles for now
-        newJointAngles[3] = jointSpaceVector[3]
+        val wristOriginToTip = target.getTranslation() -
+            dhParams.subList(0, 3).toFrameTransformation().getTranslation()
+        val wristCenterToTip = target.getTranslation() -
+            dhParams.subList(0, 4).toFrameTransformation().getTranslation()
+
+        val xTip = wristOriginToTip[0]
+        val yTip = wristOriginToTip[1]
+        val zTip = wristOriginToTip[2]
+        //val rTip = wristCenterToTip
+
+        newJointAngles[3] = atan2(yTip, xTip)
         newJointAngles[4] = jointSpaceVector[4]
         newJointAngles[5] = jointSpaceVector[5]
 
