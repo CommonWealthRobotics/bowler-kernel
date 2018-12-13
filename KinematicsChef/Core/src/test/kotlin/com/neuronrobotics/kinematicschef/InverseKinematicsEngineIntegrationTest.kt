@@ -62,7 +62,8 @@ class InverseKinematicsEngineIntegrationTest {
         val chain = cmmInputArm.base.appendages[0].chain
         val params = chain.toDhParams()
 
-        val engine = InverseKinematicsEngine.getInstance()//BowlerInverseKinematicsEngine.getInstance()
+        val engine =
+            InverseKinematicsEngine.getInstance()//BowlerInverseKinematicsEngine.getInstance()
 
         fun testTheta1OnRadius(targetRadius: Double) {
             for (i in -180.0..180.0 step 0.1) {

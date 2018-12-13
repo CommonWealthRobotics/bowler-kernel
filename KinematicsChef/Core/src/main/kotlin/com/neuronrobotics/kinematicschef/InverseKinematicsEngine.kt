@@ -155,19 +155,27 @@ class InverseKinematicsEngine
             }
 
             else -> {
-                // left/right arm configuration
-                val phi = atan2(wristCenter[1], wristCenter[0])
-//                val d = dhParams[0].r + dhParams[1].d + dhParams[2].d
-                val length = sqrt(lengthToWristSquared)
+//                // left/right arm configuration
+//                val phi = atan2(wristCenter[1], wristCenter[0])
+////                val d = dhParams[0].r + dhParams[1].d + dhParams[2].d
+//                val length = sqrt(lengthToWristSquared)
+//
+//                val theta1Left = phi - atan2(dOffset, length)
+//                val theta1Right = phi + atan2(-1 * dOffset, -1 * length)
+//
+//                when {
+//                    chain.jointAngleInBounds(theta1Left, 0) -> newJointAngles[0] = theta1Left
+//                    chain.jointAngleInBounds(theta1Right, 0) -> newJointAngles[0] = theta1Right
+//                    else -> useIterativeSolver()
+//                }
 
-                val theta1Left = phi - atan2(dOffset, length)
-                val theta1Right = phi + atan2(-1 * dOffset, -1 * length)
-
-                when {
-                    chain.jointAngleInBounds(theta1Left, 0) -> newJointAngles[0] = theta1Left
-                    chain.jointAngleInBounds(theta1Right, 0) -> newJointAngles[0] = theta1Right
-                    else -> useIterativeSolver()
+                // Angle of shoulder
+                val angleFromFirstLinkToWristCoR = wrist.centerHomed(dhParams.subList(0, 3)).let {
+                    atan2(it[1], it[0])
                 }
+
+                newJointAngles[0] = atan2(wristCenter[1], wristCenter[0]) -
+                    angleFromFirstLinkToWristCoR + toRadians(dhParams[0].theta)
             }
         }
 
@@ -183,11 +191,10 @@ class InverseKinematicsEngine
         val s = elbowTarget[2]
 
         val adjustedWristHeight = wristCenter[2] - heightOfFirstElbow
-        val cosTheta3 = (r.pow(2) + s.pow(2) - a2.pow(2) - a3.pow(2))/(2*a2*a3)
+        val cosTheta3 = (r.pow(2) + s.pow(2) - a2.pow(2) - a3.pow(2)) / (2 * a2 * a3)
 
-
-        val theta3ElbowUp = atan2(-sqrt(1-cosTheta3.pow(2)), cosTheta3)
-        val theta3ElbowDown = atan2(sqrt(1-cosTheta3.pow(2)), cosTheta3)
+        val theta3ElbowUp = atan2(-sqrt(1 - cosTheta3.pow(2)), cosTheta3)
+        val theta3ElbowDown = atan2(sqrt(1 - cosTheta3.pow(2)), cosTheta3)
 
         val theta2ElbowUp = atan2(s, r) -
             atan2(
@@ -237,7 +244,9 @@ class InverseKinematicsEngine
         newJointAngles[4] = jointSpaceVector[4]
         newJointAngles[5] = jointSpaceVector[5]
 
-        return newJointAngles.map { toDegrees(it) }.toDoubleArray()
+        return newJointAngles.map { toDegrees(it) }.toDoubleArray().also {
+            println("jointAngles: ${it.joinToString()}")
+        }
     }
 
     /**
