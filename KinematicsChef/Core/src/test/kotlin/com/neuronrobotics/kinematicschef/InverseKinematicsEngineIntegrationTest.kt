@@ -10,6 +10,7 @@ import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
+import com.neuronrobotics.kinematicschef.util.approxEquals
 import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.kinematicschef.util.immutableListOf
@@ -18,6 +19,7 @@ import com.neuronrobotics.kinematicschef.util.step
 import com.neuronrobotics.kinematicschef.util.toTransformNR
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Disabled
@@ -119,12 +121,14 @@ class InverseKinematicsEngineIntegrationTest {
             )
 
             val chainWithAngles = params.mapIndexed { index, elem ->
-                elem.copy(theta = jointAngles[index])
+                // Offset theta by the joint angle because the joint angle is offset back by theta
+                elem.copy(theta = elem.theta + jointAngles[index])
             }
 
-            assertEquals(
-                params.toFrameTransformation().getTranslation(),
-                chainWithAngles.toFrameTransformation().getTranslation()
+            assertTrue(
+                params.toFrameTransformation().approxEquals(
+                    chainWithAngles.toFrameTransformation()
+                )
             )
         }
 

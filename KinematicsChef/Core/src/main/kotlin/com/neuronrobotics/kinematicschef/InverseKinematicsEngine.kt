@@ -257,10 +257,9 @@ class InverseKinematicsEngine
         newJointAngles[5] = jointSpaceVector[5]
 
         return newJointAngles.mapIndexed { index, elem ->
-            if (index == 0) {
-                toDegrees(elem)
-            } else {
-                toDegrees(elem) + dhParams[index].theta
+            when {
+                index == 0 || index > 2 -> toDegrees(elem)
+                else -> toDegrees(elem) + dhParams[index].theta
             }
         }.map {
             if (it > 360 || it < -360)
