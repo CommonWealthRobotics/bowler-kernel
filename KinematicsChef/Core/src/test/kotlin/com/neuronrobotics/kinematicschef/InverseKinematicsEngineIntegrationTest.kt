@@ -62,8 +62,7 @@ class InverseKinematicsEngineIntegrationTest {
         val chain = cmmInputArm.base.appendages[0].chain
         val params = chain.toDhParams()
 
-        val engine =
-            InverseKinematicsEngine.getInstance()//BowlerInverseKinematicsEngine.getInstance()
+        val engine = InverseKinematicsEngine.getInstance()
 
         fun testTheta1OnRadius(targetRadius: Double) {
             for (i in -180.0..180.0 step 0.1) {
@@ -74,7 +73,7 @@ class InverseKinematicsEngineIntegrationTest {
                         targetRadius * cos(toRadians(i)),
                         targetRadius * sin(toRadians(i)),
                         targetHeight
-                    ).toTransformNR(),
+                    ),
                     listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
                     chain
                 )
@@ -94,7 +93,7 @@ class InverseKinematicsEngineIntegrationTest {
                         i,
                         0,
                         targetHeight
-                    ).toTransformNR(),
+                    ),
                     listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
                     chain
                 )
@@ -111,13 +110,13 @@ class InverseKinematicsEngineIntegrationTest {
             }
         }
 
-//        testTheta1OnRadius(params[0].length / 4) // Inside home radius
-//        testTheta1OnRadius(params[0].length / 2) // The radius for the home position
-//        testTheta1OnRadius(params[0].length / 1) // Outside the home radius
-//        testTheta1OnXAxis()
+        testTheta1OnRadius(params[0].length / 4) // Inside home radius
+        testTheta1OnRadius(params[0].length / 2) // The radius for the home position
+        testTheta1OnRadius(params[0].length / 1) // Outside the home radius
+        testTheta1OnXAxis()
 
         val jointAngles = engine.inverseKinematics(
-            params.toFrameTransformation().toTransformNR(),
+            params.toFrameTransformation(),
             listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
             chain
         )

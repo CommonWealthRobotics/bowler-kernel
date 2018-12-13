@@ -19,6 +19,7 @@ import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.kinematicschef.util.immutableListOf
+import com.neuronrobotics.kinematicschef.util.modulus
 import com.neuronrobotics.kinematicschef.util.projectionOntoPlane
 import com.neuronrobotics.kinematicschef.util.projectionOntoVector
 import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
@@ -62,7 +63,14 @@ class InverseKinematicsEngine
         target: TransformNR,
         jointSpaceVector: DoubleArray,
         chain: DHChain
+    ): DoubleArray = inverseKinematics(target.toSimpleMatrix(), jointSpaceVector, chain)
+
+    fun inverseKinematics(
+        target: SimpleMatrix,
+        jointSpaceVector: DoubleArray,
+        chain: DHChain
     ): DoubleArray {
+        target.print()
         val dhParams = chain.toDhParams()
         val chainElements = immutableListOf(
             RevoluteJoint(immutableListOf(dhParams[0])),
@@ -90,7 +98,7 @@ class InverseKinematicsEngine
 
         val wrist = chainElements.last() as? SphericalWrist ?: useIterativeSolver()
 
-        val wristCenter = wrist.center(target.toSimpleMatrix())
+        val wristCenter = wrist.center(target)
         println("wristCenter: $wristCenter")
         val newJointAngles = DoubleArray(jointSpaceVector.size) { 0.0 }
 
@@ -175,7 +183,7 @@ class InverseKinematicsEngine
                 }
 
                 newJointAngles[0] = atan2(wristCenter[1], wristCenter[0]) -
-                    angleFromFirstLinkToWristCoR + toRadians(dhParams[0].theta)
+                    angleFromFirstLinkToWristCoR
             }
         }
 
@@ -244,7 +252,14 @@ class InverseKinematicsEngine
         newJointAngles[4] = jointSpaceVector[4]
         newJointAngles[5] = jointSpaceVector[5]
 
-        return newJointAngles.map { toDegrees(it) }.toDoubleArray().also {
+        return newJointAngles.mapIndexed { index, elem ->
+            toDegrees(elem) + dhParams[index].theta
+        }.map {
+            if (it > 360 || it < -360)
+                it.modulus(360)
+            else
+                it
+        }.toDoubleArray().also {
             println("jointAngles: ${it.joinToString()}")
         }
     }
