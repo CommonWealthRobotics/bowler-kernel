@@ -19,12 +19,9 @@ import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.kinematicschef.util.immutableListOf
-import com.neuronrobotics.kinematicschef.util.length
 import com.neuronrobotics.kinematicschef.util.projectionOntoPlane
 import com.neuronrobotics.kinematicschef.util.projectionOntoVector
-import com.neuronrobotics.kinematicschef.util.toImmutableMap
 import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
-import com.neuronrobotics.kinematicschef.util.toTranslation
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
@@ -163,15 +160,13 @@ class InverseKinematicsEngine
 //                val d = dhParams[0].r + dhParams[1].d + dhParams[2].d
                 val length = sqrt(lengthToWristSquared)
 
-//                val theta1Left = phi - atan2(dOffset, length)
-//                val theta1Right = phi + atan2(-1 * dOffset, -1 * length)
+                val theta1Left = phi - atan2(dOffset, length)
+                val theta1Right = phi + atan2(-1 * dOffset, -1 * length)
 
-                // TODO: Pick between the left and right arm solutions
-                // Using just left arm solution for now.
-                if (chain.jointAngleInBounds(phi, 0)) {
-                    newJointAngles[0] = phi
-                } else {
-                    useIterativeSolver()
+                when {
+                    chain.jointAngleInBounds(theta1Left, 0) -> newJointAngles[0] = theta1Left
+                    chain.jointAngleInBounds(theta1Right, 0) -> newJointAngles[0] = theta1Right
+                    else -> useIterativeSolver()
                 }
             }
         }
@@ -180,46 +175,30 @@ class InverseKinematicsEngine
         // compute theta3, then theta 2
 
         // spong 4.29 (xc^2 + yc^2 - d^2 + zc^2 - a2^2 - a3^2)/(2(a2)(a3))
+        val a2 = dhParams[1].r
+        val a3 = dhParams[2].r
+        val elbowTarget = dhParams.subList(0, 3).toFrameTransformation().getTranslation() -
+            dhParams.subList(0, 1).toFrameTransformation().getTranslation()
+        val r = elbowTarget[0]
+        val s = elbowTarget[2]
+
         val adjustedWristHeight = wristCenter[2] - heightOfFirstElbow
-        val cosTheta3 =
-            (lengthToWristSquared + adjustedWristHeight.pow(2) - dhParams[1].length.pow(2) -
-                dhParams[2].length.pow(2)) / (2 * dhParams[1].length * dhParams[2].length)
+        val cosTheta3 = (r.pow(2) + s.pow(2) - a2.pow(2) - a3.pow(2))/(2*a2*a3)
 
-        val theta3R = wristCenter[0].pow(2) + wristCenter[1].pow(2) - dOffset.pow(2)
-//            wristCenter.minus(dhParams[0].frameTransformation.getTranslation()).let {
-//                it.print()
-//                it[2, 0] = 0.0
-//                it.length()
-//            }
-//            wristCenter[0].pow(2) + wristCenter[1].pow(2) - dOffset.pow(2)
-        println("theta3R: $theta3R")
 
-        val theta3BigD = (theta3R +
-            wristCenter[2].pow(2) - dhParams[1].r.pow(2) - dhParams[2].r.pow(2)) /
-            (2 * dhParams[1].r * dhParams[2].r)
+        val theta3ElbowUp = atan2(-sqrt(1-cosTheta3.pow(2)), cosTheta3)
+        val theta3ElbowDown = atan2(sqrt(1-cosTheta3.pow(2)), cosTheta3)
 
-        val theta3ElbowUp = atan2(
-            sqrt(1 - theta3BigD.pow(2)),
-            theta3BigD
-        )
-        val theta3ElbowDown = atan2(
-            -1 * sqrt(1 - theta3BigD.pow(2)),
-            theta3BigD
-        )
-        println("theta3ElbowUp: $theta3ElbowUp, theta3ElbowDown: $theta3ElbowDown")
-//        val theta3ElbowUp = atan2(sqrt(1 - cosTheta3.pow(2)), cosTheta3)
-//        val theta3ElbowDown = atan2(-1 * sqrt(1 - cosTheta3.pow(2)), cosTheta3)
-
-        val theta2ElbowUp = atan2(adjustedWristHeight, sqrt(lengthToWristSquared)) -
+        val theta2ElbowUp = atan2(s, r) -
             atan2(
-                dhParams[2].length * sin(theta3ElbowUp),
-                dhParams[1].length + dhParams[2].length * cos(theta3ElbowUp)
+                a3 * sin(theta3ElbowUp),
+                a2 + a3 * cos(theta3ElbowUp)
             )
 
-        val theta2ElbowDown = atan2(adjustedWristHeight, sqrt(lengthToWristSquared)) -
+        val theta2ElbowDown = atan2(s, r) -
             atan2(
-                dhParams[2].length * sin(theta3ElbowDown),
-                dhParams[1].length + dhParams[2].length * cos(theta3ElbowDown)
+                a3 * sin(theta3ElbowDown),
+                a2 + a3 * cos(theta3ElbowDown)
             )
 
         // select elbow up or down based on smallest valid delta in theta2
