@@ -224,35 +224,39 @@ class InverseKinematicsEngine
                 a2 + a3 * cos(theta3ElbowDown)
             )
 
-        // select elbow up or down based on smallest valid delta in theta2
-        when {
-            chain.jointAngleInBounds(theta2ElbowDown, 1)
-                && chain.jointAngleInBounds(theta2ElbowUp, 1) -> {
-                val comparison = abs(jointSpaceVector[1] - theta2ElbowDown)
-                    .compareTo(abs(jointSpaceVector[1] - theta2ElbowUp))
+//        // select elbow up or down based on smallest valid delta in theta2
+//        when {
+//            chain.jointAngleInBounds(theta2ElbowDown, 1)
+//                && chain.jointAngleInBounds(theta2ElbowUp, 1) -> {
+//                val comparison = abs(jointSpaceVector[1] - theta2ElbowDown)
+//                    .compareTo(abs(jointSpaceVector[1] - theta2ElbowUp))
+//
+//                newJointAngles[1] = when {
+//                    comparison > 0 -> theta2ElbowUp.also { newJointAngles[2] = theta3ElbowUp }
+//                    else -> theta2ElbowDown.also { newJointAngles[2] = theta3ElbowDown }
+//                }
+//            }
+//
+//            chain.jointAngleInBounds(theta2ElbowDown, 1) -> {
+//                newJointAngles[1] = theta2ElbowDown
+//                newJointAngles[2] = theta3ElbowDown
+//            }
+//
+//            chain.jointAngleInBounds(theta2ElbowUp, 1) -> {
+//                newJointAngles[1] = theta2ElbowUp
+//                newJointAngles[2] = theta3ElbowUp
+//            }
+//
+//            else -> useIterativeSolver()
+//        }
+//
+//        if (!chain.jointAngleInBounds(newJointAngles[2], 2)) {
+//            useIterativeSolver()
+//        }
 
-                newJointAngles[1] = when {
-                    comparison > 0 -> theta2ElbowUp.also { newJointAngles[2] = theta3ElbowUp }
-                    else -> theta2ElbowDown.also { newJointAngles[2] = theta3ElbowDown }
-                }
-            }
-
-            chain.jointAngleInBounds(theta2ElbowDown, 1) -> {
-                newJointAngles[1] = theta2ElbowDown
-                newJointAngles[2] = theta3ElbowDown
-            }
-
-            chain.jointAngleInBounds(theta2ElbowUp, 1) -> {
-                newJointAngles[1] = theta2ElbowUp
-                newJointAngles[2] = theta3ElbowUp
-            }
-
-            else -> useIterativeSolver()
-        }
-
-        if (!chain.jointAngleInBounds(newJointAngles[2], 2)) {
-            useIterativeSolver()
-        }
+        // TODO: Always pick elbow up for now
+        newJointAngles[1] = theta2ElbowUp
+        newJointAngles[2] = theta3ElbowUp
 
         // TODO: Implement solver for computing wrist joint angles
         // using previous angles for now
@@ -271,7 +275,10 @@ class InverseKinematicsEngine
         newJointAngles[5] = jointSpaceVector[5]
 
         return newJointAngles.mapIndexed { index, elem ->
-            toDegrees(elem) + dhParams[index].theta
+            when {
+                index == 0 || index > 2 -> toDegrees(elem)
+                else -> toDegrees(elem) + dhParams[index].theta
+            }
         }.map {
             if (it > 360 || it < -360)
                 it.modulus(360)
