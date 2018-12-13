@@ -282,7 +282,7 @@ class InverseKinematicsEngine
                 else -> toDegrees(elem) + dhParams[index].theta
             }
         }.map {
-            if (it > 360 || it < -360)
+            if (it >= 360 || it <= -360)
                 it.modulus(360)
             else
                 it
