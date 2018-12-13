@@ -18,6 +18,7 @@ import com.neuronrobotics.kinematicschef.util.step
 import com.neuronrobotics.kinematicschef.util.toTransformNR
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -110,16 +111,60 @@ class InverseKinematicsEngineIntegrationTest {
             }
         }
 
-        testTheta1OnRadius(params[0].length / 4) // Inside home radius
-        testTheta1OnRadius(params[0].length / 2) // The radius for the home position
-        testTheta1OnRadius(params[0].length / 1) // Outside the home radius
-        testTheta1OnXAxis()
+        fun testThetasHomed() {
+            val jointAngles = engine.inverseKinematics(
+                params.toFrameTransformation(),
+                listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+                chain
+            )
 
-        val jointAngles = engine.inverseKinematics(
-            params.toFrameTransformation(),
-            listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
-            chain
-        )
+            val chainWithAngles = params.mapIndexed { index, elem ->
+                elem.copy(theta = jointAngles[index])
+            }
+
+            assertEquals(
+                params.toFrameTransformation().getTranslation(),
+                chainWithAngles.toFrameTransformation().getTranslation()
+            )
+        }
+
+        fun testThetasOnXAxis() {
+            for (i in -10..10) {
+                val targetHeight = params.toFrameTransformation().getTranslation()[2]
+
+                val jointAngles = engine.inverseKinematics(
+                    getFrameTranslationMatrix(
+                        i,
+                        0,
+                        targetHeight
+                    ),
+                    listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+                    chain
+                )
+
+                val chainWithAngles = params.mapIndexed { index, elem ->
+                    elem.copy(theta = jointAngles[index])
+                }
+
+                assertEquals(
+                    params.toFrameTransformation().getTranslation(),
+                    chainWithAngles.toFrameTransformation().getTranslation()
+                )
+            }
+        }
+
+//        testTheta1OnRadius(params[0].length / 4) // Inside home radius
+//        testTheta1OnRadius(params[0].length / 2) // The radius for the home position
+//        testTheta1OnRadius(params[0].length / 1) // Outside the home radius
+//        testTheta1OnXAxis()
+//        testThetasOnXAxis()
+        testThetasHomed()
+
+//        val jointAngles = engine.inverseKinematics(
+//            params.toFrameTransformation(),
+//            listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+//            chain
+//        )
     }
 
     @Test
