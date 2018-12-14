@@ -5,6 +5,7 @@
  */
 package com.neuronrobotics.kinematicschef
 
+import com.google.common.collect.ImmutableList
 import com.google.inject.Guice
 import com.neuronrobotics.kinematicschef.classifier.ChainIdentifier
 import com.neuronrobotics.kinematicschef.classifier.DefaultChainIdentifier
@@ -24,6 +25,7 @@ import com.neuronrobotics.kinematicschef.util.length
 import com.neuronrobotics.kinematicschef.util.modulus
 import com.neuronrobotics.kinematicschef.util.projectionOntoPlane
 import com.neuronrobotics.kinematicschef.util.projectionOntoVector
+import com.neuronrobotics.kinematicschef.util.toImmutableList
 import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
@@ -198,14 +200,12 @@ class InverseKinematicsEngine
 
         // spong 4.29 (xc^2 + yc^2 - d^2 + zc^2 - a2^2 - a3^2)/(2(a2)(a3))
         val a2 = dhParams[1].r
-        val realA3 = dhParams[2].r + dhParams[3].d
         val elbow2ToWristCenter = dhParams.subList(0, 5).toFrameTransformation().getTranslation() -
             dhParams.subList(0, 3).toFrameTransformation().getTranslation()
         elbow2ToWristCenter[1] = 0.0
         elbow2ToWristCenter[0] = 24.0
-        val elbow2ToWristCenterLength = elbow2ToWristCenter.length()
+        val a3 = elbow2ToWristCenter.length()
         val elbow2ThetaOffset = atan2(elbow2ToWristCenter[2], elbow2ToWristCenter[0])
-        val a3 = elbow2ToWristCenterLength
 
         val shoulderParam = DhParam(dhParams[0].d, toDegrees(newJointAngles[0]), dhParams[0].r, dhParams[0].alpha)
 
@@ -218,7 +218,6 @@ class InverseKinematicsEngine
 
         val r = elbowTarget.length()
 
-        //val adjustedWristHeight = wristCenter[2] - heightOfFirstElbow
         val cosTheta3 = (r.pow(2) + s.pow(2) - a2.pow(2) - a3.pow(2)) / (2 * a2 * a3)
 
         val theta3ElbowUp = atan2(-sqrt(1 - cosTheta3.pow(2)), cosTheta3)
@@ -243,9 +242,8 @@ class InverseKinematicsEngine
         // TODO: Implement solver for computing wrist joint angles
         // using previous angles for now
         val wristOriginToTip = target.getTranslation() -
-            dhParams.subList(0, 3).toFrameTransformation().getTranslation()
-        val wristCenterToTip = target.getTranslation() -
-            wristCenter
+            dhParams.subList(0, 3).forwardKinematics(newJointAngles).getTranslation()
+        val wristCenterToTip = target.getTranslation() - wristCenter
 
         val xTip = wristOriginToTip[0]
         val yTip = wristOriginToTip[1]
@@ -254,8 +252,25 @@ class InverseKinematicsEngine
         val d1 = dhParams[3].d
         val wristS = zTip - d1
 
-        newJointAngles[3] = atan2(yTip, xTip)
-        newJointAngles[4] = atan2(s, r) + PI * 0.5
+
+        //TODO: move frame to first wrist joint and orient it so that the first wrist's joint axes align with xyz
+        /* We also need to make sure the target (the tip of the wrist) gets rotated in respect to this new frame
+         * in order to do the next theta calculations, else they break down when the wrist axes aren't already aligned.
+         */
+        if (abs(xTip) < 0.001 && abs(yTip) < 0.001) {
+            newJointAngles[3] = jointSpaceVector[3]
+        } else {
+            newJointAngles[3] = atan2(yTip, xTip)
+        }
+
+        newJointAngles[4] = atan2(wristS, rTip) + PI * 0.5
+        //second solution for wrist center angle, basically 180 degree rotation
+        val jointAngles4Solution2 = atan2(wristS, rTip) - PI * 0.5
+
+        //TODO: tip rotation via the last joint, getting rest of wrist aligned will make this easy
+
+        newJointAngles[3] = jointSpaceVector[3]//
+        newJointAngles[4] = jointSpaceVector[4]//atan2(wristS, rTip) + PI * 0.5
         newJointAngles[5] = jointSpaceVector[5]
 
         return newJointAngles.mapIndexed { index, elem ->
@@ -287,6 +302,19 @@ class InverseKinematicsEngine
         // return jointAngle <= link.maxEngineeringUnits && jointAngle >= link.minEngineeringUnits
         // TODO: Convert jointAngle to degrees and use the real bounds
         return true
+    }
+
+    private fun ImmutableList<DhParam>.forwardKinematics(thetas : DoubleArray) : SimpleMatrix {
+        val paramList = ArrayList<DhParam>()
+
+        for (i in 0 until this.size) {
+            when (i) {
+                0 -> paramList.add(DhParam(this[i].d, toDegrees(thetas[i]), this[i].r, this[i].alpha))
+                else -> paramList.add(DhParam(this[i].d, -toDegrees(thetas[i]), this[i].r, this[i].alpha))
+            }
+        }
+
+        return paramList.toImmutableList().toFrameTransformation()
     }
 
     private fun useIterativeSolver(): Nothing = TODO("The chain must be solved iteratively.")
