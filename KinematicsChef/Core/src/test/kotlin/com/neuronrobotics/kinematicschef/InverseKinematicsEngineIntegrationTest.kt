@@ -190,15 +190,25 @@ class InverseKinematicsEngineIntegrationTest {
         val tipHome = params.toFrameTransformation().getTranslation()
         val lengthToTip = sqrt(tipHome[0].pow(2) + tipHome[1].pow(2))
 
-//        testTheta1OnRadius(lengthToTip) // The radius for the home position
-//        testThetasHomed()
+        //testTheta1OnRadius(lengthToTip) // The radius for the home position
+        //testThetasHomed()
 //        testTheta1OnXAxis()
 //        testThetasAlongXAxis()
 
-        val jointAngles = engine.inverseKinematics(
-            params.toFrameTransformation(),
+        engine.inverseKinematics(
+            getFrameTranslationMatrix(
+                -14.0,
+                8.0,
+                259.0
+            ),
             listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
             chain
+        )
+
+        val jointAngles = engine.inverseKinematics(
+            params.toFrameTransformation(),
+        listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+        chain
         )
     }
 
