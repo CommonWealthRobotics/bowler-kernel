@@ -257,20 +257,22 @@ class InverseKinematicsEngine
         /* We also need to make sure the target (the tip of the wrist) gets rotated in respect to this new frame
          * in order to do the next theta calculations, else they break down when the wrist axes aren't already aligned.
          */
-        if (abs(xTip) < 0.001 && abs(yTip) < 0.001) {
-            newJointAngles[3] = jointSpaceVector[3]
-        } else {
-            newJointAngles[3] = atan2(yTip, xTip)
-        }
 
-        newJointAngles[4] = atan2(wristS, rTip) + PI * 0.5
-        //second solution for wrist center angle, basically 180 degree rotation
-        val jointAngles4Solution2 = atan2(wristS, rTip) - PI * 0.5
+        //uncomment this once frame gets rotated
+//        if (abs(xTip) < 0.001 && abs(yTip) < 0.001) {
+//            newJointAngles[3] = jointSpaceVector[3]
+//        } else {
+//            newJointAngles[3] = atan2(yTip, xTip)
+//        }
+//
+//        newJointAngles[4] = atan2(wristS, rTip) + PI * 0.5
+//        //second solution for wrist center angle, basically 180 degree rotation
+//        val jointAngles4Solution2 = atan2(wristS, rTip) - PI * 0.5
+
+        newJointAngles[3] = jointSpaceVector[3]
+        newJointAngles[4] = jointSpaceVector[4]
 
         //TODO: tip rotation via the last joint, getting rest of wrist aligned will make this easy
-
-        newJointAngles[3] = jointSpaceVector[3]//
-        newJointAngles[4] = jointSpaceVector[4]//atan2(wristS, rTip) + PI * 0.5
         newJointAngles[5] = jointSpaceVector[5]
 
         return newJointAngles.mapIndexed { index, elem ->
