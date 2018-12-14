@@ -262,7 +262,7 @@ class InverseKinematicsEngine
 
         // TODO: This needs to translate the elbow up to where the wrist link is, maybe up by r?
         val firstWristLink = dhParams.subList(0, 3).forwardKinematics(newJointAngles)
-            .mult(getFrameTranslationMatrix(0, 0, 0)
+            .mult(getFrameTranslationMatrix(0, 0, 0))
             .getTranslation()
 
         val u1 = Vector3D(firstWristLink[0], firstWristLink[1], firstWristLink[2])
