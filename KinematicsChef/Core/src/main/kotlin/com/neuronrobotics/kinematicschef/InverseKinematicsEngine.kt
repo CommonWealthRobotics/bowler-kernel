@@ -30,6 +30,9 @@ import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation
+import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 import org.ejml.simple.SimpleMatrix
 import org.jlleitschuh.guice.key
 import org.jlleitschuh.guice.module
@@ -241,17 +244,16 @@ class InverseKinematicsEngine
 
         // TODO: Implement solver for computing wrist joint angles
         // using previous angles for now
-        val wristOriginToTip = target.getTranslation() -
-            dhParams.subList(0, 3).forwardKinematics(newJointAngles).getTranslation()
+        val wristOrigin = dhParams.subList(0, 3).forwardKinematics(newJointAngles).getTranslation()
         val wristCenterToTip = target.getTranslation() - wristCenter
 
-        val xTip = wristOriginToTip[0]
-        val yTip = wristOriginToTip[1]
-        val zTip = wristOriginToTip[2]
-        val rTip = sqrt(xTip.pow(2) + yTip.pow(2))
-        val d1 = dhParams[3].d
-        val wristS = zTip - d1
+        val u1 = Vector3D(wristOrigin[0], wristOrigin[1], wristOrigin[2])
+        val u2 = Vector3D(wristCenter[0], wristCenter[1], wristCenter[2])
+        val v1 = Vector3D(wristCenter[0], wristCenter[1], wristCenter[2])
+        val v2 = Vector3D(target.getTranslation()[0], target.getTranslation()[1], target.getTranslation()[2])
 
+        val rotation = Rotation(u1, u2, v1, v2)
+        val angles = rotation.getAngles(RotationOrder.XYX)
 
         //TODO: move frame to first wrist joint and orient it so that the first wrist's joint axes align with xyz
         /* We also need to make sure the target (the tip of the wrist) gets rotated in respect to this new frame
@@ -269,11 +271,15 @@ class InverseKinematicsEngine
 //        //second solution for wrist center angle, basically 180 degree rotation
 //        val jointAngles4Solution2 = atan2(wristS, rTip) - PI * 0.5
 
-        newJointAngles[3] = jointSpaceVector[3]
-        newJointAngles[4] = jointSpaceVector[4]
+        newJointAngles[3] = angles[0]
+        newJointAngles[4] = angles[1]
+        newJointAngles[5] = angles[2]
+
+//        newJointAngles[3] = jointSpaceVector[3]
+//        newJointAngles[4] = jointSpaceVector[4]
 
         //TODO: tip rotation via the last joint, getting rest of wrist aligned will make this easy
-        newJointAngles[5] = jointSpaceVector[5]
+//        newJointAngles[5] = jointSpaceVector[5]
 
         return newJointAngles.mapIndexed { index, elem ->
             when {

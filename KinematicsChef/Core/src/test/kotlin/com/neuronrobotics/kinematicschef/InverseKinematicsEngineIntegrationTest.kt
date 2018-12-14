@@ -191,9 +191,9 @@ class InverseKinematicsEngineIntegrationTest {
         val lengthToTip = sqrt(tipHome[0].pow(2) + tipHome[1].pow(2))
 
 //        testTheta1OnRadius(lengthToTip) // The radius for the home position
-//        testThetasHomed()
+        testThetasHomed()
 //        testTheta1OnXAxis()
-        testThetasAlongXAxis()
+//        testThetasAlongXAxis()
 
         engine.inverseKinematics(
             getFrameTranslationMatrix(
