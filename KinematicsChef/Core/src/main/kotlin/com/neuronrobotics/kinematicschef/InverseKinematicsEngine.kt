@@ -19,6 +19,7 @@ import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDhParamList
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
+import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.length
@@ -251,6 +252,7 @@ class InverseKinematicsEngine
         val wristCenterToOrigin = dhParams.subList(0, 3).forwardKinematics(newJointAngles).getTranslation() -
                 wristCenter
         val wristCenterToTip = target.getTranslation() - wristCenter
+        val tipVector = target.getTranslation()
 
         val homeCenterToTip = dhParams.toFrameTransformation().getTranslation() -
                 dhParams.subList(0, 4).toFrameTransformation().getTranslation()
@@ -258,10 +260,15 @@ class InverseKinematicsEngine
         val homeCenterToOrigin = dhParams.subList(0, 4).toFrameTransformation().getTranslation() -
                 dhParams.subList(0, 3).toFrameTransformation().getTranslation()
 
-        val u1 = Vector3D(homeCenterToOrigin[0], homeCenterToOrigin[1], homeCenterToOrigin[2])
-        val u2 = Vector3D(homeCenterToTip[0], homeCenterToTip[1], homeCenterToTip[2])
-        val v1 = Vector3D(wristCenterToOrigin[0], wristCenterToOrigin[1], wristCenterToOrigin[2])
-        val v2 = Vector3D(wristCenterToTip[0], wristCenterToTip[1], wristCenterToTip[2])
+        // TODO: This needs to translate the elbow up to where the wrist link is, maybe up by r?
+        val firstWristLink = dhParams.subList(0, 3).forwardKinematics(newJointAngles)
+            .mult(getFrameTranslationMatrix(0, 0, 0)
+            .getTranslation()
+
+        val u1 = Vector3D(firstWristLink[0], firstWristLink[1], firstWristLink[2])
+        val u2 = Vector3D(wristCenter[0], wristCenter[1], wristCenter[2])
+        val v1 = Vector3D(wristCenter[0], wristCenter[1], wristCenter[2])
+        val v2 = Vector3D(tipVector[0], tipVector[1], tipVector[2])
         
         val rotation = Rotation(u1, u2, v1, v2)
         val angles = rotation.getAngles(RotationOrder.XYX)
@@ -293,7 +300,11 @@ class InverseKinematicsEngine
 //        newJointAngles[5] = jointSpaceVector[5]
 
         return newJointAngles.mapIndexed { index, elem ->
-            toDegrees(elem) + dhParams[index].theta
+            if (index > 2) {
+                toDegrees(elem)
+            } else {
+                toDegrees(elem) + dhParams[index].theta
+            }
         }.map {
             if (it >= 360 || it <= -360)
                 it.modulus(360)
