@@ -244,13 +244,20 @@ class InverseKinematicsEngine
 
         // TODO: Implement solver for computing wrist joint angles
         // using previous angles for now
-        val wristOrigin = dhParams.subList(0, 3).forwardKinematics(newJointAngles).getTranslation()
+        val wristCenterToOrigin = dhParams.subList(0, 3).forwardKinematics(newJointAngles).getTranslation() -
+                wristCenter
         val wristCenterToTip = target.getTranslation() - wristCenter
 
-        val u1 = Vector3D(wristOrigin[0], wristOrigin[1], wristOrigin[2])
-        val u2 = Vector3D(wristCenter[0], wristCenter[1], wristCenter[2])
-        val v1 = Vector3D(wristCenter[0], wristCenter[1], wristCenter[2])
-        val v2 = Vector3D(target.getTranslation()[0], target.getTranslation()[1], target.getTranslation()[2])
+        val homeCenterToTip = dhParams.toFrameTransformation().getTranslation() -
+                dhParams.subList(0, 4).toFrameTransformation().getTranslation()
+
+        val homeCenterToOrigin = dhParams.subList(0, 4).toFrameTransformation().getTranslation() -
+                dhParams.subList(0, 3).toFrameTransformation().getTranslation()
+
+        val u1 = Vector3D(homeCenterToOrigin[0], homeCenterToOrigin[1], homeCenterToOrigin[2])
+        val u2 = Vector3D(homeCenterToTip[0], homeCenterToTip[1], homeCenterToTip[2])
+        val v1 = Vector3D(wristCenterToOrigin[0], wristCenterToOrigin[1], wristCenterToOrigin[2])
+        val v2 = Vector3D(wristCenterToTip[0], wristCenterToTip[1], wristCenterToTip[2])
 
         val rotation = Rotation(u1, u2, v1, v2)
         val angles = rotation.getAngles(RotationOrder.XYX)
