@@ -110,15 +110,15 @@ class InverseKinematicsEngine
         val newJointAngles = DoubleArray(jointSpaceVector.size) { 0.0 }
 
         val dOffset = wrist.centerHomed(
-                chainElements.subList(0, chainElements.indexOf(wrist) + 1).toDhParamList()
-            ).projectionOntoPlane(
-                SimpleMatrix(3, 1).apply {
-                    this[2, 0] = 1.0
-                }
-            ).extractMatrix(
+            chainElements.subList(0, chainElements.indexOf(wrist) + 1).toDhParamList()
+        ).projectionOntoPlane(
+            SimpleMatrix(3, 1).apply {
+                this[2, 0] = 1.0
+            }
+        ).extractMatrix(
             0, 2,
             0, 1
-            ).projectionOntoVector(
+        ).projectionOntoVector(
 
             // TODO: Should this be along alpha or theta?
             // In the context of the cmm arm, alpha is the y component and theta is the x component
@@ -194,7 +194,10 @@ class InverseKinematicsEngine
                     }
 
                 newJointAngles[0] =
-                    (atan2(wristCenter[1], wristCenter[0]) - angleFromFirstLinkToWristCoR + PI).modulus(2.0 * PI)
+                    (atan2(
+                        wristCenter[1],
+                        wristCenter[0]
+                    ) - angleFromFirstLinkToWristCoR + PI).modulus(2.0 * PI)
             }
         }
 
@@ -210,7 +213,8 @@ class InverseKinematicsEngine
         val a3 = elbow2ToWristCenter.length()
         val elbow2ThetaOffset = atan2(elbow2ToWristCenter[2], elbow2ToWristCenter[0])
 
-        val shoulderParam = DhParam(dhParams[0].d, toDegrees(newJointAngles[0]), dhParams[0].r, dhParams[0].alpha)
+        val shoulderParam =
+            DhParam(dhParams[0].d, toDegrees(newJointAngles[0]), dhParams[0].r, dhParams[0].alpha)
 
         val elbowTarget = wristCenter - shoulderParam.frameTransformation.getTranslation()
         val s = elbowTarget[2]
@@ -258,7 +262,7 @@ class InverseKinematicsEngine
         val u2 = Vector3D(homeCenterToTip[0], homeCenterToTip[1], homeCenterToTip[2])
         val v1 = Vector3D(wristCenterToOrigin[0], wristCenterToOrigin[1], wristCenterToOrigin[2])
         val v2 = Vector3D(wristCenterToTip[0], wristCenterToTip[1], wristCenterToTip[2])
-
+        
         val rotation = Rotation(u1, u2, v1, v2)
         val angles = rotation.getAngles(RotationOrder.XYX)
 
@@ -289,11 +293,7 @@ class InverseKinematicsEngine
 //        newJointAngles[5] = jointSpaceVector[5]
 
         return newJointAngles.mapIndexed { index, elem ->
-            when {
-//                index == 0 ||
-                index > 2 -> toDegrees(elem)
-                else -> toDegrees(elem) + dhParams[index].theta
-            }
+            toDegrees(elem) + dhParams[index].theta
         }.map {
             if (it >= 360 || it <= -360)
                 it.modulus(360)
@@ -319,13 +319,27 @@ class InverseKinematicsEngine
         return true
     }
 
-    private fun ImmutableList<DhParam>.forwardKinematics(thetas : DoubleArray) : SimpleMatrix {
+    private fun ImmutableList<DhParam>.forwardKinematics(thetas: DoubleArray): SimpleMatrix {
         val paramList = ArrayList<DhParam>()
 
         for (i in 0 until this.size) {
             when (i) {
-                0 -> paramList.add(DhParam(this[i].d, toDegrees(thetas[i]), this[i].r, this[i].alpha))
-                else -> paramList.add(DhParam(this[i].d, -toDegrees(thetas[i]), this[i].r, this[i].alpha))
+                0 -> paramList.add(
+                    DhParam(
+                        this[i].d,
+                        toDegrees(thetas[i]),
+                        this[i].r,
+                        this[i].alpha
+                    )
+                )
+                else -> paramList.add(
+                    DhParam(
+                        this[i].d,
+                        -toDegrees(thetas[i]),
+                        this[i].r,
+                        this[i].alpha
+                    )
+                )
             }
         }
 
