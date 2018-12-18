@@ -9,7 +9,7 @@ description = "The core module."
 
 object Verions {
     const val arrow_version = "0.7.3"
-    const val ktor_version = "1.0.0-beta-3"
+    const val ktor_version = "1.0.1"
 }
 
 dependencies {
@@ -41,6 +41,7 @@ dependencies {
     implementation(group = "com.natpryce", name = "hamkrest", version = "1.4.2.2")
     implementation(group = "org.jlleitschuh.guice", name = "kotlin-guiced-core", version = "0.0.5")
 
+    implementation(group = "com.beust", name = "klaxon", version = "4.+")
     implementation(group = "io.ktor", name = "ktor-client-core", version = ktor_version)
     implementation(group = "io.ktor", name = "ktor-client-core-jvm", version = ktor_version)
     implementation(group = "io.ktor", name = "ktor-client-apache", version = ktor_version)
