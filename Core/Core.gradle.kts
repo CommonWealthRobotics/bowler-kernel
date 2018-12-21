@@ -3,13 +3,19 @@ import Core_gradle.Verions.ktor_version
 
 plugins {
     `java-library`
+    id("org.jetbrains.kotlin.kapt")
+    idea
 }
 
 description = "The core module."
 
 object Verions {
-    const val arrow_version = "0.7.3"
+    const val arrow_version = "0.8.1"
     const val ktor_version = "1.0.1"
+}
+
+repositories {
+    maven(url = "https://jitpack.io")
 }
 
 dependencies {
@@ -56,4 +62,27 @@ dependencies {
     )
     testImplementation(group = "io.ktor", name = "ktor-server-tests", version = ktor_version)
     testImplementation(group = "io.ktor", name = "ktor-client-mock", version = ktor_version)
+}
+
+idea {
+    module {
+        sourceDirs = sourceDirs + files(
+            "build/generated/source/kapt/main",
+            "build/generated/source/kapt/debug",
+            "build/generated/source/kapt/release",
+            "build/generated/source/kaptKotlin/main",
+            "build/generated/source/kaptKotlin/debug",
+            "build/generated/source/kaptKotlin/release",
+            "build/tmp/kapt/main/kotlinGenerated"
+        )
+        generatedSourceDirs = generatedSourceDirs + files(
+            "build/generated/source/kapt/main",
+            "build/generated/source/kapt/debug",
+            "build/generated/source/kapt/release",
+            "build/generated/source/kaptKotlin/main",
+            "build/generated/source/kaptKotlin/debug",
+            "build/generated/source/kaptKotlin/release",
+            "build/tmp/kapt/main/kotlinGenerated"
+        )
+    }
 }
