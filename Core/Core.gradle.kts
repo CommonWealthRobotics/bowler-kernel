@@ -75,6 +75,8 @@ idea {
             "build/generated/source/kaptKotlin/release",
             "build/tmp/kapt/main/kotlinGenerated"
         )
+
+        @Suppress("UnstableApiUsage")
         generatedSourceDirs = generatedSourceDirs + files(
             "build/generated/source/kapt/main",
             "build/generated/source/kapt/debug",
