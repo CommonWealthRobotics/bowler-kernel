@@ -8,7 +8,9 @@ package com.neuronrobotics.bowlerkernel.control.kinematics.limb
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.control.kinematics.base.KinematicBase
 import com.neuronrobotics.bowlerkernel.control.kinematics.limb.limbid.LimbId
+import com.neuronrobotics.bowlerkernel.control.kinematics.motion.ForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.FrameTransformation
+import com.neuronrobotics.bowlerkernel.control.kinematics.motion.InverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.MotionConstraints
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 
@@ -26,6 +28,16 @@ interface Limb {
      * The DH chain that forms this limb.
      */
     val chain: ImmutableList<DhParam>
+
+    /**
+     * The solver used for forward kinematics.
+     */
+    val forwardKinematicsSolver: ForwardKinematicsSolver
+
+    /**
+     * The solver used for inverse kinematics.
+     */
+    val inverseKinematicsSolver: InverseKinematicsSolver
 
     /**
      * Sets a desired task space transform this base should try to move to.
@@ -62,4 +74,12 @@ interface Limb {
      * The current joint angles.
      */
     fun getCurrentJointAngles(): ImmutableList<Double>
+
+    /**
+     * Compute whether the [taskSpaceTransform] is reachable by this limb.
+     *
+     * @param taskSpaceTransform The task space transform to test.
+     * @return Whether the [taskSpaceTransform] is reachable.
+     */
+    fun isTaskSpaceTransformReachable(taskSpaceTransform: FrameTransformation): Boolean
 }
