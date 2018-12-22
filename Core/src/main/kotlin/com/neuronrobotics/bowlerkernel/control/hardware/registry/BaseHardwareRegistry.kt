@@ -54,8 +54,8 @@ internal constructor() : HardwareRegistry {
             return Option.just(
                 RegisterError(
                     """
-                    Cannot register resource $resourceId because device $deviceId is not
-                    registered.
+                    Cannot register resource $resourceId on device $deviceId because device
+                    $deviceId is not registered.
                     """.trimIndent()
                 )
             )

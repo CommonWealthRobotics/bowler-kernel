@@ -8,7 +8,7 @@ package com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.unprovis
 import arrow.core.Either
 import com.google.inject.assistedinject.Assisted
 import com.google.inject.assistedinject.FactoryModuleBuilder
-import com.neuronrobotics.bowlerkernel.control.hardware.device.Device
+import com.neuronrobotics.bowlerkernel.control.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.PinNumber
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.control.hardware.registry.HardwareRegistry
@@ -22,7 +22,7 @@ import javax.inject.Inject
 class UnprovisionedDeviceResourceFactory
 @Inject internal constructor(
     private val registry: HardwareRegistry,
-    @Assisted private val device: Device
+    @Assisted private val device: BowlerDevice
 ) : UnprovisionedLEDFactory {
 
     private fun registerDeviceResource(resourceId: ResourceId) =
@@ -35,8 +35,7 @@ class UnprovisionedDeviceResourceFactory
     ):
         Either<RegisterError, T> {
         return if (device.isResourceInRange(resourceId)) {
-            registerDeviceResource(resourceId).toEither { rightSide(resourceId) }
-                .swap()
+            registerDeviceResource(resourceId).toEither { rightSide(resourceId) }.swap()
         } else {
             Either.left(
                 RegisterError(

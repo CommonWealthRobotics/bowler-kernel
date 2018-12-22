@@ -5,16 +5,16 @@
  */
 package com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.provisioned
 
-import com.neuronrobotics.bowlerkernel.control.hardware.device.Device
+import com.neuronrobotics.bowlerkernel.control.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
 
 class LED
 internal constructor(
-    override val device: Device,
+    override val device: BowlerDevice,
     override val resourceId: ResourceId
 ) : DigitalOut {
 
     override fun write(state: DigitalState) {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented")
     }
 }

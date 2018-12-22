@@ -9,7 +9,7 @@ import arrow.core.Either
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.hasSize
-import com.neuronrobotics.bowlerkernel.control.hardware.device.Device
+import com.neuronrobotics.bowlerkernel.control.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.control.hardware.device.deviceid.SimpleDeviceId
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.PinNumber
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
@@ -45,7 +45,7 @@ class UnprovisionedDeviceResourceFactoryTest {
     ) {
         val deviceName = "A"
 
-        val device = mock<Device> {
+        val device = mock<BowlerDevice> {
             on {
                 isResourceInRange(resourceId)
             } doReturn true
@@ -75,7 +75,7 @@ class UnprovisionedDeviceResourceFactoryTest {
     ) {
         val deviceName = "A"
 
-        val device = mock<Device> {
+        val device = mock<BowlerDevice> {
             on {
                 isResourceInRange(resourceId)
             } doReturn false

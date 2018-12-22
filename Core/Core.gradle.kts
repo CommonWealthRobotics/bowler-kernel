@@ -24,7 +24,10 @@ dependencies {
         group = "com.neuronrobotics",
         name = "kinematicschef-core",
         version = "0.0.14"
-    )
+    ) {
+        exclude(group = "com.google.guava")
+        exclude(group = "org.slf4j", module = "slf4j-simple")
+    }
 
     api(group = "io.arrow-kt", name = "arrow-core", version = arrow_version)
     api(group = "io.arrow-kt", name = "arrow-syntax", version = arrow_version)
@@ -43,16 +46,16 @@ dependencies {
     api(group = "io.arrow-kt", name = "arrow-generic", version = arrow_version)
     api(group = "io.arrow-kt", name = "arrow-recursion", version = arrow_version)
 
-    implementation(group = "com.google.guava", name = "guava", version = "25.0-jre")
+    api(group = "com.google.guava", name = "guava", version = "25.0-jre")
     implementation(group = "com.google.inject", name = "guice", version = "4.1.0")
     implementation(
         group = "com.google.inject.extensions",
         name = "guice-assistedinject",
         version = "4.1.0"
     )
+    implementation(group = "org.jlleitschuh.guice", name = "kotlin-guiced-core", version = "0.0.5")
     implementation(group = "com.google.code.findbugs", name = "annotations", version = "3.0.1")
     implementation(group = "com.natpryce", name = "hamkrest", version = "1.4.2.2")
-    implementation(group = "org.jlleitschuh.guice", name = "kotlin-guiced-core", version = "0.0.5")
 
     implementation(group = "com.beust", name = "klaxon", version = "4.+")
     implementation(group = "io.ktor", name = "ktor-client-core", version = ktor_version)
