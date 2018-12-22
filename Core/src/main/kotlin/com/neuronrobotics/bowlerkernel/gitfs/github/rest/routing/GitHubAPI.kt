@@ -16,6 +16,7 @@ import com.neuronrobotics.bowlerkernel.gitfs.github.rest.model.GitHubGistCreate
 import com.neuronrobotics.bowlerkernel.gitfs.github.rest.model.GitHubGistEdit
 import com.neuronrobotics.bowlerkernel.gitfs.github.rest.model.GitHubGistFork
 
+@SuppressWarnings("ComplexInterface", "TooManyFunctions")
 interface GitHubAPI {
 
     /**
