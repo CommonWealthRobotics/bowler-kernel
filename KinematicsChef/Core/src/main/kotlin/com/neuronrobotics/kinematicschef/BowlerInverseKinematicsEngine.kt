@@ -18,12 +18,9 @@ import com.neuronrobotics.kinematicschef.dhparam.RevoluteJoint
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDhParamList
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
-import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
-import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
 import com.neuronrobotics.kinematicschef.util.getRotation
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.kinematicschef.util.immutableListOf
-import com.neuronrobotics.kinematicschef.util.length
 import com.neuronrobotics.kinematicschef.util.modulus
 import com.neuronrobotics.kinematicschef.util.projectionOntoPlane
 import com.neuronrobotics.kinematicschef.util.projectionOntoVector
@@ -39,12 +36,9 @@ import java.lang.Math.toDegrees
 import java.lang.Math.toRadians
 import javax.inject.Inject
 import kotlin.math.abs
-import kotlin.math.asin
 import kotlin.math.atan2
 import kotlin.math.cos
-import kotlin.math.pow
 import kotlin.math.sin
-import kotlin.math.sqrt
 
 /**
  * A [DhInverseSolver] which attempts to generate and cache an analytic solver by deriving the

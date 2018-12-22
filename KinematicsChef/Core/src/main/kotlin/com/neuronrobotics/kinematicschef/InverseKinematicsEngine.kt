@@ -176,7 +176,7 @@ class InverseKinematicsEngine
             else -> {
 //                // left/right arm configuration
 //                val phi = atan2(wristCenter[1], wristCenter[0])
-////                val d = dhParams[0].r + dhParams[1].d + dhParams[2].d
+// //                val d = dhParams[0].r + dhParams[1].d + dhParams[2].d
 //                val length = sqrt(lengthToWristSquared)
 //
 //                val theta1Left = phi - atan2(dOffset, length)
@@ -269,16 +269,16 @@ class InverseKinematicsEngine
         val u2 = Vector3D(wristCenter[0], wristCenter[1], wristCenter[2])
         val v1 = Vector3D(wristCenter[0], wristCenter[1], wristCenter[2])
         val v2 = Vector3D(tipVector[0], tipVector[1], tipVector[2])
-        
+
         val rotation = Rotation(u1, u2, v1, v2)
         val angles = rotation.getAngles(RotationOrder.XYX)
 
-        //TODO: move frame to first wrist joint and orient it so that the first wrist's joint axes align with xyz
+        // TODO: move frame to first wrist joint and orient it so that the first wrist's joint axes align with xyz
         /* We also need to make sure the target (the tip of the wrist) gets rotated in respect to this new frame
          * in order to do the next theta calculations, else they break down when the wrist axes aren't already aligned.
          */
 
-        //uncomment this once frame gets rotated
+        // uncomment this once frame gets rotated
 //        if (abs(xTip) < 0.001 && abs(yTip) < 0.001) {
 //            newJointAngles[3] = jointSpaceVector[3]
 //        } else {
@@ -296,7 +296,7 @@ class InverseKinematicsEngine
 //        newJointAngles[3] = jointSpaceVector[3]
 //        newJointAngles[4] = jointSpaceVector[4]
 
-        //TODO: tip rotation via the last joint, getting rest of wrist aligned will make this easy
+        // TODO: tip rotation via the last joint, getting rest of wrist aligned will make this easy
 //        newJointAngles[5] = jointSpaceVector[5]
 
         return newJointAngles.mapIndexed { index, elem ->

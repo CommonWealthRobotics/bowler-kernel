@@ -26,11 +26,11 @@ internal class DefaultWristIdentifier : WristIdentifier {
         return if (chain.size == 3) {
             fun config1() = chain[0].alpha == -90.0 && chain[1].alpha == 90.0
             fun config2() = chain[0].alpha == 90.0 && chain[1].alpha == -90.0
-            fun config3() = chain[0].alpha == 0.0 && chain[1].alpha == 90.0
-                && chain[2].alpha == -90.0
+            fun config3() = chain[0].alpha == 0.0 && chain[1].alpha == 90.0 &&
+                chain[2].alpha == -90.0
 
-            fun config4() = chain[0].alpha == 0.0 && chain[1].alpha == -90.0
-                && chain[2].alpha == 90.0
+            fun config4() = chain[0].alpha == 0.0 && chain[1].alpha == -90.0 &&
+                chain[2].alpha == 90.0
 
             fun centerLinkNoOffset() = chain[1].r == 0.0 && chain[1].d == 0.0
 
