@@ -6,7 +6,7 @@
 package com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.unprovisioned
 
 import arrow.core.Either
-import com.neuronrobotics.bowlerkernel.control.hardware.device.Device
+import com.neuronrobotics.bowlerkernel.control.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.PinNumber
 import com.neuronrobotics.bowlerkernel.control.hardware.registry.RegisterError
 
@@ -27,6 +27,6 @@ interface UnprovisionedLEDFactory {
          *
          * @param device The device this LED is attached to.
          */
-        fun create(device: Device): UnprovisionedLEDFactory
+        fun create(device: BowlerDevice): UnprovisionedLEDFactory
     }
 }
