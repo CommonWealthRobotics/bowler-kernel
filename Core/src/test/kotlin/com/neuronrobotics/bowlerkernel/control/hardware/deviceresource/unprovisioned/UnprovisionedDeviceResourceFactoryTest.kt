@@ -25,9 +25,16 @@ class UnprovisionedDeviceResourceFactoryTest {
     private val registry = BaseHardwareRegistry()
 
     @Test
-    fun `test all device resource interfaces`() {
+    fun `make unprovisioned led`() {
         PinNumber(1).let {
             testRegistry(it) { makeUnprovisionedLED(it) }
+        }
+    }
+
+    @Test
+    fun `make unprovisioned servo`() {
+        PinNumber(1).let {
+            testRegistry(it) { makeUnprovisionedServo(it) }
         }
     }
 

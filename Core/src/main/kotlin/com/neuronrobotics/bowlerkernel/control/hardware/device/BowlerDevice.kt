@@ -48,7 +48,7 @@ internal constructor(
     override fun toString() = deviceId.toString()
 
     /**
-     * Provision a resource
+     * Provision a resource.
      */
     inline fun <reified T : ProvisionedDeviceResource> provisionResource(
         createResource: () -> T

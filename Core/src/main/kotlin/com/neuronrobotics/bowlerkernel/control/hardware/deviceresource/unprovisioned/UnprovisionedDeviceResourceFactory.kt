@@ -48,9 +48,14 @@ class UnprovisionedDeviceResourceFactory
         }
     }
 
-    override fun makeUnprovisionedLED(pinNumber: PinNumber): Either<RegisterError, UnprovisionedLED> =
+    override fun makeUnprovisionedLED(pinNumber: PinNumber) =
         makeUnprovisionedResource(pinNumber, "LED") {
             UnprovisionedLED(device, it)
+        }
+
+    override fun makeUnprovisionedServo(pinNumber: PinNumber) =
+        makeUnprovisionedResource(pinNumber, "Servo") {
+            UnprovisionedServo(device, it)
         }
 
     companion object {

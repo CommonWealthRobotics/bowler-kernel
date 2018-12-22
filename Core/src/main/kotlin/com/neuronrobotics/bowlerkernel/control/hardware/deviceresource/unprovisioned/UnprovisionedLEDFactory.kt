@@ -13,12 +13,20 @@ import com.neuronrobotics.bowlerkernel.control.hardware.registry.RegisterError
 interface UnprovisionedLEDFactory {
 
     /**
-     * Makes an LED attached to a device.
+     * Makes an [UnprovisionedLED] attached to a device.
      *
-     * @param resourceId The resource id of the LED.
+     * @param pinNumber The pin number the LED is attached to.
      * @return An [UnprovisionedLED] on success, a [RegisterError] on failure.
      */
     fun makeUnprovisionedLED(pinNumber: PinNumber): Either<RegisterError, UnprovisionedLED>
+
+    /**
+     * Makes an [UnprovisionedServo] attached to a device.
+     *
+     * @param pinNumber The pin number the servo is attached to.
+     * @return An [UnprovisionedServo] on success, a [RegisterError] on failure.
+     */
+    fun makeUnprovisionedServo(pinNumber: PinNumber): Either<RegisterError, UnprovisionedServo>
 
     interface Factory {
 

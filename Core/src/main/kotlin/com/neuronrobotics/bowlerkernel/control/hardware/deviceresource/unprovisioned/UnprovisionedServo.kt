@@ -7,15 +7,18 @@ package com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.unprovis
 
 import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.control.hardware.device.BowlerDevice
+import com.neuronrobotics.bowlerkernel.control.hardware.device.Device
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.ProvisionError
-import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.provisioned.LED
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.provisioned.ProvisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.provisioned.Servo
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
 
-class UnprovisionedLED(
+class UnprovisionedServo
+internal constructor(
     override val device: BowlerDevice,
     override val resourceId: ResourceId
 ) : UnprovisionedDeviceResource {
 
-    override fun provision(): Either<ProvisionError, LED> =
-        device.provisionResource { LED(device, resourceId) }
+    override fun provision(): Either<ProvisionError, Servo> =
+        device.provisionResource { Servo(device, resourceId) }
 }
