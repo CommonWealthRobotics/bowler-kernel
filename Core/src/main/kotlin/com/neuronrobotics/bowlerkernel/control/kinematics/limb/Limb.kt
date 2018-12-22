@@ -6,10 +6,10 @@
 package com.neuronrobotics.bowlerkernel.control.kinematics.limb
 
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.control.kinematics.FrameTransformation
-import com.neuronrobotics.bowlerkernel.control.kinematics.MotionConstraints
 import com.neuronrobotics.bowlerkernel.control.kinematics.base.KinematicBase
 import com.neuronrobotics.bowlerkernel.control.kinematics.limb.limbid.LimbId
+import com.neuronrobotics.bowlerkernel.control.kinematics.motion.FrameTransformation
+import com.neuronrobotics.bowlerkernel.control.kinematics.motion.MotionConstraints
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 
 /**

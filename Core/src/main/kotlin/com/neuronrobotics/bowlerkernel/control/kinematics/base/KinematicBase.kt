@@ -7,11 +7,11 @@ package com.neuronrobotics.bowlerkernel.control.kinematics.base
 
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
-import com.neuronrobotics.bowlerkernel.control.kinematics.FrameTransformation
-import com.neuronrobotics.bowlerkernel.control.kinematics.MotionConstraints
 import com.neuronrobotics.bowlerkernel.control.kinematics.base.baseid.KinematicBaseId
 import com.neuronrobotics.bowlerkernel.control.kinematics.limb.Limb
 import com.neuronrobotics.bowlerkernel.control.kinematics.limb.limbid.LimbId
+import com.neuronrobotics.bowlerkernel.control.kinematics.motion.FrameTransformation
+import com.neuronrobotics.bowlerkernel.control.kinematics.motion.MotionConstraints
 
 /**
  * The main "base" of a robot. Generally, it is the central hub of the robot to which the limbs
