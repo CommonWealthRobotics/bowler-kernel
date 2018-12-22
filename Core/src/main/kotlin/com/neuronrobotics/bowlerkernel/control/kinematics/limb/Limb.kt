@@ -58,5 +58,8 @@ interface Limb {
         motionConstraints: MotionConstraints
     )
 
+    /**
+     * The current joint angles.
+     */
     fun getCurrentJointAngles(): ImmutableList<Double>
 }
