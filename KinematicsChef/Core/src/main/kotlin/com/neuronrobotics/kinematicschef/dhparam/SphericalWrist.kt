@@ -13,7 +13,7 @@ import org.ejml.simple.SimpleMatrix
 /**
  * A spherical wrist. Has three DH params.
  */
-internal data class SphericalWrist(override val params: ImmutableList<DhParam>) : DhChainElement {
+data class SphericalWrist(override val params: ImmutableList<DhParam>) : DhChainElement {
     init {
         require(params.size == 3) {
             "A spherical wrist must have exactly 3 DH params, got ${params.size}."
@@ -26,7 +26,7 @@ internal data class SphericalWrist(override val params: ImmutableList<DhParam>) 
      * @param target The target position of the end effector.
      * @return A 3x1 position matrix.
      */
-    internal fun center(target: SimpleMatrix): SimpleMatrix {
+    fun center(target: SimpleMatrix): SimpleMatrix {
         require(target.numRows() == 4)
         require(target.numCols() == 4)
 
@@ -48,7 +48,7 @@ internal data class SphericalWrist(override val params: ImmutableList<DhParam>) 
      * @param priorLinks The links that come before the wrist in the chain.
      * @return A 3x1 position matrix.
      */
-    internal fun centerHomed(priorLinks: ImmutableList<DhParam>) =
+    fun centerHomed(priorLinks: ImmutableList<DhParam>) =
         priorLinks.toFrameTransformation().mult(
             params.subList(0, 2).toFrameTransformation()
         ).getTranslation()

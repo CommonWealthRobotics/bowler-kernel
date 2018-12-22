@@ -16,7 +16,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
  * @param preRotation A transform applied before the wrist.
  * @param postRotation A transform applied after the wrist.
  */
-internal sealed class EulerAngle(
+sealed class EulerAngle(
     val order: RotationOrder,
     val preRotation: DhParam?,
     val postRotation: DhParam?
@@ -29,41 +29,41 @@ internal sealed class EulerAngle(
         """.trimMargin()
 }
 
-internal object EulerAngleZXZ : EulerAngle(RotationOrder.ZXZ, null, null)
+object EulerAngleZXZ : EulerAngle(RotationOrder.ZXZ, null, null)
 
-internal object EulerAngleZYZ : EulerAngle(RotationOrder.ZYZ, null, null)
+object EulerAngleZYZ : EulerAngle(RotationOrder.ZYZ, null, null)
 
-internal object EulerAngleZXY : EulerAngle(RotationOrder.ZXY, null, DhParam(0, 0, 0, 90))
+object EulerAngleZXY : EulerAngle(RotationOrder.ZXY, null, DhParam(0, 0, 0, 90))
 
-internal object EulerAngleZYX : EulerAngle(RotationOrder.ZYX, null, DhParam(0, -90, 0, -90))
+object EulerAngleZYX : EulerAngle(RotationOrder.ZYX, null, DhParam(0, -90, 0, -90))
 
-internal object EulerAngleYXY : EulerAngle(RotationOrder.YXY, null, DhParam(0, 0, 0, 90))
+object EulerAngleYXY : EulerAngle(RotationOrder.YXY, null, DhParam(0, 0, 0, 90))
 
-internal object EulerAngleYZY : EulerAngle(RotationOrder.YZY, null, DhParam(0, 0, 0, 90))
+object EulerAngleYZY : EulerAngle(RotationOrder.YZY, null, DhParam(0, 0, 0, 90))
 
-internal object EulerAngleYXZ : EulerAngle(RotationOrder.YXZ, null, null)
+object EulerAngleYXZ : EulerAngle(RotationOrder.YXZ, null, null)
 
-internal object EulerAngleYZX : EulerAngle(RotationOrder.YZX, null, DhParam(0, -90, 0, -90))
+object EulerAngleYZX : EulerAngle(RotationOrder.YZX, null, DhParam(0, -90, 0, -90))
 
-internal object EulerAngleXYX : EulerAngle(
+object EulerAngleXYX : EulerAngle(
     RotationOrder.XYX,
     DhParam(0, 90, 0, 0),
     DhParam(0, -90, 0, -90)
 )
 
-internal object EulerAngleXZX : EulerAngle(
+object EulerAngleXZX : EulerAngle(
     RotationOrder.XZX,
     DhParam(0, 90, 0, 0),
     DhParam(0, -90, 0, -90)
 )
 
-internal object EulerAngleXYZ : EulerAngle(
+object EulerAngleXYZ : EulerAngle(
     RotationOrder.XYZ,
     DhParam(0, 90, 0, 0),
     null
 )
 
-internal object EulerAngleXZY : EulerAngle(
+object EulerAngleXZY : EulerAngle(
     RotationOrder.XZY,
     DhParam(0, 90, 0, 0),
     DhParam(0, 0, 0, 90)

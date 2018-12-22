@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableList
 import com.neuronrobotics.kinematicschef.util.emptyImmutableList
 import com.neuronrobotics.kinematicschef.util.toImmutableList
 
-internal interface DhChainElement {
+interface DhChainElement {
 
     /**
      * The DH params that make up this chain element. Could be one (revolute) or multiple
@@ -21,7 +21,7 @@ internal interface DhChainElement {
 /**
  * Collects the [DhChainElement.params] in this collection into one list.
  */
-internal fun Collection<DhChainElement>.toDhParamList(): ImmutableList<DhParam> =
+fun Collection<DhChainElement>.toDhParamList(): ImmutableList<DhParam> =
     fold(emptyImmutableList()) { acc, element ->
         (acc + element.params).toImmutableList()
     }

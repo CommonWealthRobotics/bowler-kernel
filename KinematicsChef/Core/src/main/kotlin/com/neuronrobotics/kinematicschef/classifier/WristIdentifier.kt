@@ -11,7 +11,7 @@ import com.google.common.collect.ImmutableList
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import org.ejml.simple.SimpleMatrix
 
-internal interface WristIdentifier {
+interface WristIdentifier {
 
     /**
      * Computes whether the [chain] is a spherical wrist which is solvable with Euler angles.

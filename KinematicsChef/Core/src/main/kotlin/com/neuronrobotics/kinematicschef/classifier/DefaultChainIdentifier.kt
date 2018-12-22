@@ -14,7 +14,7 @@ import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.toImmutableList
 import javax.inject.Inject
 
-internal class DefaultChainIdentifier
+class DefaultChainIdentifier
 @Inject internal constructor(
     private val wristIdentifier: WristIdentifier
 ) : ChainIdentifier {
@@ -60,5 +60,9 @@ internal class DefaultChainIdentifier
         }
 
         return elements.toImmutableList()
+    }
+
+    companion object {
+        fun create(wristIdentifier: WristIdentifier) = DefaultChainIdentifier(wristIdentifier)
     }
 }

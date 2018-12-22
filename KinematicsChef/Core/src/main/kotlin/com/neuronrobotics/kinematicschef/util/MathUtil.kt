@@ -5,14 +5,14 @@
  */
 package com.neuronrobotics.kinematicschef.util
 
-internal fun Int.modulus(rhs: Int) =
+fun Int.modulus(rhs: Int) =
     ((this % rhs) + rhs) % rhs
 
-internal fun Double.modulus(rhs: Int) =
+fun Double.modulus(rhs: Int) =
     ((this % rhs) + rhs) % rhs
 
-internal fun Int.modulus(rhs: Double) =
+fun Int.modulus(rhs: Double) =
     ((this % rhs) + rhs) % rhs
 
-internal fun Double.modulus(rhs: Double) =
+fun Double.modulus(rhs: Double) =
     ((this % rhs) + rhs) % rhs

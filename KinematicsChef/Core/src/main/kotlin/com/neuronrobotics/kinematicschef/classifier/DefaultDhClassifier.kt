@@ -29,7 +29,7 @@ import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.immutableMapOf
 import com.neuronrobotics.kinematicschef.util.toImmutableList
 
-internal class DefaultDhClassifier
+class DefaultDhClassifier
 internal constructor() : DhClassifier {
 
     /**
@@ -171,5 +171,7 @@ internal constructor() : DhClassifier {
             immutableListOf(90, -90, 90, -90, -90, 0) to EulerAngleXYZ,
             immutableListOf(90, -90, -90, 0, -90, 0) to EulerAngleXZY
         )
+
+        fun create() = DefaultDhClassifier()
     }
 }

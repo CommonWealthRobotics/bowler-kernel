@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableList
 import com.neuronrobotics.kinematicschef.dhparam.DhChainElement
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 
-internal interface ChainIdentifier {
+interface ChainIdentifier {
 
     /**
      * Identify the input [chain] by categorizing its DH params into chain elements.

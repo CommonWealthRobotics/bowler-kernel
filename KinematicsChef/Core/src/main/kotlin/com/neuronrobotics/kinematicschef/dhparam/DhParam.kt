@@ -22,8 +22,7 @@ import kotlin.math.sin
 /**
  * A DH parameter. [theta] and [alpha] must be specified in degrees.
  */
-internal data class DhParam
-internal constructor(
+data class DhParam(
     val d: Double,
     val theta: Double,
     val r: Double,
@@ -37,7 +36,7 @@ internal constructor(
      * The 4x4 center of rotation frame transformation this [DhParam] represents. Computes using
      * the normal convention (CoR n to CoR n+1).
      */
-    internal val frameTransformation by lazy {
+    val frameTransformation by lazy {
         SimpleMatrix.identity(4).apply {
             val thetaRadians = Math.toRadians(theta)
             val alphaRadians = Math.toRadians(alpha)
@@ -62,7 +61,7 @@ internal constructor(
     /**
      * The translational length.
      */
-    internal val length by lazy {
+    val length by lazy {
         val pointBeforeTransform = getFrameTranslationMatrix(0, 0, 0)
         val pointAfterTransform = pointBeforeTransform.mult(frameTransformation)
 
@@ -74,13 +73,13 @@ internal constructor(
     /**
      * The angle the translation points in.
      */
-    internal val angle by lazy {
+    val angle by lazy {
         frameTransformation.getTranslation().let {
             toDegrees(atan2(it[1], it[0]))
         }
     }
 
-    internal fun toDHLink() = DHLink(d, theta, r, alpha)
+    fun toDHLink() = DHLink(d, theta, r, alpha)
 
     companion object {
         val zero = DhParam(0, 0, 0, 0)
@@ -91,7 +90,7 @@ internal constructor(
  * Maps this [Collection] of [DhParam] into a frame transformation representing the transform of
  * the tip.
  */
-internal fun Collection<DhParam>.toFrameTransformation() =
+fun Collection<DhParam>.toFrameTransformation() =
     fold(identityFrameTransform()) { acc, dhParam ->
         acc.mult(dhParam.frameTransformation)
     }
@@ -100,7 +99,7 @@ internal fun Collection<DhParam>.toFrameTransformation() =
  * Maps the [DHLink] into a [DhParam]. If the [DHLink] appears to have both [DHLink.theta] and
  * [DHLink.alpha] specified in radians, they will be converted to degrees.
  */
-internal fun DHLink.toDhParam(): DhParam {
+fun DHLink.toDhParam(): DhParam {
     val epsilon = 1e-14
 
     // Check for PI, PI/2, and 0
@@ -114,8 +113,8 @@ internal fun DHLink.toDhParam(): DhParam {
     }
 }
 
-internal fun Collection<DHLink>.toDhParams() = map { it.toDhParam() }.toImmutableList()
+fun Collection<DHLink>.toDhParams() = map { it.toDhParam() }.toImmutableList()
 
-internal fun DHChain.toDhParams() = links.toImmutableList().toDhParams()
+fun DHChain.toDhParams() = links.toImmutableList().toDhParams()
 
-internal fun Collection<DhParam>.toDHLinks() = map { it.toDHLink() }.toImmutableList()
+fun Collection<DhParam>.toDHLinks() = map { it.toDHLink() }.toImmutableList()

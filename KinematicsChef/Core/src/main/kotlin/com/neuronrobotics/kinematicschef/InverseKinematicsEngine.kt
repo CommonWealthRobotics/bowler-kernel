@@ -120,9 +120,6 @@ class InverseKinematicsEngine
             0, 2,
             0, 1
         ).projectionOntoVector(
-
-            // TODO: Should this be along alpha or theta?
-            // In the context of the cmm arm, alpha is the y component and theta is the x component
             SimpleMatrix(2, 1).apply {
                 this[0, 0] = cos(toRadians(dhParams[0].alpha))
                 this[1, 0] = sin(toRadians(dhParams[0].alpha))
@@ -135,8 +132,6 @@ class InverseKinematicsEngine
 
         val lengthToWristSquared = wristCenter[0].pow(2) + wristCenter[1].pow(2) - absDOffset.pow(2)
         println("lengthToWristSquared: $lengthToWristSquared")
-
-        val heightOfFirstElbow = dhParams.subList(0, 2).toFrameTransformation().getTranslation()[2]
 
         when (absDOffset) {
             0.0 -> {
@@ -250,15 +245,15 @@ class InverseKinematicsEngine
         // TODO: Implement solver for computing wrist joint angles
         // using previous angles for now
         val wristCenterToOrigin = dhParams.subList(0, 3).forwardKinematics(newJointAngles).getTranslation() -
-                wristCenter
+            wristCenter
         val wristCenterToTip = target.getTranslation() - wristCenter
         val tipVector = target.getTranslation()
 
         val homeCenterToTip = dhParams.toFrameTransformation().getTranslation() -
-                dhParams.subList(0, 4).toFrameTransformation().getTranslation()
+            dhParams.subList(0, 4).toFrameTransformation().getTranslation()
 
         val homeCenterToOrigin = dhParams.subList(0, 4).toFrameTransformation().getTranslation() -
-                dhParams.subList(0, 3).toFrameTransformation().getTranslation()
+            dhParams.subList(0, 3).toFrameTransformation().getTranslation()
 
         // TODO: This needs to translate the elbow up to where the wrist link is, maybe up by r?
         val firstWristLink = dhParams.subList(0, 3).forwardKinematics(newJointAngles)

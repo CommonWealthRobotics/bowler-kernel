@@ -19,7 +19,7 @@ import kotlin.math.sqrt
  * first matrix is treated as the first point and the second matrix is treated as the second
  * point.
  */
-internal fun Pair<SimpleMatrix, SimpleMatrix>.toLine(): SimpleMatrix {
+fun Pair<SimpleMatrix, SimpleMatrix>.toLine(): SimpleMatrix {
     require(first.numRows() == 4)
     require(first.numCols() == 4)
     require(second.numRows() == 4)
@@ -43,7 +43,7 @@ internal fun Pair<SimpleMatrix, SimpleMatrix>.toLine(): SimpleMatrix {
  *
  * @return A 3x1 translation matrix.
  */
-internal fun SimpleMatrix.getTranslation(): SimpleMatrix {
+fun SimpleMatrix.getTranslation(): SimpleMatrix {
     require(numRows() == 4)
     require(numCols() == 4)
     return extractMatrix(0, 3, 3, 4)
@@ -54,7 +54,7 @@ internal fun SimpleMatrix.getTranslation(): SimpleMatrix {
  *
  * @return a 3x3 rotation matrix.
  */
-internal fun SimpleMatrix.getRotation(): SimpleMatrix {
+fun SimpleMatrix.getRotation(): SimpleMatrix {
     require(numRows() == 4)
     require(numCols() == 4)
     return extractMatrix(0, 3, 0, 3)
@@ -63,7 +63,7 @@ internal fun SimpleMatrix.getRotation(): SimpleMatrix {
 /**
  * Treats the matrix as a row or column vector and computes its length.
  */
-internal fun SimpleMatrix.length(): Double {
+fun SimpleMatrix.length(): Double {
     require(numRows() == 1 || numCols() == 1)
 
     var sum = 0.0
@@ -88,7 +88,7 @@ internal fun SimpleMatrix.length(): Double {
  * @param y The distance along the y-axis.
  * @param z The distance along the z-axis.
  */
-internal fun getFrameTranslationMatrix(x: Number, y: Number, z: Number) =
+fun getFrameTranslationMatrix(x: Number, y: Number, z: Number) =
     SimpleMatrix.identity(4).apply {
         this[0, 3] = x.toDouble()
         this[1, 3] = y.toDouble()
@@ -102,7 +102,7 @@ internal fun getFrameTranslationMatrix(x: Number, y: Number, z: Number) =
  * @param y The rotation around the y-axis in degrees.
  * @param z The rotation around the z-axis in degrees.
  */
-internal fun getFrameRotationMatrix(x: Number, y: Number, z: Number) =
+fun getFrameRotationMatrix(x: Number, y: Number, z: Number) =
     SimpleMatrix.identity(4).apply {
         val rotMat = getRotationMatrix(x, y, z)
         for (row in 0 until rotMat.numRows()) {
@@ -119,7 +119,7 @@ internal fun getFrameRotationMatrix(x: Number, y: Number, z: Number) =
  * @param y The rotation around the y-axis in degrees.
  * @param z The rotation around the z-axis in degrees.
  */
-internal fun getRotationMatrix(x: Number, y: Number, z: Number): SimpleMatrix {
+fun getRotationMatrix(x: Number, y: Number, z: Number): SimpleMatrix {
     val xRad = toRadians(x.toDouble())
     val yRad = toRadians(y.toDouble())
     val zRad = toRadians(z.toDouble())
@@ -152,7 +152,7 @@ internal fun getRotationMatrix(x: Number, y: Number, z: Number): SimpleMatrix {
  * Treats the receiver matrix as a 3x1 translation column vector and returns it as a 4x4 frame
  * transformation.
  */
-internal fun SimpleMatrix.toTranslation(): SimpleMatrix {
+fun SimpleMatrix.toTranslation(): SimpleMatrix {
     require(numRows() == 3)
     require(numCols() == 1)
     return getFrameTranslationMatrix(this[0, 0], this[1, 0], this[2, 0])
@@ -161,12 +161,12 @@ internal fun SimpleMatrix.toTranslation(): SimpleMatrix {
 /**
  * Returns a frame transformation which applies no transformation.
  */
-internal fun identityFrameTransform() = SimpleMatrix.identity(4)
+fun identityFrameTransform() = SimpleMatrix.identity(4)
 
 /**
  * Returns a [SimpleMatrix] which is equivalent to the [TransformNR].
  */
-internal fun TransformNR.toSimpleMatrix(): SimpleMatrix {
+fun TransformNR.toSimpleMatrix(): SimpleMatrix {
     val out = SimpleMatrix(4, 4)
 
     val mat = matrixTransform
@@ -182,7 +182,7 @@ internal fun TransformNR.toSimpleMatrix(): SimpleMatrix {
 /**
  * Returns a [TransformNR] which is equivalent to the [SimpleMatrix].
  */
-internal fun SimpleMatrix.toTransformNR(): TransformNR {
+fun SimpleMatrix.toTransformNR(): TransformNR {
     val translationMat = getTranslation()
     val rotationMat = getRotation()
 
@@ -199,7 +199,7 @@ internal fun SimpleMatrix.toTransformNR(): TransformNR {
 /**
  * Projects the receiver vector onto the plane specified by [planeNormal].
  */
-internal fun SimpleMatrix.projectionOntoPlane(planeNormal: SimpleMatrix): SimpleMatrix {
+fun SimpleMatrix.projectionOntoPlane(planeNormal: SimpleMatrix): SimpleMatrix {
     require(numRows() == 3)
     require(numCols() == 1)
     require(planeNormal.numRows() == 3)
@@ -210,7 +210,7 @@ internal fun SimpleMatrix.projectionOntoPlane(planeNormal: SimpleMatrix): Simple
 /**
  * Projects the receiver vector onto [unitVector].
  */
-internal fun SimpleMatrix.projectionOntoVector(unitVector: SimpleMatrix): Double {
+fun SimpleMatrix.projectionOntoVector(unitVector: SimpleMatrix): Double {
     require(numRows() == 2)
     require(numCols() == 1)
     require(unitVector.numRows() == 2)
@@ -226,7 +226,7 @@ private fun SimpleMatrix.normalize() = divide(length())
 /**
  * Elementwise multiplication between the receiver matrix and [term].
  */
-internal fun SimpleMatrix.elementMult(term: Double): SimpleMatrix {
+fun SimpleMatrix.elementMult(term: Double): SimpleMatrix {
     val termMat = SimpleMatrix(numRows(), numCols()).apply {
         for (row in 0 until numRows()) {
             for (col in 0 until numCols()) {
@@ -241,7 +241,7 @@ internal fun SimpleMatrix.elementMult(term: Double): SimpleMatrix {
 /**
  * Returns which the receiver matrix approximately equals (within [delta]) the [other] matrix.
  */
-internal fun SimpleMatrix.approxEquals(other: SimpleMatrix?, delta: Double = 1e-10): Boolean {
+fun SimpleMatrix.approxEquals(other: SimpleMatrix?, delta: Double = 1e-10): Boolean {
     if (other == null || numRows() != other.numRows() || numCols() != other.numCols()) {
         return false
     } else {

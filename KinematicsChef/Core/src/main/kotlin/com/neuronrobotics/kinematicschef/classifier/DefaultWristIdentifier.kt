@@ -14,7 +14,8 @@ import com.neuronrobotics.kinematicschef.util.toTranslation
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import org.ejml.simple.SimpleMatrix
 
-internal class DefaultWristIdentifier : WristIdentifier {
+class DefaultWristIdentifier
+internal constructor() : WristIdentifier {
 
     /**
      * Computes whether the [chain] is a spherical wrist which is solvable with Euler angles.
@@ -85,5 +86,9 @@ internal class DefaultWristIdentifier : WristIdentifier {
                 ClassifierError("A chain of ${chain.size} links cannot form a spherical wrist")
             )
         }
+    }
+
+    companion object {
+        fun create() = DefaultWristIdentifier()
     }
 }

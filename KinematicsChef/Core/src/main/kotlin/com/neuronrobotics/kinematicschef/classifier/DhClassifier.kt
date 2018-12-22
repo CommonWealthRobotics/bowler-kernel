@@ -11,7 +11,7 @@ import com.neuronrobotics.kinematicschef.dhparam.DhChainElement
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngle
 
-internal interface DhClassifier {
+interface DhClassifier {
 
     /**
      * Determine the Euler angles for a [SphericalWrist].

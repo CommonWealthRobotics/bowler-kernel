@@ -10,7 +10,7 @@ import com.google.common.collect.ImmutableList
 /**
  * A revolute joint (pin joint). Has one DH param.
  */
-internal data class RevoluteJoint(override val params: ImmutableList<DhParam>) : DhChainElement {
+data class RevoluteJoint(override val params: ImmutableList<DhParam>) : DhChainElement {
     init {
         require(params.size == 1) {
             "A revolute joint must have exactly 1 DH param, got ${params.size}."

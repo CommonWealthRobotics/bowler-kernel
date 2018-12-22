@@ -8,6 +8,6 @@ package com.neuronrobotics.kinematicschef.classifier
 /**
  * An error encountered while running a classifier.
  */
-internal data class ClassifierError(
+data class ClassifierError(
     val errorString: String
 )
