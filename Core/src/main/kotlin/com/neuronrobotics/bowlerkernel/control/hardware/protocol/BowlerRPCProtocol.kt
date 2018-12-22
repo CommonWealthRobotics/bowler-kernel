@@ -5,6 +5,9 @@
  */
 package com.neuronrobotics.bowlerkernel.control.hardware.protocol
 
+/**
+ * An RPC protocol that all Bowler devices implement.
+ */
 interface BowlerRPCProtocol {
 
     /**

@@ -16,9 +16,16 @@ object Verions {
 
 repositories {
     maven(url = "https://jitpack.io")
+    maven(url = "https://dl.bintray.com/commonwealthrobotics/maven-artifacts")
 }
 
 dependencies {
+    api(
+        group = "com.neuronrobotics",
+        name = "kinematicschef-core",
+        version = "0.0.14"
+    )
+
     api(group = "io.arrow-kt", name = "arrow-core", version = arrow_version)
     api(group = "io.arrow-kt", name = "arrow-syntax", version = arrow_version)
     api(group = "io.arrow-kt", name = "arrow-typeclasses", version = arrow_version)
