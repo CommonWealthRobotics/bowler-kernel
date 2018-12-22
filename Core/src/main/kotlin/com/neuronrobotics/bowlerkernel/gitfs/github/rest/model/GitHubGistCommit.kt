@@ -5,6 +5,7 @@
  */
 package com.neuronrobotics.bowlerkernel.gitfs.github.rest.model
 
+@SuppressWarnings("ConstructorParameterNaming")
 data class GitHubGistCommit(
     val url: String,
     val version: String,
