@@ -23,10 +23,9 @@ dependencies {
     api(
         group = "com.neuronrobotics",
         name = "kinematicschef-core",
-        version = "0.0.14"
+        version = "0.0.15"
     ) {
-        exclude(group = "com.google.guava")
-        exclude(group = "org.slf4j", module = "slf4j-simple")
+        exclude(group = "com.neuronrobotics")
     }
 
     api(group = "io.arrow-kt", name = "arrow-core", version = arrow_version)
