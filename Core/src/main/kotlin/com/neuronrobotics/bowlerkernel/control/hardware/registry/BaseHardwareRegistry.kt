@@ -34,11 +34,9 @@ internal constructor() : HardwareRegistry {
     override fun registerDevice(deviceId: DeviceId): Option<RegisterError> {
         if (internalRegisteredDevices.contains(deviceId)) {
             return Option.just(
-                RegisterError(
-                    """
-                    Cannot register device $deviceId because the device is already registered.
-                    """.trimIndent()
-                )
+                """
+                Cannot register device $deviceId because the device is already registered.
+                """.trimIndent()
             )
         }
 
@@ -52,21 +50,17 @@ internal constructor() : HardwareRegistry {
     ): Option<RegisterError> {
         if (!internalRegisteredDevices.contains(deviceId)) {
             return Option.just(
-                RegisterError(
-                    """
-                    Cannot register resource $resourceId on device $deviceId because device
-                    $deviceId is not registered.
-                    """.trimIndent()
-                )
+                """
+                Cannot register resource $resourceId on device $deviceId because device
+                $deviceId is not registered.
+                """.trimIndent()
             )
         } else if (internalRegisteredDeviceResources.containsEntry(deviceId, resourceId)) {
             return Option.just(
-                RegisterError(
-                    """
-                    Cannot register resource $resourceId on device $deviceId because the
-                    resource is already registered.
-                    """.trimIndent()
-                )
+                """
+                Cannot register resource $resourceId on device $deviceId because the
+                resource is already registered.
+                """.trimIndent()
             )
         }
 
@@ -77,11 +71,9 @@ internal constructor() : HardwareRegistry {
     override fun unregisterDevice(deviceId: DeviceId): Option<UnregisterError> {
         if (!internalRegisteredDevices.contains(deviceId)) {
             return Option.just(
-                UnregisterError(
-                    """
-                    Cannot unregister device $deviceId because the device is not registered.
-                    """.trimIndent()
-                )
+                """
+                Cannot unregister device $deviceId because the device is not registered.
+                """.trimIndent()
             )
         }
 
@@ -95,21 +87,17 @@ internal constructor() : HardwareRegistry {
     ): Option<UnregisterError> {
         if (!internalRegisteredDevices.contains(deviceId)) {
             return Option.just(
-                UnregisterError(
-                    """
-                    Cannot unregister resource $resourceId on device $deviceId because device
-                    $deviceId is not registered.
-                    """.trimIndent()
-                )
+                """
+                Cannot unregister resource $resourceId on device $deviceId because device
+                $deviceId is not registered.
+                """.trimIndent()
             )
         } else if (!internalRegisteredDeviceResources.containsEntry(deviceId, resourceId)) {
             return Option.just(
-                UnregisterError(
-                    """
-                    Cannot unregister resource $resourceId on device $deviceId because the
-                    resource is not registered on that device.
-                    """.trimIndent()
-                )
+                """
+                Cannot unregister resource $resourceId on device $deviceId because the
+                resource is not registered on that device.
+                """.trimIndent()
             )
         }
 

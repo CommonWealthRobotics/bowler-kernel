@@ -38,12 +38,10 @@ class UnprovisionedDeviceResourceFactory
             registerDeviceResource(resourceId).toEither { rightSide(resourceId) }.swap()
         } else {
             Either.left(
-                RegisterError(
-                    """
-                    Could not make an unprovisioned $errorMessageType with resource id
-                    $resourceId because it is not in the range of resources for device $device.
-                    """.trimIndent()
-                )
+                """
+                Could not make an unprovisioned $errorMessageType with resource id
+                $resourceId because it is not in the range of resources for device $device.
+                """.trimIndent()
             )
         }
     }

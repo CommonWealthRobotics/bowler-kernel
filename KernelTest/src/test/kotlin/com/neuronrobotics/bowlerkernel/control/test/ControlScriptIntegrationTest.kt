@@ -17,6 +17,7 @@ import com.neuronrobotics.bowlerkernel.control.hardware.protocol.BowlerRPCProtoc
 import com.nhaarman.mockitokotlin2.mock
 import org.jlleitschuh.guice.key
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import javax.inject.Inject
 
 class ControlScriptIntegrationTest {
@@ -35,7 +36,12 @@ class ControlScriptIntegrationTest {
             val device =
                 bowlerDeviceFactory.makeBowlerDevice(SimpleDeviceId("bowler-device-id"), mockRPC)
                     .getOrHandle {
-                        throw RuntimeException(it.errorString)
+                        fail {
+                            """
+                            |Got a RegisterError when making the device:
+                            |$it
+                            """.trimMargin()
+                        }
                     }
 
             val unprovisionedLED =
@@ -43,16 +49,24 @@ class ControlScriptIntegrationTest {
 
             led = unprovisionedLED.fold(
                 {
-                    throw RuntimeException(it.errorString)
+                    fail {
+                        """
+                        |Got a RegisterError when making the LED:
+                        |$it
+                        """.trimMargin()
+                    }
                 },
                 {
                     it.provision().fold(
                         {
-                            throw RuntimeException(it.errorString)
+                            fail {
+                                """
+                                |Got a ProvisionError when provisioning the LED:
+                                |$it
+                                """.trimMargin()
+                            }
                         },
-                        {
-                            it
-                        }
+                        { it }
                     )
                 }
             )
@@ -70,6 +84,9 @@ class ControlScriptIntegrationTest {
             }
         }
 
-        KernelOrchestrator().startControlScript(script)
+        KernelOrchestrator().apply {
+            startControlScript(script)
+            stopControlScript(script)
+        }
     }
 }

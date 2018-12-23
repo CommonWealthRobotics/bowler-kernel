@@ -70,7 +70,7 @@ class HardwareRegistryTrackerTest {
                         "A"
                     )
                 )
-            } doReturn Option.just(RegisterError(""))
+            } doReturn Option.just("")
         }
 
         val registry = HardwareRegistryTracker(mockRegistry)
@@ -126,7 +126,7 @@ class HardwareRegistryTrackerTest {
                         "A"
                     )
                 )
-            } doReturn Option.just(UnregisterError(""))
+            } doReturn Option.just("")
         }
 
         val registry = HardwareRegistryTracker(mockRegistry)
@@ -198,7 +198,7 @@ class HardwareRegistryTrackerTest {
                         "B"
                     )
                 )
-            } doReturn Option.just(RegisterError(""))
+            } doReturn Option.just("")
         }
 
         val registry = HardwareRegistryTracker(mockRegistry)
@@ -265,7 +265,7 @@ class HardwareRegistryTrackerTest {
                         "B"
                     )
                 )
-            } doReturn Option.just(UnregisterError(""))
+            } doReturn Option.just("")
         }
 
         val registry = HardwareRegistryTracker(mockRegistry)
@@ -314,7 +314,7 @@ class HardwareRegistryTrackerTest {
                         "A"
                     )
                 )
-            } doReturn Option.just(UnregisterError(""))
+            } doReturn Option.just("")
 
             on {
                 unregisterDeviceResource(
@@ -325,7 +325,7 @@ class HardwareRegistryTrackerTest {
                         "B"
                     )
                 )
-            } doReturn Option.just(UnregisterError(""))
+            } doReturn Option.just("")
         }
 
         val registry = HardwareRegistryTracker(mockRegistry)

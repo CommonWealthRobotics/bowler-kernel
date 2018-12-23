@@ -61,12 +61,11 @@ internal constructor(
                 createResource().right()
             }
 
-            else -> ProvisionError(
+            else ->
                 """
                 |Could not provision device resource:
                 |Unknown device resource class: ${T::class}
-                """.trimMargin()
-            ).left()
+                """.trimMargin().left()
         }
     }
 }
