@@ -6,6 +6,7 @@
 package com.neuronrobotics.bowlerkernel.scripting
 
 import arrow.core.Either
+import arrow.core.flatMap
 import arrow.core.left
 import arrow.core.right
 import com.google.common.collect.ImmutableList
@@ -35,11 +36,11 @@ internal constructor(
                 it.files.entries.first { it.key == filename }.value
             }
 
-            content.map { file ->
+            content.flatMap { file ->
                 scriptLanguageParser.parse(file.language ?: "").let {
                     when (it) {
-                        is ScriptLanguage.Groovy -> handleGroovy(file.content, args)
-                        is ScriptLanguage.ParseError -> it.message
+                        is ScriptLanguage.Groovy -> handleGroovy(file.content, args).right()
+                        is ScriptLanguage.ParseError -> it.message.left()
                     }
                 }
             }
@@ -51,21 +52,18 @@ internal constructor(
     ): Any? {
         val configuration = CompilerConfiguration().apply {
             addCompilationCustomizers(
-                ImportCustomizer()
-                    .addStarImports(
-                        "com.neuronrobotics.bowlerbuilder",
-                        "com.neuronrobotics.bowlerbuilder.controller",
-                        "com.neuronrobotics.bowlerbuilder.view.tab",
-                        "com.neuronrobotics.kinematicschef"
-                    )
+                ImportCustomizer().addStarImports(
+                    "com.neuronrobotics.bowlerbuilder",
+                    "com.neuronrobotics.bowlerbuilder.controller",
+                    "com.neuronrobotics.bowlerbuilder.view.tab",
+                    "com.neuronrobotics.kinematicschef"
+                )
             )
         }
 
         val script = GroovyShell(
             Thread.currentThread().contextClassLoader,
-            Binding().apply {
-                setVariable("args", args)
-            },
+            Binding().apply { setVariable("args", args) },
             configuration
         ).parse(scriptText)
 

@@ -52,6 +52,30 @@ internal class GistScriptTest {
     }
 
     @Test
+    fun `test run script with a parse error`() {
+        val gistId = "gistId"
+        val filename = "theFile.groovy"
+        val language = "groovy"
+        val scriptContent = """ return "Hello, World!" """
+        val mockGitHubAPI = mock<GitHubAPI> {
+            on { runBlocking { getGist(gistId) } } doReturn createMockGist(
+                gistId,
+                mapOf(createMockGistFile(filename, scriptContent))
+            ).right()
+        }
+
+        val mockScriptLanguageParser = mock<ScriptLanguageParser> {
+            on { parse(language) } doReturn ScriptLanguage.ParseError("")
+        }
+
+        val script = GistScript.Factory(mockGitHubAPI, mockScriptLanguageParser)
+            .createGistScript(gistId, filename)
+
+        val result = script.runScript(emptyImmutableList())
+        assertTrue(result.isLeft())
+    }
+
+    @Test
     fun `test interrupting a script`() {
         val gistId = "gistId"
         val filename = "theFile.groovy"
