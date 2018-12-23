@@ -8,7 +8,6 @@ package com.neuronrobotics.bowlerkernel.scripting
 import arrow.core.Either
 import arrow.core.Try
 import arrow.core.flatMap
-import arrow.core.right
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.gitfs.github.rest.routing.GitHubAPI
 import groovy.lang.Binding

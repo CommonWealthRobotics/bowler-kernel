@@ -14,6 +14,8 @@ data class DhParamData(
     val alpha: Double
 )
 
+// TODO: Use a more general "git resource id" instead of just a gist id
+// We want to be able to specify files in GitHub repos, too
 data class LimbData(
     val id: SimpleLimbId,
     val chain: List<DhParamData>,

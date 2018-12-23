@@ -3,9 +3,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package com.neuronrobotics.bowlerkernel.control.kinematics.motion
+package com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan
 
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.control.kinematics.motion.FrameTransformation
+import com.neuronrobotics.bowlerkernel.control.kinematics.motion.MotionConstraints
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 
 /**
@@ -26,5 +28,5 @@ interface LimbMotionPlanner {
         currentTaskSpaceTransform: FrameTransformation,
         targetTaskSpaceTransform: FrameTransformation,
         motionConstraints: MotionConstraints
-    ): ImmutableList<ImmutableList<Double>>
+    ): LimbMotionPlan
 }

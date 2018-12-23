@@ -6,13 +6,14 @@
 package com.neuronrobotics.bowlerkernel.control.kinematics.limb
 
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.control.closedloop.JointAngleController
 import com.neuronrobotics.bowlerkernel.control.kinematics.base.KinematicBase
 import com.neuronrobotics.bowlerkernel.control.kinematics.limb.limbid.LimbId
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.ForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.InverseKinematicsSolver
-import com.neuronrobotics.bowlerkernel.control.kinematics.motion.LimbMotionPlanner
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.MotionConstraints
+import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlanner
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 
 /**
@@ -41,9 +42,14 @@ interface Limb {
     val inverseKinematicsSolver: InverseKinematicsSolver
 
     /**
-     * The motion planner used to move the limb.
+     * The motion planner used to generate plans for the limb to follow.
      */
     val motionPlanner: LimbMotionPlanner
+
+    /**
+     * The controllers for the joints.
+     */
+    val jointAngleControllers: ImmutableList<JointAngleController>
 
     /**
      * Sets a desired task space transform this limb should try to move to.

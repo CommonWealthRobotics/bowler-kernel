@@ -11,7 +11,7 @@ package com.neuronrobotics.bowlerkernel.control.kinematics.motion
 interface MotionConstraints {
 
     /**
-     * The length of time, in seconds, the motion should be performed over.
+     * The length of time, in milliseconds, the motion should be performed over.
      */
     val motionDuration: Number
 
