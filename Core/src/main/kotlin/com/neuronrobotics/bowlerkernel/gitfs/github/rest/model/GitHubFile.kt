@@ -11,7 +11,9 @@ data class GitHubFile(
     val type: String,
     val language: String?,
     val raw_url: String,
-    val size: Int
+    val size: Int,
+    val truncated: Boolean, // TODO: These are not present if a user gets all gists together
+    val content: String // TODO: These are not present if a user gets all gists together
 )
 
 data class GitHubFileEdit(

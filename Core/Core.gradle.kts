@@ -64,6 +64,9 @@ dependencies {
     implementation(group = "io.ktor", name = "ktor-client-json-jvm", version = ktor_version)
     implementation(group = "io.ktor", name = "ktor-client-gson", version = ktor_version)
 
+    implementation(group = "org.codehaus.groovy", name = "groovy", version = "2.5.4")
+    implementation(group = "org.apache.ivy", name = "ivy", version = "2.4.0")
+
     testImplementation(
         group = "com.nhaarman.mockitokotlin2",
         name = "mockito-kotlin",

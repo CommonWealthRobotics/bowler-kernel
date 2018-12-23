@@ -23,7 +23,7 @@ class UnprovisionedDeviceResourceFactory
 @Inject internal constructor(
     private val registry: HardwareRegistry,
     @Assisted private val device: BowlerDevice
-) : UnprovisionedLEDFactory {
+) : UnprovisionedLEDFactory, UnprovisionedServoFactory {
 
     private fun registerDeviceResource(resourceId: ResourceId) =
         registry.registerDeviceResource(device.deviceId, resourceId)
@@ -68,6 +68,15 @@ class UnprovisionedDeviceResourceFactory
                         UnprovisionedDeviceResourceFactory::class.java
                     ).build(
                         UnprovisionedLEDFactory.Factory::class.java
+                    )
+            )
+            install(
+                FactoryModuleBuilder()
+                    .implement(
+                        UnprovisionedServoFactory::class.java,
+                        UnprovisionedDeviceResourceFactory::class.java
+                    ).build(
+                        UnprovisionedServoFactory.Factory::class.java
                     )
             )
         }
