@@ -3,8 +3,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package com.neuronrobotics.bowlerkernel.scripting
+package com.neuronrobotics.bowlerkernel.control.kinematics.limb
 
-sealed class ScriptLanguage {
-    object Groovy : ScriptLanguage()
-}
+typealias LimbCreationError = String

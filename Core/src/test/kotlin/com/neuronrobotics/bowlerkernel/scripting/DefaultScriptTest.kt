@@ -5,6 +5,8 @@
  */
 package com.neuronrobotics.bowlerkernel.scripting
 
+import arrow.core.flatMap
+import arrow.core.left
 import arrow.core.right
 import com.neuronrobotics.bowlerkernel.gitfs.github.rest.model.createMockGist
 import com.neuronrobotics.bowlerkernel.gitfs.github.rest.model.createMockGistFile
@@ -17,12 +19,13 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTimeout
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import java.time.Duration
 import kotlin.concurrent.thread
 
-internal class GistScriptTest {
+internal class DefaultScriptTest {
 
     @Test
     fun `test run script with a hello world script`() {
@@ -38,13 +41,13 @@ internal class GistScriptTest {
         }
 
         val mockScriptLanguageParser = mock<ScriptLanguageParser> {
-            on { parse(language) } doReturn ScriptLanguage.Groovy
+            on { parse(language) } doReturn ScriptLanguage.Groovy.right()
         }
 
-        val script = GistScript.Factory(mockGitHubAPI, mockScriptLanguageParser)
-            .createGistScript(gistId, filename)
+        val script = DefaultScript.Factory(mockGitHubAPI, mockScriptLanguageParser)
+            .createScriptFromGist(gistId, filename)
 
-        val result = script.runScript(emptyImmutableList())
+        val result = script.flatMap { it.runScript(emptyImmutableList()) }
         assertAll(
             { assertTrue(result.isRight()) },
             { assertEquals("Hello, World!", result.fold({ null }, { it as? String })) }
@@ -65,13 +68,37 @@ internal class GistScriptTest {
         }
 
         val mockScriptLanguageParser = mock<ScriptLanguageParser> {
-            on { parse(language) } doReturn ScriptLanguage.ParseError("")
+            on { parse(language) } doReturn "".left()
         }
 
-        val script = GistScript.Factory(mockGitHubAPI, mockScriptLanguageParser)
-            .createGistScript(gistId, filename)
+        val script = DefaultScript.Factory(mockGitHubAPI, mockScriptLanguageParser)
+            .createScriptFromGist(gistId, filename)
 
-        val result = script.runScript(emptyImmutableList())
+        val result = script.flatMap { it.runScript(emptyImmutableList()) }
+        assertTrue(result.isLeft())
+    }
+
+    @Test
+    fun `test run script with a compile error`() {
+        val gistId = "gistId"
+        val filename = "theFile.groovy"
+        val language = "groovy"
+        val scriptContent = """ " """ // Single quote on purpose
+        val mockGitHubAPI = mock<GitHubAPI> {
+            on { runBlocking { getGist(gistId) } } doReturn createMockGist(
+                gistId,
+                mapOf(createMockGistFile(filename, scriptContent))
+            ).right()
+        }
+
+        val mockScriptLanguageParser = mock<ScriptLanguageParser> {
+            on { parse(language) } doReturn ScriptLanguage.Groovy.right()
+        }
+
+        val script = DefaultScript.Factory(mockGitHubAPI, mockScriptLanguageParser)
+            .createScriptFromGist(gistId, filename)
+
+        val result = script.flatMap { it.runScript(emptyImmutableList()) }
         assertTrue(result.isLeft())
     }
 
@@ -96,16 +123,28 @@ internal class GistScriptTest {
         }
 
         val mockScriptLanguageParser = mock<ScriptLanguageParser> {
-            on { parse(language) } doReturn ScriptLanguage.Groovy
+            on { parse(language) } doReturn ScriptLanguage.Groovy.right()
         }
 
-        val script = GistScript.Factory(mockGitHubAPI, mockScriptLanguageParser)
-            .createGistScript(gistId, filename)
+        val script = DefaultScript.Factory(mockGitHubAPI, mockScriptLanguageParser)
+            .createScriptFromGist(gistId, filename)
 
-        assertTimeout(Duration.ofSeconds(2)) {
-            thread { script.runScript(emptyImmutableList()) }
-            runBlocking { delay(1000) }
-            script.stopScript()
-        }
+        script.bimap(
+            {
+                fail<Unit> {
+                    """
+                    |Script was a left:
+                    |$script
+                    """.trimMargin()
+                }
+            },
+            {
+                assertTimeout(Duration.ofSeconds(2)) {
+                    thread { it.runScript(emptyImmutableList()) }
+                    runBlocking { delay(1000) }
+                    it.stopScript()
+                }
+            }
+        )
     }
 }

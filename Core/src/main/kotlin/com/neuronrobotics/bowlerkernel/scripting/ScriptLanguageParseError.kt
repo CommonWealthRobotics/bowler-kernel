@@ -5,6 +5,4 @@
  */
 package com.neuronrobotics.bowlerkernel.scripting
 
-sealed class ScriptLanguage {
-    object Groovy : ScriptLanguage()
-}
+typealias ScriptLanguageParseError = String

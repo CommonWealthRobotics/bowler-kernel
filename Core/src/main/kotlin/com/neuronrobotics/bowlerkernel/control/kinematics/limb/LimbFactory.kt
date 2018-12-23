@@ -5,6 +5,8 @@
  */
 package com.neuronrobotics.bowlerkernel.control.kinematics.limb
 
+import arrow.core.Either
+
 interface LimbFactory {
 
     /**
@@ -13,5 +15,5 @@ interface LimbFactory {
      * @param limbData The data to construct the limb from.
      * @return A new limb.
      */
-    fun createLimb(limbData: LimbData): Limb
+    fun createLimb(limbData: LimbData): Either<LimbCreationError, Limb>
 }

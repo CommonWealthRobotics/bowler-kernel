@@ -20,5 +20,7 @@ data class LimbData(
     val forwardKinematicsSolverGistId: String,
     val forwardKinematicsSolverFilename: String,
     val inverseKinematicsSolverGistId: String,
-    val inverseKinematicsSolverFilename: String
+    val inverseKinematicsSolverFilename: String,
+    val limbMotionPlannerGistId: String,
+    val limbMotionPlannerFilename: String
 )

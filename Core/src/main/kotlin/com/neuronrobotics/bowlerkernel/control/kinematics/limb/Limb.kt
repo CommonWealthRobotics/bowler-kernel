@@ -11,6 +11,7 @@ import com.neuronrobotics.bowlerkernel.control.kinematics.limb.limbid.LimbId
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.ForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.InverseKinematicsSolver
+import com.neuronrobotics.bowlerkernel.control.kinematics.motion.LimbMotionPlanner
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.MotionConstraints
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 
@@ -40,7 +41,12 @@ interface Limb {
     val inverseKinematicsSolver: InverseKinematicsSolver
 
     /**
-     * Sets a desired task space transform this base should try to move to.
+     * The motion planner used to move the limb.
+     */
+    val motionPlanner: LimbMotionPlanner
+
+    /**
+     * Sets a desired task space transform this limb should try to move to.
      *
      * @param taskSpaceTransform The desired task space transform.
      * @param motionConstraints The constraints on the motion to move from the current task
@@ -52,9 +58,14 @@ interface Limb {
     )
 
     /**
-     * The last set desired task space transform this base should try to move to.
+     * The last set desired task space transform this limb should try to move to.
      */
     fun getDesiredTaskSpaceTransform(): FrameTransformation
+
+    /**
+     * The current task space transform.
+     */
+    fun getCurrentTaskSpaceTransform(): FrameTransformation
 
     /**
      * Sets a joint's desired angle.

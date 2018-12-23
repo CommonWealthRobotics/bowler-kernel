@@ -5,6 +5,8 @@
  */
 package com.neuronrobotics.bowlerkernel.scripting
 
+import arrow.core.Either
+
 /**
  * Parses a script language from its language string.
  */
@@ -16,5 +18,5 @@ interface ScriptLanguageParser {
      * @param language The language string.
      * @return The script language.
      */
-    fun parse(language: String): ScriptLanguage
+    fun parse(language: String): Either<ScriptLanguageParseError, ScriptLanguage>
 }
