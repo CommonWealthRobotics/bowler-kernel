@@ -19,11 +19,18 @@ import kotlinx.coroutines.runBlocking
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
 
+/**
+ * A meta-script which can compile and run any known [ScriptLanguage].
+ *
+ * Notes for [ScriptLanguage.Groovy]:
+ * Passes the `args` as a variable named `args` and passes the [Script.injector] as a variable
+ * named `injector`.
+ */
 class DefaultScript
 internal constructor(
     private val language: ScriptLanguage,
     private val scriptText: String
-) : Script {
+) : Script() {
 
     private var scriptThread: Deferred<Any?>? = null
 
@@ -53,7 +60,10 @@ internal constructor(
         return Try {
             val script = GroovyShell(
                 Thread.currentThread().contextClassLoader,
-                Binding().apply { setVariable("args", args) },
+                Binding().apply {
+                    setVariable("args", args)
+                    setVariable("injector", injector)
+                },
                 configuration
             ).parse(scriptText)
 

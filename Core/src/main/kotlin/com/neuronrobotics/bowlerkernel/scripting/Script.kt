@@ -6,11 +6,29 @@
 package com.neuronrobotics.bowlerkernel.scripting
 
 import com.google.common.collect.ImmutableList
+import com.google.inject.Injector
+import com.google.inject.Singleton
+import com.neuronrobotics.bowlerkernel.control.hardware.KernelHardwareModule
+import com.neuronrobotics.bowlerkernel.control.hardware.device.DeviceFactory
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResourceFactory
+import com.neuronrobotics.bowlerkernel.control.hardware.registry.HardwareRegistry
+import com.neuronrobotics.bowlerkernel.control.hardware.registry.HardwareRegistryTracker
+import org.jlleitschuh.guice.key
+import org.jlleitschuh.guice.module
 
 /**
- * A generic script.
+ * The script that is responsible for controlling the robot.
  */
-interface Script {
+abstract class Script {
+
+    /**
+     * An [Injector] available for the script to use.
+     */
+    protected val injector: Injector = KernelHardwareModule.injector.createChildInjector(
+        scriptModule(),
+        DeviceFactory.deviceFactoryModule(),
+        UnprovisionedDeviceResourceFactory.unprovisionedDeviceResourceFactoryModule()
+    )
 
     /**
      * Runs the script on the current thread.
@@ -18,10 +36,27 @@ interface Script {
      * @param args The arguments to the script.
      * @return The result of the script.
      */
-    fun runScript(args: ImmutableList<Any?>): Any?
+    abstract fun runScript(args: ImmutableList<Any?>): Any?
 
     /**
-     * Forces the script to stop.
+     * Forces the script to stop. Do not call this directly. Call `stopAndCleanUp()`.
      */
-    fun stopScript()
+    protected abstract fun stopScript()
+
+    /**
+     * Synchronously stops the script and unregisters all hardware it registered.
+     */
+    fun stopAndCleanUp() {
+        stopScript()
+        injector.getInstance(key<HardwareRegistryTracker>()).unregisterAllHardware()
+    }
+
+    companion object {
+        private fun scriptModule() = module {
+            bind<HardwareRegistryTracker>().`in`(Singleton::class.java)
+            bind<HardwareRegistry>().to<HardwareRegistryTracker>().`in`(Singleton::class.java)
+            bind<ScriptLanguageParser>().to<DefaultScriptLanguageParser>()
+            // TODO: Bind the GitHubAPI
+        }
+    }
 }

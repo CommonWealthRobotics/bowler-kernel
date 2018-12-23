@@ -55,6 +55,27 @@ internal class DefaultScriptTest {
     }
 
     @Test
+    fun `test run script with a script specified by text directly`() {
+        val language = "groovy"
+        val scriptContent = """ return "Hello, World!" """
+
+        val mockScriptLanguageParser = mock<ScriptLanguageParser> {
+            on { parse(language) } doReturn ScriptLanguage.Groovy.right()
+        }
+
+        val script = DefaultScript.Factory(
+            mock {},
+            mockScriptLanguageParser
+        ).createScriptFromText(language, scriptContent)
+
+        val result = script.flatMap { it.runScript(emptyImmutableList()) }
+        assertAll(
+            { assertTrue(result.isRight()) },
+            { assertEquals("Hello, World!", result.fold({ null }, { it as? String })) }
+        )
+    }
+
+    @Test
     fun `test run script with a parse error`() {
         val gistId = "gistId"
         val filename = "theFile.groovy"
@@ -142,7 +163,7 @@ internal class DefaultScriptTest {
                 assertTimeout(Duration.ofSeconds(2)) {
                     thread { it.runScript(emptyImmutableList()) }
                     runBlocking { delay(1000) }
-                    it.stopScript()
+                    it.stopAndCleanUp()
                 }
             }
         )

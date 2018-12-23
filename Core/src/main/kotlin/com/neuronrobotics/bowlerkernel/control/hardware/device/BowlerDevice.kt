@@ -45,7 +45,7 @@ internal constructor(
         return true
     }
 
-    override fun toString() = deviceId.toString()
+    override fun toString() = """`$deviceId`"""
 
     /**
      * Provision a resource.
