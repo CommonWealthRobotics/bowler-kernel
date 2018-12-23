@@ -90,10 +90,7 @@ internal constructor(
     override fun getDesiredTaskSpaceTransform() = desiredTaskSpaceTransform
 
     override fun getCurrentTaskSpaceTransform() =
-        forwardKinematicsSolver.solveChain(
-            chain,
-            getCurrentJointAngles()
-        )
+        forwardKinematicsSolver.solveChain(chain, getCurrentJointAngles())
 
     override fun setDesiredJointAngle(
         jointIndex: Int,

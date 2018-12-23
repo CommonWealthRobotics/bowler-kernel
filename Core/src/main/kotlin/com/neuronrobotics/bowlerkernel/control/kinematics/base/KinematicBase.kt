@@ -7,6 +7,7 @@ package com.neuronrobotics.bowlerkernel.control.kinematics.base
 
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
+import com.neuronrobotics.bowlerkernel.control.closedloop.BodyController
 import com.neuronrobotics.bowlerkernel.control.kinematics.base.baseid.KinematicBaseId
 import com.neuronrobotics.bowlerkernel.control.kinematics.limb.Limb
 import com.neuronrobotics.bowlerkernel.control.kinematics.limb.limbid.LimbId
@@ -34,6 +35,11 @@ interface KinematicBase {
      * its mounting point on this base.
      */
     val limbBaseTransforms: ImmutableMap<LimbId, FrameTransformation>
+
+    /**
+     * The controller for the body.
+     */
+    val bodyController: BodyController
 
     /**
      * Sets a desired world space transform this base should try to move to.
