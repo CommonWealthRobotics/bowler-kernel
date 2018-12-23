@@ -83,9 +83,6 @@ internal constructor(
                 )
                 timestepSum += step.motionConstraints.motionDuration.toLong()
                 scheduled
-            }.fold(Unit) { _, elem ->
-                // Wait for each step to finish
-                elem.get()
             }
         }
     }
