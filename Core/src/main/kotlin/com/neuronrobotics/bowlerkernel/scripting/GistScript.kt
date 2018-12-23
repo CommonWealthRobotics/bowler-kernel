@@ -40,6 +40,7 @@ internal constructor(
                 scriptLanguageParser.parse(file.language ?: "").let {
                     when (it) {
                         is ScriptLanguage.Groovy -> handleGroovy(file.content, args).right()
+                        //TODO: Kotlin scripting https://github.com/s1monw1/KtsRunner
                         is ScriptLanguage.ParseError -> it.message.left()
                     }
                 }
