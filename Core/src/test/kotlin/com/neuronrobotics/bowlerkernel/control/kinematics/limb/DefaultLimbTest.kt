@@ -32,7 +32,7 @@ internal class DefaultLimbTest {
 
     @Test
     fun `test limb plan execution`() {
-        val timestep = 20
+        val timestep = 100
         val chain = immutableListOf(DhParam.zero)
         val controller = object : JointAngleController {
             val times = mutableListOf<Long>()
@@ -97,7 +97,7 @@ internal class DefaultLimbTest {
                 createMotionConstraints(timestep * 2)
             )
 
-            runBlocking { delay(100) }
+            runBlocking { delay(timestep * 4L) }
 
             val time = controller.times[1] - controller.times[0]
 
@@ -111,7 +111,7 @@ internal class DefaultLimbTest {
             timeOnce()
         }.average()
 
-        assertTrue(abs(averageTiming - timestep) < 2) {
+        assertTrue(abs(averageTiming - timestep) < timestep * 0.2) {
             "The average timing was too large: $averageTiming"
         }
     }
