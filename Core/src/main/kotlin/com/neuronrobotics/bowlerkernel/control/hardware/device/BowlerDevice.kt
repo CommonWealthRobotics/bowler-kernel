@@ -12,6 +12,7 @@ import com.neuronrobotics.bowlerkernel.control.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.ProvisionError
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.provisioned.LED
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.provisioned.ProvisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.provisioned.Servo
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.control.hardware.protocol.BowlerRPCProtocol
 
@@ -56,6 +57,12 @@ internal constructor(
         // TODO: Implement provisioning using the Bowler RPC
         return when (T::class) {
             LED::class -> {
+                bowlerRPCProtocol.write()
+                bowlerRPCProtocol.read()
+                createResource().right()
+            }
+
+            Servo::class -> {
                 bowlerRPCProtocol.write()
                 bowlerRPCProtocol.read()
                 createResource().right()

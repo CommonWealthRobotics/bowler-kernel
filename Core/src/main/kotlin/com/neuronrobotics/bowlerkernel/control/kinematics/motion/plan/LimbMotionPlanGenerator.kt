@@ -11,9 +11,9 @@ import com.neuronrobotics.bowlerkernel.control.kinematics.motion.MotionConstrain
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 
 /**
- * A motion planner which operates on a limb.
+ * A motion plan generator which operates on a limb.
  */
-interface LimbMotionPlanner {
+interface LimbMotionPlanGenerator {
 
     /**
      * Generates a plan to reach a task space transform.

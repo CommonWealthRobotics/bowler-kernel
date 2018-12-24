@@ -6,16 +6,17 @@
 package com.neuronrobotics.bowlerkernel.control.kinematics.limb
 
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.control.closedloop.JointAngleController
+import com.neuronrobotics.bowlerkernel.control.MockJointAngleController
+import com.neuronrobotics.bowlerkernel.control.createMotionConstraints
 import com.neuronrobotics.bowlerkernel.control.kinematics.limb.limbid.SimpleLimbId
-import com.neuronrobotics.bowlerkernel.control.kinematics.motion.BasicMotionConstraints
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.ForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.InverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.MotionConstraints
+import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.DefaultLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlan
+import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlanGenerator
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlanStep
-import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlanner
 import com.neuronrobotics.bowlerkernel.util.immutableListOf
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import kotlinx.coroutines.delay
@@ -24,29 +25,14 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import kotlin.math.abs
 
-internal class DefaultLimbTest {
-
-    private fun createMotionConstraints(duration: Number) = BasicMotionConstraints(
-        duration, 0, 0, 0
-    )
+internal class DefaultLimbIntegrationTest {
 
     @Test
     fun `test limb plan execution`() {
         val timestep = 100
         val chain = immutableListOf(DhParam.zero)
-        val controller = object : JointAngleController {
-            val times = mutableListOf<Long>()
-            val targets = mutableListOf<Double>()
+        val controller = MockJointAngleController()
 
-            override fun setTargetAngle(angle: Double, motionConstraints: MotionConstraints) {
-                times.add(System.currentTimeMillis())
-                targets.add(angle)
-            }
-
-            override fun getCurrentAngle(): Double {
-                return 0.0
-            }
-        }
         val limb = DefaultLimb(
             SimpleLimbId(""),
             chain,
@@ -67,7 +53,7 @@ internal class DefaultLimbTest {
                     TODO("not implemented")
                 }
             },
-            object : LimbMotionPlanner {
+            object : LimbMotionPlanGenerator {
                 override fun generatePlanForTaskSpaceTransform(
                     chain: ImmutableList<DhParam>,
                     currentTaskSpaceTransform: FrameTransformation,
@@ -88,6 +74,7 @@ internal class DefaultLimbTest {
                     )
                 }
             },
+            DefaultLimbMotionPlanFollower(immutableListOf(controller)),
             immutableListOf(controller)
         )
 

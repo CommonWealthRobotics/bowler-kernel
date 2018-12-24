@@ -14,13 +14,15 @@ import com.neuronrobotics.bowlerkernel.control.kinematics.motion.ForwardKinemati
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.InverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.MotionConstraints
-import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlanner
+import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlanFollower
+import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlanGenerator
 import com.neuronrobotics.bowlerkernel.scripting.DefaultScript
 import com.neuronrobotics.bowlerkernel.util.emptyImmutableList
 import com.neuronrobotics.bowlerkernel.util.toImmutableList
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
+import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
+import com.neuronrobotics.kinematicschef.util.getTranslation
+import com.neuronrobotics.kinematicschef.util.length
 import kotlin.concurrent.thread
 
 class DefaultLimb
@@ -29,7 +31,8 @@ internal constructor(
     override val chain: ImmutableList<DhParam>,
     override val forwardKinematicsSolver: ForwardKinematicsSolver,
     override val inverseKinematicsSolver: InverseKinematicsSolver,
-    override val motionPlanner: LimbMotionPlanner,
+    override val motionPlanGenerator: LimbMotionPlanGenerator,
+    override val motionPlanFollower: LimbMotionPlanFollower,
     override val jointAngleControllers: ImmutableList<JointAngleController>
 ) : Limb {
 
@@ -55,35 +58,16 @@ internal constructor(
     ) {
         desiredTaskSpaceTransform = taskSpaceTransform
 
-        // Generate the plan on a new thread
+        // Generate and follow the plan on a new thread
         thread(isDaemon = true) {
-            val plan = motionPlanner.generatePlanForTaskSpaceTransform(
+            val plan = motionPlanGenerator.generatePlanForTaskSpaceTransform(
                 chain,
                 getCurrentTaskSpaceTransform(),
                 taskSpaceTransform,
                 motionConstraints
             )
 
-            val pool = Executors.newScheduledThreadPool(1)
-
-            // Schedule each plan step
-            var timestepSum = 0L
-            plan.steps.map { step ->
-                val scheduled = pool.schedule(
-                    {
-                        step.jointAngles.forEachIndexed { index, targetJointAngle ->
-                            jointAngleControllers[index].setTargetAngle(
-                                targetJointAngle,
-                                step.motionConstraints
-                            )
-                        }
-                    },
-                    timestepSum + step.motionConstraints.motionDuration.toLong(),
-                    TimeUnit.MILLISECONDS
-                )
-                timestepSum += step.motionConstraints.motionDuration.toLong()
-                scheduled
-            }
+            motionPlanFollower.followPlan(plan)
         }
     }
 
@@ -103,9 +87,9 @@ internal constructor(
     override fun getCurrentJointAngles() =
         jointAngleControllers.map { it.getCurrentAngle() }.toImmutableList()
 
-    override fun isTaskSpaceTransformReachable(taskSpaceTransform: FrameTransformation): Boolean {
-        TODO("not implemented")
-    }
+    override fun isTaskSpaceTransformReachable(taskSpaceTransform: FrameTransformation) =
+        taskSpaceTransform.getTranslation().length() <
+            chain.toFrameTransformation().getTranslation().length()
 
     class Factory
     internal constructor(
@@ -118,43 +102,50 @@ internal constructor(
             limbData: LimbData,
             jointAngleControllers: ImmutableList<JointAngleController>
         ): Either<LimbCreationError, Limb> {
-            val fkSolver = defaultScriptFactory.createScriptFromGist(
+            val fkSolver = getInstanceFromGist<ForwardKinematicsSolver>(
                 limbData.forwardKinematicsSolverGistId,
                 limbData.forwardKinematicsSolverFilename
-            ).flatMap {
-                it.runScript(emptyImmutableList()).map { it as ForwardKinematicsSolver }
-            }
+            )
 
-            val ikSolver = defaultScriptFactory.createScriptFromGist(
+            val ikSolver = getInstanceFromGist<InverseKinematicsSolver>(
                 limbData.inverseKinematicsSolverGistId,
                 limbData.inverseKinematicsSolverFilename
-            ).flatMap {
-                it.runScript(emptyImmutableList()).map { it as InverseKinematicsSolver }
-            }
+            )
 
-            val limbMotionPlanner = defaultScriptFactory.createScriptFromGist(
-                limbData.limbMotionPlannerGistId,
-                limbData.limbMotionPlannerFilename
-            ).flatMap {
-                it.runScript(emptyImmutableList()).map { it as LimbMotionPlanner }
-            }
+            val limbMotionPlanGenerator = getInstanceFromGist<LimbMotionPlanGenerator>(
+                limbData.limbMotionPlanGeneratorGistId,
+                limbData.limbMotionPlanGeneratorFilename
+            )
+
+            val limbMotionPlanFollower = getInstanceFromGist<LimbMotionPlanFollower>(
+                limbData.limbMotionPlanFollowerGistId,
+                limbData.limbMotionPlanFollowerFilename
+            )
 
             return fkSolver.flatMap { fk ->
                 ikSolver.flatMap { ik ->
-                    limbMotionPlanner.map { motionPlanner ->
-                        DefaultLimb(
-                            id = limbData.id,
-                            chain = limbData.chain.map {
-                                DhParam(it.d, it.theta, it.r, it.alpha)
-                            }.toImmutableList(),
-                            forwardKinematicsSolver = fk,
-                            inverseKinematicsSolver = ik,
-                            motionPlanner = motionPlanner,
-                            jointAngleControllers = jointAngleControllers
-                        )
+                    limbMotionPlanGenerator.flatMap { generator ->
+                        limbMotionPlanFollower.map { follower ->
+                            DefaultLimb(
+                                id = limbData.id,
+                                chain = limbData.chain.map {
+                                    DhParam(it.d, it.theta, it.r, it.alpha)
+                                }.toImmutableList(),
+                                forwardKinematicsSolver = fk,
+                                inverseKinematicsSolver = ik,
+                                motionPlanGenerator = generator,
+                                motionPlanFollower = follower,
+                                jointAngleControllers = jointAngleControllers
+                            )
+                        }
                     }
                 }
             }
         }
+
+        private inline fun <reified T> getInstanceFromGist(gistId: String, filename: String) =
+            defaultScriptFactory.createScriptFromGist(gistId, filename).flatMap {
+                it.runScript(emptyImmutableList()).map { it as T }
+            }
     }
 }
