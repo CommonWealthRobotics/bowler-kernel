@@ -111,6 +111,8 @@ internal class DefaultLimbTest {
             timeOnce()
         }.average()
 
-        assertTrue(abs(averageTiming - timestep) < 2)
+        assertTrue(abs(averageTiming - timestep) < 2) {
+            "The average timing was too large: $averageTiming"
+        }
     }
 }
