@@ -6,7 +6,7 @@
 package com.neuronrobotics.bowlerkernel.control.kinematics.motion
 
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.kinematicschef.dhparam.DhParam
+import com.neuronrobotics.bowlerkernel.control.kinematics.limb.link.Link
 
 /**
  * A solver that implements inverse kinematics.
@@ -14,15 +14,15 @@ import com.neuronrobotics.kinematicschef.dhparam.DhParam
 interface InverseKinematicsSolver {
 
     /**
-     * Solve the [chain] to produce new joint angles.
+     * Solve the system to produce new joint angles.
      *
-     * @param chain The DH chain to solve for.
+     * @param links The links to solve for.
      * @param currentJointAngles The current joint angles.
      * @param targetFrameTransform The target task space frame transformation for the chain.
      * @return New joint angles to reach the [targetFrameTransform].
      */
     fun solveChain(
-        chain: ImmutableList<DhParam>,
+        links: ImmutableList<Link>,
         currentJointAngles: ImmutableList<Double>,
         targetFrameTransform: FrameTransformation
     ): ImmutableList<Double>

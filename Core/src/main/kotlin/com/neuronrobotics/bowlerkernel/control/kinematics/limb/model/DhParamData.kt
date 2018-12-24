@@ -3,12 +3,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package com.neuronrobotics.bowlerkernel.util
+package com.neuronrobotics.bowlerkernel.control.kinematics.limb.model
 
-/**
- * A generic limits class.
- */
-data class Limits(
-    val maximum: Double,
-    val minimum: Double
+data class DhParamData(
+    val d: Double,
+    val theta: Double,
+    val r: Double,
+    val alpha: Double
 )

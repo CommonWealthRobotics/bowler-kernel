@@ -6,6 +6,7 @@
 package com.neuronrobotics.bowlerkernel.control.kinematics.limb
 
 import arrow.core.Either
+import com.neuronrobotics.bowlerkernel.control.kinematics.limb.model.LimbData
 
 interface LimbFactory {
 

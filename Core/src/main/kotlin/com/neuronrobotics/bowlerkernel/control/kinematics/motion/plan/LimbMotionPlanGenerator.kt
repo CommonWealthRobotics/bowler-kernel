@@ -6,9 +6,9 @@
 package com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan
 
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.control.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.MotionConstraints
-import com.neuronrobotics.kinematicschef.dhparam.DhParam
 
 /**
  * A motion plan generator which operates on a limb.
@@ -18,13 +18,13 @@ interface LimbMotionPlanGenerator {
     /**
      * Generates a plan to reach a task space transform.
      *
-     * @param chain The DH chain to control.
+     * @param links The links to control.
      * @param currentTaskSpaceTransform The current task space transform.
      * @param targetTaskSpaceTransform The target task space transform.
      * @return A list of joint angles.
      */
     fun generatePlanForTaskSpaceTransform(
-        chain: ImmutableList<DhParam>,
+        links: ImmutableList<Link>,
         currentTaskSpaceTransform: FrameTransformation,
         targetTaskSpaceTransform: FrameTransformation,
         motionConstraints: MotionConstraints

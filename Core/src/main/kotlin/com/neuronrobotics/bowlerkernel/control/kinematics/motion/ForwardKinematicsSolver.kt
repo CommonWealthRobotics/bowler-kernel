@@ -6,7 +6,7 @@
 package com.neuronrobotics.bowlerkernel.control.kinematics.motion
 
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.kinematicschef.dhparam.DhParam
+import com.neuronrobotics.bowlerkernel.control.kinematics.limb.link.Link
 
 /**
  * A solver that implements forward kinematics.
@@ -14,14 +14,14 @@ import com.neuronrobotics.kinematicschef.dhparam.DhParam
 interface ForwardKinematicsSolver {
 
     /**
-     * Solve the [chain] to produce its current task space frame transformation.
+     * Solve the system to produce its current task space frame transformation.
      *
-     * @param chain The DH chain to solve for.
+     * @param links The links to solve for.
      * @param currentJointAngles The current joint angles.
      * @return The task space frame transformation of the chain given the [currentJointAngles].
      */
     fun solveChain(
-        chain: ImmutableList<DhParam>,
+        links: ImmutableList<Link>,
         currentJointAngles: ImmutableList<Double>
     ): FrameTransformation
 }

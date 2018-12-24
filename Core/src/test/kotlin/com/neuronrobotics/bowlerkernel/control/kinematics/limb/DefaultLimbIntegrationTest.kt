@@ -9,6 +9,9 @@ import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.control.MockJointAngleController
 import com.neuronrobotics.bowlerkernel.control.createMotionConstraints
 import com.neuronrobotics.bowlerkernel.control.kinematics.limb.limbid.SimpleLimbId
+import com.neuronrobotics.bowlerkernel.control.kinematics.limb.link.DefaultLink
+import com.neuronrobotics.bowlerkernel.control.kinematics.limb.link.Link
+import com.neuronrobotics.bowlerkernel.control.kinematics.limb.link.LinkType
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.ForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.InverseKinematicsSolver
@@ -17,7 +20,9 @@ import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.DefaultLim
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlan
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlanGenerator
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlanStep
+import com.neuronrobotics.bowlerkernel.util.Limits
 import com.neuronrobotics.bowlerkernel.util.immutableListOf
+import com.neuronrobotics.bowlerkernel.util.toImmutableList
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -30,15 +35,17 @@ internal class DefaultLimbIntegrationTest {
     @Test
     fun `test limb plan execution`() {
         val timestep = 100
-        val chain = immutableListOf(DhParam.zero)
+        val links = immutableListOf(
+            DefaultLink(LinkType.Rotary, DhParam.zero, Limits(0.0, 0.0))
+        )
         val controller = MockJointAngleController()
 
         val limb = DefaultLimb(
             SimpleLimbId(""),
-            chain,
+            links.map { it as Link }.toImmutableList(),
             object : ForwardKinematicsSolver {
                 override fun solveChain(
-                    chain: ImmutableList<DhParam>,
+                    links: ImmutableList<Link>,
                     currentJointAngles: ImmutableList<Double>
                 ): FrameTransformation {
                     return FrameTransformation.identity(4)
@@ -46,7 +53,7 @@ internal class DefaultLimbIntegrationTest {
             },
             object : InverseKinematicsSolver {
                 override fun solveChain(
-                    chain: ImmutableList<DhParam>,
+                    links: ImmutableList<Link>,
                     currentJointAngles: ImmutableList<Double>,
                     targetFrameTransform: FrameTransformation
                 ): ImmutableList<Double> {
@@ -55,7 +62,7 @@ internal class DefaultLimbIntegrationTest {
             },
             object : LimbMotionPlanGenerator {
                 override fun generatePlanForTaskSpaceTransform(
-                    chain: ImmutableList<DhParam>,
+                    links: ImmutableList<Link>,
                     currentTaskSpaceTransform: FrameTransformation,
                     targetTaskSpaceTransform: FrameTransformation,
                     motionConstraints: MotionConstraints

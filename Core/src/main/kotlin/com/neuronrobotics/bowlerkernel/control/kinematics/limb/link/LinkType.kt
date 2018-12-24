@@ -3,12 +3,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package com.neuronrobotics.bowlerkernel.util
+package com.neuronrobotics.bowlerkernel.control.kinematics.limb.link
 
 /**
- * A generic limits class.
+ * The type of a link.
  */
-data class Limits(
-    val maximum: Double,
-    val minimum: Double
-)
+enum class LinkType {
+    Rotary, Prismatic
+}

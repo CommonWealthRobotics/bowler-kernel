@@ -10,6 +10,8 @@ import arrow.core.flatMap
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.control.closedloop.JointAngleController
 import com.neuronrobotics.bowlerkernel.control.kinematics.limb.limbid.LimbId
+import com.neuronrobotics.bowlerkernel.control.kinematics.limb.link.Link
+import com.neuronrobotics.bowlerkernel.control.kinematics.limb.model.LimbData
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.ForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.InverseKinematicsSolver
@@ -19,7 +21,6 @@ import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotion
 import com.neuronrobotics.bowlerkernel.scripting.DefaultScript
 import com.neuronrobotics.bowlerkernel.util.emptyImmutableList
 import com.neuronrobotics.bowlerkernel.util.toImmutableList
-import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.kinematicschef.util.length
@@ -28,7 +29,7 @@ import kotlin.concurrent.thread
 class DefaultLimb
 internal constructor(
     override val id: LimbId,
-    override val chain: ImmutableList<DhParam>,
+    override val links: ImmutableList<Link>,
     override val forwardKinematicsSolver: ForwardKinematicsSolver,
     override val inverseKinematicsSolver: InverseKinematicsSolver,
     override val motionPlanGenerator: LimbMotionPlanGenerator,
@@ -38,15 +39,15 @@ internal constructor(
 
     // Start the desired task space transform at the home position
     private var desiredTaskSpaceTransform = forwardKinematicsSolver.solveChain(
-        chain,
-        chain.map { 0.0 }.toImmutableList()
+        links,
+        links.map { 0.0 }.toImmutableList()
     )
 
     init {
-        require(chain.size == jointAngleControllers.size) {
+        require(links.size == jointAngleControllers.size) {
             """
             |Must have an equal number of DH chain elements and joint angle controllers.
-            |Chain size: ${chain.size}
+            |Chain size: ${links.size}
             |Controllers size: ${jointAngleControllers.size}
             """.trimMargin()
         }
@@ -61,7 +62,7 @@ internal constructor(
         // Generate and follow the plan on a new thread
         thread(isDaemon = true) {
             val plan = motionPlanGenerator.generatePlanForTaskSpaceTransform(
-                chain,
+                links,
                 getCurrentTaskSpaceTransform(),
                 taskSpaceTransform,
                 motionConstraints
@@ -74,7 +75,7 @@ internal constructor(
     override fun getDesiredTaskSpaceTransform() = desiredTaskSpaceTransform
 
     override fun getCurrentTaskSpaceTransform() =
-        forwardKinematicsSolver.solveChain(chain, getCurrentJointAngles())
+        forwardKinematicsSolver.solveChain(links, getCurrentJointAngles())
 
     override fun setDesiredJointAngle(
         jointIndex: Int,
@@ -89,7 +90,7 @@ internal constructor(
 
     override fun isTaskSpaceTransformReachable(taskSpaceTransform: FrameTransformation) =
         taskSpaceTransform.getTranslation().length() <
-            chain.toFrameTransformation().getTranslation().length()
+            links.map { it.dhParam }.toFrameTransformation().getTranslation().length()
 
     class Factory
     internal constructor(
@@ -128,9 +129,7 @@ internal constructor(
                         limbMotionPlanFollower.map { follower ->
                             DefaultLimb(
                                 id = limbData.id,
-                                chain = limbData.chain.map {
-                                    DhParam(it.d, it.theta, it.r, it.alpha)
-                                }.toImmutableList(),
+                                links = emptyImmutableList(),//limbData.links.toImmutableList(),
                                 forwardKinematicsSolver = fk,
                                 inverseKinematicsSolver = ik,
                                 motionPlanGenerator = generator,

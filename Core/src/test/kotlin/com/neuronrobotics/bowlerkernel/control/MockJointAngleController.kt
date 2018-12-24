@@ -18,7 +18,5 @@ internal class MockJointAngleController : JointAngleController {
         targets.add(angle)
     }
 
-    override fun getCurrentAngle(): Double {
-        return targets.lastOrNull() ?: 0.0
-    }
+    override fun getCurrentAngle() = targets.lastOrNull() ?: 0.0
 }

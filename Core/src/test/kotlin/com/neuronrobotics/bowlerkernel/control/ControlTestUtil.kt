@@ -5,8 +5,14 @@
  */
 package com.neuronrobotics.bowlerkernel.control
 
+import com.beust.klaxon.Klaxon
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.BasicMotionConstraints
+import org.junit.jupiter.api.Assertions.assertEquals
 
 internal fun createMotionConstraints(duration: Number) = BasicMotionConstraints(
     duration, 0, 0, 0
 )
+
+internal inline fun <reified T> Klaxon.testJsonConversion(input: T) {
+    assertEquals(input, parse<T>(toJsonString(input)))
+}

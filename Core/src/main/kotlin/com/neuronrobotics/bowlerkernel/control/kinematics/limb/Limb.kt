@@ -9,13 +9,13 @@ import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.control.closedloop.JointAngleController
 import com.neuronrobotics.bowlerkernel.control.kinematics.base.KinematicBase
 import com.neuronrobotics.bowlerkernel.control.kinematics.limb.limbid.LimbId
+import com.neuronrobotics.bowlerkernel.control.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.ForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.InverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.MotionConstraints
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlanGenerator
-import com.neuronrobotics.kinematicschef.dhparam.DhParam
 
 /**
  * A limb of a robot, mounted to a [KinematicBase].
@@ -28,9 +28,9 @@ interface Limb {
     val id: LimbId
 
     /**
-     * The DH chain that forms this limb.
+     * The links that form this limb.
      */
-    val chain: ImmutableList<DhParam>
+    val links: ImmutableList<Link>
 
     /**
      * The solver used for forward kinematics.
