@@ -5,6 +5,9 @@
  */
 package com.neuronrobotics.bowlerkernel.scripting
 
+/**
+ * The languages a [DefaultScript] can process.
+ */
 sealed class ScriptLanguage {
     object Groovy : ScriptLanguage()
 }

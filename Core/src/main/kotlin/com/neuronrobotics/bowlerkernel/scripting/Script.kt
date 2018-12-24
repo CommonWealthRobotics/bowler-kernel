@@ -17,7 +17,7 @@ import org.jlleitschuh.guice.key
 import org.jlleitschuh.guice.module
 
 /**
- * The script that is responsible for controlling the robot.
+ * A script with managed hardware access.
  */
 abstract class Script {
 
@@ -44,7 +44,8 @@ abstract class Script {
     protected abstract fun stopScript()
 
     /**
-     * Synchronously stops the script and unregisters all hardware it registered.
+     * Stops the script and unregisters all hardware it registered. Always call this after the
+     * script is done running.
      */
     fun stopAndCleanUp() {
         stopScript()

@@ -11,6 +11,9 @@ import com.google.common.collect.ImmutableSetMultimap
 import com.neuronrobotics.bowlerkernel.control.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
 
+/**
+ * A utility to keep track of what hardware is in use.
+ */
 internal interface HardwareRegistry {
 
     /**

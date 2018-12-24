@@ -17,7 +17,7 @@ import javax.inject.Inject
 
 /**
  * A proxy to keep track of all hardware registered through this class. Meant to be used to
- * unregister any hardware a control script might have registered.
+ * unregister any hardware a script might have registered.
  *
  * @param registry The [BaseHardwareRegistry] to proxy and delegate to.
  */
