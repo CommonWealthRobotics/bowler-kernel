@@ -9,7 +9,6 @@ import arrow.core.Either
 import arrow.core.Try
 import arrow.core.flatMap
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.gitfs.github.rest.routing.GitHubAPI
 import groovy.lang.Binding
 import groovy.lang.GroovyShell
 import kotlinx.coroutines.CoroutineScope
@@ -18,6 +17,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
+import org.kohsuke.github.GitHub
 
 /**
  * A meta-script which can compile and run any known [ScriptLanguage].
@@ -79,7 +79,7 @@ internal constructor(
     }
 
     class Factory(
-        private val gitHubAPI: GitHubAPI,
+        private val gitHub: GitHub,
         private val scriptLanguageParser: ScriptLanguageParser
     ) {
         /**
@@ -92,21 +92,12 @@ internal constructor(
         fun createScriptFromGist(
             gistId: String,
             filename: String
-        ): Either<String, DefaultScript> = runBlocking {
-            val file = gitHubAPI.getGist(gistId).map {
-                it.files.entries.first { it.key == filename }.value
-            }
-
-            val language = file.flatMap {
-                scriptLanguageParser.parse(it.language ?: "")
-            }
-
-            file.flatMap { ghFile ->
-                language.map { lang ->
-                    DefaultScript(lang, ghFile.content)
-                }
-            }
-        }
+        ): Either<String, DefaultScript> =
+            Try {
+                val file = gitHub.getGist(gistId).files.entries.first { it.key == filename }.value
+                val language = scriptLanguageParser.parse(file.language)
+                language.map { DefaultScript(it, file.content) }
+            }.toEither { it.localizedMessage }.flatMap { it }
 
         /**
          * Creates a [DefaultScript] from text.

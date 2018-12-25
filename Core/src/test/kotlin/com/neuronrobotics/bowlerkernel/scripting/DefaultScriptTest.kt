@@ -8,9 +8,6 @@ package com.neuronrobotics.bowlerkernel.scripting
 import arrow.core.flatMap
 import arrow.core.left
 import arrow.core.right
-import com.neuronrobotics.bowlerkernel.gitfs.github.rest.model.createMockGist
-import com.neuronrobotics.bowlerkernel.gitfs.github.rest.model.createMockGistFile
-import com.neuronrobotics.bowlerkernel.gitfs.github.rest.routing.GitHubAPI
 import com.neuronrobotics.bowlerkernel.util.emptyImmutableList
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
@@ -29,33 +26,6 @@ internal class DefaultScriptTest {
 
     @Test
     fun `test run script with a hello world script`() {
-        val gistId = "gistId"
-        val filename = "theFile.groovy"
-        val language = "groovy"
-        val scriptContent = """ return "Hello, World!" """
-        val mockGitHubAPI = mock<GitHubAPI> {
-            on { runBlocking { getGist(gistId) } } doReturn createMockGist(
-                gistId,
-                mapOf(createMockGistFile(filename, scriptContent))
-            ).right()
-        }
-
-        val mockScriptLanguageParser = mock<ScriptLanguageParser> {
-            on { parse(language) } doReturn ScriptLanguage.Groovy.right()
-        }
-
-        val script = DefaultScript.Factory(mockGitHubAPI, mockScriptLanguageParser)
-            .createScriptFromGist(gistId, filename)
-
-        val result = script.flatMap { it.runScript(emptyImmutableList()) }
-        assertAll(
-            { assertTrue(result.isRight()) },
-            { assertEquals("Hello, World!", result.fold({ null }, { it as? String })) }
-        )
-    }
-
-    @Test
-    fun `test run script with a script specified by text directly`() {
         val language = "groovy"
         val scriptContent = """ return "Hello, World!" """
 
@@ -63,10 +33,8 @@ internal class DefaultScriptTest {
             on { parse(language) } doReturn ScriptLanguage.Groovy.right()
         }
 
-        val script = DefaultScript.Factory(
-            mock {},
-            mockScriptLanguageParser
-        ).createScriptFromText(language, scriptContent)
+        val script = DefaultScript.Factory(mock {}, mockScriptLanguageParser)
+            .createScriptFromText(language, scriptContent)
 
         val result = script.flatMap { it.runScript(emptyImmutableList()) }
         assertAll(
@@ -77,23 +45,15 @@ internal class DefaultScriptTest {
 
     @Test
     fun `test run script with a parse error`() {
-        val gistId = "gistId"
-        val filename = "theFile.groovy"
         val language = "groovy"
         val scriptContent = """ return "Hello, World!" """
-        val mockGitHubAPI = mock<GitHubAPI> {
-            on { runBlocking { getGist(gistId) } } doReturn createMockGist(
-                gistId,
-                mapOf(createMockGistFile(filename, scriptContent))
-            ).right()
-        }
 
         val mockScriptLanguageParser = mock<ScriptLanguageParser> {
             on { parse(language) } doReturn "".left()
         }
 
-        val script = DefaultScript.Factory(mockGitHubAPI, mockScriptLanguageParser)
-            .createScriptFromGist(gistId, filename)
+        val script = DefaultScript.Factory(mock {}, mockScriptLanguageParser)
+            .createScriptFromText(language, scriptContent)
 
         val result = script.flatMap { it.runScript(emptyImmutableList()) }
         assertTrue(result.isLeft())
@@ -101,23 +61,15 @@ internal class DefaultScriptTest {
 
     @Test
     fun `test run script with a compile error`() {
-        val gistId = "gistId"
-        val filename = "theFile.groovy"
         val language = "groovy"
         val scriptContent = """ " """ // Single quote on purpose
-        val mockGitHubAPI = mock<GitHubAPI> {
-            on { runBlocking { getGist(gistId) } } doReturn createMockGist(
-                gistId,
-                mapOf(createMockGistFile(filename, scriptContent))
-            ).right()
-        }
 
         val mockScriptLanguageParser = mock<ScriptLanguageParser> {
             on { parse(language) } doReturn ScriptLanguage.Groovy.right()
         }
 
-        val script = DefaultScript.Factory(mockGitHubAPI, mockScriptLanguageParser)
-            .createScriptFromGist(gistId, filename)
+        val script = DefaultScript.Factory(mock {}, mockScriptLanguageParser)
+            .createScriptFromText(language, scriptContent)
 
         val result = script.flatMap { it.runScript(emptyImmutableList()) }
         assertTrue(result.isLeft())
@@ -125,8 +77,6 @@ internal class DefaultScriptTest {
 
     @Test
     fun `test interrupting a script`() {
-        val gistId = "gistId"
-        val filename = "theFile.groovy"
         val language = "groovy"
         val scriptContent = """
             |try {
@@ -136,19 +86,12 @@ internal class DefaultScriptTest {
             |}
             """.trimMargin()
 
-        val mockGitHubAPI = mock<GitHubAPI> {
-            on { runBlocking { getGist(gistId) } } doReturn createMockGist(
-                gistId,
-                mapOf(createMockGistFile(filename, scriptContent))
-            ).right()
-        }
-
         val mockScriptLanguageParser = mock<ScriptLanguageParser> {
             on { parse(language) } doReturn ScriptLanguage.Groovy.right()
         }
 
-        val script = DefaultScript.Factory(mockGitHubAPI, mockScriptLanguageParser)
-            .createScriptFromGist(gistId, filename)
+        val script = DefaultScript.Factory(mock {}, mockScriptLanguageParser)
+            .createScriptFromText(language, scriptContent)
 
         script.bimap(
             {
