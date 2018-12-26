@@ -14,6 +14,7 @@ import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourcei
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.unprovisioned.UnprovisionedLEDFactory
 import com.neuronrobotics.bowlerkernel.control.hardware.protocol.BowlerRPCProtocol
 import com.neuronrobotics.bowlerkernel.scripting.DefaultScript
+import com.neuronrobotics.bowlerkernel.scripting.DefaultScriptFactory
 import com.neuronrobotics.bowlerkernel.scripting.DefaultScriptLanguageParser
 import com.neuronrobotics.bowlerkernel.scripting.Script
 import com.neuronrobotics.bowlerkernel.util.emptyImmutableList
@@ -139,7 +140,7 @@ class ScriptIntegrationTest {
             return injector.getInstance(Test).worked
             """.trimIndent()
 
-        val script = DefaultScript.Factory(
+        val script = DefaultScriptFactory(
             mock {},
             DefaultScriptLanguageParser()
         ).createScriptFromText("groovy", scriptText).fold(

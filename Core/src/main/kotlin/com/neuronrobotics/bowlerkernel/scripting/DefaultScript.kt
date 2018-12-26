@@ -77,41 +77,4 @@ internal constructor(
     override fun stopScript() {
         scriptThread?.cancel()
     }
-
-    class Factory(
-        private val gitHub: GitHub,
-        private val scriptLanguageParser: ScriptLanguageParser
-    ) {
-        /**
-         * Creates a [DefaultScript] from a gist.
-         *
-         * @param gistId The gist id.
-         * @param filename The file name in the gist.
-         * @return A [DefaultScript] on success, a [String] on error.
-         */
-        fun createScriptFromGist(
-            gistId: String,
-            filename: String
-        ): Either<String, DefaultScript> =
-            Try {
-                val file = gitHub.getGist(gistId).files.entries.first { it.key == filename }.value
-                val language = scriptLanguageParser.parse(file.language)
-                language.map { DefaultScript(it, file.content) }
-            }.toEither { it.localizedMessage }.flatMap { it }
-
-        /**
-         * Creates a [DefaultScript] from text.
-         *
-         * @param language A string representing the script language.
-         * @param scriptText The text content of the script.
-         * @return A [DefaultScript] on success, a [String] on error.
-         */
-        fun createScriptFromText(
-            language: String,
-            scriptText: String
-        ): Either<String, DefaultScript> =
-            scriptLanguageParser.parse(language).map {
-                DefaultScript(it, scriptText)
-            }
-    }
 }
