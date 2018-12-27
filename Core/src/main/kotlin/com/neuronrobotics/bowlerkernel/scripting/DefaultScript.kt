@@ -7,7 +7,6 @@ package com.neuronrobotics.bowlerkernel.scripting
 
 import arrow.core.Either
 import arrow.core.Try
-import arrow.core.flatMap
 import com.google.common.collect.ImmutableList
 import groovy.lang.Binding
 import groovy.lang.GroovyShell
@@ -17,7 +16,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
-import org.kohsuke.github.GitHub
 
 /**
  * A meta-script which can compile and run any known [ScriptLanguage].
@@ -52,7 +50,8 @@ internal constructor(
                     "com.neuronrobotics.bowlerbuilder",
                     "com.neuronrobotics.bowlerbuilder.controller",
                     "com.neuronrobotics.bowlerbuilder.view.tab",
-                    "com.neuronrobotics.kinematicschef"
+                    "com.neuronrobotics.kinematicschef",
+                    "eu.mihosoft.vrl.v3d"
                 )
             )
         }

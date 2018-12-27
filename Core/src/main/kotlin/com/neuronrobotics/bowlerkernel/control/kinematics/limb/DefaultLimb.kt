@@ -18,8 +18,7 @@ import com.neuronrobotics.bowlerkernel.control.kinematics.motion.InverseKinemati
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.MotionConstraints
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlanGenerator
-import com.neuronrobotics.bowlerkernel.scripting.DefaultScript
-import com.neuronrobotics.bowlerkernel.scripting.DefaultScriptFactory
+import com.neuronrobotics.bowlerkernel.scripting.DefaultGistScriptFactory
 import com.neuronrobotics.bowlerkernel.util.emptyImmutableList
 import com.neuronrobotics.bowlerkernel.util.toImmutableList
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
@@ -95,7 +94,7 @@ internal constructor(
 
     class Factory
     internal constructor(
-        private val defaultScriptFactory: DefaultScriptFactory
+        private val defaultScriptFactory: DefaultGistScriptFactory
     ) : LimbFactory {
 
         override fun createLimb(limbData: LimbData) = createLimb(limbData, emptyImmutableList())

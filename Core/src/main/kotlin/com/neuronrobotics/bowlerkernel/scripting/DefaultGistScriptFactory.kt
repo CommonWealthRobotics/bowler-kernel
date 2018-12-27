@@ -8,12 +8,15 @@ package com.neuronrobotics.bowlerkernel.scripting
 import arrow.core.Either
 import arrow.core.Try
 import arrow.core.flatMap
+import com.google.inject.assistedinject.Assisted
 import org.kohsuke.github.GitHub
+import javax.inject.Inject
 
-class DefaultScriptFactory(
-    private val gitHub: GitHub,
+class DefaultGistScriptFactory
+@Inject internal constructor(
+    @Assisted private val gitHub: GitHub,
     private val scriptLanguageParser: ScriptLanguageParser
-) : ScriptFactory {
+) : GistScriptFactory {
 
     /**
      * Creates a [DefaultScript] from a gist.
@@ -32,18 +35,7 @@ class DefaultScriptFactory(
             language.map { DefaultScript(it, file.content) }
         }.toEither { it.localizedMessage }.flatMap { it }
 
-    /**
-     * Creates a [DefaultScript] from text.
-     *
-     * @param language A string representing the script language.
-     * @param scriptText The text content of the script.
-     * @return A [DefaultScript] on success, a [String] on error.
-     */
-    override fun createScriptFromText(
-        language: String,
-        scriptText: String
-    ): Either<String, DefaultScript> =
-        scriptLanguageParser.parse(language).map {
-            DefaultScript(it, scriptText)
-        }
+    interface Factory {
+        fun create(gitHub: GitHub): DefaultGistScriptFactory
+    }
 }

@@ -33,7 +33,7 @@ internal class DefaultScriptTest {
             on { parse(language) } doReturn ScriptLanguage.Groovy.right()
         }
 
-        val script = DefaultScriptFactory(mock {}, mockScriptLanguageParser)
+        val script = DefaultTextScriptFactory(mockScriptLanguageParser)
             .createScriptFromText(language, scriptContent)
 
         val result = script.flatMap { it.runScript(emptyImmutableList()) }
@@ -52,7 +52,7 @@ internal class DefaultScriptTest {
             on { parse(language) } doReturn "".left()
         }
 
-        val script = DefaultScriptFactory(mock {}, mockScriptLanguageParser)
+        val script = DefaultTextScriptFactory(mockScriptLanguageParser)
             .createScriptFromText(language, scriptContent)
 
         val result = script.flatMap { it.runScript(emptyImmutableList()) }
@@ -68,7 +68,7 @@ internal class DefaultScriptTest {
             on { parse(language) } doReturn ScriptLanguage.Groovy.right()
         }
 
-        val script = DefaultScriptFactory(mock {}, mockScriptLanguageParser)
+        val script = DefaultTextScriptFactory(mockScriptLanguageParser)
             .createScriptFromText(language, scriptContent)
 
         val result = script.flatMap { it.runScript(emptyImmutableList()) }
@@ -90,7 +90,7 @@ internal class DefaultScriptTest {
             on { parse(language) } doReturn ScriptLanguage.Groovy.right()
         }
 
-        val script = DefaultScriptFactory(mock {}, mockScriptLanguageParser)
+        val script = DefaultTextScriptFactory(mockScriptLanguageParser)
             .createScriptFromText(language, scriptContent)
 
         script.bimap(

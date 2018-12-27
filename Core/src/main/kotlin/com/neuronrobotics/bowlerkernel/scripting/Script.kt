@@ -5,8 +5,10 @@
  */
 package com.neuronrobotics.bowlerkernel.scripting
 
+import arrow.core.Either
 import com.google.common.collect.ImmutableList
 import com.google.inject.Injector
+import com.google.inject.Module
 import com.google.inject.Singleton
 import com.neuronrobotics.bowlerkernel.control.hardware.KernelHardwareModule
 import com.neuronrobotics.bowlerkernel.control.hardware.device.DeviceFactory
@@ -24,7 +26,7 @@ abstract class Script {
     /**
      * An [Injector] available for the script to use.
      */
-    protected val injector: Injector = KernelHardwareModule.injector.createChildInjector(
+    protected var injector: Injector = KernelHardwareModule.injector.createChildInjector(
         scriptModule(),
         DeviceFactory.deviceFactoryModule(),
         UnprovisionedDeviceResourceFactory.unprovisionedDeviceResourceFactoryModule()
@@ -36,7 +38,7 @@ abstract class Script {
      * @param args The arguments to the script.
      * @return The result of the script.
      */
-    abstract fun runScript(args: ImmutableList<Any?>): Any?
+    abstract fun runScript(args: ImmutableList<Any?>): Either<String, Any?>
 
     /**
      * Forces the script to stop. Do not call this directly. Call `stopAndCleanUp()`.
@@ -52,11 +54,29 @@ abstract class Script {
         injector.getInstance(key<HardwareRegistryTracker>()).unregisterAllHardware()
     }
 
+    /**
+     * Adds additional modules to the [injector].
+     *
+     * @param modules The modules to add.
+     */
+    fun addToInjector(modules: ImmutableList<Module>) {
+        injector = injector.createChildInjector(modules)
+    }
+
+    /**
+     * Adds additional modules to the [injector].
+     *
+     * @param modules The modules to add.
+     */
+    @SuppressWarnings("SpreadOperator")
+    fun addToInjector(vararg modules: Module) {
+        injector = injector.createChildInjector(*modules)
+    }
+
     companion object {
         private fun scriptModule() = module {
             bind<HardwareRegistryTracker>().`in`(Singleton::class.java)
             bind<HardwareRegistry>().to<HardwareRegistryTracker>().`in`(Singleton::class.java)
-            bind<ScriptLanguageParser>().to<DefaultScriptLanguageParser>()
             // TODO: Bind the GitHubAPI
         }
     }

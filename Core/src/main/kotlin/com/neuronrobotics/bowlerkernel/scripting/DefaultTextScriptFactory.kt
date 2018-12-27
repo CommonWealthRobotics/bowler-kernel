@@ -6,17 +6,12 @@
 package com.neuronrobotics.bowlerkernel.scripting
 
 import arrow.core.Either
+import javax.inject.Inject
 
-interface ScriptFactory {
-
-    /**
-     * Creates a [DefaultScript] from a gist.
-     *
-     * @param gistId The gist id.
-     * @param filename The file name in the gist.
-     * @return A [DefaultScript] on success, a [String] on error.
-     */
-    fun createScriptFromGist(gistId: String, filename: String): Either<String, DefaultScript>
+class DefaultTextScriptFactory
+@Inject internal constructor(
+    private val scriptLanguageParser: ScriptLanguageParser
+) : TextScriptFactory {
 
     /**
      * Creates a [DefaultScript] from text.
@@ -25,5 +20,11 @@ interface ScriptFactory {
      * @param scriptText The text content of the script.
      * @return A [DefaultScript] on success, a [String] on error.
      */
-    fun createScriptFromText(language: String, scriptText: String): Either<String, DefaultScript>
+    override fun createScriptFromText(
+        language: String,
+        scriptText: String
+    ): Either<String, DefaultScript> =
+        scriptLanguageParser.parse(language).map {
+            DefaultScript(it, scriptText)
+        }
 }

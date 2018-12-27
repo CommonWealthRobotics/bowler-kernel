@@ -3,8 +3,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package com.neuronrobotics.bowlerkernel.control.test
+package com.neuronrobotics.bowlerkernel.control
 
+import arrow.core.Either
 import arrow.core.getOrHandle
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.control.hardware.device.BowlerDeviceFactory
@@ -13,9 +14,8 @@ import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.provision
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.PinNumber
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.unprovisioned.UnprovisionedLEDFactory
 import com.neuronrobotics.bowlerkernel.control.hardware.protocol.BowlerRPCProtocol
-import com.neuronrobotics.bowlerkernel.scripting.DefaultScript
-import com.neuronrobotics.bowlerkernel.scripting.DefaultScriptFactory
 import com.neuronrobotics.bowlerkernel.scripting.DefaultScriptLanguageParser
+import com.neuronrobotics.bowlerkernel.scripting.DefaultTextScriptFactory
 import com.neuronrobotics.bowlerkernel.scripting.Script
 import com.neuronrobotics.bowlerkernel.util.emptyImmutableList
 import com.nhaarman.mockitokotlin2.mock
@@ -29,10 +29,10 @@ import javax.inject.Inject
 class ScriptIntegrationTest {
 
     @Suppress("NestedLambdaShadowedImplicitParameter")
-    private class TestClass
+    private data class TestClass
     @Inject constructor(
-        bowlerDeviceFactory: BowlerDeviceFactory,
-        unprovisionedLEDFactory: UnprovisionedLEDFactory.Factory
+        val bowlerDeviceFactory: BowlerDeviceFactory,
+        val unprovisionedLEDFactory: UnprovisionedLEDFactory.Factory
     ) {
         val led: LED
 
@@ -82,9 +82,9 @@ class ScriptIntegrationTest {
     @Test
     fun `provision LED integration test`() {
         val script = object : Script() {
-            override fun runScript(args: ImmutableList<Any?>): Any? {
+            override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
                 injector.getInstance(key<TestClass>())
-                return null
+                return Either.right(null)
             }
 
             override fun stopScript() {
@@ -140,8 +140,7 @@ class ScriptIntegrationTest {
             return injector.getInstance(Test).worked
             """.trimIndent()
 
-        val script = DefaultScriptFactory(
-            mock {},
+        val script = DefaultTextScriptFactory(
             DefaultScriptLanguageParser()
         ).createScriptFromText("groovy", scriptText).fold(
             {
