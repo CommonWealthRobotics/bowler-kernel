@@ -5,12 +5,16 @@
  */
 package com.neuronrobotics.bowlerkernel.control.hardware.registry
 
+import arrow.core.Either
 import arrow.core.Option
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.MultimapBuilder
 import com.google.common.collect.SetMultimap
+import com.neuronrobotics.bowlerkernel.control.hardware.device.Device
 import com.neuronrobotics.bowlerkernel.control.hardware.device.deviceid.DeviceId
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.DeviceResource
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.util.plus
 import com.neuronrobotics.bowlerkernel.util.toImmutableList
 import javax.inject.Inject
@@ -29,13 +33,13 @@ internal class HardwareRegistryTracker
     /**
      * The devices that have been registered through this proxy.
      */
-    internal val sessionRegisteredDevices: MutableSet<DeviceId> = mutableSetOf()
+    internal val sessionRegisteredDevices: MutableSet<Device> = mutableSetOf()
 
     /**
      * The device resources that have been registered through this proxy.
      */
     @Suppress("UnstableApiUsage")
-    internal val sessionRegisteredDeviceResources: SetMultimap<DeviceId, ResourceId> =
+    internal val sessionRegisteredDeviceResources: SetMultimap<Device, DeviceResource> =
         MultimapBuilder.hashKeys().hashSetValues().build()
 
     override val registeredDevices
@@ -44,47 +48,48 @@ internal class HardwareRegistryTracker
     override val registeredDeviceResources
         get() = registry.registeredDeviceResources
 
-    override fun registerDevice(deviceId: DeviceId): Option<RegisterError> {
-        val registerError = registry.registerDevice(deviceId)
-
-        if (registerError.isEmpty()) {
-            sessionRegisteredDevices.add(deviceId)
-        }
-
-        return registerError
-    }
-
-    override fun registerDeviceResource(
+    override fun <T : Device> registerDevice(
         deviceId: DeviceId,
-        resourceId: ResourceId
-    ): Option<RegisterError> {
-        val registerError = registry.registerDeviceResource(deviceId, resourceId)
+        makeDevice: (DeviceId) -> T
+    ): Either<RegisterError, T> {
+        val registerError = registry.registerDevice(deviceId, makeDevice)
 
-        if (registerError.isEmpty()) {
-            sessionRegisteredDeviceResources.put(deviceId, resourceId)
+        registerError.map {
+            sessionRegisteredDevices.add(it)
         }
 
         return registerError
     }
 
-    override fun unregisterDevice(deviceId: DeviceId): Option<UnregisterError> {
-        val unregisterError = registry.unregisterDevice(deviceId)
+    override fun <D : Device, T : UnprovisionedDeviceResource> registerDeviceResource(
+        device: D,
+        resourceId: ResourceId,
+        makeResource: (D, ResourceId) -> T
+    ): Either<RegisterError, T> {
+        val registerError = registry.registerDeviceResource(device, resourceId, makeResource)
+
+        registerError.map {
+            sessionRegisteredDeviceResources.put(device, it)
+        }
+
+        return registerError
+    }
+
+    override fun unregisterDevice(device: Device): Option<UnregisterError> {
+        val unregisterError = registry.unregisterDevice(device)
 
         if (unregisterError.isEmpty()) {
-            sessionRegisteredDevices.remove(deviceId)
+            sessionRegisteredDevices.remove(device)
         }
 
         return unregisterError
     }
 
-    override fun unregisterDeviceResource(
-        deviceId: DeviceId,
-        resourceId: ResourceId
-    ): Option<UnregisterError> {
-        val unregisterError = registry.unregisterDeviceResource(deviceId, resourceId)
+    override fun unregisterDeviceResource(resource: DeviceResource): Option<UnregisterError> {
+        val unregisterError = registry.unregisterDeviceResource(resource)
 
         if (unregisterError.isEmpty()) {
-            sessionRegisteredDeviceResources.remove(deviceId, resourceId)
+            sessionRegisteredDeviceResources.remove(resource.device, resource)
         }
 
         return unregisterError
@@ -98,7 +103,7 @@ internal class HardwareRegistryTracker
     internal fun unregisterAllHardware(): ImmutableList<UnregisterError> {
         val unregisterDeviceResourceErrors = sessionRegisteredDeviceResources.entries()
             .fold(emptyList<UnregisterError>()) { acc, elem ->
-                acc + registry.unregisterDeviceResource(elem.key, elem.value).fold(
+                acc + registry.unregisterDeviceResource(elem.value).fold(
                     { emptyList<UnregisterError>() },
                     { listOf(it) }
                 )

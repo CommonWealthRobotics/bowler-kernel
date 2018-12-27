@@ -11,8 +11,6 @@ import arrow.core.right
 import com.neuronrobotics.bowlerkernel.util.emptyImmutableList
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTimeout
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -105,7 +103,7 @@ internal class DefaultScriptTest {
             {
                 assertTimeout(Duration.ofSeconds(2)) {
                     thread { it.runScript(emptyImmutableList()) }
-                    runBlocking { delay(1000) }
+                    Thread.sleep(1000)
                     it.stopAndCleanUp()
                 }
             }

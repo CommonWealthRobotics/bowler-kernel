@@ -68,7 +68,10 @@ class UnprovisionedDeviceResourceFactoryTest {
             SimpleDeviceId(
                 deviceName
             )
-        )
+        ) {
+            device
+        }
+
         val resource = UnprovisionedDeviceResourceFactory(registry, device).makeResource()
 
         assertTrue(resource.isRight())
@@ -98,7 +101,10 @@ class UnprovisionedDeviceResourceFactoryTest {
             SimpleDeviceId(
                 deviceName
             )
-        )
+        ) {
+            device
+        }
+
         val resource = UnprovisionedDeviceResourceFactory(registry, device).makeResource()
 
         assertTrue(resource.isLeft())

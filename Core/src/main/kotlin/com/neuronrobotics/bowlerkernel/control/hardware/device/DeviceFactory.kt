@@ -21,13 +21,13 @@ class DeviceFactory
     private val registry: HardwareRegistry
 ) : BowlerDeviceFactory {
 
-    private fun registerDevice(deviceId: DeviceId) = registry.registerDevice(deviceId)
-
     override fun makeBowlerDevice(
         deviceId: DeviceId,
         bowlerRPCProtocol: BowlerRPCProtocol
     ): Either<RegisterError, BowlerDevice> =
-        registerDevice(deviceId).toEither { BowlerDevice(deviceId, bowlerRPCProtocol) }.swap()
+        registry.registerDevice(deviceId) {
+            BowlerDevice(it, bowlerRPCProtocol)
+        }
 
     companion object {
 

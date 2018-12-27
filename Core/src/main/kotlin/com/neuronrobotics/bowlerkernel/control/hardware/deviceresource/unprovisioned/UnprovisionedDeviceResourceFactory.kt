@@ -25,17 +25,16 @@ class UnprovisionedDeviceResourceFactory
     @Assisted private val device: BowlerDevice
 ) : UnprovisionedLEDFactory, UnprovisionedServoFactory {
 
-    private fun registerDeviceResource(resourceId: ResourceId) =
-        registry.registerDeviceResource(device.deviceId, resourceId)
-
-    private inline fun <T> makeUnprovisionedResource(
+    private inline fun <T : UnprovisionedDeviceResource> makeUnprovisionedResource(
         resourceId: ResourceId,
         errorMessageType: String,
-        crossinline rightSide: (ResourceId) -> T
+        crossinline rightSide: (BowlerDevice, ResourceId) -> T
     ):
         Either<RegisterError, T> {
         return if (device.isResourceInRange(resourceId)) {
-            registerDeviceResource(resourceId).toEither { rightSide(resourceId) }.swap()
+            registry.registerDeviceResource(device, resourceId) { device, resourceId ->
+                rightSide(device, resourceId)
+            }
         } else {
             Either.left(
                 """
@@ -47,13 +46,13 @@ class UnprovisionedDeviceResourceFactory
     }
 
     override fun makeUnprovisionedLED(pinNumber: PinNumber) =
-        makeUnprovisionedResource(pinNumber, "LED") {
-            UnprovisionedLED(device, it)
+        makeUnprovisionedResource(pinNumber, "LED") { device, resourceId ->
+            UnprovisionedLED(device, resourceId)
         }
 
     override fun makeUnprovisionedServo(pinNumber: PinNumber) =
-        makeUnprovisionedResource(pinNumber, "Servo") {
-            UnprovisionedServo(device, it)
+        makeUnprovisionedResource(pinNumber, "Servo") { device, resourceId ->
+            UnprovisionedServo(device, resourceId)
         }
 
     companion object {
