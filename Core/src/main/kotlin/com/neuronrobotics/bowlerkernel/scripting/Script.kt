@@ -46,8 +46,8 @@ abstract class Script {
     protected abstract fun stopScript()
 
     /**
-     * Stops the script and unregisters all hardware it registered. Always call this after the
-     * script is done running.
+     * Stops the script and unregisters/disconnects all hardware it registered. Always call this
+     * after the script is done running.
      */
     fun stopAndCleanUp() {
         stopScript()

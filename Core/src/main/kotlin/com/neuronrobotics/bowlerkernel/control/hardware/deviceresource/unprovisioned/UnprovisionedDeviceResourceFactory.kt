@@ -32,8 +32,8 @@ class UnprovisionedDeviceResourceFactory
     ):
         Either<RegisterError, T> {
         return if (device.isResourceInRange(resourceId)) {
-            registry.registerDeviceResource(device, resourceId) { device, resourceId ->
-                rightSide(device, resourceId)
+            registry.registerDeviceResource(device, resourceId) { device, resource ->
+                rightSide(device, resource)
             }
         } else {
             Either.left(
@@ -56,7 +56,6 @@ class UnprovisionedDeviceResourceFactory
         }
 
     companion object {
-
         internal fun unprovisionedDeviceResourceFactoryModule() = module {
             install(
                 FactoryModuleBuilder()

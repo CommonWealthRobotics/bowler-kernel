@@ -11,7 +11,7 @@ import com.google.inject.Singleton
 import com.neuronrobotics.bowlerkernel.control.hardware.registry.BaseHardwareRegistry
 import org.jlleitschuh.guice.module
 
-object KernelHardwareModule {
+internal object KernelHardwareModule {
     /**
      * This [Injector] is static because it maintains a global [BaseHardwareRegistry].
      */
