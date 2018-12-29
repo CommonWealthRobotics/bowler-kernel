@@ -48,6 +48,12 @@ dependencies {
     api(group = "io.arrow-kt", name = "arrow-recursion", version = arrow_version)
     api(group = "org.kohsuke", name = "github-api", version = "1.95")
 
+    implementation(
+        group = "org.eclipse.jgit",
+        name = "org.eclipse.jgit",
+        version = "5.2.0.201812061821-r"
+    )
+
     implementation(group = "com.google.inject", name = "guice", version = "4.1.0")
     implementation(
         group = "com.google.inject.extensions",
