@@ -8,6 +8,8 @@ package com.neuronrobotics.bowlerkernel.scripting
 import arrow.core.flatMap
 import arrow.core.left
 import arrow.core.right
+import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultTextScriptFactory
+import com.neuronrobotics.bowlerkernel.scripting.parser.ScriptLanguageParser
 import com.neuronrobotics.bowlerkernel.util.emptyImmutableList
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
@@ -31,7 +33,9 @@ internal class DefaultScriptTest {
             on { parse(language) } doReturn ScriptLanguage.Groovy.right()
         }
 
-        val script = DefaultTextScriptFactory(mockScriptLanguageParser)
+        val script = DefaultTextScriptFactory(
+            mockScriptLanguageParser
+        )
             .createScriptFromText(language, scriptContent)
 
         val result = script.flatMap { it.runScript(emptyImmutableList()) }
@@ -50,7 +54,9 @@ internal class DefaultScriptTest {
             on { parse(language) } doReturn "".left()
         }
 
-        val script = DefaultTextScriptFactory(mockScriptLanguageParser)
+        val script = DefaultTextScriptFactory(
+            mockScriptLanguageParser
+        )
             .createScriptFromText(language, scriptContent)
 
         val result = script.flatMap { it.runScript(emptyImmutableList()) }
@@ -66,7 +72,9 @@ internal class DefaultScriptTest {
             on { parse(language) } doReturn ScriptLanguage.Groovy.right()
         }
 
-        val script = DefaultTextScriptFactory(mockScriptLanguageParser)
+        val script = DefaultTextScriptFactory(
+            mockScriptLanguageParser
+        )
             .createScriptFromText(language, scriptContent)
 
         val result = script.flatMap { it.runScript(emptyImmutableList()) }
@@ -88,7 +96,9 @@ internal class DefaultScriptTest {
             on { parse(language) } doReturn ScriptLanguage.Groovy.right()
         }
 
-        val script = DefaultTextScriptFactory(mockScriptLanguageParser)
+        val script = DefaultTextScriptFactory(
+            mockScriptLanguageParser
+        )
             .createScriptFromText(language, scriptContent)
 
         script.bimap(

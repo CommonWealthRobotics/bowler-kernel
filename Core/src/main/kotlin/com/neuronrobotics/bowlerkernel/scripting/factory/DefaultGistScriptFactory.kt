@@ -3,12 +3,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package com.neuronrobotics.bowlerkernel.scripting
+package com.neuronrobotics.bowlerkernel.scripting.factory
 
 import arrow.core.Either
 import arrow.core.Try
 import arrow.core.flatMap
 import com.google.inject.assistedinject.Assisted
+import com.neuronrobotics.bowlerkernel.scripting.DefaultScript
+import com.neuronrobotics.bowlerkernel.scripting.parser.ScriptLanguageParser
 import org.kohsuke.github.GitHub
 import javax.inject.Inject
 
@@ -32,7 +34,12 @@ class DefaultGistScriptFactory
         Try {
             val file = gitHub.getGist(gistId).files.entries.first { it.key == filename }.value
             val language = scriptLanguageParser.parse(file.language)
-            language.map { DefaultScript(it, file.content) }
+            language.map {
+                DefaultScript(
+                    it,
+                    file.content
+                )
+            }
         }.toEither { it.localizedMessage }.flatMap { it }
 
     interface Factory {

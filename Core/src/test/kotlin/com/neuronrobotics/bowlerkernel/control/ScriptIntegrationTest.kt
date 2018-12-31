@@ -14,8 +14,8 @@ import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.provision
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.PinNumber
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.unprovisioned.UnprovisionedLEDFactory
 import com.neuronrobotics.bowlerkernel.control.hardware.protocol.BowlerRPCProtocol
-import com.neuronrobotics.bowlerkernel.scripting.DefaultScriptLanguageParser
-import com.neuronrobotics.bowlerkernel.scripting.DefaultTextScriptFactory
+import com.neuronrobotics.bowlerkernel.scripting.parser.DefaultScriptLanguageParser
+import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultTextScriptFactory
 import com.neuronrobotics.bowlerkernel.scripting.Script
 import com.neuronrobotics.bowlerkernel.util.emptyImmutableList
 import com.nhaarman.mockitokotlin2.mock
