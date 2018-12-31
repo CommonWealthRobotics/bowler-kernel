@@ -13,7 +13,7 @@ import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.provision
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.SimpleResourceId
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.fail
 
 internal class MockDevice(
     override val deviceId: DeviceId
@@ -49,7 +49,7 @@ internal fun HardwareRegistry.makeDeviceOrFail(id: String): MockDevice =
     registerDevice(SimpleDeviceId(id)) {
         MockDevice(it)
     }.fold(
-        { Assertions.fail<MockDevice> { it } },
+        { fail<MockDevice> { it } },
         { it }
     )
 
@@ -60,6 +60,6 @@ internal fun HardwareRegistry.makeDeviceResourceOrFail(
     registerDeviceResource(device, SimpleResourceId(id)) { device, resource ->
         MockUnprovisionedDeviceResource(device, resource)
     }.fold(
-        { Assertions.fail<MockUnprovisionedDeviceResource> { it } },
+        { fail<MockUnprovisionedDeviceResource> { it } },
         { it }
     )
