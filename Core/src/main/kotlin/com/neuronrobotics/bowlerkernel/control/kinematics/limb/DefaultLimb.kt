@@ -39,7 +39,6 @@ internal constructor(
 
     // Start the desired task space transform at the home position
     private var desiredTaskSpaceTransform = forwardKinematicsSolver.solveChain(
-        links,
         links.map { 0.0 }.toImmutableList()
     )
 
@@ -62,7 +61,6 @@ internal constructor(
         // Generate and follow the plan on a new thread
         thread(isDaemon = true) {
             val plan = motionPlanGenerator.generatePlanForTaskSpaceTransform(
-                links,
                 getCurrentTaskSpaceTransform(),
                 taskSpaceTransform,
                 motionConstraints
@@ -75,7 +73,7 @@ internal constructor(
     override fun getDesiredTaskSpaceTransform() = desiredTaskSpaceTransform
 
     override fun getCurrentTaskSpaceTransform() =
-        forwardKinematicsSolver.solveChain(links, getCurrentJointAngles())
+        forwardKinematicsSolver.solveChain(getCurrentJointAngles())
 
     override fun setDesiredJointAngle(
         jointIndex: Int,
@@ -143,8 +141,8 @@ internal constructor(
         }
 
         private inline fun <reified T> getInstanceFromGist(gistId: String, filename: String) =
-            defaultScriptFactory.createScriptFromGist(gistId, filename).flatMap {
-                it.runScript(emptyImmutableList()).map { it as T }
+            defaultScriptFactory.createScriptFromGist(gistId, filename).flatMap { script ->
+                script.runScript(emptyImmutableList()).map { it as T }
             }
     }
 }

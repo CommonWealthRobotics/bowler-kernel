@@ -5,6 +5,9 @@
  */
 package com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan
 
+import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.control.closedloop.JointAngleController
+
 /**
  * A motion plan follower which operates on a limb.
  */
@@ -16,4 +19,16 @@ interface LimbMotionPlanFollower {
      * @param plan The [LimbMotionPlan] to follow.
      */
     fun followPlan(plan: LimbMotionPlan)
+
+    interface Factory {
+
+        /**
+         * Creates a [LimbMotionPlanFollower].
+         *
+         * @param jointAngleControllers The joint angle controllers.
+         */
+        fun create(
+            jointAngleControllers: ImmutableList<JointAngleController>
+        ): LimbMotionPlanFollower
+    }
 }

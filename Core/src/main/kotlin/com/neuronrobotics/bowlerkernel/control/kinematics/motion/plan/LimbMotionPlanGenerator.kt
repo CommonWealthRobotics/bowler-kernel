@@ -18,15 +18,23 @@ interface LimbMotionPlanGenerator {
     /**
      * Generates a plan to reach a task space transform.
      *
-     * @param links The links to control.
      * @param currentTaskSpaceTransform The current task space transform.
      * @param targetTaskSpaceTransform The target task space transform.
      * @return A list of joint angles.
      */
     fun generatePlanForTaskSpaceTransform(
-        links: ImmutableList<Link>,
         currentTaskSpaceTransform: FrameTransformation,
         targetTaskSpaceTransform: FrameTransformation,
         motionConstraints: MotionConstraints
     ): LimbMotionPlan
+
+    interface Factory {
+
+        /**
+         * Creates a [LimbMotionPlanGenerator].
+         *
+         * @param links The links to control.
+         */
+        fun create(links: ImmutableList<Link>): LimbMotionPlanGenerator
+    }
 }

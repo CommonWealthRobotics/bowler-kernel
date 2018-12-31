@@ -45,7 +45,6 @@ internal class DefaultLimbIntegrationTest {
             links.map { it as Link }.toImmutableList(),
             object : ForwardKinematicsSolver {
                 override fun solveChain(
-                    links: ImmutableList<Link>,
                     currentJointAngles: ImmutableList<Double>
                 ): FrameTransformation {
                     return FrameTransformation.identity(4)
@@ -53,7 +52,6 @@ internal class DefaultLimbIntegrationTest {
             },
             object : InverseKinematicsSolver {
                 override fun solveChain(
-                    links: ImmutableList<Link>,
                     currentJointAngles: ImmutableList<Double>,
                     targetFrameTransform: FrameTransformation
                 ): ImmutableList<Double> {
@@ -62,7 +60,6 @@ internal class DefaultLimbIntegrationTest {
             },
             object : LimbMotionPlanGenerator {
                 override fun generatePlanForTaskSpaceTransform(
-                    links: ImmutableList<Link>,
                     currentTaskSpaceTransform: FrameTransformation,
                     targetTaskSpaceTransform: FrameTransformation,
                     motionConstraints: MotionConstraints

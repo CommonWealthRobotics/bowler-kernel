@@ -16,14 +16,22 @@ interface InverseKinematicsSolver {
     /**
      * Solve the system to produce new joint angles.
      *
-     * @param links The links to solve for.
      * @param currentJointAngles The current joint angles.
      * @param targetFrameTransform The target task space frame transformation for the chain.
      * @return New joint angles to reach the [targetFrameTransform].
      */
     fun solveChain(
-        links: ImmutableList<Link>,
         currentJointAngles: ImmutableList<Double>,
         targetFrameTransform: FrameTransformation
     ): ImmutableList<Double>
+
+    interface Factory {
+
+        /**
+         * Creates an [InverseKinematicsSolver].
+         *
+         * @param links The links to solve for.
+         */
+        fun create(links: ImmutableList<Link>): InverseKinematicsSolver
+    }
 }
