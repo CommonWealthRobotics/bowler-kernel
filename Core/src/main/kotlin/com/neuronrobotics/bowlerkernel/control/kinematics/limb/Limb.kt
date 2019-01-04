@@ -12,6 +12,7 @@ import com.neuronrobotics.bowlerkernel.control.kinematics.limb.limbid.LimbId
 import com.neuronrobotics.bowlerkernel.control.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.ForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.FrameTransformation
+import com.neuronrobotics.bowlerkernel.control.kinematics.motion.InertialState
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.InverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.MotionConstraints
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlanFollower
@@ -105,4 +106,19 @@ interface Limb {
      * @return Whether the [taskSpaceTransform] is reachable.
      */
     fun isTaskSpaceTransformReachable(taskSpaceTransform: FrameTransformation): Boolean
+
+    /**
+     * Returns the current [InertialState] for this limb.
+     *
+     * @return The current [InertialState].
+     */
+    fun getInertialState(): InertialState
+
+    /**
+     * Returns the current [InertialState] for the link at [linkIndex] in [links].
+     *
+     * @param linkIndex The index of the [Link] in [links].
+     * @return The current [InertialState].
+     */
+    fun getInertialState(linkIndex: Int): InertialState
 }
