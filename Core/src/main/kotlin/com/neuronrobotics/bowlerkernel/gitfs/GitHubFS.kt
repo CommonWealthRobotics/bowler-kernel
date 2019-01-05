@@ -7,10 +7,15 @@ package com.neuronrobotics.bowlerkernel.gitfs
 
 import arrow.core.Try
 import arrow.core.recoverWith
+import com.google.common.base.Throwables
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.util.BOWLERBUILDER_DIRECTORY
+import com.neuronrobotics.bowlerkernel.util.BOWLERKERNEL_DIRECTORY
+import com.neuronrobotics.bowlerkernel.util.BOWLER_DIRECTORY
+import com.neuronrobotics.bowlerkernel.util.GITHUB_CACHE_DIRECTORY
 import com.neuronrobotics.bowlerkernel.util.GIT_CACHE_DIRECTORY
+import com.neuronrobotics.bowlerkernel.util.LoggerUtilities
 import com.neuronrobotics.kinematicschef.util.toImmutableList
+import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.kohsuke.github.GHGist
@@ -18,6 +23,7 @@ import org.kohsuke.github.GHGistFile
 import org.kohsuke.github.GHObject
 import org.kohsuke.github.GitHub
 import java.io.File
+import java.io.IOException
 import java.nio.file.Paths
 
 /**
@@ -126,9 +132,9 @@ class GitHubFS(
 
             else -> throw IllegalArgumentException(
                 """
-                        |Invalid Git URL:
-                        |$gitUrl
-                        """.trimMargin()
+                |Invalid Git URL:
+                |$gitUrl
+                """.trimMargin()
             )
         }
     }
@@ -148,6 +154,27 @@ class GitHubFS(
                 gitHub.myself.listRepositories().first { repo ->
                     repo.gitTransportUrl == gitUrl
                 }.hasPushAccess()
+            }
+        }
+    }
+
+    override fun deleteCache() {
+        try {
+            FileUtils.deleteDirectory(
+                Paths.get(
+                    System.getProperty("user.home"),
+                    BOWLER_DIRECTORY,
+                    BOWLERKERNEL_DIRECTORY,
+                    GIT_CACHE_DIRECTORY,
+                    GITHUB_CACHE_DIRECTORY
+                ).toFile()
+            )
+        } catch (e: IOException) {
+            LOGGER.severe {
+                """
+                |Unable to delete the GitHub cache.
+                |${Throwables.getStackTraceAsString(e)}
+                """.trimMargin()
             }
         }
     }
@@ -190,6 +217,7 @@ class GitHubFS(
     }
 
     companion object {
+        private val LOGGER = LoggerUtilities.getLogger(GitHubFS::class.java.simpleName)
 
         /**
          * Maps a file in a gist to its file on disk. Fails if the file is not on disk.
@@ -226,9 +254,11 @@ class GitHubFS(
 
             return Paths.get(
                 System.getProperty("user.home"),
-                BOWLERBUILDER_DIRECTORY,
+                BOWLER_DIRECTORY,
+                BOWLERKERNEL_DIRECTORY,
                 GIT_CACHE_DIRECTORY,
-                *subDirs.toTypedArray()
+                GITHUB_CACHE_DIRECTORY,
+                * subDirs.toTypedArray()
             ).toFile()
         }
 

@@ -75,4 +75,9 @@ interface GitFS {
      * @param gitUrl
      */
     fun isOwner(gitUrl: String): Try<Boolean>
+
+    /**
+     * Clears the local Git cache.
+     */
+    fun deleteCache()
 }
