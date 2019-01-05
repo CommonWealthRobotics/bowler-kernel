@@ -31,7 +31,11 @@ internal class LimbDataTest {
                             0.0,
                             0.0
                         ),
-                        Limits(1.0, 0.0)
+                        Limits(1.0, 0.0),
+                        "a",
+                        "b",
+                        "c",
+                        "d"
                     )
                 ),
                 "a",
@@ -41,7 +45,10 @@ internal class LimbDataTest {
                 "e",
                 "f",
                 "g",
-                "h"
+                "h",
+                "i",
+                "j"
+
             )
         )
     }

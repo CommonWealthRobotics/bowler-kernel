@@ -5,9 +5,13 @@
  */
 package com.neuronrobotics.bowlerkernel.control.kinematics.limb.model
 
+import com.neuronrobotics.kinematicschef.dhparam.DhParam
+
 data class DhParamData(
     val d: Double,
     val theta: Double,
     val r: Double,
     val alpha: Double
-)
+) {
+    fun toDhParam() = DhParam(d, theta, r, alpha)
+}

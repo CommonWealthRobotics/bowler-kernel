@@ -13,6 +13,7 @@ import com.neuronrobotics.bowlerkernel.control.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.ForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.InertialState
+import com.neuronrobotics.bowlerkernel.control.kinematics.motion.InertialStateEstimator
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.InverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.MotionConstraints
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlanFollower
@@ -21,6 +22,7 @@ import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotion
 /**
  * A limb of a robot, mounted to a [KinematicBase].
  */
+@SuppressWarnings("ComplexInterface")
 interface Limb {
 
     /**
@@ -57,6 +59,11 @@ interface Limb {
      * The controllers for the joints.
      */
     val jointAngleControllers: ImmutableList<JointAngleController>
+
+    /**
+     * The [InertialStateEstimator].
+     */
+    val inertialStateEstimator: InertialStateEstimator
 
     /**
      * Sets a desired task space transform this limb should try to move to.
@@ -113,12 +120,4 @@ interface Limb {
      * @return The current [InertialState].
      */
     fun getInertialState(): InertialState
-
-    /**
-     * Returns the current [InertialState] for the link at [linkIndex] in [links].
-     *
-     * @param linkIndex The index of the [Link] in [links].
-     * @return The current [InertialState].
-     */
-    fun getInertialState(linkIndex: Int): InertialState
 }

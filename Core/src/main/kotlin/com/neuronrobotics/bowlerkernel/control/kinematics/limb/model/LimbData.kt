@@ -19,5 +19,7 @@ data class LimbData(
     val limbMotionPlanGeneratorGistId: String,
     val limbMotionPlanGeneratorFilename: String,
     val limbMotionPlanFollowerGistId: String,
-    val limbMotionPlanFollowerFilename: String
+    val limbMotionPlanFollowerFilename: String,
+    val inertialStateEstimatorGistId: String,
+    val inertialStateEstimatorFilename: String
 )

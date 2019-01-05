@@ -26,7 +26,11 @@ internal class LinkDataTest {
                     0.0,
                     0.0
                 ),
-                Limits(1.0, 0.0)
+                Limits(1.0, 0.0),
+                "a",
+                "b",
+                "c",
+                "d"
             )
         )
     }

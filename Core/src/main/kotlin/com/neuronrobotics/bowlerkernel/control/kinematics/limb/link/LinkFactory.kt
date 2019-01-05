@@ -9,9 +9,15 @@ import com.neuronrobotics.bowlerkernel.control.kinematics.motion.InertialStateEs
 import com.neuronrobotics.bowlerkernel.util.Limits
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 
-data class DefaultLink(
-    override val type: LinkType,
-    override val dhParam: DhParam,
-    override val jointLimits: Limits,
-    override val inertialStateEstimator: InertialStateEstimator
-) : Link
+interface LinkFactory {
+
+    /**
+     * Creates a [Link].
+     */
+    fun createLink(
+        type: LinkType,
+        dhParam: DhParam,
+        jointLimits: Limits,
+        inertialStateEstimator: InertialStateEstimator
+    ): Link
+}

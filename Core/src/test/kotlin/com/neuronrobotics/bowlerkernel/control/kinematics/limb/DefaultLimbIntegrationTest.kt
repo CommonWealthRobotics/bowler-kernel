@@ -24,6 +24,7 @@ import com.neuronrobotics.bowlerkernel.util.Limits
 import com.neuronrobotics.bowlerkernel.util.immutableListOf
 import com.neuronrobotics.bowlerkernel.util.toImmutableList
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
+import com.nhaarman.mockitokotlin2.mock
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -36,7 +37,7 @@ internal class DefaultLimbIntegrationTest {
     fun `test limb plan execution`() {
         val timestep = 100
         val links = immutableListOf(
-            DefaultLink(LinkType.Rotary, DhParam.zero, Limits(0.0, 0.0))
+            DefaultLink(LinkType.Rotary, DhParam.zero, Limits(0.0, 0.0), mock {})
         )
         val controller = MockJointAngleController()
 
@@ -79,7 +80,8 @@ internal class DefaultLimbIntegrationTest {
                 }
             },
             DefaultLimbMotionPlanFollower(immutableListOf(controller)),
-            immutableListOf(controller)
+            immutableListOf(controller),
+            mock {}
         )
 
         fun timeOnce(): Long {
