@@ -14,7 +14,6 @@ import com.neuronrobotics.bowlerkernel.control.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.control.kinematics.limb.link.LinkType
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.ForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.FrameTransformation
-import com.neuronrobotics.bowlerkernel.control.kinematics.motion.InverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.MotionConstraints
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.DefaultLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlan
@@ -51,14 +50,7 @@ internal class DefaultLimbIntegrationTest {
                     return FrameTransformation.identity(4)
                 }
             },
-            object : InverseKinematicsSolver {
-                override fun solveChain(
-                    currentJointAngles: ImmutableList<Double>,
-                    targetFrameTransform: FrameTransformation
-                ): ImmutableList<Double> {
-                    TODO("not implemented")
-                }
-            },
+            mock {},
             object : LimbMotionPlanGenerator {
                 override fun generatePlanForTaskSpaceTransform(
                     currentTaskSpaceTransform: FrameTransformation,

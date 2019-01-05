@@ -5,6 +5,8 @@
  */
 package com.neuronrobotics.bowlerkernel.control.kinematics.motion
 
+// TODO: Write an implementation of this which uses an IMU
+
 /**
  * Estimates the [InertialState] for something.
  */
