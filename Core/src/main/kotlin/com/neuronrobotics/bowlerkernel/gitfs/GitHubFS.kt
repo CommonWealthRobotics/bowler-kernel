@@ -198,9 +198,7 @@ class GitHubFS(
                     gitHub.getRepository(repoFullName).fork()
                 }
 
-                is GitHubRepo.Gist -> {
-                    gitHub.getGist(githubRepo.gistId).fork()
-                }
+                is GitHubRepo.Gist -> gitHub.getGist(githubRepo.gistId).fork()
             }
         }
     }

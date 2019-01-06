@@ -77,7 +77,6 @@ abstract class Script {
         private fun scriptModule() = module {
             bind<HardwareRegistryTracker>().`in`(Singleton::class.java)
             bind<HardwareRegistry>().to<HardwareRegistryTracker>().`in`(Singleton::class.java)
-            // TODO: Bind the GitHubAPI
         }
     }
 }
