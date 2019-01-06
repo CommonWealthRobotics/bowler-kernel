@@ -47,7 +47,7 @@ class GitHubFS(
                 // If true, the directories were created which means a new repository is
                 // being cloned
                 Try {
-                    Git.cloneRepository()
+                    val git = Git.cloneRepository()
                         .setURI(gitUrl)
                         .setBranch(branch)
                         .setDirectory(directory)
@@ -58,7 +58,10 @@ class GitHubFS(
                             )
                         )
                         .call()
-                        .close()
+
+                    git.submoduleInit().call()
+                    git.submoduleUpdate().call()
+                    git.close()
                 }.map {
                     directory
                 }
@@ -74,9 +77,9 @@ class GitHubFS(
             Try.raise(
                 IllegalArgumentException(
                     """
-                |Invalid git URL:
-                |$gitUrl
-                """.trimMargin()
+                    |Invalid git URL:
+                    |$gitUrl
+                    """.trimMargin()
                 )
             )
         }
