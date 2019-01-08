@@ -1,0 +1,63 @@
+package com.neuronrobotics.bowlerkernel.control.kinematics.base
+
+import com.beust.klaxon.Klaxon
+import com.neuronrobotics.bowlerkernel.control.kinematics.base.baseid.SimpleKinematicBaseId
+import com.neuronrobotics.bowlerkernel.control.kinematics.base.model.KinematicBaseData
+import com.neuronrobotics.bowlerkernel.control.kinematics.limb.limbid.SimpleLimbId
+import com.neuronrobotics.bowlerkernel.control.kinematics.limb.link.LinkType
+import com.neuronrobotics.bowlerkernel.control.kinematics.limb.model.DhParamData
+import com.neuronrobotics.bowlerkernel.control.kinematics.limb.model.LimbData
+import com.neuronrobotics.bowlerkernel.control.kinematics.limb.model.LinkData
+import com.neuronrobotics.bowlerkernel.control.kinematics.motion.FrameTransformation
+import com.neuronrobotics.bowlerkernel.control.testJsonConversion
+import com.neuronrobotics.bowlerkernel.util.Limits
+import org.junit.jupiter.api.Test
+
+internal class KinematicBaseDataTest {
+
+    @Test
+    fun `basic test`() {
+        Klaxon().testJsonConversion(
+            KinematicBaseData(
+                SimpleKinematicBaseId(""),
+                listOf(
+                    LimbData(
+                        SimpleLimbId("id"),
+                        listOf(
+                            LinkData(
+                                LinkType.Rotary,
+                                DhParamData(
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ),
+                                Limits(1.0, 0.0),
+                                "a",
+                                "b",
+                                "c",
+                                "d"
+                            )
+                        ),
+                        "a",
+                        "b",
+                        "c",
+                        "d",
+                        "e",
+                        "f",
+                        "g",
+                        "h",
+                        "i",
+                        "j"
+
+                    )
+                ),
+                listOf(
+                    FrameTransformation.identity()
+                ),
+                "b1",
+                "b2"
+            )
+        )
+    }
+}

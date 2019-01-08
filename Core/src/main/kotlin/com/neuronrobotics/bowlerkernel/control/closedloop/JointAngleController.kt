@@ -8,8 +8,7 @@ package com.neuronrobotics.bowlerkernel.control.closedloop
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.MotionConstraints
 
 /**
- * A temporary closed-loop joint angle controller.
- * //TODO: Turn this into a larger closed-loop controller API
+ * A closed-loop joint angle controller.
  */
 interface JointAngleController {
 

@@ -17,12 +17,14 @@ import com.neuronrobotics.bowlerkernel.control.kinematics.motion.InertialStateEs
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.InverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlanGenerator
-import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultGistScriptFactory
+import com.neuronrobotics.bowlerkernel.scripting.factory.GistScriptFactory
 import com.neuronrobotics.bowlerkernel.util.emptyImmutableList
 import com.neuronrobotics.bowlerkernel.util.toImmutableList
+import javax.inject.Inject
 
-class DefaultLimbFactory(
-    private val defaultScriptFactory: DefaultGistScriptFactory,
+class DefaultLimbFactory
+@Inject constructor(
+    private val scriptFactory: GistScriptFactory,
     private val linkFactory: LinkFactory
 ) : LimbFactory {
 
@@ -89,7 +91,7 @@ class DefaultLimbFactory(
     }
 
     private inline fun <reified T> getInstanceFromGist(gistId: String, filename: String) =
-        defaultScriptFactory.createScriptFromGist(gistId, filename).flatMap { script ->
+        scriptFactory.createScriptFromGist(gistId, filename).flatMap { script ->
             script.runScript(emptyImmutableList()).map { it as T }
         }
 }
