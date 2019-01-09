@@ -6,50 +6,14 @@
 package com.neuronrobotics.bowlerkernel.control.kinematics.limb
 
 import com.beust.klaxon.Klaxon
-import com.neuronrobotics.bowlerkernel.control.kinematics.limb.limbid.SimpleLimbId
-import com.neuronrobotics.bowlerkernel.control.kinematics.limb.link.LinkType
-import com.neuronrobotics.bowlerkernel.control.kinematics.limb.model.DhParamData
-import com.neuronrobotics.bowlerkernel.control.kinematics.limb.model.LimbData
-import com.neuronrobotics.bowlerkernel.control.kinematics.limb.model.LinkData
+import com.neuronrobotics.bowlerkernel.control.kinematics.createMockLimbData
 import com.neuronrobotics.bowlerkernel.control.testJsonConversion
-import com.neuronrobotics.bowlerkernel.util.Limits
 import org.junit.jupiter.api.Test
 
 internal class LimbDataTest {
 
     @Test
-    fun `basic test`() {
-        Klaxon().testJsonConversion(
-            LimbData(
-                SimpleLimbId("id"),
-                listOf(
-                    LinkData(
-                        LinkType.Rotary,
-                        DhParamData(
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0
-                        ),
-                        Limits(1.0, 0.0),
-                        "a",
-                        "b",
-                        "c",
-                        "d"
-                    )
-                ),
-                "a",
-                "b",
-                "c",
-                "d",
-                "e",
-                "f",
-                "g",
-                "h",
-                "i",
-                "j"
-
-            )
-        )
+    fun `test json conversion`() {
+        Klaxon().testJsonConversion(createMockLimbData())
     }
 }
