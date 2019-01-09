@@ -1,3 +1,8 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package com.neuronrobotics.bowlerkernel.control.kinematics.base
 
 import com.beust.klaxon.Klaxon
@@ -17,47 +22,49 @@ internal class KinematicBaseDataTest {
 
     @Test
     fun `basic test`() {
-        Klaxon().testJsonConversion(
-            KinematicBaseData(
-                SimpleKinematicBaseId(""),
-                listOf(
-                    LimbData(
-                        SimpleLimbId("id"),
-                        listOf(
-                            LinkData(
-                                LinkType.Rotary,
-                                DhParamData(
-                                    0.0,
-                                    0.0,
-                                    0.0,
-                                    0.0
-                                ),
-                                Limits(1.0, 0.0),
-                                "a",
-                                "b",
-                                "c",
-                                "d"
-                            )
-                        ),
-                        "a",
-                        "b",
-                        "c",
-                        "d",
-                        "e",
-                        "f",
-                        "g",
-                        "h",
-                        "i",
-                        "j"
+        Klaxon()
+            .converter(FrameTransformation.converter)
+            .testJsonConversion(
+                KinematicBaseData(
+                    SimpleKinematicBaseId(""),
+                    listOf(
+                        LimbData(
+                            SimpleLimbId("id"),
+                            listOf(
+                                LinkData(
+                                    LinkType.Rotary,
+                                    DhParamData(
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ),
+                                    Limits(1.0, 0.0),
+                                    "a",
+                                    "b",
+                                    "c",
+                                    "d"
+                                )
+                            ),
+                            "a",
+                            "b",
+                            "c",
+                            "d",
+                            "e",
+                            "f",
+                            "g",
+                            "h",
+                            "i",
+                            "j"
 
-                    )
-                ),
-                listOf(
-                    FrameTransformation.identity()
-                ),
-                "b1",
-                "b2"
+                        )
+                    ),
+                    listOf(
+                        FrameTransformation.identity()
+                    ),
+                    "b1",
+                    "b2"
+                )
             )
-        )
     }
 }

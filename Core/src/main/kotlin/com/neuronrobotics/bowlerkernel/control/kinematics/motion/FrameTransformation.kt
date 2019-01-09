@@ -5,6 +5,8 @@
  */
 package com.neuronrobotics.bowlerkernel.control.kinematics.motion
 
+import com.beust.klaxon.Converter
+import com.beust.klaxon.JsonValue
 import com.neuronrobotics.kinematicschef.util.getRotationMatrix
 import org.ejml.simple.SimpleMatrix
 import java.util.Arrays
@@ -12,9 +14,8 @@ import java.util.Arrays
 /**
  * An immutable frame transformation, internally back by a [SimpleMatrix].
  */
-data class FrameTransformation(
-    private val mat: SimpleMatrix
-) {
+class FrameTransformation
+private constructor(private val mat: SimpleMatrix) {
 
     private val data = DoubleArray(mat.numRows() * mat.numCols()) { mat[it] }
 
@@ -59,5 +60,31 @@ data class FrameTransformation(
                     }
                 }
             })
+
+        val converter = object : Converter {
+            override fun canConvert(cls: Class<*>): Boolean {
+                return cls == FrameTransformation::class.java
+            }
+
+            override fun toJson(value: Any): String {
+                value as FrameTransformation
+                return """
+                    |{
+                    |   "rows": ${value.mat.numRows()},
+                    |   "cols": ${value.mat.numCols()},
+                    |   "data": [${value.data.joinToString(",")}]
+                    |}
+                """.trimMargin()
+            }
+
+            override fun fromJson(jv: JsonValue): Any? {
+                return jv.obj!!.let {
+                    val rows = it.int("rows")!!
+                    val cols = it.int("cols")!!
+                    val data = it.array<Double>("data")!!.toDoubleArray()
+                    FrameTransformation(SimpleMatrix(rows, cols, true, data))
+                }
+            }
+        }
     }
 }
