@@ -34,7 +34,7 @@ internal constructor(
 
     override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> =
         when (language) {
-            //TODO: Kotlin scripting https://github.com/s1monw1/KtsRunner
+            // TODO: Kotlin scripting https://github.com/s1monw1/KtsRunner
             is ScriptLanguage.Groovy -> runBlocking {
                 handleGroovy(scriptText, args).toEither().mapLeft { it.localizedMessage }
             }
