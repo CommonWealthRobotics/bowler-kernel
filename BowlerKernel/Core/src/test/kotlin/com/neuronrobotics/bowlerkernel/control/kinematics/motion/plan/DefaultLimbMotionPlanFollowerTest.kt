@@ -12,6 +12,7 @@ import com.neuronrobotics.bowlerkernel.util.immutableListOf
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import kotlin.math.abs
@@ -23,6 +24,7 @@ internal class DefaultLimbMotionPlanFollowerTest {
     private val follower = DefaultLimbMotionPlanFollower(immutableListOf(controller))
 
     @Test
+    @Tag("performance")
     fun `test target timing`() {
         val timestep = 100
         val plan = LimbMotionPlan(
