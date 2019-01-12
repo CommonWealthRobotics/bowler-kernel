@@ -5,7 +5,7 @@ buildCache {
     }
 }
 
-rootProject.name = "Bowler"
+rootProject.name = "BowlerKernel"
 
 include(":BowlerKernel")
 include(":BowlerKernel:Core")

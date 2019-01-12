@@ -1,4 +1,4 @@
-import Bowler_gradle.Strings.spotlessLicenseHeaderDelimiter
+import BowlerKernel_gradle.Strings.spotlessLicenseHeaderDelimiter
 import com.github.spotbugs.SpotBugsTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
@@ -18,7 +18,7 @@ plugins {
 }
 
 allprojects {
-    version = "0.1.6"
+    version = "0.0.0"
     group = "com.neuronrobotics"
 }
 
