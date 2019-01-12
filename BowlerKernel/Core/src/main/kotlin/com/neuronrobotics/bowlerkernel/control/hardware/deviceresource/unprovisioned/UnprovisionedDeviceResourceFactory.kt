@@ -44,13 +44,13 @@ class UnprovisionedDeviceResourceFactory
         }
     }
 
-    override fun makeUnprovisionedLED(pinNumber: ResourceId) =
-        makeUnprovisionedResource(pinNumber, "LED") { device, resourceId ->
+    override fun makeUnprovisionedLED(resourceId: ResourceId) =
+        makeUnprovisionedResource(resourceId, "LED") { device, resourceId ->
             UnprovisionedLED(device, resourceId)
         }
 
-    override fun makeUnprovisionedServo(pinNumber: ResourceId) =
-        makeUnprovisionedResource(pinNumber, "Servo") { device, resourceId ->
+    override fun makeUnprovisionedServo(resourceId: ResourceId) =
+        makeUnprovisionedResource(resourceId, "Servo") { device, resourceId ->
             UnprovisionedServo(device, resourceId)
         }
 

@@ -15,10 +15,10 @@ interface UnprovisionedLEDFactory {
     /**
      * Makes an [UnprovisionedLED] attached to a device.
      *
-     * @param pinNumber The pin number the LED is attached to.
+     * @param resourceId The resource id.
      * @return An [UnprovisionedLED] on success, a [RegisterError] on failure.
      */
-    fun makeUnprovisionedLED(pinNumber: ResourceId): Either<RegisterError, UnprovisionedLED>
+    fun makeUnprovisionedLED(resourceId: ResourceId): Either<RegisterError, UnprovisionedLED>
 
     interface Factory {
 

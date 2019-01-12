@@ -15,10 +15,10 @@ interface UnprovisionedServoFactory {
     /**
      * Makes an [UnprovisionedServo] attached to a device.
      *
-     * @param pinNumber The pin number the servo is attached to.
+     * @param resourceId The resource id.
      * @return An [UnprovisionedServo] on success, a [RegisterError] on failure.
      */
-    fun makeUnprovisionedServo(pinNumber: ResourceId): Either<RegisterError, UnprovisionedServo>
+    fun makeUnprovisionedServo(resourceId: ResourceId): Either<RegisterError, UnprovisionedServo>
 
     interface Factory {
 

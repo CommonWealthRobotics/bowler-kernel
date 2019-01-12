@@ -26,6 +26,27 @@ class UnprovisionedDeviceResourceFactoryTest {
     private val registry = BaseHardwareRegistry()
 
     @Test
+    fun `test resource id out of range`() {
+        val deviceName = "A"
+        val resourceId = ResourceId(
+            DefaultResourceTypes.DigitalOut,
+            DefaultAttachmentPoints.Pin(0)
+        )
+
+        val device = mock<BowlerDevice> {
+            on {
+                isResourceInRange(resourceId)
+            } doReturn false
+        }
+
+        registry.registerDevice(SimpleDeviceId(deviceName)) { device }
+        val error = UnprovisionedDeviceResourceFactory(registry, device)
+            .makeUnprovisionedLED(resourceId)
+
+        assertTrue(error.isLeft())
+    }
+
+    @Test
     fun `make unprovisioned led`() {
         ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1)).let {
             testRegistry(it) { makeUnprovisionedLED(it) }
@@ -60,18 +81,10 @@ class UnprovisionedDeviceResourceFactoryTest {
 
             on {
                 deviceId
-            } doReturn SimpleDeviceId(
-                deviceName
-            )
+            } doReturn SimpleDeviceId(deviceName)
         }
 
-        registry.registerDevice(
-            SimpleDeviceId(
-                deviceName
-            )
-        ) {
-            device
-        }
+        registry.registerDevice(SimpleDeviceId(deviceName)) { device }
 
         val resource = UnprovisionedDeviceResourceFactory(registry, device).makeResource()
 
@@ -93,18 +106,10 @@ class UnprovisionedDeviceResourceFactoryTest {
 
             on {
                 deviceId
-            } doReturn SimpleDeviceId(
-                deviceName
-            )
+            } doReturn SimpleDeviceId(deviceName)
         }
 
-        registry.registerDevice(
-            SimpleDeviceId(
-                deviceName
-            )
-        ) {
-            device
-        }
+        registry.registerDevice(SimpleDeviceId(deviceName)) { device }
 
         val resource = UnprovisionedDeviceResourceFactory(registry, device).makeResource()
 
