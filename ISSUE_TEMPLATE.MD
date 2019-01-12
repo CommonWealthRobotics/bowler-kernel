@@ -14,7 +14,7 @@
 
 ### Version
 
-What version of BowlerBuilder are you on?
+What version of BowlerKernel are you on?
 
 ### Additional Information
 

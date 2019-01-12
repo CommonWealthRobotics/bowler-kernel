@@ -7,7 +7,6 @@ package com.neuronrobotics.bowlerkernel.util
 
 const val BOWLER_DIRECTORY = "Bowler"
 const val BOWLERKERNEL_DIRECTORY = "BowlerKernel"
-const val BOWLERBUILDER_DIRECTORY = "BowlerBuilder"
 const val GIT_CACHE_DIRECTORY = "git-cache"
 const val GITHUB_CACHE_DIRECTORY = "github-cache"
 const val PREFERENCES_DIRECTORY = "preferences"
