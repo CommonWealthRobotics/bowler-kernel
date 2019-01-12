@@ -11,7 +11,8 @@ import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.hasSize
 import com.neuronrobotics.bowlerkernel.control.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.control.hardware.device.deviceid.SimpleDeviceId
-import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.PinNumber
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.DefaultAttachmentPoints
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.control.hardware.registry.BaseHardwareRegistry
 import com.neuronrobotics.bowlerkernel.control.hardware.registry.RegisterError
@@ -26,14 +27,14 @@ class UnprovisionedDeviceResourceFactoryTest {
 
     @Test
     fun `make unprovisioned led`() {
-        PinNumber(1).let {
+        ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1)).let {
             testRegistry(it) { makeUnprovisionedLED(it) }
         }
     }
 
     @Test
     fun `make unprovisioned servo`() {
-        PinNumber(1).let {
+        ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1)).let {
             testRegistry(it) { makeUnprovisionedServo(it) }
         }
     }

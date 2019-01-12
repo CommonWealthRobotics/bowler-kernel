@@ -7,7 +7,7 @@ package com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.unprovis
 
 import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.control.hardware.device.BowlerDevice
-import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.PinNumber
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.control.hardware.registry.RegisterError
 
 interface UnprovisionedServoFactory {
@@ -18,7 +18,7 @@ interface UnprovisionedServoFactory {
      * @param pinNumber The pin number the servo is attached to.
      * @return An [UnprovisionedServo] on success, a [RegisterError] on failure.
      */
-    fun makeUnprovisionedServo(pinNumber: PinNumber): Either<RegisterError, UnprovisionedServo>
+    fun makeUnprovisionedServo(pinNumber: ResourceId): Either<RegisterError, UnprovisionedServo>
 
     interface Factory {
 

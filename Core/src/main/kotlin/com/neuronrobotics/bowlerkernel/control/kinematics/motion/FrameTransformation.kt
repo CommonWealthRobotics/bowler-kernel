@@ -62,9 +62,7 @@ private constructor(private val mat: SimpleMatrix) {
             })
 
         val converter = object : Converter {
-            override fun canConvert(cls: Class<*>): Boolean {
-                return cls == FrameTransformation::class.java
-            }
+            override fun canConvert(cls: Class<*>) = cls == FrameTransformation::class.java
 
             override fun toJson(value: Any): String {
                 value as FrameTransformation

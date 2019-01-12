@@ -19,7 +19,7 @@ interface DeviceResource {
     val device: Device
 
     /**
-     * The id of this resource. Typically a pin number.
+     * The id of this resource.
      */
     val resourceId: ResourceId
 }

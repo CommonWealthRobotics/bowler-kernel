@@ -9,7 +9,6 @@ import arrow.core.Either
 import com.google.inject.assistedinject.Assisted
 import com.google.inject.assistedinject.FactoryModuleBuilder
 import com.neuronrobotics.bowlerkernel.control.hardware.device.BowlerDevice
-import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.PinNumber
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.control.hardware.registry.HardwareRegistry
 import com.neuronrobotics.bowlerkernel.control.hardware.registry.RegisterError
@@ -45,12 +44,12 @@ class UnprovisionedDeviceResourceFactory
         }
     }
 
-    override fun makeUnprovisionedLED(pinNumber: PinNumber) =
+    override fun makeUnprovisionedLED(pinNumber: ResourceId) =
         makeUnprovisionedResource(pinNumber, "LED") { device, resourceId ->
             UnprovisionedLED(device, resourceId)
         }
 
-    override fun makeUnprovisionedServo(pinNumber: PinNumber) =
+    override fun makeUnprovisionedServo(pinNumber: ResourceId) =
         makeUnprovisionedResource(pinNumber, "Servo") { device, resourceId ->
             UnprovisionedServo(device, resourceId)
         }

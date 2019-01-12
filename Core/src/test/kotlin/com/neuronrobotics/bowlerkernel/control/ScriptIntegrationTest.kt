@@ -11,12 +11,14 @@ import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.control.hardware.device.BowlerDeviceFactory
 import com.neuronrobotics.bowlerkernel.control.hardware.device.deviceid.SimpleDeviceId
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.provisioned.LED
-import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.PinNumber
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.DefaultAttachmentPoints
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.DefaultResourceTypes
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.unprovisioned.UnprovisionedLEDFactory
 import com.neuronrobotics.bowlerkernel.control.hardware.protocol.BowlerRPCProtocol
-import com.neuronrobotics.bowlerkernel.scripting.parser.DefaultScriptLanguageParser
-import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultTextScriptFactory
 import com.neuronrobotics.bowlerkernel.scripting.Script
+import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultTextScriptFactory
+import com.neuronrobotics.bowlerkernel.scripting.parser.DefaultScriptLanguageParser
 import com.neuronrobotics.bowlerkernel.util.emptyImmutableList
 import com.nhaarman.mockitokotlin2.mock
 import org.jlleitschuh.guice.key
@@ -50,8 +52,9 @@ class ScriptIntegrationTest {
                         }
                     }
 
-            val unprovisionedLED =
-                unprovisionedLEDFactory.create(device).makeUnprovisionedLED(PinNumber(7))
+            val unprovisionedLED = unprovisionedLEDFactory.create(device).makeUnprovisionedLED(
+                ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(7))
+            )
 
             led = unprovisionedLED.fold(
                 {
@@ -101,7 +104,10 @@ class ScriptIntegrationTest {
             """
             import com.neuronrobotics.bowlerkernel.control.hardware.device.BowlerDeviceFactory
             import com.neuronrobotics.bowlerkernel.control.hardware.device.deviceid.SimpleDeviceId
-            import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.PinNumber
+            import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.DefaultAttachmentPoints
+            import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.DefaultResourceTypes
+            import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
+            import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceType
             import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.unprovisioned.UnprovisionedLEDFactory
             import com.neuronrobotics.bowlerkernel.control.hardware.protocol.BowlerRPCProtocol
 
@@ -128,7 +134,12 @@ class ScriptIntegrationTest {
                                 }
                             }
                     ).map {
-                        ledFactoryFactory.create(it).makeUnprovisionedLED(new PinNumber(1)).map {
+                        ledFactoryFactory.create(it).makeUnprovisionedLED(
+                                new ResourceId(
+                                        DefaultResourceTypes.DigitalOut as ResourceType,
+                                        new DefaultAttachmentPoints.Pin(1 as byte)
+                                )
+                        ).map {
                             it.provision().map {
                                 worked = true
                             }

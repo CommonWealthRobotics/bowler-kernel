@@ -5,8 +5,15 @@
  */
 package com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid
 
-data class SimpleResourceId(
-    val id: String
-) : ResourceId {
-    override fun toString() = id
+/**
+ * An attachment point encoded as a [Byte], i.e. a pin number, etc.
+ */
+interface AttachmentPoint {
+
+    val type: Byte
+
+    /**
+     * An extra byte for data about the attachment point.
+     */
+    val data: Byte
 }

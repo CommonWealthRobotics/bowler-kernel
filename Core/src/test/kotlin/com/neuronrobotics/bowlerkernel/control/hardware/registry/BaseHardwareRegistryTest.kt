@@ -8,8 +8,9 @@ package com.neuronrobotics.bowlerkernel.control.hardware.registry
 import com.neuronrobotics.bowlerkernel.control.hardware.device.Device
 import com.neuronrobotics.bowlerkernel.control.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.control.hardware.device.deviceid.SimpleDeviceId
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.DefaultAttachmentPoints
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
-import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.SimpleResourceId
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -94,7 +95,7 @@ class BaseHardwareRegistryTest {
     @Test
     fun `unregister device with resources`() {
         val device = registry.makeDeviceOrFail("A")
-        registry.makeDeviceResourceOrFail(device, "B")
+        registry.makeDeviceResourceOrFail(device, 0)
 
         val unregisterError = registry.unregisterDevice(device)
 
@@ -108,7 +109,7 @@ class BaseHardwareRegistryTest {
         val registerError =
             registry.registerDeviceResource(
                 device,
-                SimpleResourceId("B")
+                ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1))
             ) { device, resource ->
                 MockUnprovisionedDeviceResource(device, resource)
             }
@@ -119,14 +120,12 @@ class BaseHardwareRegistryTest {
     @Test
     fun `register device resource twice`() {
         val device = registry.makeDeviceOrFail("A")
-        registry.makeDeviceResourceOrFail(device, "B")
+        registry.makeDeviceResourceOrFail(device, 0)
 
         val secondRegisterError =
             registry.registerDeviceResource(
                 device,
-                SimpleResourceId(
-                    "B"
-                )
+                ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(0))
             ) { device, resource ->
                 MockUnprovisionedDeviceResource(device, resource)
             }
@@ -139,9 +138,7 @@ class BaseHardwareRegistryTest {
         val registerError =
             registry.registerDeviceResource(
                 MockDevice(SimpleDeviceId("A")),
-                SimpleResourceId(
-                    "B"
-                )
+                ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1))
             ) { _, _ ->
                 mock<UnprovisionedDeviceResource> {}
             }
@@ -152,7 +149,7 @@ class BaseHardwareRegistryTest {
     @Test
     fun `unregister device resource`() {
         val device = registry.makeDeviceOrFail("A")
-        val resource = registry.makeDeviceResourceOrFail(device, "A")
+        val resource = registry.makeDeviceResourceOrFail(device, 0)
 
         val unregisterError = registry.unregisterDeviceResource(resource)
 
@@ -162,7 +159,7 @@ class BaseHardwareRegistryTest {
     @Test
     fun `unregister device resource twice`() {
         val device = registry.makeDeviceOrFail("A")
-        val resource = registry.makeDeviceResourceOrFail(device, "B")
+        val resource = registry.makeDeviceResourceOrFail(device, 0)
 
         val unregisterError = registry.unregisterDeviceResource(resource)
         val secondUnregisterError = registry.unregisterDeviceResource(resource)
@@ -176,7 +173,7 @@ class BaseHardwareRegistryTest {
         val unregisterError = registry.unregisterDeviceResource(
             MockUnprovisionedDeviceResource(
                 MockDevice(SimpleDeviceId("A")),
-                SimpleResourceId("B")
+                ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1))
             )
         )
 

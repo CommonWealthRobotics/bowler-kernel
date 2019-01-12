@@ -7,11 +7,11 @@ package com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resource
 
 /**
  * The id of a resource attached (physically) to a device.
+ *
+ * @param resourceType The type of this resource.
+ * @param attachmentPoint Where this resource is attached.
  */
-interface ResourceId {
-
-    /**
-     * The value of this device id as a string.
-     */
-    override fun toString(): String
-}
+data class ResourceId(
+    val resourceType: ResourceType,
+    val attachmentPoint: AttachmentPoint
+)

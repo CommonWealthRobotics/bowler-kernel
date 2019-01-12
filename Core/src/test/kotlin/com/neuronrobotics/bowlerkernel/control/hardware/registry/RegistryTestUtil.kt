@@ -10,8 +10,9 @@ import com.neuronrobotics.bowlerkernel.control.hardware.device.Device
 import com.neuronrobotics.bowlerkernel.control.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.control.hardware.device.deviceid.SimpleDeviceId
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.provisioned.ProvisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.DefaultAttachmentPoints
+import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.ResourceId
-import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourceid.SimpleResourceId
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
 import org.junit.jupiter.api.Assertions.fail
 
@@ -55,9 +56,12 @@ internal fun HardwareRegistry.makeDeviceOrFail(id: String): MockDevice =
 
 internal fun HardwareRegistry.makeDeviceResourceOrFail(
     device: Device,
-    id: String
+    attachmentPoint: Byte
 ): MockUnprovisionedDeviceResource =
-    registerDeviceResource(device, SimpleResourceId(id)) { device, resource ->
+    registerDeviceResource(
+        device,
+        ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(attachmentPoint))
+    ) { device, resource ->
         MockUnprovisionedDeviceResource(device, resource)
     }.fold(
         { fail<MockUnprovisionedDeviceResource> { it } },

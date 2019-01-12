@@ -16,6 +16,7 @@ import com.neuronrobotics.bowlerkernel.control.kinematics.motion.FrameTransforma
 import com.neuronrobotics.bowlerkernel.util.Limits
 import com.neuronrobotics.bowlerkernel.util.immutableListOf
 
+@SuppressWarnings("LongParameterList")
 fun createMockLinkData(
     type: LinkType = LinkType.Rotary,
     dhParamData: DhParamData = DhParamData(0.0, 0.0, 0.0, 0.0),
@@ -34,6 +35,7 @@ fun createMockLinkData(
     inertialStateEstimatorFilename
 )
 
+@SuppressWarnings("LongParameterList")
 fun createMockLimbData(
     id: SimpleLimbId = SimpleLimbId("limbId"),
     links: List<LinkData> = immutableListOf(createMockLinkData()),
@@ -62,6 +64,7 @@ fun createMockLimbData(
     inertialStateEstimatorFilename
 )
 
+@SuppressWarnings("LongParameterList")
 fun createMockKinematicBaseData(
     id: SimpleKinematicBaseId = SimpleKinematicBaseId("kinBaseId"),
     limbs: List<LimbData> = immutableListOf(createMockLimbData()),
