@@ -6,4 +6,3 @@
 [![codecov](https://codecov.io/gh/CommonWealthRobotics/BowlerKernel/branch/master/graph/badge.svg)](https://codecov.io/gh/CommonWealthRobotics/BowlerKernel)
 [![Maintainability](https://api.codeclimate.com/v1/badges/b1fd645b72cd625f9cc6/maintainability)](https://codeclimate.com/github/CommonWealthRobotics/BowlerKernel/maintainability)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
-[![BADGINATOR](https://badginator.herokuapp.com/CommonWealthRobotics/BowlerKernel.svg)](https://github.com/defunctzombie/badginator)
