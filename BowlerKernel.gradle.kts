@@ -18,13 +18,13 @@ plugins {
     id("com.github.spotbugs") version "1.6.4"
     id("io.gitlab.arturbosch.detekt") version "1.0.0-RC12"
     `maven-publish`
-    id("com.jfrog.bintray") version "1.8.4"
+    id("com.jfrog.bintray") version "1.8.3"
     `java-library`
 }
 
 object Versions {
     const val ktlintVersion = "0.29.0"
-    const val bowlerKernelVersion = "0.0.0"
+    const val bowlerKernelVersion = "0.0.1"
 }
 
 allprojects {
