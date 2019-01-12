@@ -24,11 +24,11 @@ plugins {
 
 object Versions {
     const val ktlintVersion = "0.29.0"
-    const val bowlerKernelVersion = "0.0.15"
+    const val bowlerKernelVersion = "0.0.0"
 }
 
 allprojects {
-    version = "0.0.0"
+    version = bowlerKernelVersion
     group = "com.neuronrobotics"
 }
 
