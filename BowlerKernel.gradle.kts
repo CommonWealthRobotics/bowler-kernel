@@ -30,8 +30,7 @@ val kotlinProjects = setOf(
     bowlerKernelCoreProject
 )
 
-val javaProjects = setOf<Project>(
-) + kotlinProjects
+val javaProjects = setOf<Project>() + kotlinProjects
 
 object Versions {
     const val ktlintVersion = "0.29.0"
