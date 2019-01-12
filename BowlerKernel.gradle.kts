@@ -36,14 +36,14 @@ val bowlerKernelProject = project(":BowlerKernel")
 val bowlerKernelCoreProject = project(":BowlerKernel:Core")
 
 val kotlinProjects = setOf(
-        bowlerKernelProject,
-        bowlerKernelCoreProject
+    bowlerKernelProject,
+    bowlerKernelCoreProject
 )
 
 val javaProjects = setOf<Project>() + kotlinProjects
 
 val publishedProjects = setOf(
-        bowlerKernelCoreProject
+    bowlerKernelCoreProject
 )
 
 object Versions {
@@ -124,10 +124,10 @@ configure(javaProjects) {
 
     dependencies {
         fun junitJupiter(name: String, version: String = "5.2.0") =
-                create(group = "org.junit.jupiter", name = name, version = version)
+            create(group = "org.junit.jupiter", name = name, version = version)
 
         fun testFx(name: String, version: String = "4.0.+") =
-                create(group = "org.testfx", name = name, version = version)
+            create(group = "org.testfx", name = name, version = version)
 
         "testCompile"(junitJupiter(name = "junit-jupiter-api"))
         "testCompile"(junitJupiter(name = "junit-jupiter-engine"))
@@ -136,9 +136,9 @@ configure(javaProjects) {
         "testCompile"(testFx(name = "testfx-junit5", version = "4.0.6-alpha"))
 
         "testRuntime"(
-                group = "org.junit.platform",
-                name = "junit-platform-launcher",
-                version = "1.0.0"
+            group = "org.junit.platform",
+            name = "junit-platform-launcher",
+            version = "1.0.0"
         )
         "testRuntime"(testFx(name = "openjfx-monocle", version = "8u76-b04"))
     }
@@ -178,20 +178,20 @@ configure(javaProjects) {
 
         if (project.hasProperty("jenkinsBuild") || project.hasProperty("headless")) {
             jvmArgs = listOf(
-                    "-Djava.awt.headless=true",
-                    "-Dtestfx.robot=glass",
-                    "-Dtestfx.headless=true",
-                    "-Dprism.order=sw",
-                    "-Dprism.text=t2k"
+                "-Djava.awt.headless=true",
+                "-Dtestfx.robot=glass",
+                "-Dtestfx.headless=true",
+                "-Dprism.order=sw",
+                "-Dprism.text=t2k"
             )
         }
 
         testLogging {
             events(
-                    TestLogEvent.FAILED,
-                    TestLogEvent.PASSED,
-                    TestLogEvent.SKIPPED,
-                    TestLogEvent.STARTED
+                TestLogEvent.FAILED,
+                TestLogEvent.PASSED,
+                TestLogEvent.SKIPPED,
+                TestLogEvent.STARTED
             )
             displayGranularity = 0
             showExceptions = true
@@ -219,8 +219,8 @@ configure(javaProjects) {
             indentWithSpaces(2)
             endWithNewline()
             licenseHeaderFile(
-                    "${rootProject.rootDir}/config/spotless/bowler.license",
-                    spotlessLicenseHeaderDelimiter
+                "${rootProject.rootDir}/config/spotless/bowler.license",
+                spotlessLicenseHeaderDelimiter
             )
         }
     }
@@ -268,9 +268,9 @@ configure(kotlinProjects) {
         "compile"(kotlin("stdlib-jdk8", kotlinVersion))
         "compile"(kotlin("reflect", kotlinVersion))
         "compile"(
-                group = "org.jetbrains.kotlinx",
-                name = "kotlinx-coroutines-core",
-                version = "1.0.0"
+            group = "org.jetbrains.kotlinx",
+            name = "kotlinx-coroutines-core",
+            version = "1.0.0"
         )
 
         "testCompile"(kotlin("test", kotlinVersion))
@@ -295,15 +295,15 @@ configure(kotlinProjects) {
             configurations {
                 "apiElements" {
                     outgoing
-                            .variants
-                            .getByName("classes")
-                            .artifact(
-                                    mapOf(
-                                            "file" to compileKotlin.destinationDir,
-                                            "type" to "java-classes-directory",
-                                            "builtBy" to compileKotlin
-                                    )
+                        .variants
+                        .getByName("classes")
+                        .artifact(
+                            mapOf(
+                                "file" to compileKotlin.destinationDir,
+                                "type" to "java-classes-directory",
+                                "builtBy" to compileKotlin
                             )
+                        )
                 }
             }
         }
@@ -316,8 +316,8 @@ configure(kotlinProjects) {
             indentWithSpaces(2)
             endWithNewline()
             licenseHeaderFile(
-                    "${rootProject.rootDir}/config/spotless/bowler.license",
-                    spotlessLicenseHeaderDelimiter
+                "${rootProject.rootDir}/config/spotless/bowler.license",
+                spotlessLicenseHeaderDelimiter
             )
         }
     }
@@ -325,8 +325,8 @@ configure(kotlinProjects) {
     detekt {
         toolVersion = "1.0.0-RC12"
         input = files(
-                "src/main/kotlin",
-                "src/test/kotlin"
+            "src/main/kotlin",
+            "src/test/kotlin"
         )
         parallel = true
         config = files("${rootProject.rootDir}/config/detekt/config.yml")
@@ -338,16 +338,16 @@ configure(javaProjects + kotlinProjects) {
         dependsOn("processResources")
         doLast {
             val propFileDir = Paths.get(
-                    buildDir.path,
-                    "resources",
-                    "main"
+                buildDir.path,
+                "resources",
+                "main"
             ).toFile().apply {
                 mkdirs()
             }
 
             val propFile = Paths.get(
-                    propFileDir.path,
-                    "version.properties"
+                propFileDir.path,
+                "version.properties"
             ).toFile()
 
             val prop = Properties()
@@ -439,19 +439,19 @@ tasks.wrapper {
  * Configures the [publishing][org.gradle.api.publish.PublishingExtension] project extension.
  */
 fun Project.`publishing`(configure: org.gradle.api.publish.PublishingExtension.() -> Unit) =
-        extensions.configure("publishing", configure)
+    extensions.configure("publishing", configure)
 
 /**
  * Configures the [checkstyle][org.gradle.api.plugins.quality.CheckstyleExtension] project extension.
  */
 fun Project.`checkstyle`(configure: org.gradle.api.plugins.quality.CheckstyleExtension.() -> Unit) =
-        extensions.configure("checkstyle", configure)
+    extensions.configure("checkstyle", configure)
 
 /**
  * Configures the [findbugs][org.gradle.api.plugins.quality.FindBugsExtension] project extension.
  */
 fun Project.`findbugs`(configure: org.gradle.api.plugins.quality.FindBugsExtension.() -> Unit) =
-        extensions.configure("findbugs", configure)
+    extensions.configure("findbugs", configure)
 
 /**
  * Retrieves the [java][org.gradle.api.plugins.JavaPluginConvention] project convention.
@@ -463,10 +463,10 @@ val Project.`java`: org.gradle.api.plugins.JavaPluginConvention
  * Configures the [kotlin][org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension] project extension.
  */
 fun Project.`kotlin`(configure: org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension.() -> Unit): Unit =
-        extensions.configure("kotlin", configure)
+    extensions.configure("kotlin", configure)
 
 /**
  * Configures the [detekt][io.gitlab.arturbosch.detekt.extensions.DetektExtension] extension.
  */
 fun org.gradle.api.Project.`detekt`(configure: io.gitlab.arturbosch.detekt.extensions.DetektExtension.() -> Unit): Unit =
-        (this as org.gradle.api.plugins.ExtensionAware).extensions.configure("detekt", configure)
+    (this as org.gradle.api.plugins.ExtensionAware).extensions.configure("detekt", configure)

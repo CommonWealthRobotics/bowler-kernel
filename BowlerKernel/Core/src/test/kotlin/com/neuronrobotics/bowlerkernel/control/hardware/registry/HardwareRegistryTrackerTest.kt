@@ -184,4 +184,21 @@ class HardwareRegistryTrackerTest {
             { assertThat(registry.sessionRegisteredDeviceResources.entries(), hasSize(equalTo(0))) }
         )
     }
+
+    @Test
+    fun `unregister all devices and resources with errors`() {
+        val device = registry.makeDeviceOrFail("A")
+        val resource = registry.makeDeviceResourceOrFail(device, 0)
+
+        baseRegistry.unregisterDeviceResource(resource)
+        baseRegistry.unregisterDevice(device)
+
+        val unregisterErrors = registry.unregisterAllHardware()
+
+        assertAll(
+            { assertThat(unregisterErrors, hasSize(equalTo(2))) },
+            { assertThat(registry.sessionRegisteredDevices, hasSize(equalTo(1))) },
+            { assertThat(registry.sessionRegisteredDeviceResources.entries(), hasSize(equalTo(1))) }
+        )
+    }
 }

@@ -101,26 +101,46 @@ internal class HardwareRegistryTracker
      * @return A list of all the errors encountered.
      */
     internal fun unregisterAllHardware(): ImmutableList<UnregisterError> {
-        val unregisterDeviceResourceErrors = sessionRegisteredDeviceResources.entries()
-            .fold(emptyList<UnregisterError>()) { acc, elem ->
-                acc + registry.unregisterDeviceResource(elem.value).fold(
-                    { emptyList<UnregisterError>() },
-                    { listOf(it) }
+        val unregisterDeviceResourceErrors = sessionRegisteredDeviceResources.entries().fold(
+            mapOf<Option<UnregisterError>, Map.Entry<Device, DeviceResource>?>(
+                Option.empty<UnregisterError>() to null
+            )
+        ) { acc, elem ->
+            acc + mapOf(
+                registry.unregisterDeviceResource(elem.value).fold(
+                    { Option.empty<UnregisterError>() to elem },
+                    { Option.just(it) to null }
                 )
-            }.toImmutableList()
+            )
+        }.toMap()
 
-        sessionRegisteredDeviceResources.clear()
+        // Can't call removeAll() because it doesn't mutate a Multimap
+        unregisterDeviceResourceErrors.mapNotNull { it.value }.forEach {
+            sessionRegisteredDeviceResources.remove(it.key, it.value)
+        }
 
-        val unregisterDeviceErrors =
-            sessionRegisteredDevices.fold(emptyList<UnregisterError>()) { acc, elem ->
-                acc + registry.unregisterDevice(elem).fold(
-                    { emptyList<UnregisterError>() },
-                    { listOf(it) }
+        val unregisterDeviceErrors = sessionRegisteredDevices.fold(
+            mapOf<Option<UnregisterError>, Device?>(Option.empty<UnregisterError>() to null)
+        ) { acc, elem ->
+            acc + mapOf(
+                registry.unregisterDevice(elem).fold(
+                    { Option.empty<UnregisterError>() to elem },
+                    { Option.just(it) to null }
                 )
-            }.toImmutableList()
+            )
+        }.toMap()
 
-        sessionRegisteredDevices.clear()
+        unregisterDeviceErrors.mapNotNull { it.value }.let {
+            sessionRegisteredDevices.removeAll(it)
 
-        return unregisterDeviceResourceErrors + unregisterDeviceErrors
+            // Also be sure to clean up any resources that got stranded
+            sessionRegisteredDeviceResources.removeAll(it)
+        }
+
+        return unregisterDeviceResourceErrors.mapNotNull {
+            it.key.fold({ null }, { it })
+        }.toImmutableList() + unregisterDeviceErrors.mapNotNull {
+            it.key.fold({ null }, { it })
+        }.toImmutableList()
     }
 }

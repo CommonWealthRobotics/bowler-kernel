@@ -16,7 +16,7 @@ import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.resourcei
 import com.neuronrobotics.bowlerkernel.control.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
 import org.junit.jupiter.api.Assertions.fail
 
-internal class MockDevice(
+internal data class MockDevice(
     override val deviceId: DeviceId
 ) : Device {
     var connectWasCalled = false
@@ -33,7 +33,7 @@ internal class MockDevice(
     override fun isResourceInRange(resourceId: ResourceId) = true
 }
 
-internal class MockUnprovisionedDeviceResource(
+internal data class MockUnprovisionedDeviceResource(
     override val device: Device,
     override val resourceId: ResourceId
 ) : UnprovisionedDeviceResource {
