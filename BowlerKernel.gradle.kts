@@ -31,7 +31,6 @@ val kotlinProjects = setOf(
 )
 
 val javaProjects = setOf<Project>(
-//        bowlerScriptKernelProject
 ) + kotlinProjects
 
 object Versions {
