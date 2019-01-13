@@ -9,6 +9,10 @@ rootProject.name = "BowlerKernel"
 
 include(":BowlerKernel")
 include(":BowlerKernel:Core")
+include(":BowlerKernel:GitFS")
+include(":BowlerKernel:Logging")
+include(":BowlerKernel:Settings")
+include(":BowlerKernel:Util")
 
 /**
  * This configures the gradle build so we can use non-standard build file names.

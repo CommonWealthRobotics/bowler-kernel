@@ -6,7 +6,7 @@
 package com.neuronrobotics.bowlerkernel.control.kinematics.limb.model
 
 import com.neuronrobotics.bowlerkernel.control.kinematics.limb.link.LinkType
-import com.neuronrobotics.bowlerkernel.util.Limits
+import com.neuronrobotics.bowlerkernel.control.kinematics.Limits
 
 data class LinkData(
     val type: LinkType,

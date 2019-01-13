@@ -28,8 +28,7 @@ dependencies {
         exclude(group = "com.neuronrobotics")
     }
 
-    api(group = "com.google.guava", name = "guava", version = "27.0.1-jre")
-
+    api(project(":BowlerKernel:GitFS"))
     api(group = "io.arrow-kt", name = "arrow-core", version = arrow_version)
     api(group = "io.arrow-kt", name = "arrow-syntax", version = arrow_version)
     api(group = "io.arrow-kt", name = "arrow-typeclasses", version = arrow_version)
@@ -46,14 +45,8 @@ dependencies {
     api(group = "io.arrow-kt", name = "arrow-optics", version = arrow_version)
     api(group = "io.arrow-kt", name = "arrow-generic", version = arrow_version)
     api(group = "io.arrow-kt", name = "arrow-recursion", version = arrow_version)
-    api(group = "org.kohsuke", name = "github-api", version = "1.95")
 
-    implementation(
-        group = "org.eclipse.jgit",
-        name = "org.eclipse.jgit",
-        version = "5.2.0.201812061821-r"
-    )
-
+    implementation(project(":BowlerKernel:Util"))
     implementation(group = "com.google.inject", name = "guice", version = "4.1.0")
     implementation(
         group = "com.google.inject.extensions",

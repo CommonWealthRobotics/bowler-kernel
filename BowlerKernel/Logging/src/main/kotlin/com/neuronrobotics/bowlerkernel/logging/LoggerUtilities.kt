@@ -3,8 +3,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package com.neuronrobotics.bowlerkernel.util
+package com.neuronrobotics.bowlerkernel.logging
 
+import com.neuronrobotics.bowlerkernel.settings.BOWLERKERNEL_DIRECTORY
+import com.neuronrobotics.bowlerkernel.settings.BOWLER_DIRECTORY
+import com.neuronrobotics.bowlerkernel.settings.LOGS_DIRECTORY
 import java.io.File
 import java.io.IOException
 import java.nio.file.Paths
@@ -17,7 +20,7 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.logging.SimpleFormatter
 
-internal class LoggerUtilities private constructor() {
+class LoggerUtilities private constructor() {
 
     init {
         throw UnsupportedOperationException("This is a utility class!")
@@ -52,7 +55,9 @@ internal class LoggerUtilities private constructor() {
             val testFile = File(logFileDirPath)
             try {
                 if (testFile.exists() || testFile.mkdirs()) {
-                    fileHandler = FileHandler(logFilePath, true)
+                    fileHandler = FileHandler(
+                        logFilePath, true
+                    )
                     fileHandler!!.formatter = SimpleFormatter()
                 } else {
                     throw IOException(

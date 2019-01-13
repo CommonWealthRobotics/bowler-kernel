@@ -9,12 +9,12 @@ import arrow.core.Try
 import arrow.core.recoverWith
 import com.google.common.base.Throwables
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.util.BOWLERKERNEL_DIRECTORY
-import com.neuronrobotics.bowlerkernel.util.BOWLER_DIRECTORY
-import com.neuronrobotics.bowlerkernel.util.GITHUB_CACHE_DIRECTORY
-import com.neuronrobotics.bowlerkernel.util.GIT_CACHE_DIRECTORY
-import com.neuronrobotics.bowlerkernel.util.LoggerUtilities
-import com.neuronrobotics.kinematicschef.util.toImmutableList
+import com.neuronrobotics.bowlerkernel.logging.LoggerUtilities
+import com.neuronrobotics.bowlerkernel.settings.BOWLERKERNEL_DIRECTORY
+import com.neuronrobotics.bowlerkernel.settings.BOWLER_DIRECTORY
+import com.neuronrobotics.bowlerkernel.settings.GITHUB_CACHE_DIRECTORY
+import com.neuronrobotics.bowlerkernel.settings.GIT_CACHE_DIRECTORY
+import com.neuronrobotics.bowlerkernel.util.toImmutableList
 import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
@@ -42,7 +42,8 @@ class GitHubFS(
         branch: String
     ): Try<File> {
         return if (isValidHttpGitURL(gitUrl)) {
-            val directory = gitUrlToDirectory(gitUrl)
+            val directory =
+                gitUrlToDirectory(gitUrl)
             if (directory.mkdirs()) {
                 // If true, the directories were created which means a new repository is
                 // being cloned
@@ -228,7 +229,8 @@ class GitHubFS(
          * @return The file on disk.
          */
         fun mapGistFileToFileOnDisk(gist: GHGist, gistFile: GHGistFile): Try<File> {
-            val directory = gitUrlToDirectory(gist.gitPullUrl)
+            val directory =
+                gitUrlToDirectory(gist.gitPullUrl)
 
             return Try {
                 directory.walkTopDown().first { it.name == gistFile.fileName }

@@ -34,16 +34,25 @@ allprojects {
 
 val bowlerKernelProject = project(":BowlerKernel")
 val bowlerKernelCoreProject = project(":BowlerKernel:Core")
+val bowlerKernelGitFSProject = project(":BowlerKernel:GitFS")
+val bowlerKernelLoggingProject = project(":BowlerKernel:Logging")
+val bowlerKernelSettingsProject = project(":BowlerKernel:Settings")
+val bowlerKernelUtilProject = project(":BowlerKernel:Util")
 
 val kotlinProjects = setOf(
     bowlerKernelProject,
-    bowlerKernelCoreProject
+    bowlerKernelCoreProject,
+    bowlerKernelGitFSProject,
+    bowlerKernelLoggingProject,
+    bowlerKernelSettingsProject,
+    bowlerKernelUtilProject
 )
 
 val javaProjects = setOf<Project>() + kotlinProjects
 
 val publishedProjects = setOf(
-    bowlerKernelCoreProject
+    bowlerKernelCoreProject,
+    bowlerKernelGitFSProject
 )
 
 object Versions {

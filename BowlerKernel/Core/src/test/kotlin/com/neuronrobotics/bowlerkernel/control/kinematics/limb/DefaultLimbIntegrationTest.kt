@@ -19,7 +19,7 @@ import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.DefaultLim
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlan
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlanGenerator
 import com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan.LimbMotionPlanStep
-import com.neuronrobotics.bowlerkernel.util.Limits
+import com.neuronrobotics.bowlerkernel.control.kinematics.Limits
 import com.neuronrobotics.bowlerkernel.util.immutableListOf
 import com.neuronrobotics.bowlerkernel.util.toImmutableList
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
@@ -36,7 +36,8 @@ internal class DefaultLimbIntegrationTest {
     fun `test limb plan execution`() {
         val timestep = 100
         val links = immutableListOf(
-            DefaultLink(LinkType.Rotary, DhParam.zero, Limits(0.0, 0.0), mock {})
+            DefaultLink(LinkType.Rotary, DhParam.zero,
+                Limits(0.0, 0.0), mock {})
         )
         val controller = MockJointAngleController()
 
