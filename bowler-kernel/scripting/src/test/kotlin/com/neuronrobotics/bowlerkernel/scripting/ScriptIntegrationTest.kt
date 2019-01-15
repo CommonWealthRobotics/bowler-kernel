@@ -210,4 +210,121 @@ class ScriptIntegrationTest {
 
         script.stopAndCleanUp()
     }
+
+    @Test
+    fun `register hardware inside a kotlin script`() {
+        val scriptText =
+            """
+            import arrow.core.Either
+            import com.google.common.collect.ImmutableList
+            import com.neuronrobotics.bowlerkernel.hardware.Script
+            import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
+            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
+            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
+            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
+            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceType
+            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedLEDFactory
+            import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
+            import javax.inject.Inject
+
+            class MyScript
+            @Inject constructor(
+                val bowlerDeviceFactory: BowlerDeviceFactory,
+                val ledFactoryFactory: UnprovisionedLEDFactory.Factory
+            ) : Script() {
+
+                var worked = false
+
+                override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
+                    bowlerDeviceFactory.makeBowlerDevice(
+                        SimpleDeviceId("device A"),
+                        object : BowlerRPCProtocol {
+                            override fun read() {
+                            }
+
+                            override fun write() {
+                            }
+                        }
+                    ).map {
+                        ledFactoryFactory.create(it).makeUnprovisionedLED(
+                            ResourceId(
+                                DefaultResourceTypes.DigitalOut,
+                                DefaultAttachmentPoints.Pin(1)
+                            )
+                        ).map {
+                            it.provision().map {
+                                worked = true
+                            }
+                        }
+                    }
+                    return Either.right(worked)
+                }
+
+                override fun stopScript() {
+                }
+            }
+
+            MyScript::class
+            """.trimIndent()
+
+        val script = DefaultTextScriptFactory(
+            DefaultScriptLanguageParser()
+        ).createScriptFromText("kotlin", scriptText).fold(
+            {
+                fail {
+                    """
+                    |Failed to create script:
+                    |$it
+                    """.trimMargin()
+                }
+            },
+            { it }
+        )
+
+        // Run the script a first time, this should work fine
+        script.runScript(emptyImmutableList()).bimap(
+            {
+                fail {
+                    """
+                    |Failed to run script:
+                    |$it
+                    """.trimMargin()
+                }
+            },
+            { assertTrue(it as Boolean) }
+        )
+
+        // Run the script a second time, this should fail (inside the script) because the hardware
+        // has not been unregistered
+        script.runScript(emptyImmutableList()).bimap(
+            {
+                fail {
+                    """
+                    |Failed to run script:
+                    |$it
+                    """.trimMargin()
+                }
+            },
+            { assertFalse(it as Boolean) }
+        )
+
+        script.stopAndCleanUp()
+
+        // Run the script a third time, this should work again because the script was stopped and
+        // clean up after
+        script.runScript(emptyImmutableList()).bimap(
+            {
+                fail {
+                    """
+                    |Failed to run script:
+                    |$it
+                    """.trimMargin()
+                }
+            },
+            { assertTrue(it as Boolean) }
+        )
+
+        script.stopAndCleanUp()
+    }
 }

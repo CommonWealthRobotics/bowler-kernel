@@ -35,8 +35,7 @@ internal class DefaultScriptTest {
 
         val script = DefaultTextScriptFactory(
             mockScriptLanguageParser
-        )
-            .createScriptFromText(language, scriptContent)
+        ).createScriptFromText(language, scriptContent)
 
         val result = script.flatMap { it.runScript(emptyImmutableList()) }
         assertAll(
@@ -56,8 +55,7 @@ internal class DefaultScriptTest {
 
         val script = DefaultTextScriptFactory(
             mockScriptLanguageParser
-        )
-            .createScriptFromText(language, scriptContent)
+        ).createScriptFromText(language, scriptContent)
 
         val result = script.flatMap { it.runScript(emptyImmutableList()) }
         assertTrue(result.isLeft())
@@ -74,8 +72,7 @@ internal class DefaultScriptTest {
 
         val script = DefaultTextScriptFactory(
             mockScriptLanguageParser
-        )
-            .createScriptFromText(language, scriptContent)
+        ).createScriptFromText(language, scriptContent)
 
         val result = script.flatMap { it.runScript(emptyImmutableList()) }
         assertTrue(result.isLeft())
@@ -98,8 +95,7 @@ internal class DefaultScriptTest {
 
         val script = DefaultTextScriptFactory(
             mockScriptLanguageParser
-        )
-            .createScriptFromText(language, scriptContent)
+        ).createScriptFromText(language, scriptContent)
 
         script.bimap(
             {
@@ -117,6 +113,26 @@ internal class DefaultScriptTest {
                     it.stopAndCleanUp()
                 }
             }
+        )
+    }
+
+    @Test
+    fun `test run script with a hello world script using kotlin`() {
+        val language = "kotlin"
+        val scriptContent = """ "Hello, World!" """
+
+        val mockScriptLanguageParser = mock<ScriptLanguageParser> {
+            on { parse(language) } doReturn ScriptLanguage.Kotlin.right()
+        }
+
+        val script = DefaultTextScriptFactory(
+            mockScriptLanguageParser
+        ).createScriptFromText(language, scriptContent)
+
+        val result = script.flatMap { it.runScript(emptyImmutableList()) }
+        assertAll(
+            { assertTrue(result.isRight()) },
+            { assertEquals("Hello, World!", result.fold({ null }, { it as? String })) }
         )
     }
 }

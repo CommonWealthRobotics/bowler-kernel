@@ -15,6 +15,7 @@ class DefaultScriptLanguageParser :
     override fun parse(language: String) =
         when (language.toLowerCase()) {
             "groovy" -> ScriptLanguage.Groovy.right()
+            "kotlin" -> ScriptLanguage.Kotlin.right()
             else ->
                 """
                 |Unknown language:

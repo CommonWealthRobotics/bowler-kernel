@@ -1,5 +1,9 @@
 description = "The kinematics stack."
 
+repositories {
+    maven(url = "https://dl.bintray.com/s1m0nw1/KtsRunner")
+}
+
 dependencies {
     api(group = "org.ejml", name = "ejml-all", version = "0.37.1")
     api(project(":bowler-kernel:scripting"))

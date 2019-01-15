@@ -4,6 +4,10 @@ plugins {
 
 description = "Support for some default scripting languages."
 
+repositories {
+    maven(url = "https://dl.bintray.com/s1m0nw1/KtsRunner")
+}
+
 dependencies {
     api(project(":bowler-kernel:hardware"))
 
@@ -17,6 +21,7 @@ dependencies {
     implementation(group = "org.jlleitschuh.guice", name = "kotlin-guiced-core", version = "0.0.5")
     implementation(group = "org.codehaus.groovy", name = "groovy", version = "2.5.4")
     implementation(group = "org.apache.ivy", name = "ivy", version = "2.4.0")
+    implementation(group = "de.swirtz", name = "ktsRunner", version = "0.0.7")
 
     testImplementation(group = "com.natpryce", name = "hamkrest", version = "1.4.2.2")
     testImplementation(

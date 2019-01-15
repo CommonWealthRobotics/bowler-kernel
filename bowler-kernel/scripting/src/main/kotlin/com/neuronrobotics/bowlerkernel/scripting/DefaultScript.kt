@@ -7,8 +7,11 @@ package com.neuronrobotics.bowlerkernel.scripting
 
 import arrow.core.Either
 import arrow.core.Try
+import arrow.core.flatMap
+import arrow.core.right
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.Script
+import de.swirtz.ktsrunner.objectloader.KtsObjectLoader
 import groovy.lang.Binding
 import groovy.lang.GroovyShell
 import kotlinx.coroutines.CoroutineScope
@@ -17,6 +20,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
+import kotlin.reflect.KClass
 
 /**
  * A meta-script which can compile and run any known [ScriptLanguage].
@@ -35,9 +39,14 @@ internal constructor(
 
     override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> =
         when (language) {
-            // TODO: Kotlin scripting https://github.com/s1monw1/KtsRunner
             is ScriptLanguage.Groovy -> runBlocking {
                 handleGroovy(scriptText, args).toEither().mapLeft { it.localizedMessage }
+            }
+
+            is ScriptLanguage.Kotlin -> runBlocking {
+                handleKotlin(scriptText, args).toEither().mapLeft {
+                    it.localizedMessage
+                }.flatMap { it }
             }
         }
 
@@ -95,6 +104,31 @@ internal constructor(
         }.map {
             scriptThread = it
             scriptThread?.await()
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private suspend fun CoroutineScope.handleKotlin(
+        scriptText: String,
+        args: ImmutableList<Any?>
+    ): Try<Either<String, Any?>> {
+        return Try {
+            async {
+                val result = KtsObjectLoader().load<Any?>(scriptText)
+                if (result is KClass<*>) {
+                    val instance = injector.getInstance(result.java)
+                    if (instance is Script) {
+                        instance.runScript(args)
+                    } else {
+                        instance.right()
+                    }
+                } else {
+                    result.right()
+                }
+            }
+        }.map {
+            scriptThread = it
+            scriptThread?.await() as Either<String, Any?>
         }
     }
 
