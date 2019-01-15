@@ -20,11 +20,12 @@ plugins {
     `maven-publish`
     id("com.jfrog.bintray") version "1.8.3"
     `java-library`
+    id("org.jetbrains.dokka") version "0.9.17"
 }
 
 object Versions {
     const val ktlintVersion = "0.29.0"
-    const val bowlerKernelVersion = "0.0.2"
+    const val bowlerKernelVersion = "0.0.3"
 }
 
 allprojects {
@@ -50,10 +51,7 @@ val kotlinProjects = setOf(
 
 val javaProjects = setOf<Project>() + kotlinProjects
 
-val publishedProjects = setOf(
-    bowlerKernelCoreProject,
-    bowlerKernelGitFSProject
-)
+val publishedProjects = setOf<Project>() + kotlinProjects
 
 object Versions {
     const val ktlintVersion = "0.29.0"
@@ -158,14 +156,7 @@ configure(javaProjects) {
     }
 
     tasks.withType<Test> {
-        extensions.configure(typeOf<JacocoTaskExtension>()) {
-            /*
-             * Fix for Jacoco breaking Build Cache support.
-             * https://github.com/gradle/gradle/issues/5269
-             */
-            isAppend = false
-        }
-
+        @Suppress("UnstableApiUsage")
         useJUnitPlatform {
             filter {
                 includeTestsMatching("*Test")
@@ -209,10 +200,12 @@ configure(javaProjects) {
             exceptionFormat = TestExceptionFormat.FULL
         }
 
+        @Suppress("UnstableApiUsage")
         reports.junitXml.destination = file("${rootProject.buildDir}/test-results/${project.name}")
     }
 
     tasks.withType<JacocoReport> {
+        @Suppress("UnstableApiUsage")
         reports {
             html.isEnabled = true
             xml.isEnabled = true
@@ -227,6 +220,7 @@ configure(javaProjects) {
             trimTrailingWhitespace()
             indentWithSpaces(2)
             endWithNewline()
+            @Suppress("INACCESSIBLE_TYPE")
             licenseHeaderFile(
                 "${rootProject.rootDir}/config/spotless/bowler.license",
                 spotlessLicenseHeaderDelimiter
@@ -244,6 +238,7 @@ configure(javaProjects) {
     }
 
     tasks.withType<SpotBugsTask> {
+        @Suppress("UnstableApiUsage")
         reports {
             xml.isEnabled = false
             emacs.isEnabled = false
@@ -265,6 +260,7 @@ configure(kotlinProjects) {
         plugin("kotlin")
         plugin("org.jlleitschuh.gradle.ktlint")
         plugin("io.gitlab.arturbosch.detekt")
+        plugin("org.jetbrains.dokka")
     }
 
     repositories {
@@ -324,6 +320,7 @@ configure(kotlinProjects) {
             trimTrailingWhitespace()
             indentWithSpaces(2)
             endWithNewline()
+            @Suppress("INACCESSIBLE_TYPE")
             licenseHeaderFile(
                 "${rootProject.rootDir}/config/spotless/bowler.license",
                 spotlessLicenseHeaderDelimiter
@@ -343,6 +340,7 @@ configure(kotlinProjects) {
 }
 
 configure(javaProjects + kotlinProjects) {
+    @Suppress("UnstableApiUsage")
     val createPropertiesTask = tasks.register("createProperties") {
         dependsOn("processResources")
         doLast {
@@ -378,15 +376,17 @@ configure(publishedProjects) {
     }
 
     task<Jar>("sourcesJar") {
-        from(sourceSets.main.get().allSource)
         classifier = "sources"
         baseName = "bowler-kernel-${this@configure.name.toLowerCase()}"
+        from(sourceSets.main.get().allSource)
     }
 
-    task<Jar>("javadocJar") {
-        from(tasks.javadoc)
+    val dokkaJar by tasks.creating(Jar::class) {
+        group = JavaBasePlugin.DOCUMENTATION_GROUP
+        description = "Assembles Kotlin docs with Dokka"
         classifier = "javadoc"
         baseName = "bowler-kernel-${this@configure.name.toLowerCase()}"
+        from(tasks.dokka)
     }
 
     val publicationName = "publication-bowler-kernel-${name.toLowerCase()}"
@@ -397,7 +397,7 @@ configure(publishedProjects) {
                 artifactId = "bowler-kernel-${this@configure.name.toLowerCase()}"
                 from(components["java"])
                 artifact(tasks["sourcesJar"])
-                artifact(tasks["javadocJar"])
+                artifact(dokkaJar)
             }
         }
     }
@@ -420,6 +420,12 @@ configure(publishedProjects) {
             }
         }
     }
+}
+
+tasks.dokka {
+    dependsOn(tasks.classes)
+    outputFormat = "html"
+    outputDirectory = "$buildDir/javadoc"
 }
 
 tasks.wrapper {
