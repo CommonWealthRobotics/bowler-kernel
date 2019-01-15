@@ -15,21 +15,37 @@ sealed class DefaultResourceTypes(
 ) : ResourceType {
 
     object DigitalIn : DefaultResourceTypes(1)
+
     object DigitalOut : DefaultResourceTypes(2)
+
     object AnalogIn : DefaultResourceTypes(3)
+
     object AnalogOut : DefaultResourceTypes(4)
+
     object Serial : DefaultResourceTypes(5)
+
     object RGBLed : DefaultResourceTypes(6)
+
     object Servo : DefaultResourceTypes(7)
+
     object Stepper : DefaultResourceTypes(8)
+
     object DCMotor : DefaultResourceTypes(9)
+
     object BLDCMotor : DefaultResourceTypes(10)
+
     object Potentiometer : DefaultResourceTypes(11)
+
     object Encoder : DefaultResourceTypes(12)
+
     object QuadratureEncoder : DefaultResourceTypes(13)
+
     object Button : DefaultResourceTypes(14)
+
     object Infrared : DefaultResourceTypes(15)
+
     object Ultrasonic : DefaultResourceTypes(16)
+
     object PiezoelectricSpeaker : DefaultResourceTypes(17)
 
     /**

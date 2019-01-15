@@ -5,14 +5,7 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.device
 
-import arrow.core.Either
-import arrow.core.left
-import arrow.core.right
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.ProvisionError
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.LED
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.ProvisionedDeviceResource
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.Servo
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
 
@@ -47,32 +40,4 @@ internal constructor(
     }
 
     override fun toString() = """`$deviceId`"""
-
-    /**
-     * Provision a resource.
-     */
-    inline fun <reified T : ProvisionedDeviceResource> provisionResource(
-        createResource: () -> T
-    ): Either<ProvisionError, T> {
-        // TODO: Implement provisioning using the Bowler RPC
-        return when (T::class) {
-            LED::class -> {
-                bowlerRPCProtocol.write()
-                bowlerRPCProtocol.read()
-                createResource().right()
-            }
-
-            Servo::class -> {
-                bowlerRPCProtocol.write()
-                bowlerRPCProtocol.read()
-                createResource().right()
-            }
-
-            else ->
-                """
-                |Could not provision device resource:
-                |Unknown device resource class: ${T::class}
-                """.trimMargin().left()
-        }
-    }
 }

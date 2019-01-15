@@ -14,4 +14,17 @@ package com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid
 data class ResourceId(
     val resourceType: ResourceType,
     val attachmentPoint: AttachmentPoint
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ResourceId
+
+        if (attachmentPoint != other.attachmentPoint) return false
+
+        return true
+    }
+
+    override fun hashCode() = attachmentPoint.hashCode()
+}

@@ -185,4 +185,34 @@ class BaseHardwareRegistryTest {
 
         assertTrue(unregisterError.nonEmpty())
     }
+
+    @Test
+    fun `register two device resources on same attachment points with different types`() {
+        val device = registry.makeDeviceOrFail("A")
+
+        val digitalOut = registry.registerDeviceResource(
+            device,
+            ResourceId(
+                DefaultResourceTypes.DigitalOut,
+                DefaultAttachmentPoints.Pin(0)
+            )
+        ) { device, resource ->
+            MockUnprovisionedDeviceResource(device, resource)
+        }
+
+        val servo = registry.registerDeviceResource(
+            device,
+            ResourceId(
+                DefaultResourceTypes.Servo,
+                DefaultAttachmentPoints.Pin(0)
+            )
+        ) { device, resource ->
+            MockUnprovisionedDeviceResource(device, resource)
+        }
+
+        assertAll(
+            { assertTrue(digitalOut.isRight()) },
+            { assertTrue(servo.isLeft()) }
+        )
+    }
 }

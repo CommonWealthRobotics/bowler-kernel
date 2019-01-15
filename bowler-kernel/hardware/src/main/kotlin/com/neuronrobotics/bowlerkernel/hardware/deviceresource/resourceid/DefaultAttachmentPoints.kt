@@ -5,6 +5,10 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid
 
+import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.util.emptyImmutableList
+import com.neuronrobotics.bowlerkernel.util.immutableListOf
+
 /**
  * The attachment points Bowler supports out-of-the-box. Uses a continuous range of bytes from
  * [getLowestTypeNumber] through [getHighestTypeNumber]. Any numbers outside that range are
@@ -12,11 +16,16 @@ package com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid
  */
 sealed class DefaultAttachmentPoints(
     override val type: Byte,
-    override val data: Byte = 0
+    override val data: ImmutableList<Byte> = emptyImmutableList()
 ) : AttachmentPoint {
 
-    data class Pin(val pinNumber: Byte) : DefaultAttachmentPoints(1, pinNumber)
-    data class USBPort(val portNumber: Byte) : DefaultAttachmentPoints(2, portNumber)
+    data class Pin(val pinNumber: Byte) : DefaultAttachmentPoints(1, immutableListOf(pinNumber))
+
+    data class PinGroup(val pinNumbers: ImmutableList<Byte>) :
+        DefaultAttachmentPoints(2, pinNumbers)
+
+    data class USBPort(val portNumber: Byte) :
+        DefaultAttachmentPoints(3, immutableListOf(portNumber))
 
     /**
      * The lowest used type number.
@@ -28,5 +37,5 @@ sealed class DefaultAttachmentPoints(
      * The highest used type number.
      */
     @SuppressWarnings("FunctionOnlyReturningConstant")
-    fun getHighestTypeNumber(): Byte = 2
+    fun getHighestTypeNumber(): Byte = 3
 }

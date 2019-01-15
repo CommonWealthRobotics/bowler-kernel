@@ -6,6 +6,7 @@
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned
 
 import arrow.core.Either
+import arrow.core.right
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.ProvisionError
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.Servo
@@ -17,6 +18,9 @@ internal constructor(
     override val resourceId: ResourceId
 ) : UnprovisionedDeviceResource {
 
-    override fun provision(): Either<ProvisionError, Servo> =
-        device.provisionResource { Servo(device, resourceId) }
+    override fun provision(): Either<ProvisionError, Servo> {
+        device.bowlerRPCProtocol.write()
+        device.bowlerRPCProtocol.read()
+        return Servo(device, resourceId).right()
+    }
 }
