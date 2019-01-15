@@ -5,14 +5,14 @@ buildCache {
     }
 }
 
-rootProject.name = "BowlerKernel"
+rootProject.name = "bowler-kernel"
 
-include(":BowlerKernel")
-include(":BowlerKernel:Core")
-include(":BowlerKernel:GitFS")
-include(":BowlerKernel:Logging")
-include(":BowlerKernel:Settings")
-include(":BowlerKernel:Util")
+include(":bowler-kernel")
+include(":bowler-kernel:core")
+include(":bowler-kernel:gitfs")
+include(":bowler-kernel:logging")
+include(":bowler-kernel:config")
+include(":bowler-kernel:util")
 
 /**
  * This configures the gradle build so we can use non-standard build file names.

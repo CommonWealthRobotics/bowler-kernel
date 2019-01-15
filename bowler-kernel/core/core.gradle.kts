@@ -28,7 +28,7 @@ dependencies {
         exclude(group = "com.neuronrobotics")
     }
 
-    api(project(":BowlerKernel:GitFS"))
+    api(project(":bowler-kernel:gitfs"))
     api(group = "io.arrow-kt", name = "arrow-core", version = arrow_version)
     api(group = "io.arrow-kt", name = "arrow-syntax", version = arrow_version)
     api(group = "io.arrow-kt", name = "arrow-typeclasses", version = arrow_version)
@@ -46,7 +46,7 @@ dependencies {
     api(group = "io.arrow-kt", name = "arrow-generic", version = arrow_version)
     api(group = "io.arrow-kt", name = "arrow-recursion", version = arrow_version)
 
-    implementation(project(":BowlerKernel:Util"))
+    implementation(project(":bowler-kernel:util"))
     implementation(group = "com.google.inject", name = "guice", version = "4.1.0")
     implementation(
         group = "com.google.inject.extensions",

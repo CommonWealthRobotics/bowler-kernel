@@ -5,5 +5,5 @@ plugins {
 description = "The kernel's logging tools."
 
 dependencies {
-    implementation(project(":BowlerKernel:Settings"))
+    implementation(project(":bowler-kernel:config"))
 }

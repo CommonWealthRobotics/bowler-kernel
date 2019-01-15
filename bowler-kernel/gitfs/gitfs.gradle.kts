@@ -1,4 +1,4 @@
-import GitFS_gradle.Verions.arrow_version
+import Gitfs_gradle.Verions.arrow_version
 
 plugins {
     `java-library`
@@ -14,9 +14,9 @@ dependencies {
     api(group = "io.arrow-kt", name = "arrow-core", version = arrow_version)
     api(group = "org.kohsuke", name = "github-api", version = "1.95")
 
-    implementation(project(":BowlerKernel:Util"))
-    implementation(project(":BowlerKernel:Settings"))
-    implementation(project(":BowlerKernel:Logging"))
+    implementation(project(":bowler-kernel:util"))
+    implementation(project(":bowler-kernel:config"))
+    implementation(project(":bowler-kernel:logging"))
     implementation(
         group = "org.eclipse.jgit",
         name = "org.eclipse.jgit",

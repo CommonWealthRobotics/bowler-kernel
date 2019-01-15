@@ -1,6 +1,6 @@
-import BowlerKernel_gradle.Strings.spotlessLicenseHeaderDelimiter
-import BowlerKernel_gradle.Versions.bowlerKernelVersion
-import BowlerKernel_gradle.Versions.ktlintVersion
+import Bowler_kernel_gradle.Strings.spotlessLicenseHeaderDelimiter
+import Bowler_kernel_gradle.Versions.bowlerKernelVersion
+import Bowler_kernel_gradle.Versions.ktlintVersion
 import com.github.spotbugs.SpotBugsTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
@@ -32,12 +32,12 @@ allprojects {
     group = "com.neuronrobotics"
 }
 
-val bowlerKernelProject = project(":BowlerKernel")
-val bowlerKernelCoreProject = project(":BowlerKernel:Core")
-val bowlerKernelGitFSProject = project(":BowlerKernel:GitFS")
-val bowlerKernelLoggingProject = project(":BowlerKernel:Logging")
-val bowlerKernelSettingsProject = project(":BowlerKernel:Settings")
-val bowlerKernelUtilProject = project(":BowlerKernel:Util")
+val bowlerKernelProject = project(":bowler-kernel")
+val bowlerKernelCoreProject = project(":bowler-kernel:core")
+val bowlerKernelGitFSProject = project(":bowler-kernel:gitfs")
+val bowlerKernelLoggingProject = project(":bowler-kernel:logging")
+val bowlerKernelSettingsProject = project(":bowler-kernel:config")
+val bowlerKernelUtilProject = project(":bowler-kernel:util")
 
 val kotlinProjects = setOf(
     bowlerKernelProject,
@@ -380,21 +380,21 @@ configure(publishedProjects) {
     task<Jar>("sourcesJar") {
         from(sourceSets.main.get().allSource)
         classifier = "sources"
-        baseName = "bowlerkernel-${this@configure.name.toLowerCase()}"
+        baseName = "bowler-kernel-${this@configure.name.toLowerCase()}"
     }
 
     task<Jar>("javadocJar") {
         from(tasks.javadoc)
         classifier = "javadoc"
-        baseName = "bowlerkernel-${this@configure.name.toLowerCase()}"
+        baseName = "bowler-kernel-${this@configure.name.toLowerCase()}"
     }
 
-    val publicationName = "publication-bowlerkernel-${name.toLowerCase()}"
+    val publicationName = "publication-bowler-kernel-${name.toLowerCase()}"
 
     publishing {
         publications {
             create<MavenPublication>(publicationName) {
-                artifactId = "bowlerkernel-${this@configure.name.toLowerCase()}"
+                artifactId = "bowler-kernel-${this@configure.name.toLowerCase()}"
                 from(components["java"])
                 artifact(tasks["sourcesJar"])
                 artifact(tasks["javadocJar"])
@@ -408,12 +408,12 @@ configure(publishedProjects) {
         setPublications(publicationName)
         with(pkg) {
             repo = "maven-artifacts"
-            name = "BowlerKernel"
+            name = "bowler-kernel"
             userOrg = "commonwealthrobotics"
             publish = true
             setLicenses("MPL-2.0")
-            vcsUrl = "https://github.com/CommonWealthRobotics/BowlerKernel.git"
-            githubRepo = "https://github.com/CommonWealthRobotics/BowlerKernel"
+            vcsUrl = "https://github.com/CommonWealthRobotics/bowler-kernel.git"
+            githubRepo = "https://github.com/CommonWealthRobotics/bowler-kernel"
             with(version) {
                 name = bowlerKernelVersion
                 desc = "The heart of the Bowler stack."
