@@ -6,7 +6,7 @@
 package com.neuronrobotics.bowlerkernel.control.kinematics.limb
 
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.control.MockJointAngleController
+import com.neuronrobotics.bowlerkernel.control.kinematics.MockJointAngleController
 import com.neuronrobotics.bowlerkernel.control.createMotionConstraints
 import com.neuronrobotics.bowlerkernel.control.kinematics.limb.limbid.SimpleLimbId
 import com.neuronrobotics.bowlerkernel.control.kinematics.limb.link.DefaultLink
@@ -39,7 +39,8 @@ internal class DefaultLimbIntegrationTest {
             DefaultLink(LinkType.Rotary, DhParam.zero,
                 Limits(0.0, 0.0), mock {})
         )
-        val controller = MockJointAngleController()
+        val controller =
+            MockJointAngleController()
 
         val limb = DefaultLimb(
             SimpleLimbId(""),

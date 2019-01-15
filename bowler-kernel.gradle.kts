@@ -36,6 +36,7 @@ allprojects {
 val bowlerKernelProject = project(":bowler-kernel")
 val bowlerKernelCoreProject = project(":bowler-kernel:core")
 val bowlerKernelGitFSProject = project(":bowler-kernel:gitfs")
+val bowlerKernelHardwareProject = project(":bowler-kernel:hardware")
 val bowlerKernelLoggingProject = project(":bowler-kernel:logging")
 val bowlerKernelSettingsProject = project(":bowler-kernel:config")
 val bowlerKernelUtilProject = project(":bowler-kernel:util")
@@ -44,6 +45,7 @@ val kotlinProjects = setOf(
     bowlerKernelProject,
     bowlerKernelCoreProject,
     bowlerKernelGitFSProject,
+    bowlerKernelHardwareProject,
     bowlerKernelLoggingProject,
     bowlerKernelSettingsProject,
     bowlerKernelUtilProject

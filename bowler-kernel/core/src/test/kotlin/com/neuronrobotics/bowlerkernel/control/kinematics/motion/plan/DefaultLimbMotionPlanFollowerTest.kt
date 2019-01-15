@@ -5,7 +5,7 @@
  */
 package com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan
 
-import com.neuronrobotics.bowlerkernel.control.MockJointAngleController
+import com.neuronrobotics.bowlerkernel.control.kinematics.MockJointAngleController
 import com.neuronrobotics.bowlerkernel.control.createMotionConstraints
 import com.neuronrobotics.bowlerkernel.util.emptyImmutableList
 import com.neuronrobotics.bowlerkernel.util.immutableListOf
@@ -19,7 +19,8 @@ import kotlin.math.abs
 
 internal class DefaultLimbMotionPlanFollowerTest {
 
-    private val controller = MockJointAngleController()
+    private val controller =
+        MockJointAngleController()
 
     private val follower = DefaultLimbMotionPlanFollower(immutableListOf(controller))
 

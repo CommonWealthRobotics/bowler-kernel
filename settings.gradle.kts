@@ -10,6 +10,7 @@ rootProject.name = "bowler-kernel"
 include(":bowler-kernel")
 include(":bowler-kernel:core")
 include(":bowler-kernel:gitfs")
+include(":bowler-kernel:hardware")
 include(":bowler-kernel:logging")
 include(":bowler-kernel:config")
 include(":bowler-kernel:util")

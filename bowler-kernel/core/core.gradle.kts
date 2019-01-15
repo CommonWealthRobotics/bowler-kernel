@@ -1,5 +1,5 @@
-import Core_gradle.Verions.arrow_version
-import Core_gradle.Verions.ktor_version
+import Core_gradle.Versions.arrow_version
+import Core_gradle.Versions.ktor_version
 
 plugins {
     `java-library`
@@ -9,7 +9,7 @@ plugins {
 
 description = "The core module."
 
-object Verions {
+object Versions {
     const val arrow_version = "0.8.1"
     const val ktor_version = "1.0.1"
 }
@@ -29,6 +29,7 @@ dependencies {
     }
 
     api(project(":bowler-kernel:gitfs"))
+    api(project(":bowler-kernel:hardware"))
     api(group = "io.arrow-kt", name = "arrow-core", version = arrow_version)
     api(group = "io.arrow-kt", name = "arrow-syntax", version = arrow_version)
     api(group = "io.arrow-kt", name = "arrow-typeclasses", version = arrow_version)
@@ -55,7 +56,6 @@ dependencies {
     )
     implementation(group = "org.jlleitschuh.guice", name = "kotlin-guiced-core", version = "0.0.5")
     implementation(group = "com.google.code.findbugs", name = "annotations", version = "3.0.1")
-    implementation(group = "com.natpryce", name = "hamkrest", version = "1.4.2.2")
 
     implementation(group = "com.beust", name = "klaxon", version = "4.+")
     implementation(group = "io.ktor", name = "ktor-client-core", version = ktor_version)
@@ -65,9 +65,7 @@ dependencies {
     implementation(group = "io.ktor", name = "ktor-client-json-jvm", version = ktor_version)
     implementation(group = "io.ktor", name = "ktor-client-gson", version = ktor_version)
 
-    implementation(group = "org.codehaus.groovy", name = "groovy", version = "2.5.4")
-    implementation(group = "org.apache.ivy", name = "ivy", version = "2.4.0")
-
+    testImplementation(group = "com.natpryce", name = "hamkrest", version = "1.4.2.2")
     testImplementation(
         group = "com.nhaarman.mockitokotlin2",
         name = "mockito-kotlin",
