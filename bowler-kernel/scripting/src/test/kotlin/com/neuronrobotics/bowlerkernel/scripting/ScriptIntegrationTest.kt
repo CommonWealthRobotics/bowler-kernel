@@ -8,6 +8,7 @@ package com.neuronrobotics.bowlerkernel.scripting
 import arrow.core.Either
 import arrow.core.getOrHandle
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.hardware.Script
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.LED

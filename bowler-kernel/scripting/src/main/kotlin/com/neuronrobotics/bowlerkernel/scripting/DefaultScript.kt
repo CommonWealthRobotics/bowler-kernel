@@ -8,6 +8,7 @@ package com.neuronrobotics.bowlerkernel.scripting
 import arrow.core.Either
 import arrow.core.Try
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.hardware.Script
 import groovy.lang.Binding
 import groovy.lang.GroovyShell
 import kotlinx.coroutines.CoroutineScope

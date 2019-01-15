@@ -12,6 +12,7 @@ include(":bowler-kernel:gitfs")
 include(":bowler-kernel:hardware")
 include(":bowler-kernel:kinematics")
 include(":bowler-kernel:logging")
+include(":bowler-kernel:scripting")
 include(":bowler-kernel:config")
 include(":bowler-kernel:util")
 

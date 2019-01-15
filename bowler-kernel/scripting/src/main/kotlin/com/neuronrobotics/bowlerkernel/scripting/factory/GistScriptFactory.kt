@@ -6,16 +6,16 @@
 package com.neuronrobotics.bowlerkernel.scripting.factory
 
 import arrow.core.Either
-import com.neuronrobotics.bowlerkernel.scripting.Script
+import com.neuronrobotics.bowlerkernel.hardware.Script
 
-interface TextScriptFactory {
+interface GistScriptFactory {
 
     /**
-     * Creates a [Script] from text.
+     * Creates a [Script] from a gist.
      *
-     * @param language A string representing the script language.
-     * @param scriptText The text content of the script.
+     * @param gistId The gist id.
+     * @param filename The file name in the gist.
      * @return A [Script] on success, a [String] on error.
      */
-    fun createScriptFromText(language: String, scriptText: String): Either<String, Script>
+    fun createScriptFromGist(gistId: String, filename: String): Either<String, Script>
 }

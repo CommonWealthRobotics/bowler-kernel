@@ -3,14 +3,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package com.neuronrobotics.bowlerkernel.scripting
+package com.neuronrobotics.bowlerkernel.hardware
 
 import arrow.core.Either
 import com.google.common.collect.ImmutableList
 import com.google.inject.Injector
 import com.google.inject.Module
 import com.google.inject.Singleton
-import com.neuronrobotics.bowlerkernel.hardware.KernelHardwareModule
 import com.neuronrobotics.bowlerkernel.hardware.device.DeviceFactory
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResourceFactory
 import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistry
