@@ -7,6 +7,7 @@ description = "Support for some default scripting languages."
 dependencies {
     api(project(":bowler-kernel:hardware"))
 
+    implementation(project(":bowler-kernel:util"))
     implementation(group = "com.google.inject", name = "guice", version = "4.1.0")
     implementation(
         group = "com.google.inject.extensions",
