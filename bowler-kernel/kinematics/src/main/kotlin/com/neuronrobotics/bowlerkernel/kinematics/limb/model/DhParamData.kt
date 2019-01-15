@@ -5,7 +5,7 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.limb.model
 
-import com.neuronrobotics.kinematicschef.dhparam.DhParam
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 
 data class DhParamData(
     val d: Double,

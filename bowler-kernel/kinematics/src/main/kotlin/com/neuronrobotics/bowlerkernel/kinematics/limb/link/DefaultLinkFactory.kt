@@ -7,7 +7,6 @@ package com.neuronrobotics.bowlerkernel.kinematics.limb.link
 
 import com.neuronrobotics.bowlerkernel.kinematics.Limits
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialStateEstimator
-import com.neuronrobotics.kinematicschef.dhparam.DhParam
 
 class DefaultLinkFactory : LinkFactory {
 

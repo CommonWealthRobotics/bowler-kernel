@@ -1,14 +1,7 @@
 description = "The kinematics stack."
 
 dependencies {
-    // For emjl and some utils
-    api(
-        group = "com.neuronrobotics",
-        name = "kinematicschef-core",
-        version = "0.0.15"
-    ) {
-        exclude(group = "com.neuronrobotics")
-    }
+    api(group = "org.ejml", name = "ejml-all", version = "0.37.1")
     api(project(":bowler-kernel:hardware"))
 
     implementation(project(":bowler-kernel:util"))

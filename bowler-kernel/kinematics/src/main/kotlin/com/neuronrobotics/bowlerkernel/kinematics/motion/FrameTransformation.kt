@@ -7,9 +7,12 @@ package com.neuronrobotics.bowlerkernel.kinematics.motion
 
 import com.beust.klaxon.Converter
 import com.beust.klaxon.JsonValue
-import com.neuronrobotics.kinematicschef.util.getRotationMatrix
 import org.ejml.simple.SimpleMatrix
 import java.util.Arrays
+import kotlin.math.cos
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 /**
  * An immutable frame transformation, internally back by a [SimpleMatrix].
@@ -137,6 +140,13 @@ private constructor(private val mat: SimpleMatrix) {
                 })
         }
 
+        fun fromSimpleMatrix(simpleMatrix: SimpleMatrix): FrameTransformation {
+            require(simpleMatrix.numRows() == 4)
+            require(simpleMatrix.numCols() == 4)
+
+            return FrameTransformation(simpleMatrix)
+        }
+
         /**
          * A Klaxon JSON converter.
          */
@@ -171,4 +181,61 @@ private constructor(private val mat: SimpleMatrix) {
             }
         }
     }
+}
+
+/**
+ * Creates a 3x3 matrix representing a rotation.
+ *
+ * @param x The rotation around the x-axis in degrees.
+ * @param y The rotation around the y-axis in degrees.
+ * @param z The rotation around the z-axis in degrees.
+ */
+fun getRotationMatrix(x: Number, y: Number, z: Number): SimpleMatrix {
+    val xRad = Math.toRadians(x.toDouble())
+    val yRad = Math.toRadians(y.toDouble())
+    val zRad = Math.toRadians(z.toDouble())
+
+    val zMat = SimpleMatrix.identity(3).apply {
+        this[0, 0] = cos(zRad)
+        this[0, 1] = -sin(zRad)
+        this[1, 0] = sin(zRad)
+        this[1, 1] = cos(zRad)
+    }
+
+    val yMat = SimpleMatrix.identity(3).apply {
+        this[0, 0] = cos(yRad)
+        this[0, 2] = sin(yRad)
+        this[2, 0] = -sin(yRad)
+        this[2, 2] = cos(yRad)
+    }
+
+    val xMat = SimpleMatrix.identity(3).apply {
+        this[1, 1] = cos(xRad)
+        this[1, 2] = -sin(xRad)
+        this[2, 1] = sin(xRad)
+        this[2, 2] = cos(xRad)
+    }
+
+    return zMat.mult(yMat).mult(xMat)
+}
+
+/**
+ * Treats the matrix as a row or column vector and computes its length.
+ */
+fun SimpleMatrix.length(): Double {
+    require(numRows() == 1 || numCols() == 1)
+
+    var sum = 0.0
+
+    if (numRows() == 1) {
+        for (i in 0 until numCols()) {
+            sum += this[0, i].pow(2)
+        }
+    } else {
+        for (i in 0 until numRows()) {
+            sum += this[i, 0].pow(2)
+        }
+    }
+
+    return sqrt(sum)
 }

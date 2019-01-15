@@ -9,17 +9,16 @@ import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.JointAngleController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.toFrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.ForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialStateEstimator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
+import com.neuronrobotics.bowlerkernel.kinematics.motion.length
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanGenerator
 import com.neuronrobotics.bowlerkernel.util.toImmutableList
-import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
-import com.neuronrobotics.kinematicschef.util.getTranslation
-import com.neuronrobotics.kinematicschef.util.length
 import kotlin.concurrent.thread
 
 class DefaultLimb(

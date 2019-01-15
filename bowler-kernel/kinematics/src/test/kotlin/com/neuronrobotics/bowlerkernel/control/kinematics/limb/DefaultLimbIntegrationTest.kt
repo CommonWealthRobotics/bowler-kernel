@@ -12,6 +12,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.Limits
 import com.neuronrobotics.bowlerkernel.kinematics.limb.DefaultLimb
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DefaultLink
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
 import com.neuronrobotics.bowlerkernel.kinematics.motion.ForwardKinematicsSolver
@@ -23,7 +24,6 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanGene
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanStep
 import com.neuronrobotics.bowlerkernel.util.immutableListOf
 import com.neuronrobotics.bowlerkernel.util.toImmutableList
-import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.nhaarman.mockitokotlin2.mock
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
