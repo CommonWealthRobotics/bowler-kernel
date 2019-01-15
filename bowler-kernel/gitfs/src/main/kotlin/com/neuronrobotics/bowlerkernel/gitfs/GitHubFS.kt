@@ -9,7 +9,7 @@ import arrow.core.Try
 import arrow.core.recoverWith
 import com.google.common.base.Throwables
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.logging.LoggerUtilities
+import com.neuronrobotics.bowlerkernel.internal.logging.LoggerUtilities
 import com.neuronrobotics.bowlerkernel.settings.BOWLERKERNEL_DIRECTORY
 import com.neuronrobotics.bowlerkernel.settings.BOWLER_DIRECTORY
 import com.neuronrobotics.bowlerkernel.settings.GITHUB_CACHE_DIRECTORY

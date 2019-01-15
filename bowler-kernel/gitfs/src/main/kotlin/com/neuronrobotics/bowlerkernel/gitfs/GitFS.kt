@@ -9,6 +9,9 @@ import arrow.core.Try
 import com.google.common.collect.ImmutableList
 import java.io.File
 
+/**
+ * An interface to a Git-based file system, typically hosted remotely.
+ */
 interface GitFS {
 
     /**

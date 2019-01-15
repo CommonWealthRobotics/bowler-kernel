@@ -5,7 +5,7 @@
  */
 package com.neuronrobotics.bowlerkernel.gitfs
 
-sealed class GitHubRepo {
+internal sealed class GitHubRepo {
     data class Repository(
         val owner: String,
         val name: String

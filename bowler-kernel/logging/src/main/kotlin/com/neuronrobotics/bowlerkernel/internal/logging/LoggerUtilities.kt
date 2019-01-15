@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package com.neuronrobotics.bowlerkernel.logging
+package com.neuronrobotics.bowlerkernel.internal.logging
 
 import com.neuronrobotics.bowlerkernel.settings.BOWLERKERNEL_DIRECTORY
 import com.neuronrobotics.bowlerkernel.settings.BOWLER_DIRECTORY
