@@ -6,14 +6,14 @@
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned
 
 import arrow.core.Either
-import com.neuronrobotics.bowlerkernel.hardware.device.Device
+import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.ProvisionError
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericEncoder
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
 class UnprovisionedEncoder
 internal constructor(
-    override val device: Device,
+    override val device: BowlerDevice,
     override val resourceId: ResourceId
 ) : UnprovisionedDeviceResource {
 

@@ -101,12 +101,15 @@ class ScriptIntegrationTest {
             """
             import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
             import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
+            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceType
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
             import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
+            import kotlin.Unit
+            import kotlin.jvm.functions.Function0
+            import kotlin.jvm.functions.Function1
+            import org.jetbrains.annotations.NotNull
 
             import javax.inject.Inject
 
@@ -123,11 +126,83 @@ class ScriptIntegrationTest {
                             new SimpleDeviceId("device A"),
                             new BowlerRPCProtocol() {
                                 @Override
-                                void write() {
+                                void isResourceInRange(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super Boolean, Unit> success) {
+
                                 }
 
                                 @Override
-                                void read() {
+                                void provisionResource(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super Boolean, Unit> success) {
+
+                                }
+
+                                @Override
+                                void readProtocolVersion(@NotNull Function0<Unit> timeout, @NotNull Function1<? super String, Unit> success) {
+
+                                }
+
+                                @Override
+                                void analogRead(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super Double, Unit> success) {
+
+                                }
+
+                                @Override
+                                void analogWrite(@NotNull ResourceId resourceId, long value, @NotNull Function0<Unit> timeout, @NotNull Function0<Unit> success) {
+
+                                }
+
+                                @Override
+                                void buttonRead(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super Boolean, Unit> success) {
+
+                                }
+
+                                @Override
+                                void digitalRead(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super DigitalState, Unit> success) {
+
+                                }
+
+                                @Override
+                                void digitalWrite(@NotNull ResourceId resourceId, @NotNull DigitalState value, @NotNull Function0<Unit> timeout, @NotNull Function0<Unit> success) {
+
+                                }
+
+                                @Override
+                                void encoderRead(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super Long, Unit> success) {
+
+                                }
+
+                                @Override
+                                void toneWrite(@NotNull ResourceId resourceId, long frequency, @NotNull Function0<Unit> timeout, @NotNull Function0<Unit> success) {
+
+                                }
+
+                                @Override
+                                void toneWrite(@NotNull ResourceId resourceId, long frequency, long duration, @NotNull Function0<Unit> timeout, @NotNull Function0<Unit> success) {
+
+                                }
+
+                                @Override
+                                void serialWrite(@NotNull ResourceId resourceId, @NotNull String message, @NotNull Function0<Unit> timeout, @NotNull Function0<Unit> success) {
+
+                                }
+
+                                @Override
+                                void serialRead(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super String, Unit> success) {
+
+                                }
+
+                                @Override
+                                void servoWrite(@NotNull ResourceId resourceId, double angle, @NotNull Function0<Unit> timeout, @NotNull Function0<Unit> success) {
+
+                                }
+
+                                @Override
+                                void servoRead(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super Double, Unit> success) {
+
+                                }
+
+                                @Override
+                                void ultrasonicRead(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super Long, Unit> success) {
+
                                 }
                             }
                     ).map {
@@ -214,6 +289,7 @@ class ScriptIntegrationTest {
             import com.neuronrobotics.bowlerkernel.hardware.Script
             import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
             import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
+            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
@@ -234,10 +310,135 @@ class ScriptIntegrationTest {
                     bowlerDeviceFactory.makeBowlerDevice(
                         SimpleDeviceId("device A"),
                         object : BowlerRPCProtocol {
-                            override fun read() {
+                            override fun isResourceInRange(
+                                resourceId: ResourceId,
+                                timeout: () -> Unit,
+                                success: (Boolean) -> Unit
+                            ) {
+                                TODO("not implemented")
                             }
 
-                            override fun write() {
+                            override fun provisionResource(
+                                resourceId: ResourceId,
+                                timeout: () -> Unit,
+                                success: (Boolean) -> Unit
+                            ) {
+                                TODO("not implemented")
+                            }
+
+                            override fun readProtocolVersion(timeout: () -> Unit, success: (String) -> Unit) {
+                                TODO("not implemented")
+                            }
+
+                            override fun analogRead(
+                                resourceId: ResourceId,
+                                timeout: () -> Unit,
+                                success: (Double) -> Unit
+                            ) {
+                                TODO("not implemented")
+                            }
+
+                            override fun analogWrite(
+                                resourceId: ResourceId,
+                                value: Long,
+                                timeout: () -> Unit,
+                                success: () -> Unit
+                            ) {
+                                TODO("not implemented")
+                            }
+
+                            override fun buttonRead(
+                                resourceId: ResourceId,
+                                timeout: () -> Unit,
+                                success: (Boolean) -> Unit
+                            ) {
+                                TODO("not implemented")
+                            }
+
+                            override fun digitalRead(
+                                resourceId: ResourceId,
+                                timeout: () -> Unit,
+                                success: (DigitalState) -> Unit
+                            ) {
+                                TODO("not implemented")
+                            }
+
+                            override fun digitalWrite(
+                                resourceId: ResourceId,
+                                value: DigitalState,
+                                timeout: () -> Unit,
+                                success: () -> Unit
+                            ) {
+                                TODO("not implemented")
+                            }
+
+                            override fun encoderRead(
+                                resourceId: ResourceId,
+                                timeout: () -> Unit,
+                                success: (Long) -> Unit
+                            ) {
+                                TODO("not implemented")
+                            }
+
+                            override fun toneWrite(
+                                resourceId: ResourceId,
+                                frequency: Long,
+                                timeout: () -> Unit,
+                                success: () -> Unit
+                            ) {
+                                TODO("not implemented")
+                            }
+
+                            override fun toneWrite(
+                                resourceId: ResourceId,
+                                frequency: Long,
+                                duration: Long,
+                                timeout: () -> Unit,
+                                success: () -> Unit
+                            ) {
+                                TODO("not implemented")
+                            }
+
+                            override fun serialWrite(
+                                resourceId: ResourceId,
+                                message: String,
+                                timeout: () -> Unit,
+                                success: () -> Unit
+                            ) {
+                                TODO("not implemented")
+                            }
+
+                            override fun serialRead(
+                                resourceId: ResourceId,
+                                timeout: () -> Unit,
+                                success: (String) -> Unit
+                            ) {
+                                TODO("not implemented")
+                            }
+
+                            override fun servoWrite(
+                                resourceId: ResourceId,
+                                angle: Double,
+                                timeout: () -> Unit,
+                                success: () -> Unit
+                            ) {
+                                TODO("not implemented")
+                            }
+
+                            override fun servoRead(
+                                resourceId: ResourceId,
+                                timeout: () -> Unit,
+                                success: (Double) -> Unit
+                            ) {
+                                TODO("not implemented")
+                            }
+
+                            override fun ultrasonicRead(
+                                resourceId: ResourceId,
+                                timeout: () -> Unit,
+                                success: (Long) -> Unit
+                            ) {
+                                TODO("not implemented")
                             }
                         }
                     ).map {

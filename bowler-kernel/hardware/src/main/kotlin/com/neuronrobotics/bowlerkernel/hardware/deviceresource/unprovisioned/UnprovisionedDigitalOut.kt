@@ -19,8 +19,6 @@ class UnprovisionedDigitalOut(
 
     override fun provision(): Either<ProvisionError, GenericDigitalOut> {
         // TODO: Implement this
-        device.bowlerRPCProtocol.write()
-        device.bowlerRPCProtocol.read()
         return GenericDigitalOut(device, resourceId).right()
     }
 }

@@ -22,20 +22,14 @@ internal constructor(
 
     override fun connect() {
         // TODO: Implement this properly
-        bowlerRPCProtocol.write()
-        bowlerRPCProtocol.read()
     }
 
     override fun disconnect() {
         // TODO: Implement this properly
-        bowlerRPCProtocol.write()
-        bowlerRPCProtocol.read()
     }
 
     override fun isResourceInRange(resourceId: ResourceId): Boolean {
         // TODO: Implement this properly
-        bowlerRPCProtocol.write()
-        bowlerRPCProtocol.read()
         return true
     }
 

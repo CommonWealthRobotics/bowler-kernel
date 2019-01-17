@@ -20,8 +20,6 @@ internal constructor(
 
     override fun provision(): Either<ProvisionError, GenericServo> {
         // TODO: Implement this
-        device.bowlerRPCProtocol.write()
-        device.bowlerRPCProtocol.read()
         return GenericServo(device, resourceId).right()
     }
 }

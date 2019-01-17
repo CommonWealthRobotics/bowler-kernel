@@ -17,8 +17,8 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedServoFactory
-import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
 import com.neuronrobotics.bowlerkernel.util.emptyImmutableList
+import com.nhaarman.mockitokotlin2.mock
 import org.jlleitschuh.guice.key
 import org.junit.jupiter.api.Test
 import javax.inject.Inject
@@ -33,13 +33,7 @@ class TestHardware
     override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
         val device = bowlerDeviceFactory.makeBowlerDevice(
             SimpleDeviceId("/dev/ttyACM0"),
-            object : BowlerRPCProtocol {
-                override fun write() {
-                }
-
-                override fun read() {
-                }
-            }
+            mock {}
         ).fold({ throw IllegalStateException(it) }, { it })
 
         val ledFactory = digitalOutFactoryFactory.create(device)
