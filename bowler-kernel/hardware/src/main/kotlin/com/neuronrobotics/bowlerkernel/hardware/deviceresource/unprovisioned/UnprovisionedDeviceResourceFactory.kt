@@ -37,10 +37,10 @@ class UnprovisionedDeviceResourceFactory
     UnprovisionedStepperFactory,
     UnprovisionedUltrasonicFactory {
 
-    private inline fun <T : UnprovisionedDeviceResource> makeUnprovisionedResource(
+    private fun <T : UnprovisionedDeviceResource> makeUnprovisionedResource(
         resourceId: ResourceId,
         errorMessageType: String,
-        crossinline rightSide: (BowlerDevice, ResourceId) -> T
+        rightSide: (BowlerDevice, ResourceId) -> T
     ):
         Either<RegisterError, T> {
         return if (device.isResourceInRange(resourceId)) {
