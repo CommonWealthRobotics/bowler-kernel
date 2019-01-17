@@ -20,11 +20,22 @@ import javax.inject.Inject
 /**
  * A facade for making any type of device resource.
  */
+@SuppressWarnings("TooManyFunctions")
 class UnprovisionedDeviceResourceFactory
 @Inject internal constructor(
     private val registry: HardwareRegistry,
     @Assisted private val device: BowlerDevice
-) : UnprovisionedDigitalOutFactory, UnprovisionedServoFactory {
+) : UnprovisionedAnalogInFactory,
+    UnprovisionedAnalogOutFactory,
+    UnprovisionedButtonFactory,
+    UnprovisionedDigitalInFactory,
+    UnprovisionedDigitalOutFactory,
+    UnprovisionedEncoderFactory,
+    UnprovisionedPiezoelectricSpeakerFactory,
+    UnprovisionedSerialConnectionFactory,
+    UnprovisionedServoFactory,
+    UnprovisionedStepperFactory,
+    UnprovisionedUltrasonicFactory {
 
     private inline fun <T : UnprovisionedDeviceResource> makeUnprovisionedResource(
         resourceId: ResourceId,
@@ -46,6 +57,46 @@ class UnprovisionedDeviceResourceFactory
         }
     }
 
+    override fun makeUnprovisionedAnalogIn(
+        attachmentPoint: AttachmentPoint
+    ): Either<RegisterError, UnprovisionedAnalogIn> =
+        makeUnprovisionedResource(
+            ResourceId(DefaultResourceTypes.AnalogIn, attachmentPoint),
+            "AnalogIn"
+        ) { device, resourceId ->
+            UnprovisionedAnalogIn(device, resourceId)
+        }
+
+    override fun makeUnprovisionedAnalogOut(
+        attachmentPoint: AttachmentPoint
+    ): Either<RegisterError, UnprovisionedAnalogOut> =
+        makeUnprovisionedResource(
+            ResourceId(DefaultResourceTypes.AnalogOut, attachmentPoint),
+            "AnalogOut"
+        ) { device, resourceId ->
+            UnprovisionedAnalogOut(device, resourceId)
+        }
+
+    override fun makeUnprovisionedButton(
+        attachmentPoint: AttachmentPoint
+    ): Either<RegisterError, UnprovisionedButton> =
+        makeUnprovisionedResource(
+            ResourceId(DefaultResourceTypes.Button, attachmentPoint),
+            "Button"
+        ) { device, resourceId ->
+            UnprovisionedButton(device, resourceId)
+        }
+
+    override fun makeUnprovisionedDigitalIn(
+        attachmentPoint: AttachmentPoint
+    ): Either<RegisterError, UnprovisionedDigitalIn> =
+        makeUnprovisionedResource(
+            ResourceId(DefaultResourceTypes.DigitalIn, attachmentPoint),
+            "DigitalIn"
+        ) { device, resourceId ->
+            UnprovisionedDigitalIn(device, resourceId)
+        }
+
     override fun makeUnprovisionedDigitalOut(
         attachmentPoint: AttachmentPoint
     ): Either<RegisterError, UnprovisionedDigitalOut> =
@@ -54,6 +105,36 @@ class UnprovisionedDeviceResourceFactory
             "DigitalOut"
         ) { device, resourceId ->
             UnprovisionedDigitalOut(device, resourceId)
+        }
+
+    override fun makeUnprovisionedEncoder(
+        attachmentPoint: AttachmentPoint
+    ): Either<RegisterError, UnprovisionedEncoder> =
+        makeUnprovisionedResource(
+            ResourceId(DefaultResourceTypes.Encoder, attachmentPoint),
+            "Encoder"
+        ) { device, resourceId ->
+            UnprovisionedEncoder(device, resourceId)
+        }
+
+    override fun makeUnprovisionedPiezoelectricSpeaker(
+        attachmentPoint: AttachmentPoint
+    ): Either<RegisterError, UnprovisionedPiezoelectricSpeaker> =
+        makeUnprovisionedResource(
+            ResourceId(DefaultResourceTypes.PiezoelectricSpeaker, attachmentPoint),
+            "PiezoelectricSpeaker"
+        ) { device, resourceId ->
+            UnprovisionedPiezoelectricSpeaker(device, resourceId)
+        }
+
+    override fun makeUnprovisionedSerialConnection(
+        attachmentPoint: AttachmentPoint
+    ): Either<RegisterError, UnprovisionedSerialConnection> =
+        makeUnprovisionedResource(
+            ResourceId(DefaultResourceTypes.SerialConnection, attachmentPoint),
+            "SerialConnection"
+        ) { device, resourceId ->
+            UnprovisionedSerialConnection(device, resourceId)
         }
 
     override fun makeUnprovisionedServo(
@@ -66,8 +147,68 @@ class UnprovisionedDeviceResourceFactory
             UnprovisionedServo(device, resourceId)
         }
 
+    override fun makeUnprovisionedStepper(
+        attachmentPoint: AttachmentPoint
+    ): Either<RegisterError, UnprovisionedStepper> =
+        makeUnprovisionedResource(
+            ResourceId(DefaultResourceTypes.Stepper, attachmentPoint),
+            "Stepper"
+        ) { device, resourceId ->
+            UnprovisionedStepper(device, resourceId)
+        }
+
+    override fun makeUnprovisionedUltrasonic(
+        attachmentPoint: AttachmentPoint
+    ): Either<RegisterError, UnprovisionedUltrasonic> =
+        makeUnprovisionedResource(
+            ResourceId(DefaultResourceTypes.Ultrasonic, attachmentPoint),
+            DefaultResourceTypes.Ultrasonic::class.java.name
+        ) { device, resourceId ->
+            UnprovisionedUltrasonic(device, resourceId)
+        }
+
     companion object {
         internal fun unprovisionedDeviceResourceFactoryModule() = module {
+            install(
+                FactoryModuleBuilder()
+                    .implement(
+                        UnprovisionedAnalogInFactory::class.java,
+                        UnprovisionedDeviceResourceFactory::class.java
+                    ).build(
+                        UnprovisionedAnalogInFactory.Factory::class.java
+                    )
+            )
+
+            install(
+                FactoryModuleBuilder()
+                    .implement(
+                        UnprovisionedAnalogOutFactory::class.java,
+                        UnprovisionedDeviceResourceFactory::class.java
+                    ).build(
+                        UnprovisionedAnalogOutFactory.Factory::class.java
+                    )
+            )
+
+            install(
+                FactoryModuleBuilder()
+                    .implement(
+                        UnprovisionedButtonFactory::class.java,
+                        UnprovisionedDeviceResourceFactory::class.java
+                    ).build(
+                        UnprovisionedButtonFactory.Factory::class.java
+                    )
+            )
+
+            install(
+                FactoryModuleBuilder()
+                    .implement(
+                        UnprovisionedDigitalInFactory::class.java,
+                        UnprovisionedDeviceResourceFactory::class.java
+                    ).build(
+                        UnprovisionedDigitalInFactory.Factory::class.java
+                    )
+            )
+
             install(
                 FactoryModuleBuilder()
                     .implement(
@@ -77,6 +218,37 @@ class UnprovisionedDeviceResourceFactory
                         UnprovisionedDigitalOutFactory.Factory::class.java
                     )
             )
+
+            install(
+                FactoryModuleBuilder()
+                    .implement(
+                        UnprovisionedEncoderFactory::class.java,
+                        UnprovisionedDeviceResourceFactory::class.java
+                    ).build(
+                        UnprovisionedEncoderFactory.Factory::class.java
+                    )
+            )
+
+            install(
+                FactoryModuleBuilder()
+                    .implement(
+                        UnprovisionedPiezoelectricSpeakerFactory::class.java,
+                        UnprovisionedDeviceResourceFactory::class.java
+                    ).build(
+                        UnprovisionedPiezoelectricSpeakerFactory.Factory::class.java
+                    )
+            )
+
+            install(
+                FactoryModuleBuilder()
+                    .implement(
+                        UnprovisionedSerialConnectionFactory::class.java,
+                        UnprovisionedDeviceResourceFactory::class.java
+                    ).build(
+                        UnprovisionedSerialConnectionFactory.Factory::class.java
+                    )
+            )
+
             install(
                 FactoryModuleBuilder()
                     .implement(
@@ -84,6 +256,26 @@ class UnprovisionedDeviceResourceFactory
                         UnprovisionedDeviceResourceFactory::class.java
                     ).build(
                         UnprovisionedServoFactory.Factory::class.java
+                    )
+            )
+
+            install(
+                FactoryModuleBuilder()
+                    .implement(
+                        UnprovisionedStepperFactory::class.java,
+                        UnprovisionedDeviceResourceFactory::class.java
+                    ).build(
+                        UnprovisionedStepperFactory.Factory::class.java
+                    )
+            )
+
+            install(
+                FactoryModuleBuilder()
+                    .implement(
+                        UnprovisionedUltrasonicFactory::class.java,
+                        UnprovisionedDeviceResourceFactory::class.java
+                    ).build(
+                        UnprovisionedUltrasonicFactory.Factory::class.java
                     )
             )
         }

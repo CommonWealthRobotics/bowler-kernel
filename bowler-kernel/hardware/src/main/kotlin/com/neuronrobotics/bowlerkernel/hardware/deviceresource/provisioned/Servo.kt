@@ -5,20 +5,21 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned
 
-import com.neuronrobotics.bowlerkernel.hardware.device.Device
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+interface Servo : ProvisionedDeviceResource {
 
-class Servo
-internal constructor(
-    override val device: Device,
-    override val resourceId: ResourceId
-) : AnalogIn, AnalogOut {
+    /**
+     * Sets the angle of the servo. On a continuous rotation servo, this will set the speed
+     * instead of the angle.
+     *
+     * @param angle The angle to write.
+     */
+    fun write(angle: Double)
 
-    override fun read(): Double {
-        TODO("not implemented")
-    }
-
-    override fun write(state: Double) {
-        TODO("not implemented")
-    }
+    /**
+     * Reads the current angle of the servo. In some cases, this is just the last value passed to
+     * [write].
+     *
+     * @return The current angle of the servo.
+     */
+    fun read(): Double
 }

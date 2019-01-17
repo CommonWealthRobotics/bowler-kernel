@@ -18,6 +18,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.Unp
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResourceFactory
 import com.neuronrobotics.bowlerkernel.hardware.registry.BaseHardwareRegistry
 import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
+import com.neuronrobotics.bowlerkernel.util.immutableListOf
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -51,11 +52,74 @@ class UnprovisionedDeviceResourceFactoryTest {
     }
 
     @Test
-    fun `make unprovisioned led`() {
+    fun `make unprovisioned analog in`() {
+        DefaultAttachmentPoints.Pin(1).let {
+            testRegistry(
+                ResourceId(DefaultResourceTypes.AnalogIn, it)
+            ) { makeUnprovisionedAnalogIn(it) }
+        }
+    }
+
+    @Test
+    fun `make unprovisioned analog out`() {
+        DefaultAttachmentPoints.Pin(1).let {
+            testRegistry(
+                ResourceId(DefaultResourceTypes.AnalogOut, it)
+            ) { makeUnprovisionedAnalogOut(it) }
+        }
+    }
+
+    @Test
+    fun `make unprovisioned button`() {
+        DefaultAttachmentPoints.Pin(1).let {
+            testRegistry(
+                ResourceId(DefaultResourceTypes.Button, it)
+            ) { makeUnprovisionedButton(it) }
+        }
+    }
+
+    @Test
+    fun `make unprovisioned digital in`() {
+        DefaultAttachmentPoints.Pin(1).let {
+            testRegistry(
+                ResourceId(DefaultResourceTypes.DigitalIn, it)
+            ) { makeUnprovisionedDigitalIn(it) }
+        }
+    }
+
+    @Test
+    fun `make unprovisioned digital out`() {
         DefaultAttachmentPoints.Pin(1).let {
             testRegistry(
                 ResourceId(DefaultResourceTypes.DigitalOut, it)
             ) { makeUnprovisionedDigitalOut(it) }
+        }
+    }
+
+    @Test
+    fun `make unprovisioned encoder`() {
+        DefaultAttachmentPoints.PinGroup(immutableListOf(1, 2)).let {
+            testRegistry(
+                ResourceId(DefaultResourceTypes.Encoder, it)
+            ) { makeUnprovisionedEncoder(it) }
+        }
+    }
+
+    @Test
+    fun `make unprovisioned piezoelectric speaker`() {
+        DefaultAttachmentPoints.Pin(1).let {
+            testRegistry(
+                ResourceId(DefaultResourceTypes.PiezoelectricSpeaker, it)
+            ) { makeUnprovisionedPiezoelectricSpeaker(it) }
+        }
+    }
+
+    @Test
+    fun `make unprovisioned serial connection`() {
+        DefaultAttachmentPoints.PinGroup(immutableListOf(1, 2)).let {
+            testRegistry(
+                ResourceId(DefaultResourceTypes.SerialConnection, it)
+            ) { makeUnprovisionedSerialConnection(it) }
         }
     }
 
@@ -65,6 +129,24 @@ class UnprovisionedDeviceResourceFactoryTest {
             testRegistry(
                 ResourceId(DefaultResourceTypes.Servo, it)
             ) { makeUnprovisionedServo(it) }
+        }
+    }
+
+    @Test
+    fun `make unprovisioned stepper`() {
+        DefaultAttachmentPoints.PinGroup(immutableListOf(1, 2, 3, 4)).let {
+            testRegistry(
+                ResourceId(DefaultResourceTypes.Stepper, it)
+            ) { makeUnprovisionedStepper(it) }
+        }
+    }
+
+    @Test
+    fun `make unprovisioned ultrasonic`() {
+        DefaultAttachmentPoints.PinGroup(immutableListOf(1, 2)).let {
+            testRegistry(
+                ResourceId(DefaultResourceTypes.Ultrasonic, it)
+            ) { makeUnprovisionedUltrasonic(it) }
         }
     }
 

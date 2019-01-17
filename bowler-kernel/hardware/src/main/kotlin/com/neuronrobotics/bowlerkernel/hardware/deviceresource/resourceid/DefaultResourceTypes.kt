@@ -39,7 +39,7 @@ sealed class DefaultResourceTypes(
     /**
      * A serial connection.
      */
-    object Serial : DefaultResourceTypes(5)
+    object SerialConnection : DefaultResourceTypes(5)
 
     /**
      * A servo.
@@ -62,19 +62,14 @@ sealed class DefaultResourceTypes(
     object Button : DefaultResourceTypes(9)
 
     /**
-     * An IR detector with an internal demodulator.
-     */
-    object Infrared : DefaultResourceTypes(10)
-
-    /**
      * An ultrasonic sensor. Multiple ultrasonic sensors should be pinged round-robin.
      */
-    object Ultrasonic : DefaultResourceTypes(11)
+    object Ultrasonic : DefaultResourceTypes(10)
 
     /**
      * A piezoelectric speaker.
      */
-    object PiezoelectricSpeaker : DefaultResourceTypes(12)
+    object PiezoelectricSpeaker : DefaultResourceTypes(11)
 
     /**
      * The lowest used type number.
@@ -86,5 +81,5 @@ sealed class DefaultResourceTypes(
      * The highest used type number.
      */
     @SuppressWarnings("FunctionOnlyReturningConstant")
-    fun getHighestTypeNumber(): Byte = 12
+    fun getHighestTypeNumber(): Byte = 11
 }

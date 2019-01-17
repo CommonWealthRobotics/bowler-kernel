@@ -15,7 +15,7 @@ interface UnprovisionedServoFactory {
     /**
      * Makes an [UnprovisionedServo] attached to a device.
      *
-     * @param attachmentPoint The attachment point of the servo.
+     * @param attachmentPoint The attachment point.
      * @return An [UnprovisionedServo] on success, a [RegisterError] on failure.
      */
     fun makeUnprovisionedServo(

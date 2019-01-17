@@ -11,8 +11,8 @@ import com.neuronrobotics.bowlerkernel.hardware.Script
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericDigitalOut
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericServo
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.ProvisionedDeviceResource
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.Servo
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
@@ -54,7 +54,7 @@ class TestHardware
         val servoFactory = servoFactoryFactory.create(device)
         servoFactory.makeUnprovisionedServo(
             DefaultAttachmentPoints.Pin(3)
-        ).provisionOrFail() as Servo
+        ).provisionOrFail() as GenericServo
 
         return Either.right(null)
     }
