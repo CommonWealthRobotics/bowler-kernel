@@ -5,6 +5,8 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid
 
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints.PinGroup
+
 /**
  * The resource types Bowler supports out-of-the-box. Uses a continuous range of bytes from
  * [getLowestTypeNumber] through [getHighestTypeNumber]. Any numbers outside that range are
@@ -14,39 +16,65 @@ sealed class DefaultResourceTypes(
     override val type: Byte
 ) : ResourceType {
 
+    /**
+     * A generic digital input.
+     */
     object DigitalIn : DefaultResourceTypes(1)
 
+    /**
+     * A generic digital output.
+     */
     object DigitalOut : DefaultResourceTypes(2)
 
+    /**
+     * A generic analog input.
+     */
     object AnalogIn : DefaultResourceTypes(3)
 
+    /**
+     * A generic analog output.
+     */
     object AnalogOut : DefaultResourceTypes(4)
 
+    /**
+     * A serial connection.
+     */
     object Serial : DefaultResourceTypes(5)
 
-    object RGBLed : DefaultResourceTypes(6)
+    /**
+     * A servo.
+     */
+    object Servo : DefaultResourceTypes(6)
 
-    object Servo : DefaultResourceTypes(7)
+    /**
+     * A stepper motor, typically needs a [PinGroup] of 2 or 4 pins.
+     */
+    object Stepper : DefaultResourceTypes(7)
 
-    object Stepper : DefaultResourceTypes(8)
+    /**
+     * A digital encoder.
+     */
+    object Encoder : DefaultResourceTypes(8)
 
-    object DCMotor : DefaultResourceTypes(9)
+    /**
+     * A button (digital input with debouncing).
+     */
+    object Button : DefaultResourceTypes(9)
 
-    object BLDCMotor : DefaultResourceTypes(10)
+    /**
+     * An IR detector with an internal demodulator.
+     */
+    object Infrared : DefaultResourceTypes(10)
 
-    object Potentiometer : DefaultResourceTypes(11)
+    /**
+     * An ultrasonic sensor. Multiple ultrasonic sensors should be pinged round-robin.
+     */
+    object Ultrasonic : DefaultResourceTypes(11)
 
-    object Encoder : DefaultResourceTypes(12)
-
-    object QuadratureEncoder : DefaultResourceTypes(13)
-
-    object Button : DefaultResourceTypes(14)
-
-    object Infrared : DefaultResourceTypes(15)
-
-    object Ultrasonic : DefaultResourceTypes(16)
-
-    object PiezoelectricSpeaker : DefaultResourceTypes(17)
+    /**
+     * A piezoelectric speaker.
+     */
+    object PiezoelectricSpeaker : DefaultResourceTypes(12)
 
     /**
      * The lowest used type number.
@@ -58,5 +86,5 @@ sealed class DefaultResourceTypes(
      * The highest used type number.
      */
     @SuppressWarnings("FunctionOnlyReturningConstant")
-    fun getHighestTypeNumber(): Byte = 17
+    fun getHighestTypeNumber(): Byte = 12
 }
