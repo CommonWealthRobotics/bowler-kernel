@@ -17,6 +17,4 @@ internal constructor(
     override fun write(state: DigitalState) {
         TODO("not implemented")
     }
-
-    override fun toString() = """`$resourceId` attached to $device"""
 }
