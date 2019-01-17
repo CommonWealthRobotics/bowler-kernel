@@ -9,6 +9,8 @@ import arrow.core.Either
 import com.google.inject.assistedinject.Assisted
 import com.google.inject.assistedinject.FactoryModuleBuilder
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistry
 import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
@@ -22,7 +24,7 @@ class UnprovisionedDeviceResourceFactory
 @Inject internal constructor(
     private val registry: HardwareRegistry,
     @Assisted private val device: BowlerDevice
-) : UnprovisionedLEDFactory, UnprovisionedServoFactory {
+) : UnprovisionedDigitalOutFactory, UnprovisionedServoFactory {
 
     private inline fun <T : UnprovisionedDeviceResource> makeUnprovisionedResource(
         resourceId: ResourceId,
@@ -44,13 +46,23 @@ class UnprovisionedDeviceResourceFactory
         }
     }
 
-    override fun makeUnprovisionedLED(resourceId: ResourceId) =
-        makeUnprovisionedResource(resourceId, "LED") { device, resourceId ->
-            UnprovisionedLED(device, resourceId)
+    override fun makeUnprovisionedDigitalOut(
+        attachmentPoint: AttachmentPoint
+    ): Either<RegisterError, UnprovisionedDigitalOut> =
+        makeUnprovisionedResource(
+            ResourceId(DefaultResourceTypes.DigitalOut, attachmentPoint),
+            "DigitalOut"
+        ) { device, resourceId ->
+            UnprovisionedDigitalOut(device, resourceId)
         }
 
-    override fun makeUnprovisionedServo(resourceId: ResourceId) =
-        makeUnprovisionedResource(resourceId, "Servo") { device, resourceId ->
+    override fun makeUnprovisionedServo(
+        attachmentPoint: AttachmentPoint
+    ): Either<RegisterError, UnprovisionedServo> =
+        makeUnprovisionedResource(
+            ResourceId(DefaultResourceTypes.Servo, attachmentPoint),
+            "Servo"
+        ) { device, resourceId ->
             UnprovisionedServo(device, resourceId)
         }
 
@@ -59,10 +71,10 @@ class UnprovisionedDeviceResourceFactory
             install(
                 FactoryModuleBuilder()
                     .implement(
-                        UnprovisionedLEDFactory::class.java,
+                        UnprovisionedDigitalOutFactory::class.java,
                         UnprovisionedDeviceResourceFactory::class.java
                     ).build(
-                        UnprovisionedLEDFactory.Factory::class.java
+                        UnprovisionedDigitalOutFactory.Factory::class.java
                     )
             )
             install(

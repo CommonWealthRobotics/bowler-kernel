@@ -10,25 +10,25 @@ import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
 import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
 
-interface UnprovisionedServoFactory {
+interface UnprovisionedDigitalOutFactory {
 
     /**
-     * Makes an [UnprovisionedServo] attached to a device.
+     * Makes an [UnprovisionedDigitalOut] attached to a device.
      *
-     * @param attachmentPoint The attachment point of the servo.
-     * @return An [UnprovisionedServo] on success, a [RegisterError] on failure.
+     * @param attachmentPoint The attachment point of the digital out
+     * @return An [UnprovisionedDigitalOut] on success, a [RegisterError] on failure.
      */
-    fun makeUnprovisionedServo(
+    fun makeUnprovisionedDigitalOut(
         attachmentPoint: AttachmentPoint
-    ): Either<RegisterError, UnprovisionedServo>
+    ): Either<RegisterError, UnprovisionedDigitalOut>
 
     interface Factory {
 
         /**
          * Factory for assisted injection.
          *
-         * @param device The device this servo is attached to.
+         * @param device The device this digital out is attached to.
          */
-        fun create(device: BowlerDevice): UnprovisionedServoFactory
+        fun create(device: BowlerDevice): UnprovisionedDigitalOutFactory
     }
 }

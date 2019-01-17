@@ -9,17 +9,17 @@ import arrow.core.Either
 import arrow.core.right
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.ProvisionError
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.LED
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericDigitalOut
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
-class UnprovisionedLED(
+class UnprovisionedDigitalOut(
     override val device: BowlerDevice,
     override val resourceId: ResourceId
 ) : UnprovisionedDeviceResource {
 
-    override fun provision(): Either<ProvisionError, LED> {
+    override fun provision(): Either<ProvisionError, GenericDigitalOut> {
         device.bowlerRPCProtocol.write()
         device.bowlerRPCProtocol.read()
-        return LED(device, resourceId).right()
+        return GenericDigitalOut(device, resourceId).right()
     }
 }

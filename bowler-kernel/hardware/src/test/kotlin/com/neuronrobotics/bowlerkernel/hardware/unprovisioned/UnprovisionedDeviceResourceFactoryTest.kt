@@ -30,35 +30,41 @@ class UnprovisionedDeviceResourceFactoryTest {
     @Test
     fun `test resource id out of range`() {
         val deviceName = "A"
-        val resourceId = ResourceId(
-            DefaultResourceTypes.DigitalOut,
-            DefaultAttachmentPoints.Pin(0)
-        )
+        val resourceId = DefaultAttachmentPoints.Pin(0)
 
         val device = mock<BowlerDevice> {
             on {
-                isResourceInRange(resourceId)
+                isResourceInRange(
+                    ResourceId(
+                        DefaultResourceTypes.DigitalOut,
+                        resourceId
+                    )
+                )
             } doReturn false
         }
 
         registry.registerDevice(SimpleDeviceId(deviceName)) { device }
         val error = UnprovisionedDeviceResourceFactory(registry, device)
-            .makeUnprovisionedLED(resourceId)
+            .makeUnprovisionedDigitalOut(resourceId)
 
         assertTrue(error.isLeft())
     }
 
     @Test
     fun `make unprovisioned led`() {
-        ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1)).let {
-            testRegistry(it) { makeUnprovisionedLED(it) }
+        DefaultAttachmentPoints.Pin(1).let {
+            testRegistry(
+                ResourceId(DefaultResourceTypes.DigitalOut, it)
+            ) { makeUnprovisionedDigitalOut(it) }
         }
     }
 
     @Test
     fun `make unprovisioned servo`() {
-        ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1)).let {
-            testRegistry(it) { makeUnprovisionedServo(it) }
+        DefaultAttachmentPoints.Pin(1).let {
+            testRegistry(
+                ResourceId(DefaultResourceTypes.Servo, it)
+            ) { makeUnprovisionedServo(it) }
         }
     }
 
