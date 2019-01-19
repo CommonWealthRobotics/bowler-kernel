@@ -14,7 +14,6 @@ import com.neuronrobotics.bowlerkernel.settings.BOWLERKERNEL_DIRECTORY
 import com.neuronrobotics.bowlerkernel.settings.BOWLER_DIRECTORY
 import com.neuronrobotics.bowlerkernel.settings.GITHUB_CACHE_DIRECTORY
 import com.neuronrobotics.bowlerkernel.settings.GIT_CACHE_DIRECTORY
-import com.neuronrobotics.bowlerkernel.util.toImmutableList
 import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
@@ -22,6 +21,7 @@ import org.kohsuke.github.GHGist
 import org.kohsuke.github.GHGistFile
 import org.kohsuke.github.GHObject
 import org.kohsuke.github.GitHub
+import org.octogonapus.guavautil.collections.toImmutableList
 import java.io.File
 import java.io.IOException
 import java.nio.file.Paths

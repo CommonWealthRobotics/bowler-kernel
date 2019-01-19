@@ -18,8 +18,8 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.InverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanGenerator
 import com.neuronrobotics.bowlerkernel.scripting.factory.GistScriptFactory
-import com.neuronrobotics.bowlerkernel.util.emptyImmutableList
-import com.neuronrobotics.bowlerkernel.util.toImmutableList
+import org.octogonapus.guavautil.collections.emptyImmutableList
+import org.octogonapus.guavautil.collections.toImmutableList
 import javax.inject.Inject
 
 class DefaultLimbFactory

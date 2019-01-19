@@ -40,7 +40,6 @@ val bowlerKernelKinematicsProject = project(":bowler-kernel:kinematics")
 val bowlerKernelLoggingProject = project(":bowler-kernel:logging")
 val bowlerKernelScriptingProject = project(":bowler-kernel:scripting")
 val bowlerKernelSettingsProject = project(":bowler-kernel:config")
-val bowlerKernelUtilProject = project(":bowler-kernel:util")
 
 val kotlinProjects = setOf(
     bowlerKernelProject,
@@ -49,8 +48,7 @@ val kotlinProjects = setOf(
     bowlerKernelKinematicsProject,
     bowlerKernelLoggingProject,
     bowlerKernelScriptingProject,
-    bowlerKernelSettingsProject,
-    bowlerKernelUtilProject
+    bowlerKernelSettingsProject
 )
 
 val javaProjects = setOf<Project>() + kotlinProjects
@@ -84,6 +82,7 @@ allprojects {
     repositories {
         jcenter()
         mavenCentral()
+        maven(url = "https://dl.bintray.com/octogonapus/maven-artifacts")
     }
 
     // Configures the Jacoco tool version to be the same for all projects that have it applied.

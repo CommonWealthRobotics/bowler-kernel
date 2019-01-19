@@ -17,13 +17,13 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.Unp
 import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
 import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultTextScriptFactory
 import com.neuronrobotics.bowlerkernel.scripting.parser.DefaultScriptLanguageParser
-import com.neuronrobotics.bowlerkernel.util.emptyImmutableList
 import com.nhaarman.mockitokotlin2.mock
 import org.jlleitschuh.guice.key
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
+import org.octogonapus.guavautil.collections.emptyImmutableList
 import javax.inject.Inject
 
 class ScriptIntegrationTest {

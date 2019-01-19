@@ -9,13 +9,13 @@ import arrow.core.Either
 import arrow.core.flatMap
 import arrow.core.left
 import arrow.core.right
-import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseData
+import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.LimbFactory
 import com.neuronrobotics.bowlerkernel.scripting.factory.GistScriptFactory
-import com.neuronrobotics.bowlerkernel.util.emptyImmutableList
-import com.neuronrobotics.bowlerkernel.util.toImmutableList
-import com.neuronrobotics.bowlerkernel.util.toImmutableMap
+import org.octogonapus.guavautil.collections.emptyImmutableList
+import org.octogonapus.guavautil.collections.toImmutableList
+import org.octogonapus.guavautil.collections.toImmutableMap
 import javax.inject.Inject
 
 class DefaultKinematicBaseFactory

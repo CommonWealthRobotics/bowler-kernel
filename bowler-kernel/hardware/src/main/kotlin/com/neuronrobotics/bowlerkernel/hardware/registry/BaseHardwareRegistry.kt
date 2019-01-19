@@ -16,8 +16,8 @@ import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.DeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
-import com.neuronrobotics.bowlerkernel.util.toImmutableSet
-import com.neuronrobotics.bowlerkernel.util.toImmutableSetMultimap
+import org.octogonapus.guavautil.collections.toImmutableSet
+import org.octogonapus.guavautil.collections.toImmutableSetMultimap
 
 /**
  * The base implementation of [HardwareRegistry].

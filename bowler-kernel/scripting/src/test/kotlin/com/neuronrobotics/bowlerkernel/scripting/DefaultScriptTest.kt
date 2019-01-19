@@ -10,7 +10,6 @@ import arrow.core.left
 import arrow.core.right
 import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultTextScriptFactory
 import com.neuronrobotics.bowlerkernel.scripting.parser.ScriptLanguageParser
-import com.neuronrobotics.bowlerkernel.util.emptyImmutableList
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -19,6 +18,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.octogonapus.guavautil.collections.emptyImmutableList
 import java.time.Duration
 import kotlin.concurrent.thread
 
@@ -134,5 +134,19 @@ internal class DefaultScriptTest {
             { assertTrue(result.isRight()) },
             { assertEquals("Hello, World!", result.fold({ null }, { it as? String })) }
         )
+    }
+
+    @Test
+    fun `test run script with unknown language`() {
+        val mockScriptLanguageParser = mock<ScriptLanguageParser> {
+            on { parse("qwerty") } doReturn "".left()
+        }
+
+        val script = DefaultTextScriptFactory(
+            mockScriptLanguageParser
+        ).createScriptFromText("qwerty", "")
+
+        val result = script.flatMap { it.runScript(emptyImmutableList()) }
+        assertTrue(result.isLeft())
     }
 }

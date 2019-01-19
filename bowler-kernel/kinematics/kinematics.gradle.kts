@@ -8,7 +8,7 @@ dependencies {
     api(group = "org.ejml", name = "ejml-all", version = "0.37.1")
     api(project(":bowler-kernel:scripting"))
 
-    implementation(project(":bowler-kernel:util"))
+    implementation(group = "org.octogonapus", name = "kt-guava-core", version = "0.0.1")
     implementation(group = "com.google.inject", name = "guice", version = "4.1.0")
     implementation(
         group = "com.google.inject.extensions",

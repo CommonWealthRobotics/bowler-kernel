@@ -17,10 +17,10 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedServoFactory
-import com.neuronrobotics.bowlerkernel.util.emptyImmutableList
 import com.nhaarman.mockitokotlin2.mock
 import org.jlleitschuh.guice.key
 import org.junit.jupiter.api.Test
+import org.octogonapus.guavautil.collections.emptyImmutableList
 import javax.inject.Inject
 
 class TestHardware

@@ -14,7 +14,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.model.DhParamData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LinkData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
-import com.neuronrobotics.bowlerkernel.util.immutableListOf
+import org.octogonapus.guavautil.collections.immutableListOf
 
 @SuppressWarnings("LongParameterList")
 fun createMockLinkData(

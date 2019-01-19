@@ -10,14 +10,14 @@ import com.neuronrobotics.bowlerkernel.control.kinematics.MockJointAngleControll
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.DefaultLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlan
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanStep
-import com.neuronrobotics.bowlerkernel.util.emptyImmutableList
-import com.neuronrobotics.bowlerkernel.util.immutableListOf
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.octogonapus.guavautil.collections.emptyImmutableList
+import org.octogonapus.guavautil.collections.immutableListOf
 import kotlin.math.abs
 
 internal class DefaultLimbMotionPlanFollowerTest {

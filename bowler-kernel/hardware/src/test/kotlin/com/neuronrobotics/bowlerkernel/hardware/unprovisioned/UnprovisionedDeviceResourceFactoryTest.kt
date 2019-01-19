@@ -18,11 +18,11 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.Unp
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResourceFactory
 import com.neuronrobotics.bowlerkernel.hardware.registry.BaseHardwareRegistry
 import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
-import com.neuronrobotics.bowlerkernel.util.immutableListOf
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.octogonapus.guavautil.collections.immutableListOf
 
 class UnprovisionedDeviceResourceFactoryTest {
 

@@ -15,10 +15,10 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
-import com.neuronrobotics.bowlerkernel.util.emptyImmutableSetMultimap
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.octogonapus.guavautil.collections.emptyImmutableSetMultimap
 import kotlin.test.assertEquals
 
 class HardwareRegistryTrackerTest {
