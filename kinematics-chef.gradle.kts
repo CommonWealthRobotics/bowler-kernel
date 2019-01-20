@@ -18,7 +18,7 @@ plugins {
     id("com.github.spotbugs") version "1.6.5"
     id("io.gitlab.arturbosch.detekt") version "1.0.0-RC12"
     `maven-publish`
-    id("com.jfrog.bintray") version "1.8.4"
+    id("com.jfrog.bintray") version "1.8.3"
     `java-library`
     id("com.github.johnrengelman.shadow") version "4.0.3"
 }
@@ -33,19 +33,15 @@ allprojects {
     group = "com.neuronrobotics"
 }
 
-val kinematicsChefProject = project(":kinematics-chef")
-val kinematicsChefCoreProject = project(":kinematics-chef:core")
+val coreProject = project(":core")
 
 val kotlinProjects = setOf(
-    kinematicsChefProject,
-    kinematicsChefCoreProject
+    coreProject
 )
 
 val javaProjects = setOf<Project>() + kotlinProjects
 
-val publishedProjects = setOf(
-    kinematicsChefCoreProject
-)
+val publishedProjects = setOf<Project>() + kotlinProjects
 
 object Strings {
     const val spotlessLicenseHeaderDelimiter = "(@|package|import)"
@@ -324,6 +320,10 @@ configure(kotlinProjects) {
         parallel = true
         config = files("${rootProject.rootDir}/config/detekt/config.yml")
     }
+
+    checkstyle {
+        configFile = file("${rootProject.rootDir}/config/checkstyle/checkstyle.xml")
+    }
 }
 
 configure(publishedProjects) {
@@ -383,13 +383,6 @@ configure(publishedProjects) {
                 desc = "Cooking up kinematics solutions."
             }
         }
-    }
-}
-
-kinematicsChefProject.configure {
-    tasks.withType<BintrayUploadTask> {
-        // Don't run in this empty project to avoid errors
-        enabled = false
     }
 }
 
