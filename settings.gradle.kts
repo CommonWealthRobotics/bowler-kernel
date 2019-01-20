@@ -5,10 +5,10 @@ buildCache {
     }
 }
 
-rootProject.name = "KinematicsChef"
+rootProject.name = "kinematics-chef"
 
-include(":KinematicsChef")
-include(":KinematicsChef:Core")
+include(":kinematics-chef")
+include(":kinematics-chef:core")
 
 /**
  * This configures the gradle build so we can use non-standard build file names.

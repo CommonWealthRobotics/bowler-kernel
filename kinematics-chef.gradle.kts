@@ -1,6 +1,6 @@
-import KinematicsChef_gradle.Strings.spotlessLicenseHeaderDelimiter
-import KinematicsChef_gradle.Versions.kinematicsChefVersion
-import KinematicsChef_gradle.Versions.ktlintVersion
+import Kinematics_chef_gradle.Strings.spotlessLicenseHeaderDelimiter
+import Kinematics_chef_gradle.Versions.kinematicsChefVersion
+import Kinematics_chef_gradle.Versions.ktlintVersion
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.spotbugs.SpotBugsTask
 import com.jfrog.bintray.gradle.tasks.BintrayUploadTask
@@ -16,7 +16,7 @@ plugins {
     id("com.diffplug.gradle.spotless") version "3.16.0"
     id("org.jlleitschuh.gradle.ktlint") version "6.3.1"
     id("com.github.spotbugs") version "1.6.5"
-    id("io.gitlab.arturbosch.detekt") version "1.0.0-RC11"
+    id("io.gitlab.arturbosch.detekt") version "1.0.0-RC12"
     `maven-publish`
     id("com.jfrog.bintray") version "1.8.4"
     `java-library`
@@ -33,8 +33,8 @@ allprojects {
     group = "com.neuronrobotics"
 }
 
-val kinematicsChefProject = project(":KinematicsChef")
-val kinematicsChefCoreProject = project(":KinematicsChef:Core")
+val kinematicsChefProject = project(":kinematics-chef")
+val kinematicsChefCoreProject = project(":kinematics-chef:core")
 
 val kotlinProjects = setOf(
     kinematicsChefProject,
@@ -148,14 +148,7 @@ configure(javaProjects) {
     }
 
     tasks.withType<Test> {
-        extensions.configure(typeOf<JacocoTaskExtension>()) {
-            /*
-             * Fix for Jacoco breaking Build Cache support.
-             * https://github.com/gradle/gradle/issues/5269
-             */
-            isAppend = false
-        }
-
+        @Suppress("UnstableApiUsage")
         useJUnitPlatform {
             filter {
                 includeTestsMatching("*Test")
@@ -199,10 +192,12 @@ configure(javaProjects) {
             exceptionFormat = TestExceptionFormat.FULL
         }
 
+        @Suppress("UnstableApiUsage")
         reports.junitXml.destination = file("${rootProject.buildDir}/test-results/${project.name}")
     }
 
     tasks.withType<JacocoReport> {
+        @Suppress("UnstableApiUsage")
         reports {
             html.isEnabled = true
             xml.isEnabled = true
@@ -217,6 +212,7 @@ configure(javaProjects) {
             trimTrailingWhitespace()
             indentWithSpaces(2)
             endWithNewline()
+            @Suppress("INACCESSIBLE_TYPE")
             licenseHeaderFile(
                 "${rootProject.rootDir}/config/spotless/kinematicschef.license",
                 spotlessLicenseHeaderDelimiter
@@ -234,6 +230,7 @@ configure(javaProjects) {
     }
 
     tasks.withType<SpotBugsTask> {
+        @Suppress("UnstableApiUsage")
         reports {
             xml.isEnabled = false
             emacs.isEnabled = false
@@ -310,6 +307,7 @@ configure(kotlinProjects) {
             trimTrailingWhitespace()
             indentWithSpaces(2)
             endWithNewline()
+            @Suppress("INACCESSIBLE_TYPE")
             licenseHeaderFile(
                 "${rootProject.rootDir}/config/spotless/kinematicschef.license",
                 spotlessLicenseHeaderDelimiter
@@ -318,7 +316,7 @@ configure(kotlinProjects) {
     }
 
     detekt {
-        toolVersion = "1.0.0-RC11"
+        toolVersion = "1.0.0-RC12"
         input = files(
             "src/main/kotlin",
             "src/test/kotlin"
@@ -339,27 +337,27 @@ configure(publishedProjects) {
     task<Jar>("sourcesJar") {
         from(sourceSets.main.get().allSource)
         classifier = "sources"
-        baseName = "kinematicschef-${this@configure.name.toLowerCase()}"
+        baseName = "kinematics-chef-${this@configure.name.toLowerCase()}"
     }
 
     task<Jar>("javadocJar") {
         from(tasks.javadoc)
         classifier = "javadoc"
-        baseName = "kinematicschef-${this@configure.name.toLowerCase()}"
+        baseName = "kinematics-chef-${this@configure.name.toLowerCase()}"
     }
 
     tasks {
         "shadowJar"(ShadowJar::class) {
-            baseName = "kinematicschef-${this@configure.name.toLowerCase()}"
+            baseName = "kinematics-chef-${this@configure.name.toLowerCase()}"
         }
     }
 
-    val publicationName = "publication-kinematicschef-${name.toLowerCase()}"
+    val publicationName = "publication-kinematics-chef-${name.toLowerCase()}"
 
     publishing {
         publications {
             create<MavenPublication>(publicationName) {
-                artifactId = "kinematicschef-${this@configure.name.toLowerCase()}"
+                artifactId = "kinematics-chef-${this@configure.name.toLowerCase()}"
                 from(components["java"])
                 artifact(tasks["sourcesJar"])
                 artifact(tasks["javadocJar"])
@@ -374,12 +372,12 @@ configure(publishedProjects) {
         setPublications(publicationName)
         with(pkg) {
             repo = "maven-artifacts"
-            name = "KinematicsChef"
+            name = "kinematics-chef"
             userOrg = "commonwealthrobotics"
             publish = true
             setLicenses("MPL-2.0")
-            vcsUrl = "https://github.com/CommonWealthRobotics/KinematicsChef.git"
-            githubRepo = "https://github.com/CommonWealthRobotics/KinematicsChef"
+            vcsUrl = "https://github.com/CommonWealthRobotics/kinematics-chef.git"
+            githubRepo = "https://github.com/CommonWealthRobotics/kinematics-chef"
             with(version) {
                 name = kinematicsChefVersion
                 desc = "Cooking up kinematics solutions."
