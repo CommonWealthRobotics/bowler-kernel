@@ -37,6 +37,19 @@ internal constructor(
 
     private var scriptThread: Deferred<Any?>? = null
 
+    /**
+     * Runs the script on the current thread.
+     *
+     * If the language is Groovy, some star imports are added and two variables, `args` and
+     * `injector`, are added.
+     *
+     * If the language is Kotlin, special code structure must be used. The script must return a
+     * [KClass] which implements [Script]. This class will make an instance of it with
+     * [Script.injector] and will then call [Script.runScript] with `args`.
+     *
+     * @param args The arguments to the script.
+     * @return The result of the script.
+     */
     override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> =
         when (language) {
             is ScriptLanguage.Groovy -> runBlocking {
