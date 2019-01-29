@@ -122,28 +122,13 @@ class GitHubFS(
         gitUrl: String
     ): GitHubRepo {
         return when {
-            gitUrl.startsWith("http://github.com/") ||
-                gitUrl.startsWith("https://github.com/") -> {
-                val repoFullName = gitUrl
-                    .removePrefix("http://github.com/")
-                    .removePrefix("https://github.com/")
-                    .removeSuffix(".git/")
-                    .removeSuffix(".git")
-
+            isRepoUrl(gitUrl) -> {
+                val repoFullName = stripUrlCharactersFromGitUrl(gitUrl)
                 val (owner, repoName) = repoFullName.split("/")
                 GitHubRepo.Repository(owner, repoName)
             }
 
-            gitUrl.startsWith("http://gist.github.com/") ||
-                gitUrl.startsWith("https://gist.github.com/") -> {
-                val gistId = gitUrl
-                    .removePrefix("http://gist.github.com/")
-                    .removePrefix("https://gist.github.com/")
-                    .removeSuffix(".git/")
-                    .removeSuffix(".git")
-
-                GitHubRepo.Gist(gistId)
-            }
+            isGistUrl(gitUrl) -> GitHubRepo.Gist(stripUrlCharactersFromGitUrl(gitUrl))
 
             else -> throw IllegalArgumentException(
                 """
@@ -257,14 +242,11 @@ class GitHubFS(
          */
         @SuppressWarnings("SpreadOperator")
         private fun gitUrlToDirectory(gitUrl: String): File {
-            val subDirs = gitUrl
-                .removePrefix("http://github.com/")
-                .removePrefix("https://github.com/")
-                .removePrefix("http://gist.github.com/")
-                .removePrefix("https://gist.github.com/")
-                .removeSuffix(".git/")
-                .removeSuffix(".git")
-                .split("/")
+            require(isRepoUrl(gitUrl)) {
+                "The supplied Git URL was not a valid repository URL."
+            }
+
+            val subDirs = stripUrlCharactersFromGitUrl(gitUrl).split("/")
 
             return Paths.get(
                 System.getProperty("user.home"),
@@ -277,10 +259,52 @@ class GitHubFS(
         }
 
         /**
-         * Returns whether the [url] is a valid HTTP Git url.
+         * Returns whether the [url] is a valid GitHub repository Git URL.
          *
-         * @param url The url to validate
-         * @return Whether the [url] is a valid HTTP Git url.
+         * @param url The URL to validate.
+         * @return Whether the [url] is a valid GitHub repository Git URL.
+         */
+        fun isRepoUrl(url: String) =
+            url.run {
+                (startsWith("http://github.com/") || startsWith("https://github.com/")) &&
+                    (endsWith(".git/") || endsWith(".git")) &&
+                    isValidHttpGitURL(url)
+            }
+
+        /**
+         * Returns whether the [url] is a valid GitHub Gist Git URL.
+         *
+         * @param url The URL to validate.
+         * @return Whether the [url] is a valid GitHub Gist Git URL.
+         */
+        fun isGistUrl(url: String) =
+            url.run {
+                (startsWith("http://gist.github.com/") ||
+                    startsWith("https://gist.github.com/")) &&
+                    (endsWith(".git/") || endsWith(".git")) &&
+                    isValidHttpGitURL(url)
+            }
+
+        /**
+         * Removes all the characters from [gitUrl] which are not part of the Gist id or
+         * repository owner and name.
+         *
+         * @param gitUrl The URL to format.
+         * @return The stripped URL.
+         */
+        fun stripUrlCharactersFromGitUrl(gitUrl: String) =
+            gitUrl.removePrefix("http://github.com/")
+                .removePrefix("https://github.com/")
+                .removePrefix("http://gist.github.com/")
+                .removePrefix("https://gist.github.com/")
+                .removeSuffix(".git/")
+                .removeSuffix(".git")
+
+        /**
+         * Returns whether the [url] is a valid HTTP Git URL.
+         *
+         * @param url The URL to validate.
+         * @return Whether the [url] is a valid HTTP Git URL.
          */
         private fun isValidHttpGitURL(url: String) =
             url.matches("(http(s)?)(:(//)?)([\\w.@:/\\-~]+)(\\.git)(/)?".toRegex())
