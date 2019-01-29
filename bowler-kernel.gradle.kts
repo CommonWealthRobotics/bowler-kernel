@@ -225,7 +225,7 @@ configure(javaProjects) {
             endWithNewline()
             @Suppress("INACCESSIBLE_TYPE")
             licenseHeaderFile(
-                "${rootProject.rootDir}/config/spotless/bowler.license",
+                "${rootProject.rootDir}/config/spotless/bowler-builder.license",
                 spotlessLicenseHeaderDelimiter
             )
         }
@@ -325,7 +325,7 @@ configure(kotlinProjects) {
             endWithNewline()
             @Suppress("INACCESSIBLE_TYPE")
             licenseHeaderFile(
-                "${rootProject.rootDir}/config/spotless/bowler.license",
+                "${rootProject.rootDir}/config/spotless/bowler-builder.license",
                 spotlessLicenseHeaderDelimiter
             )
         }
