@@ -90,6 +90,7 @@ class DefaultLimb(
     override fun getCurrentJointAngles() =
         jointAngleControllers.map { it.getCurrentAngle() }.toImmutableList()
 
+    // TODO: Add reachability interface instead of computing this naively
     override fun isTaskSpaceTransformReachable(taskSpaceTransform: FrameTransformation) =
         taskSpaceTransform.getTranslation().length() <
             links.map { it.dhParam }.toFrameTransformation().getTranslation().length()
