@@ -17,43 +17,40 @@
 package com.neuronrobotics.bowlerkernel.scripting.factory
 
 import arrow.core.Either
-import arrow.core.Try
 import arrow.core.flatMap
 import com.google.inject.assistedinject.Assisted
+import com.neuronrobotics.bowlerkernel.gitfs.GitHubFS
 import com.neuronrobotics.bowlerkernel.scripting.DefaultScript
 import com.neuronrobotics.bowlerkernel.scripting.parser.ScriptLanguageParser
 import org.kohsuke.github.GitHub
 import javax.inject.Inject
 
-class DefaultGistScriptFactory
+class DefaultGitScriptFactory
 @Inject internal constructor(
-    @Assisted private val gitHub: GitHub,
+    @Assisted private val gitHubFS: GitHubFS,
     private val scriptLanguageParser: ScriptLanguageParser
-) : GistScriptFactory {
+) : GitScriptFactory {
 
     /**
      * Creates a [DefaultScript] from a gist.
      *
-     * @param gistId The gist id.
+     * @param gitUrl The gist id.
      * @param filename The file name in the gist.
      * @return A [DefaultScript] on success, a [String] on error.
      */
-    override fun createScriptFromGist(
-        gistId: String,
+    override fun createScriptFromGit(
+        gitUrl: String,
         filename: String
     ): Either<String, DefaultScript> =
-        Try {
-            val file = gitHub.getGist(gistId).files.entries.first { it.key == filename }.value
-            val language = scriptLanguageParser.parse(file.language)
+        gitHubFS.cloneRepoAndGetFiles(gitUrl).map {
+            val file = it.first { it.name == filename }
+            val language = scriptLanguageParser.parse(file.extension)
             language.map {
-                DefaultScript(
-                    it,
-                    file.content
-                )
+                DefaultScript(it, file.readText())
             }
         }.toEither { it.localizedMessage }.flatMap { it }
 
     interface Factory {
-        fun create(gitHub: GitHub): DefaultGistScriptFactory
+        fun create(gitHub: GitHub): DefaultGitScriptFactory
     }
 }

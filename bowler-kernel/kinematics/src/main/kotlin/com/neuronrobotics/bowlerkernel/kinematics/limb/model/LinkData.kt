@@ -23,8 +23,8 @@ data class LinkData(
     val type: LinkType,
     val dhParamData: DhParamData,
     val jointLimits: Limits,
-    val jointAngleControllerGistId: String,
+    val jointAngleControllerGitURL: String,
     val jointAngleControllerFilename: String,
-    val inertialStateEstimatorGistId: String,
+    val inertialStateEstimatorGitURL: String,
     val inertialStateEstimatorFilename: String
 )

@@ -23,7 +23,7 @@ import arrow.core.right
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseData
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.LimbFactory
-import com.neuronrobotics.bowlerkernel.scripting.factory.GistScriptFactory
+import com.neuronrobotics.bowlerkernel.scripting.factory.GitScriptFactory
 import org.octogonapus.guavautil.collections.emptyImmutableList
 import org.octogonapus.guavautil.collections.toImmutableList
 import org.octogonapus.guavautil.collections.toImmutableMap
@@ -31,7 +31,7 @@ import javax.inject.Inject
 
 class DefaultKinematicBaseFactory
 @Inject constructor(
-    private val scriptFactory: GistScriptFactory,
+    private val scriptFactory: GitScriptFactory,
     private val limbFactory: LimbFactory
 ) : KinematicBaseFactory {
 
@@ -60,7 +60,7 @@ class DefaultKinematicBaseFactory
     }
 
     private inline fun <reified T> getInstanceFromGist(gistId: String, filename: String) =
-        scriptFactory.createScriptFromGist(gistId, filename).flatMap { script ->
+        scriptFactory.createScriptFromGit(gistId, filename).flatMap { script ->
             script.runScript(emptyImmutableList()).map { it as T }
         }
 }

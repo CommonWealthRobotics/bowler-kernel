@@ -28,22 +28,22 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialStateEstimator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanGenerator
-import com.neuronrobotics.bowlerkernel.scripting.factory.GistScriptFactory
+import com.neuronrobotics.bowlerkernel.scripting.factory.GitScriptFactory
 import org.octogonapus.guavautil.collections.emptyImmutableList
 import org.octogonapus.guavautil.collections.toImmutableList
 import javax.inject.Inject
 
 class DefaultLimbFactory
 @Inject constructor(
-    private val scriptFactory: GistScriptFactory,
+    private val scriptFactory: GitScriptFactory,
     private val linkFactory: LinkFactory
 ) : LimbFactory {
 
     @SuppressWarnings("ReturnCount")
     override fun createLimb(limbData: LimbData): Either<LimbCreationError, Limb> {
         val links = limbData.links.map {
-            val estimator = getInstanceFromGist<InertialStateEstimator>(
-                it.inertialStateEstimatorGistId,
+            val estimator = getInstanceFromGit<InertialStateEstimator>(
+                it.inertialStateEstimatorGitURL,
                 it.inertialStateEstimatorFilename
             ).fold({ return it.left() }, { it })
 
@@ -55,37 +55,37 @@ class DefaultLimbFactory
             )
         }.toImmutableList()
 
-        val fkSolver = getInstanceFromGist<ForwardKinematicsSolver>(
-            limbData.forwardKinematicsSolverGistId,
+        val fkSolver = getInstanceFromGit<ForwardKinematicsSolver>(
+            limbData.forwardKinematicsSolverGitURL,
             limbData.forwardKinematicsSolverFilename
         ).fold({ return it.left() }, { it })
 
-        val ikSolver = getInstanceFromGist<InverseKinematicsSolver>(
-            limbData.inverseKinematicsSolverGistId,
+        val ikSolver = getInstanceFromGit<InverseKinematicsSolver>(
+            limbData.inverseKinematicsSolverGitURL,
             limbData.inverseKinematicsSolverFilename
         ).fold({ return it.left() }, { it })
 
-        val limbMotionPlanGenerator = getInstanceFromGist<LimbMotionPlanGenerator>(
-            limbData.limbMotionPlanGeneratorGistId,
+        val limbMotionPlanGenerator = getInstanceFromGit<LimbMotionPlanGenerator>(
+            limbData.limbMotionPlanGeneratorGitURL,
             limbData.limbMotionPlanGeneratorFilename
         ).fold({ return it.left() }, { it })
 
-        val limbMotionPlanFollower = getInstanceFromGist<LimbMotionPlanFollower>(
-            limbData.limbMotionPlanFollowerGistId,
+        val limbMotionPlanFollower = getInstanceFromGit<LimbMotionPlanFollower>(
+            limbData.limbMotionPlanFollowerGitURL,
             limbData.limbMotionPlanFollowerFilename
         ).fold({ return it.left() }, { it })
 
         val jointAngleControllers = limbData.links.map {
-            getInstanceFromGist<JointAngleController>(
-                it.jointAngleControllerGistId,
+            getInstanceFromGit<JointAngleController>(
+                it.jointAngleControllerGitURL,
                 it.jointAngleControllerFilename
             )
         }.map {
             it.fold({ return it.left() }, { it })
         }.toImmutableList()
 
-        val inertialStateEstimator = getInstanceFromGist<InertialStateEstimator>(
-            limbData.inertialStateEstimatorGistId,
+        val inertialStateEstimator = getInstanceFromGit<InertialStateEstimator>(
+            limbData.inertialStateEstimatorGitURL,
             limbData.inertialStateEstimatorFilename
         ).fold({ return it.left() }, { it })
 
@@ -101,8 +101,8 @@ class DefaultLimbFactory
         ).right()
     }
 
-    private inline fun <reified T> getInstanceFromGist(gistId: String, filename: String) =
-        scriptFactory.createScriptFromGist(gistId, filename).flatMap { script ->
+    private inline fun <reified T> getInstanceFromGit(gitUrl: String, filename: String) =
+        scriptFactory.createScriptFromGit(gitUrl, filename).flatMap { script ->
             script.runScript(emptyImmutableList()).map { it as T }
         }
 }

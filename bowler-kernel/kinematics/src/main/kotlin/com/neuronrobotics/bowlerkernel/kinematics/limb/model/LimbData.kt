@@ -18,19 +18,17 @@ package com.neuronrobotics.bowlerkernel.kinematics.limb.model
 
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
 
-// TODO: Use a more general "git resource id" instead of just a gist id
-// We want to be able to specify files in GitHub repos, too
 data class LimbData(
     val id: SimpleLimbId,
     val links: List<LinkData>,
-    val forwardKinematicsSolverGistId: String,
+    val forwardKinematicsSolverGitURL: String,
     val forwardKinematicsSolverFilename: String,
-    val inverseKinematicsSolverGistId: String,
+    val inverseKinematicsSolverGitURL: String,
     val inverseKinematicsSolverFilename: String,
-    val limbMotionPlanGeneratorGistId: String,
+    val limbMotionPlanGeneratorGitURL: String,
     val limbMotionPlanGeneratorFilename: String,
-    val limbMotionPlanFollowerGistId: String,
+    val limbMotionPlanFollowerGitURL: String,
     val limbMotionPlanFollowerFilename: String,
-    val inertialStateEstimatorGistId: String,
+    val inertialStateEstimatorGitURL: String,
     val inertialStateEstimatorFilename: String
 )
