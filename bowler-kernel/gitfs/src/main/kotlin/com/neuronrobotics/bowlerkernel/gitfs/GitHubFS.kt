@@ -200,20 +200,6 @@ class GitHubFS(
         }
     }
 
-    /**
-     * Maps a repository to its files.
-     *
-     * @receiver The repository.
-     * @return The files in the repository, excluding `.git/` files and the receiver file.
-     */
-    private fun Try<File>.mapToRepoFiles() = map { repoFile ->
-        repoFile.walkTopDown()
-            .filter { file -> file.path != repoFile.path }
-            .filter { !it.path.contains(".git") }
-            .toList()
-            .toImmutableList()
-    }
-
     companion object {
         private val LOGGER = LoggerUtilities.getLogger(GitHubFS::class.java.simpleName)
 
@@ -231,31 +217,6 @@ class GitHubFS(
             return Try {
                 directory.walkTopDown().first { it.name == gistFile.fileName }
             }
-        }
-
-        /**
-         * Maps a [gitUrl] to its directory on disk. The directory does not necessarily exist.
-         *
-         * @param gitUrl The `.git` URL, i.e.
-         * `https://github.com/CommonWealthRobotics/BowlerBuilder.git` or
-         * `https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git`.
-         */
-        @SuppressWarnings("SpreadOperator")
-        private fun gitUrlToDirectory(gitUrl: String): File {
-            require(isRepoUrl(gitUrl)) {
-                "The supplied Git URL was not a valid repository URL."
-            }
-
-            val subDirs = stripUrlCharactersFromGitUrl(gitUrl).split("/")
-
-            return Paths.get(
-                System.getProperty("user.home"),
-                BOWLER_DIRECTORY,
-                BOWLERKERNEL_DIRECTORY,
-                GIT_CACHE_DIRECTORY,
-                GITHUB_CACHE_DIRECTORY,
-                * subDirs.toTypedArray()
-            ).toFile()
         }
 
         /**
@@ -308,5 +269,44 @@ class GitHubFS(
          */
         private fun isValidHttpGitURL(url: String) =
             url.matches("(http(s)?)(:(//)?)([\\w.@:/\\-~]+)(\\.git)(/)?".toRegex())
+
+        /**
+         * Maps a repository to its files.
+         *
+         * @receiver The repository.
+         * @return The files in the repository, excluding `.git/` files and the receiver file.
+         */
+        private fun Try<File>.mapToRepoFiles() = map { repoFile ->
+            repoFile.walkTopDown()
+                .filter { file -> file.path != repoFile.path }
+                .filter { !it.path.contains(".git") }
+                .toList()
+                .toImmutableList()
+        }
+
+        /**
+         * Maps a [gitUrl] to its directory on disk. The directory does not necessarily exist.
+         *
+         * @param gitUrl The `.git` URL, i.e.
+         * `https://github.com/CommonWealthRobotics/BowlerBuilder.git` or
+         * `https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git`.
+         */
+        @SuppressWarnings("SpreadOperator")
+        private fun gitUrlToDirectory(gitUrl: String): File {
+            require(isRepoUrl(gitUrl) || isGistUrl(gitUrl)) {
+                "The supplied Git URL was not a valid repository or Gist URL."
+            }
+
+            val subDirs = stripUrlCharactersFromGitUrl(gitUrl).split("/")
+
+            return Paths.get(
+                System.getProperty("user.home"),
+                BOWLER_DIRECTORY,
+                BOWLERKERNEL_DIRECTORY,
+                GIT_CACHE_DIRECTORY,
+                GITHUB_CACHE_DIRECTORY,
+                * subDirs.toTypedArray()
+            ).toFile()
+        }
     }
 }
