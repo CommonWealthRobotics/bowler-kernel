@@ -1,12 +1,12 @@
+
 import Bowler_kernel_gradle.Strings.spotlessLicenseHeaderDelimiter
 import Bowler_kernel_gradle.Versions.bowlerKernelVersion
 import Bowler_kernel_gradle.Versions.ktlintVersion
 import com.github.spotbugs.SpotBugsTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.gradle.api.tasks.testing.Test
 import org.gradle.util.GFileUtils
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.nio.file.Paths
 import java.util.Properties
 
@@ -414,7 +414,7 @@ configure(publishedProjects) {
             name = "bowler-kernel"
             userOrg = "commonwealthrobotics"
             publish = true
-            setLicenses("MPL-2.0")
+            setLicenses("LGPL-3.0")
             vcsUrl = "https://github.com/CommonWealthRobotics/bowler-kernel.git"
             githubRepo = "https://github.com/CommonWealthRobotics/bowler-kernel"
             with(version) {
