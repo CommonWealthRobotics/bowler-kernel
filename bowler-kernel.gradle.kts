@@ -1,4 +1,3 @@
-
 import Bowler_kernel_gradle.Strings.spotlessLicenseHeaderDelimiter
 import Bowler_kernel_gradle.Versions.bowlerKernelVersion
 import Bowler_kernel_gradle.Versions.ktlintVersion
