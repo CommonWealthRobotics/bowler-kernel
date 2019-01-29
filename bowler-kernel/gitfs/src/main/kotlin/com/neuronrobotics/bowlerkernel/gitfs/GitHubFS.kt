@@ -118,27 +118,6 @@ class GitHubFS(
         }.flatMap { it }
     }
 
-    private fun parseRepo(
-        gitUrl: String
-    ): GitHubRepo {
-        return when {
-            isRepoUrl(gitUrl) -> {
-                val repoFullName = stripUrlCharactersFromGitUrl(gitUrl)
-                val (owner, repoName) = repoFullName.split("/")
-                GitHubRepo.Repository(owner, repoName)
-            }
-
-            isGistUrl(gitUrl) -> GitHubRepo.Gist(stripUrlCharactersFromGitUrl(gitUrl))
-
-            else -> throw IllegalArgumentException(
-                """
-                |Invalid Git URL:
-                |$gitUrl
-                """.trimMargin()
-            )
-        }
-    }
-
     override fun forkAndCloneRepoAndGetFiles(
         gitUrl: String,
         branch: String
@@ -210,13 +189,8 @@ class GitHubFS(
          * @param gistFile The file in the gist.
          * @return The file on disk.
          */
-        fun mapGistFileToFileOnDisk(gist: GHGist, gistFile: GHGistFile): Try<File> {
-            val directory =
-                gitUrlToDirectory(gist.gitPullUrl)
-
-            return Try {
-                directory.walkTopDown().first { it.name == gistFile.fileName }
-            }
+        fun mapGistFileToFileOnDisk(gist: GHGist, gistFile: GHGistFile): Try<File> = Try {
+            gitUrlToDirectory(gist.gitPullUrl).walkTopDown().first { it.name == gistFile.fileName }
         }
 
         /**
@@ -269,6 +243,31 @@ class GitHubFS(
          */
         private fun isValidHttpGitURL(url: String) =
             url.matches("(http(s)?)(:(//)?)([\\w.@:/\\-~]+)(\\.git)(/)?".toRegex())
+
+        /**
+         * Maps a Git URL to a [GitHubRepo].
+         *
+         * @param gitUrl The Git URL.
+         * @return The [GitHubRepo] representation.
+         */
+        private fun parseRepo(gitUrl: String): GitHubRepo {
+            return when {
+                isRepoUrl(gitUrl) -> {
+                    val repoFullName = stripUrlCharactersFromGitUrl(gitUrl)
+                    val (owner, repoName) = repoFullName.split("/")
+                    GitHubRepo.Repository(owner, repoName)
+                }
+
+                isGistUrl(gitUrl) -> GitHubRepo.Gist(stripUrlCharactersFromGitUrl(gitUrl))
+
+                else -> throw IllegalArgumentException(
+                    """
+                    |Invalid Git URL:
+                    |$gitUrl
+                    """.trimMargin()
+                )
+            }
+        }
 
         /**
          * Maps a repository to its files.
