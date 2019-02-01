@@ -28,7 +28,7 @@ import kotlin.math.sqrt
 /**
  * An immutable frame transformation, internally back by a [SimpleMatrix].
  */
-class FrameTransformation
+data class FrameTransformation
 private constructor(private val mat: SimpleMatrix) {
 
     private val data = DoubleArray(mat.numRows() * mat.numCols()) { mat[it] }
