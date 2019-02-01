@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
+import arrow.core.Option
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
@@ -25,6 +26,19 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Resour
  * with the device, such as a packet being sent.
  */
 interface BowlerRPCProtocol {
+
+    /**
+     * Opens a persistent connection to the device. An error is returned if the connection is
+     * already open or could not be opened.
+     *
+     * @return An error if there is a connection problem.
+     */
+    fun connect(): Option<String>
+
+    /**
+     * Closes the persistent connection to the device. Does nothing if there is no connection open.
+     */
+    fun disconnect()
 
     /**
      * Queries whether the [resourceId] is in the valid range of resources for this device.

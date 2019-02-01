@@ -30,6 +30,19 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Resour
 interface BufferedBowlerRPCProtocol {
 
     /**
+     * Opens a persistent connection to the device. An error is returned if the connection is
+     * already open or could not be opened.
+     *
+     * @return An error if there is a connection problem.
+     */
+    fun connect(): Option<String>
+
+    /**
+     * Closes the persistent connection to the device. Does nothing if there is no connection open.
+     */
+    fun disconnect(): Option<String>
+
+    /**
      * Starts polling the resource and saving it to a cache so reading from the resource does not
      * require a packet.
      *

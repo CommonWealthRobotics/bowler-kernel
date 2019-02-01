@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.registry
 
+import arrow.core.Option
 import arrow.core.right
 import com.neuronrobotics.bowlerkernel.hardware.device.Device
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
@@ -33,8 +34,9 @@ internal data class MockDevice(
     var connectWasCalled = false
     var disconnectWasCalled = false
 
-    override fun connect() {
+    override fun connect(): Option<String> {
         connectWasCalled = true
+        return Option.empty()
     }
 
     override fun disconnect() {

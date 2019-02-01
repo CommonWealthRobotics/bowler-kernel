@@ -28,7 +28,6 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedServoFactory
-import com.nhaarman.mockitokotlin2.mock
 import org.jlleitschuh.guice.key
 import org.junit.jupiter.api.Test
 import org.octogonapus.guavautil.collections.emptyImmutableList
@@ -65,8 +64,10 @@ internal class HardwareScriptIntegrationTest {
         override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
             val device = bowlerDeviceFactory.makeBowlerDevice(
                 SimpleDeviceId("/dev/ttyACM0"),
-                mock {}
+                MockBowlerRPCProtocol()
             ).fold({ throw IllegalStateException(it) }, { it })
+
+            device.connect()
 
             val ledFactory = digitalOutFactoryFactory.create(device)
             ledFactory.makeUnprovisionedDigitalOut(
@@ -81,6 +82,8 @@ internal class HardwareScriptIntegrationTest {
             servoFactory.makeUnprovisionedServo(
                 DefaultAttachmentPoints.Pin(3)
             ).provisionOrFail() as GenericServo
+
+            device.disconnect()
 
             return Either.right(null)
         }

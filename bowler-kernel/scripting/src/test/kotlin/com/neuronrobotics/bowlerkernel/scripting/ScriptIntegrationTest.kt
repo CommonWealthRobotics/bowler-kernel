@@ -25,10 +25,8 @@ import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericDigitalOut
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
-import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
 import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultTextScriptFactory
 import com.neuronrobotics.bowlerkernel.scripting.parser.DefaultScriptLanguageParser
-import com.nhaarman.mockitokotlin2.mock
 import org.jlleitschuh.guice.key
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -48,18 +46,19 @@ class ScriptIntegrationTest {
         val digitalOut: GenericDigitalOut
 
         init {
-            val mockRPC = mock<BowlerRPCProtocol> {}
+            val device = bowlerDeviceFactory.makeBowlerDevice(
+                SimpleDeviceId("bowler-device-id"),
+                MockBowlerRPCProtocol()
+            ).getOrHandle {
+                fail {
+                    """
+                    |Got a RegisterError when making the device:
+                    |$it
+                    """.trimMargin()
+                }
+            }
 
-            val device =
-                bowlerDeviceFactory.makeBowlerDevice(SimpleDeviceId("bowler-device-id"), mockRPC)
-                    .getOrHandle {
-                        fail {
-                            """
-                            |Got a RegisterError when making the device:
-                            |$it
-                            """.trimMargin()
-                        }
-                    }
+            device.connect()
 
             val unprovisionedDigitalOut = unprovisionedDigitalOutFactory.create(device)
                 .makeUnprovisionedDigitalOut(DefaultAttachmentPoints.Pin(7))
@@ -87,6 +86,8 @@ class ScriptIntegrationTest {
                     )
                 }
             )
+
+            device.disconnect()
         }
     }
 
@@ -112,15 +113,9 @@ class ScriptIntegrationTest {
             """
             import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
             import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
-            import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
-            import kotlin.Unit
-            import kotlin.jvm.functions.Function0
-            import kotlin.jvm.functions.Function1
-            import org.jetbrains.annotations.NotNull
+            import com.neuronrobotics.bowlerkernel.scripting.MockBowlerRPCProtocol
 
             import javax.inject.Inject
 
@@ -129,101 +124,29 @@ class ScriptIntegrationTest {
                 boolean worked = false
 
                 @Inject
-                Test(
-                        BowlerDeviceFactory bowlerDeviceFactory,
-                        UnprovisionedDigitalOutFactory.Factory ledFactoryFactory
+                Test(BowlerDeviceFactory bowlerDeviceFactory,
+                     UnprovisionedDigitalOutFactory.Factory ledFactoryFactory
                 ) {
                     bowlerDeviceFactory.makeBowlerDevice(
                             new SimpleDeviceId("device A"),
-                            new BowlerRPCProtocol() {
-                                @Override
-                                void isResourceInRange(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super Boolean, Unit> success) {
-
-                                }
-
-                                @Override
-                                void provisionResource(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super Boolean, Unit> success) {
-
-                                }
-
-                                @Override
-                                void readProtocolVersion(@NotNull Function0<Unit> timeout, @NotNull Function1<? super String, Unit> success) {
-
-                                }
-
-                                @Override
-                                void analogRead(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super Double, Unit> success) {
-
-                                }
-
-                                @Override
-                                void analogWrite(@NotNull ResourceId resourceId, long value, @NotNull Function0<Unit> timeout, @NotNull Function0<Unit> success) {
-
-                                }
-
-                                @Override
-                                void buttonRead(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super Boolean, Unit> success) {
-
-                                }
-
-                                @Override
-                                void digitalRead(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super DigitalState, Unit> success) {
-
-                                }
-
-                                @Override
-                                void digitalWrite(@NotNull ResourceId resourceId, @NotNull DigitalState value, @NotNull Function0<Unit> timeout, @NotNull Function0<Unit> success) {
-
-                                }
-
-                                @Override
-                                void encoderRead(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super Long, Unit> success) {
-
-                                }
-
-                                @Override
-                                void toneWrite(@NotNull ResourceId resourceId, long frequency, @NotNull Function0<Unit> timeout, @NotNull Function0<Unit> success) {
-
-                                }
-
-                                @Override
-                                void toneWrite(@NotNull ResourceId resourceId, long frequency, long duration, @NotNull Function0<Unit> timeout, @NotNull Function0<Unit> success) {
-
-                                }
-
-                                @Override
-                                void serialWrite(@NotNull ResourceId resourceId, @NotNull String message, @NotNull Function0<Unit> timeout, @NotNull Function0<Unit> success) {
-
-                                }
-
-                                @Override
-                                void serialRead(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super String, Unit> success) {
-
-                                }
-
-                                @Override
-                                void servoWrite(@NotNull ResourceId resourceId, double angle, @NotNull Function0<Unit> timeout, @NotNull Function0<Unit> success) {
-
-                                }
-
-                                @Override
-                                void servoRead(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super Double, Unit> success) {
-
-                                }
-
-                                @Override
-                                void ultrasonicRead(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super Long, Unit> success) {
-
-                                }
-                            }
+                            new MockBowlerRPCProtocol()
                     ).map {
+                        it.connect()
+
                         ledFactoryFactory.create(it).makeUnprovisionedDigitalOut(
                                 new DefaultAttachmentPoints.Pin(1 as byte)
-                        ).map {
-                            it.provision().map {
-                                worked = true
-                            }
-                        }
+                        ).bimap(
+                                {
+                                    print it
+                                },
+                                {
+                                    it.provision().map {
+                                        worked = true
+                                    }
+                                }
+                        )
+
+                        it.disconnect()
                     }
                 }
             }
@@ -300,13 +223,9 @@ class ScriptIntegrationTest {
             import com.neuronrobotics.bowlerkernel.hardware.Script
             import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
             import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceType
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
-            import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
+            import com.neuronrobotics.bowlerkernel.scripting.MockBowlerRPCProtocol
             import javax.inject.Inject
 
             class MyScript
@@ -320,139 +239,10 @@ class ScriptIntegrationTest {
                 override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
                     bowlerDeviceFactory.makeBowlerDevice(
                         SimpleDeviceId("device A"),
-                        object : BowlerRPCProtocol {
-                            override fun isResourceInRange(
-                                resourceId: ResourceId,
-                                timeout: () -> Unit,
-                                success: (Boolean) -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun provisionResource(
-                                resourceId: ResourceId,
-                                timeout: () -> Unit,
-                                success: (Boolean) -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun readProtocolVersion(timeout: () -> Unit, success: (String) -> Unit) {
-                                TODO("not implemented")
-                            }
-
-                            override fun analogRead(
-                                resourceId: ResourceId,
-                                timeout: () -> Unit,
-                                success: (Double) -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun analogWrite(
-                                resourceId: ResourceId,
-                                value: Long,
-                                timeout: () -> Unit,
-                                success: () -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun buttonRead(
-                                resourceId: ResourceId,
-                                timeout: () -> Unit,
-                                success: (Boolean) -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun digitalRead(
-                                resourceId: ResourceId,
-                                timeout: () -> Unit,
-                                success: (DigitalState) -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun digitalWrite(
-                                resourceId: ResourceId,
-                                value: DigitalState,
-                                timeout: () -> Unit,
-                                success: () -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun encoderRead(
-                                resourceId: ResourceId,
-                                timeout: () -> Unit,
-                                success: (Long) -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun toneWrite(
-                                resourceId: ResourceId,
-                                frequency: Long,
-                                timeout: () -> Unit,
-                                success: () -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun toneWrite(
-                                resourceId: ResourceId,
-                                frequency: Long,
-                                duration: Long,
-                                timeout: () -> Unit,
-                                success: () -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun serialWrite(
-                                resourceId: ResourceId,
-                                message: String,
-                                timeout: () -> Unit,
-                                success: () -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun serialRead(
-                                resourceId: ResourceId,
-                                timeout: () -> Unit,
-                                success: (String) -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun servoWrite(
-                                resourceId: ResourceId,
-                                angle: Double,
-                                timeout: () -> Unit,
-                                success: () -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun servoRead(
-                                resourceId: ResourceId,
-                                timeout: () -> Unit,
-                                success: (Double) -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun ultrasonicRead(
-                                resourceId: ResourceId,
-                                timeout: () -> Unit,
-                                success: (Long) -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-                        }
+                        MockBowlerRPCProtocol()
                     ).map {
+                        it.connect()
+
                         ledFactoryFactory.create(it).makeUnprovisionedDigitalOut(
                             DefaultAttachmentPoints.Pin(1)
                         ).map {
@@ -460,6 +250,8 @@ class ScriptIntegrationTest {
                                 worked = true
                             }
                         }
+
+                        it.disconnect()
                     }
                     return Either.right(worked)
                 }

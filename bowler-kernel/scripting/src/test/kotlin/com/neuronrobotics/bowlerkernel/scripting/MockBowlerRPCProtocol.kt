@@ -14,76 +14,42 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.protocol
+package com.neuronrobotics.bowlerkernel.scripting
 
-import arrow.core.Try
+import arrow.core.Option
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
-import edu.wpi.SimplePacketComs.BytePacketType
-import edu.wpi.SimplePacketComs.FloatPacketType
+import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
 
 /**
- * An implementation of [BowlerRPCProtocol] using SimplePacketComs. Uses a continuous range of
- * packet ids from [getLowestPacketId] through [getHighestPacketId]. Any numbers outside that
- * range are available for other packets.
- *
- * @param comms The comms implementation.
- * @param startPacketId The starting range of the packets this class creates.
+ * A mock implementation of the [BowlerRPCProtocol] which just checks for simple management of
+ * connection state.
  */
-class SimplePacketComsProtocol(
-    private val comms: AbstractSimpleComsDevice,
-    private val startPacketId: Int = 1
-) : BowlerRPCProtocol {
+class MockBowlerRPCProtocol : BowlerRPCProtocol {
 
-    private val isResourceInRangePacket = BytePacketType(startPacketId, 64)
-    private val provisionResourcePacket = BytePacketType(startPacketId + 1, 64)
-    private val readProtocolVersionPacket = BytePacketType(startPacketId + 2, 64)
-    private val analogReadPacket = FloatPacketType(startPacketId + 3, 64)
-    private val analogWritePacket = BytePacketType(startPacketId + 4, 64)
-    private val buttonReadPacket = BytePacketType(startPacketId + 5, 64)
-    private val digitalReadPacket = BytePacketType(startPacketId + 6, 64)
-    private val digitalWritePacket = BytePacketType(startPacketId + 7, 64)
-    private val encoderReadPacket = BytePacketType(startPacketId + 8, 64)
-    private val toneWritePacket = FloatPacketType(startPacketId + 9, 64)
-    private val serialWritePacket = BytePacketType(startPacketId + 10, 64)
-    private val serialReadPacket = BytePacketType(startPacketId + 11, 64)
-    private val servoWritePacket = FloatPacketType(startPacketId + 12, 64)
-    private val servoReadPacket = FloatPacketType(startPacketId + 13, 64)
-    private val ultrasonicReadPacket = FloatPacketType(startPacketId + 14, 64)
+    private var isConnected = false
 
-    override fun connect() = Try {
-        comms.connect()
-    }.toEither { it.localizedMessage }.swap().toOption()
+    override fun connect(): Option<String> {
+        isConnected = true
+        return Option.empty()
+    }
 
-    override fun disconnect() = comms.disconnect()
+    override fun disconnect() {
+        isConnected = false
+    }
 
     override fun isResourceInRange(
         resourceId: ResourceId,
         timeout: () -> Unit,
         success: (Boolean) -> Unit
     ) {
-        var eventCallback = {}
-        eventCallback = {
-            // TODO: Replace this once
-            // https://github.com/madhephaestus/SimplePacketComsJava/issues/1 is done
-            if (comms.isTimedOut) {
-                timeout()
-            } else {
-                /**
-                 * Byte 0: 0 for true, 1 for false
-                 */
-                success(comms.readBytes(isResourceInRangePacket.idOfCommand)[0] == 0.toByte())
-            }
-
-            // TODO: This line will break things until
-            // https://github.com/madhephaestus/SimplePacketComsJava/issues/2 is done
-            comms.removeEvent(isResourceInRangePacket.idOfCommand, eventCallback)
+        if (isConnected) {
+            Thread.sleep(5)
+            success(true)
+        } else {
+            Thread.sleep(100)
+            timeout()
         }
-
-        comms.addEvent(isResourceInRangePacket.idOfCommand, eventCallback)
-        comms.writeBytes(isResourceInRangePacket.idOfCommand, ByteArray(0))
-        isResourceInRangePacket.oneShotMode()
     }
 
     override fun provisionResource(
@@ -91,11 +57,23 @@ class SimplePacketComsProtocol(
         timeout: () -> Unit,
         success: (Boolean) -> Unit
     ) {
-        TODO("not implemented")
+        if (isConnected) {
+            Thread.sleep(5)
+            success(true)
+        } else {
+            Thread.sleep(100)
+            timeout()
+        }
     }
 
     override fun readProtocolVersion(timeout: () -> Unit, success: (String) -> Unit) {
-        TODO("not implemented")
+        if (isConnected) {
+            Thread.sleep(5)
+            success("")
+        } else {
+            Thread.sleep(100)
+            timeout()
+        }
     }
 
     override fun analogRead(
@@ -200,16 +178,4 @@ class SimplePacketComsProtocol(
     ) {
         TODO("not implemented")
     }
-
-    /**
-     * The lowest packet id.
-     */
-    @SuppressWarnings("FunctionOnlyReturningConstant")
-    fun getLowestPacketId() = startPacketId
-
-    /**
-     * The highest packet id.
-     */
-    @SuppressWarnings("FunctionOnlyReturningConstant")
-    fun getHighestPacketId() = startPacketId + 14
 }

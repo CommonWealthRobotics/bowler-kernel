@@ -49,13 +49,14 @@ internal class DefaultLimbIntegrationTest {
     @Disabled("Doesn't perform well on CI servers.")
     fun `test limb plan execution`() {
         val timestep = 100
+
         val links = immutableListOf(
             DefaultLink(
                 LinkType.Rotary, DhParam.zero,
                 Limits(0.0, 0.0), mock {})
         )
-        val controller =
-            MockJointAngleController()
+
+        val controller = MockJointAngleController()
 
         val limb = DefaultLimb(
             SimpleLimbId(""),
