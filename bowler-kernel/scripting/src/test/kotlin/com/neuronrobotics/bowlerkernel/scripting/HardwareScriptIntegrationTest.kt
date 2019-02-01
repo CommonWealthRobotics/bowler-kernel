@@ -34,40 +34,6 @@ import org.junit.jupiter.api.Test
 import org.octogonapus.guavautil.collections.emptyImmutableList
 import javax.inject.Inject
 
-class TestHardware
-@Inject constructor(
-    private val bowlerDeviceFactory: BowlerDeviceFactory,
-    private val digitalOutFactoryFactory: UnprovisionedDigitalOutFactory.Factory,
-    private val servoFactoryFactory: UnprovisionedServoFactory.Factory
-) : Script() {
-
-    override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
-        val device = bowlerDeviceFactory.makeBowlerDevice(
-            SimpleDeviceId("/dev/ttyACM0"),
-            mock {}
-        ).fold({ throw IllegalStateException(it) }, { it })
-
-        val ledFactory = digitalOutFactoryFactory.create(device)
-        ledFactory.makeUnprovisionedDigitalOut(
-            DefaultAttachmentPoints.Pin(1)
-        ).provisionOrFail() as GenericDigitalOut
-
-        ledFactory.makeUnprovisionedDigitalOut(
-            DefaultAttachmentPoints.Pin(2)
-        ).provisionOrFail() as GenericDigitalOut
-
-        val servoFactory = servoFactoryFactory.create(device)
-        servoFactory.makeUnprovisionedServo(
-            DefaultAttachmentPoints.Pin(3)
-        ).provisionOrFail() as GenericServo
-
-        return Either.right(null)
-    }
-
-    override fun stopScript() {
-    }
-}
-
 internal class HardwareScriptIntegrationTest {
 
     @Test
@@ -87,6 +53,40 @@ internal class HardwareScriptIntegrationTest {
 
         script.runScript(emptyImmutableList())
         script.stopAndCleanUp()
+    }
+
+    private class TestHardware
+    @Inject constructor(
+        private val bowlerDeviceFactory: BowlerDeviceFactory,
+        private val digitalOutFactoryFactory: UnprovisionedDigitalOutFactory.Factory,
+        private val servoFactoryFactory: UnprovisionedServoFactory.Factory
+    ) : Script() {
+
+        override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
+            val device = bowlerDeviceFactory.makeBowlerDevice(
+                SimpleDeviceId("/dev/ttyACM0"),
+                mock {}
+            ).fold({ throw IllegalStateException(it) }, { it })
+
+            val ledFactory = digitalOutFactoryFactory.create(device)
+            ledFactory.makeUnprovisionedDigitalOut(
+                DefaultAttachmentPoints.Pin(1)
+            ).provisionOrFail() as GenericDigitalOut
+
+            ledFactory.makeUnprovisionedDigitalOut(
+                DefaultAttachmentPoints.Pin(2)
+            ).provisionOrFail() as GenericDigitalOut
+
+            val servoFactory = servoFactoryFactory.create(device)
+            servoFactory.makeUnprovisionedServo(
+                DefaultAttachmentPoints.Pin(3)
+            ).provisionOrFail() as GenericServo
+
+            return Either.right(null)
+        }
+
+        override fun stopScript() {
+        }
     }
 }
 
