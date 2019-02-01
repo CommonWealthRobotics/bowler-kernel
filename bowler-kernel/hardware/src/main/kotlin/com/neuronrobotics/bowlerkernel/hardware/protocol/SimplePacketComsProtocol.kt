@@ -20,22 +20,36 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.Digit
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
 import edu.wpi.SimplePacketComs.BytePacketType
+import edu.wpi.SimplePacketComs.FloatPacketType
 
 /**
- * An implementation of [BowlerRPCProtocol] using SimplePacketComs.
+ * An implementation of [BowlerRPCProtocol] using SimplePacketComs. Uses a continuous range of
+ * packet ids from [getLowestPacketId] through [getHighestPacketId]. Any numbers outside that
+ * range are available for other packets.
  *
  * @param comms The comms implementation.
+ * @param startPacketId The starting range of the packets this class creates.
  */
 class SimplePacketComsProtocol(
-    private val comms: AbstractSimpleComsDevice
+    private val comms: AbstractSimpleComsDevice,
+    private val startPacketId: Int = 1
 ) : BowlerRPCProtocol {
 
-    /**
-     * Byte 0: 0 for true, 1 for false
-     */
-    private val isResourceInRangePacket = BytePacketType(1, 64)
-    private val rbePacketRangeStart = 1400
-    private val rbePacketRangeEnd = 2025
+    private val isResourceInRangePacket = BytePacketType(startPacketId, 64)
+    private val provisionResourcePacket = BytePacketType(startPacketId + 1, 64)
+    private val readProtocolVersionPacket = BytePacketType(startPacketId + 2, 64)
+    private val analogReadPacket = FloatPacketType(startPacketId + 3, 64)
+    private val analogWritePacket = BytePacketType(startPacketId + 4, 64)
+    private val buttonReadPacket = BytePacketType(startPacketId + 5, 64)
+    private val digitalReadPacket = BytePacketType(startPacketId + 6, 64)
+    private val digitalWritePacket = BytePacketType(startPacketId + 7, 64)
+    private val encoderReadPacket = BytePacketType(startPacketId + 8, 64)
+    private val toneWritePacket = FloatPacketType(startPacketId + 9, 64)
+    private val serialWritePacket = BytePacketType(startPacketId + 10, 64)
+    private val serialReadPacket = BytePacketType(startPacketId + 11, 64)
+    private val servoWritePacket = FloatPacketType(startPacketId + 12, 64)
+    private val servoReadPacket = FloatPacketType(startPacketId + 13, 64)
+    private val ultrasonicReadPacket = FloatPacketType(startPacketId + 14, 64)
 
     override fun isResourceInRange(
         resourceId: ResourceId,
@@ -49,6 +63,9 @@ class SimplePacketComsProtocol(
             if (comms.isTimedOut) {
                 timeout()
             } else {
+                /**
+                 * Byte 0: 0 for true, 1 for false
+                 */
                 success(comms.readBytes(isResourceInRangePacket.idOfCommand)[0] == 0.toByte())
             }
 
@@ -176,4 +193,16 @@ class SimplePacketComsProtocol(
     ) {
         TODO("not implemented")
     }
+
+    /**
+     * The lowest packet id.
+     */
+    @SuppressWarnings("FunctionOnlyReturningConstant")
+    fun getLowestPacketId() = startPacketId
+
+    /**
+     * The highest packet id.
+     */
+    @SuppressWarnings("FunctionOnlyReturningConstant")
+    fun getHighestPacketId() = startPacketId + 14
 }
