@@ -28,7 +28,8 @@ internal constructor(
     override val resourceId: ResourceId
 ) : UnprovisionedDeviceResource {
 
-    override fun provision(): Either<ProvisionError, GenericAnalogOut> {
-        TODO("not implemented")
-    }
+    override fun provision(): Either<ProvisionError, GenericAnalogOut> =
+        provisionBlocking(device, resourceId) {
+            GenericAnalogOut(device, resourceId)
+        }
 }

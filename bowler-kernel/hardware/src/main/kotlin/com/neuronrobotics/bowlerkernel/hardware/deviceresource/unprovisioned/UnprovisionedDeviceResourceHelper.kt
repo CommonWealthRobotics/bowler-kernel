@@ -17,19 +17,33 @@
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned
 
 import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.ProvisionError
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericStepper
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.ProvisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import java.util.concurrent.CountDownLatch
 
-class UnprovisionedStepper
-internal constructor(
-    override val device: BowlerDevice,
-    override val resourceId: ResourceId
-) : UnprovisionedDeviceResource {
+internal fun <T : ProvisionedDeviceResource> provisionBlocking(
+    device: BowlerDevice,
+    resourceId: ResourceId,
+    makeProvisionedDeviceResource: () -> T
+): Either<ProvisionError, T> {
+    val latch = CountDownLatch(1)
+    var out: Either<ProvisionError, T> = "Return value not initialized.".left()
 
-    override fun provision(): Either<ProvisionError, GenericStepper> =
-        provisionBlocking(device, resourceId) {
-            GenericStepper(device, resourceId)
+    device.bowlerRPCProtocol.provisionResource(
+        resourceId,
+        {
+            out = "Provision command timed out.".left()
+            latch.countDown()
+        },
+        {
+            out = makeProvisionedDeviceResource().right()
+            latch.countDown()
         }
+    )
+
+    return out
 }

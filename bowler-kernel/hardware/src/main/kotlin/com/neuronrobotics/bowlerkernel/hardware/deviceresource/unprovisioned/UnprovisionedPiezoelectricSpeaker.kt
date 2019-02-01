@@ -28,7 +28,8 @@ internal constructor(
     override val resourceId: ResourceId
 ) : UnprovisionedDeviceResource {
 
-    override fun provision(): Either<ProvisionError, GenericPiezoelectricSpeaker> {
-        TODO("not implemented")
-    }
+    override fun provision(): Either<ProvisionError, GenericPiezoelectricSpeaker> =
+        provisionBlocking(device, resourceId) {
+            GenericPiezoelectricSpeaker(device, resourceId)
+        }
 }

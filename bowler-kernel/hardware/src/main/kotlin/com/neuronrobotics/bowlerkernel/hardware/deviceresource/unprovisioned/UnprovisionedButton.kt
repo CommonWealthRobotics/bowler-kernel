@@ -28,7 +28,8 @@ internal constructor(
     override val resourceId: ResourceId
 ) : UnprovisionedDeviceResource {
 
-    override fun provision(): Either<ProvisionError, GenericButton> {
-        TODO("not implemented")
-    }
+    override fun provision(): Either<ProvisionError, GenericButton> =
+        provisionBlocking(device, resourceId) {
+            GenericButton(device, resourceId)
+        }
 }

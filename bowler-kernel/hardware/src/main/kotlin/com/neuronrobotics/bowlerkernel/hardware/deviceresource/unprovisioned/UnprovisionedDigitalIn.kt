@@ -28,7 +28,8 @@ internal constructor(
     override val resourceId: ResourceId
 ) : UnprovisionedDeviceResource {
 
-    override fun provision(): Either<ProvisionError, GenericDigitalIn> {
-        TODO("not implemented")
-    }
+    override fun provision(): Either<ProvisionError, GenericDigitalIn> =
+        provisionBlocking(device, resourceId) {
+            GenericDigitalIn(device, resourceId)
+        }
 }
