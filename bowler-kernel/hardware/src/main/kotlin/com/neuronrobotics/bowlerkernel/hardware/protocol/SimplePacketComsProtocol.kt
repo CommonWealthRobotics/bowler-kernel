@@ -33,25 +33,33 @@ class SimplePacketComsProtocol(
     /**
      * Byte 0: 0 for true, 1 for false
      */
-    private val isResourceInRangePacket = BytePacketType(0, 64)
+    private val isResourceInRangePacket = BytePacketType(1, 64)
+    private val rbePacketRangeStart = 1400
+    private val rbePacketRangeEnd = 2025
 
     override fun isResourceInRange(
         resourceId: ResourceId,
         timeout: () -> Unit,
         success: (Boolean) -> Unit
     ) {
-        isResourceInRangePacket.oneShotMode()
-        isResourceInRangePacket.sendOk()
-
-        comms.addPollingPacket(isResourceInRangePacket)
-
-        comms.addEvent(0) {
+        var eventCallback = {}
+        eventCallback = {
+            // TODO: Replace this once
+            // https://github.com/madhephaestus/SimplePacketComsJava/issues/1 is done
             if (comms.isTimedOut) {
                 timeout()
             } else {
-                success(isResourceInRangePacket.upstream[0] == 0)
+                success(comms.readBytes(isResourceInRangePacket.idOfCommand)[0] == 0.toByte())
             }
+
+            // TODO: This line will break things until
+            // https://github.com/madhephaestus/SimplePacketComsJava/issues/2 is done
+            comms.removeEvent(isResourceInRangePacket.idOfCommand, eventCallback)
         }
+
+        comms.addEvent(isResourceInRangePacket.idOfCommand, eventCallback)
+        comms.writeBytes(isResourceInRangePacket.idOfCommand, ByteArray(0))
+        isResourceInRangePacket.oneShotMode()
     }
 
     override fun provisionResource(
