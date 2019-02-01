@@ -31,6 +31,7 @@ import edu.wpi.SimplePacketComs.FloatPacketType
  * @param comms The comms implementation.
  * @param startPacketId The starting range of the packets this class creates.
  */
+@SuppressWarnings("TooManyFunctions")
 class SimplePacketComsProtocol(
     private val comms: AbstractSimpleComsDevice,
     private val startPacketId: Int = 1

@@ -27,6 +27,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Resour
  * will not return a [TimeoutError], except for the first invocation which could require waiting
  * for a packet.
  */
+@SuppressWarnings("ComplexInterface", "TooManyFunctions")
 interface BufferedBowlerRPCProtocol {
 
     /**

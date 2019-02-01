@@ -25,6 +25,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Resour
  * 100ms timeout guarantee. All methods in this interface are expected to trigger communications
  * with the device, such as a packet being sent.
  */
+@SuppressWarnings("ComplexInterface", "TooManyFunctions")
 interface BowlerRPCProtocol {
 
     /**

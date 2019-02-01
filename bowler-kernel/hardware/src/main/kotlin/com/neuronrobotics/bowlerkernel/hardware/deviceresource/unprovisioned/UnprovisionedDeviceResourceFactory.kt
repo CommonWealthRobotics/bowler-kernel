@@ -29,7 +29,8 @@ import org.jlleitschuh.guice.module
 import javax.inject.Inject
 
 /**
- * A facade for making any type of device resource.
+ * A facade for making any type of device resource. Requires the [device] to be connected or else
+ * require creation will fail due to RPC timeout.
  */
 @SuppressWarnings("TooManyFunctions")
 class UnprovisionedDeviceResourceFactory
