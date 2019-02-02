@@ -65,23 +65,20 @@ class SimplePacketComsProtocol(
     ) {
         var eventCallback = {}
         eventCallback = {
-            // TODO: Replace this once
-            // https://github.com/madhephaestus/SimplePacketComsJava/issues/1 is done
-            if (comms.isTimedOut) {
-                timeout()
-            } else {
-                /**
-                 * Byte 0: 0 for true, 1 for false
-                 */
-                success(comms.readBytes(isResourceInRangePacket.idOfCommand)[0] == 0.toByte())
-            }
-
-            // TODO: This line will break things until
-            // https://github.com/madhephaestus/SimplePacketComsJava/issues/2 is done
+            /**
+             * Byte 0: 0 for true, 1 for false
+             */
+            success(comms.readBytes(isResourceInRangePacket.idOfCommand)[0] == 0.toByte())
             comms.removeEvent(isResourceInRangePacket.idOfCommand, eventCallback)
         }
 
         comms.addEvent(isResourceInRangePacket.idOfCommand, eventCallback)
+
+        comms.addTimeout(isResourceInRangePacket.idOfCommand) {
+            comms.removeEvent(isResourceInRangePacket.idOfCommand, eventCallback)
+            timeout()
+        }
+
         comms.writeBytes(isResourceInRangePacket.idOfCommand, ByteArray(0))
         isResourceInRangePacket.oneShotMode()
     }
