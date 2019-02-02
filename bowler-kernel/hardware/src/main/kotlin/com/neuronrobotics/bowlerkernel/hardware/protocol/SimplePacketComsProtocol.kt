@@ -24,7 +24,7 @@ import edu.wpi.SimplePacketComs.BytePacketType
 import edu.wpi.SimplePacketComs.FloatPacketType
 
 /**
- * An implementation of [BowlerRPCProtocol] using SimplePacketComs. Uses a continuous range of
+ * An implementation of [AsyncBowlerRPCProtocol] using SimplePacketComs. Uses a continuous range of
  * packet ids from [getLowestPacketId] through [getHighestPacketId]. Any numbers outside that
  * range are available for other packets.
  *
@@ -34,7 +34,7 @@ import edu.wpi.SimplePacketComs.FloatPacketType
 class SimplePacketComsProtocol(
     private val comms: AbstractSimpleComsDevice,
     private val startPacketId: Int = 1
-) : BowlerRPCProtocol {
+) : AsyncBowlerRPCProtocol {
 
     private val isResourceInRangePacket = BytePacketType(startPacketId, 64)
     private val provisionResourcePacket = BytePacketType(startPacketId + 1, 64)

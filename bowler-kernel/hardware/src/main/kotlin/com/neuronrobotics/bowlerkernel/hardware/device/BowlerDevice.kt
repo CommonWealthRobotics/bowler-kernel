@@ -18,7 +18,7 @@ package com.neuronrobotics.bowlerkernel.hardware.device
 
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
+import com.neuronrobotics.bowlerkernel.hardware.protocol.AsyncBowlerRPCProtocol
 import java.util.concurrent.CountDownLatch
 
 /**
@@ -29,7 +29,7 @@ import java.util.concurrent.CountDownLatch
 class BowlerDevice
 internal constructor(
     override val deviceId: DeviceId,
-    val bowlerRPCProtocol: BowlerRPCProtocol
+    val bowlerRPCProtocol: AsyncBowlerRPCProtocol
 ) : Device {
 
     override fun connect() = bowlerRPCProtocol.connect()
