@@ -70,42 +70,49 @@ class SimplePacketComsProtocol(
         val newPackets = mutableMapOf<ResourceId, BytePacketType>()
 
         pollingReads.forEach {
-            val packet = BytePacketType(packetId, PACKET_SIZE)
+            val localPacketId = packetId
+            val packet = BytePacketType(localPacketId, PACKET_SIZE)
             newPackets[it] = packet
 
-            comms.addEvent(packetId) { pollingReadsData[packetId] = comms.readBytes(packetId) }
-            comms.writeBytes(packetId, it.validatedBytes())
             comms.addPollingPacket(packet)
+            comms.addEvent(localPacketId) {
+                println("pollingReads event wrote bytes for $localPacketId")
+                pollingReadsData[localPacketId] = comms.readBytes(localPacketId)
+            }
+            comms.writeBytes(localPacketId, it.validatedBytes())
 
             packetId++
         }
 
         reads.forEach {
-            val packet = BytePacketType(packetId, PACKET_SIZE)
+            val localPacketId = packetId
+            val packet = BytePacketType(localPacketId, PACKET_SIZE)
             packet.oneShotMode()
             newPackets[it] = packet
 
-            comms.addEvent(packetId) {
-                readsData[packetId] = comms.readBytes(packetId)
-                readsLatches[packetId]?.countDown()
-            }
-
-            comms.addTimeout(packetId) {
-                readsData[packetId] = null
-                readsLatches[packetId]?.countDown()
-            }
-
             comms.addPollingPacket(packet)
+
+            comms.addEvent(localPacketId) {
+                readsData[localPacketId] = comms.readBytes(localPacketId)
+                readsLatches[localPacketId]?.countDown()
+            }
+
+            comms.addTimeout(localPacketId) {
+                readsData[localPacketId] = null
+                readsLatches[localPacketId]?.countDown()
+            }
 
             packetId++
         }
 
         writes.forEach {
-            val packet = BytePacketType(packetId, PACKET_SIZE)
+            val localPacketId = packetId
+            val packet = BytePacketType(localPacketId, PACKET_SIZE)
             packet.oneShotMode()
             newPackets[it] = packet
 
             comms.addPollingPacket(packet)
+            // TODO: Re-send the write on timeout
 
             packetId++
         }
@@ -150,23 +157,44 @@ class SimplePacketComsProtocol(
         comms.writeBytes(packetId, resourceId.validatedBytes())
 
         // Wait for a response
+        println("tryToSendRead waiting")
         latch.await()
 
         return readsData[packetId]?.parse() ?: tryToSendRead(resourceId, packetId, parse)
     }
 
+    private fun waitForPollingRead(packetId: Int): Array<Byte> {
+        do {
+            val data = pollingReadsData[packetId]
+            if (data != null) {
+                return data
+            } else {
+                Thread.sleep(1)
+            }
+        } while (true)
+    }
+
     override fun analogRead(resourceId: ResourceId): Double {
         fun Array<Byte>.parse(): Double {
-            TODO("Parse the bytes into a double for an analogRead.")
+            println(joinToString())
+            return this[4].toDouble()
         }
 
-        return packets[resourceId]?.idOfCommand?.let { id ->
-            // If the packet is a polling packet, grab the latest data
-            pollingReadsData[id]?.parse() ?: tryToSendRead(resourceId, id) { parse() }
-            ?: TODO("Packet timed out.")
-        } ?: throw UnsupportedOperationException(
-            "ResourceId was not added at construction time: $resourceId"
-        )
+        return when {
+            // The resource is a polling packet
+            pollingReads.contains(resourceId) ->
+                packets[resourceId]?.idOfCommand?.let { id ->
+                    pollingReadsData[id]?.parse() ?: waitForPollingRead(id).parse()
+                } ?: throw IllegalStateException("Unknown error.")
+
+            // The resource is a non-polling packet
+            reads.contains(resourceId) ->
+                packets[resourceId]?.idOfCommand?.let { id ->
+                    readsData[id]?.parse() ?: tryToSendRead(resourceId, id) { parse() }
+                } ?: throw IllegalStateException("Unknown error.")
+
+            else -> throw IllegalArgumentException("Resource id not valid for read: $resourceId")
+        }
     }
 
     override fun analogWrite(resourceId: ResourceId, value: Long) {

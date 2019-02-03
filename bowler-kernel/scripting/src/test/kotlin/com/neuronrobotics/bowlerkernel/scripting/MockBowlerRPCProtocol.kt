@@ -20,6 +20,7 @@ import arrow.core.Option
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.protocol.AsyncBowlerRPCProtocol
+import org.junit.jupiter.api.fail
 
 /**
  * A mock implementation of the [AsyncBowlerRPCProtocol] which just checks for simple management of
@@ -38,144 +39,82 @@ class MockBowlerRPCProtocol : AsyncBowlerRPCProtocol {
         isConnected = false
     }
 
-    override fun isResourceInRange(
-        resourceId: ResourceId,
-        timeout: () -> Unit,
-        success: (Boolean) -> Unit
-    ) {
+    override fun isResourceInRange(resourceId: ResourceId): Boolean {
         if (isConnected) {
             Thread.sleep(5)
-            success(true)
+            return true
         } else {
-            Thread.sleep(100)
-            timeout()
+            fail { "The RPC is not connected!" }
         }
     }
 
-    override fun provisionResource(
-        resourceId: ResourceId,
-        timeout: () -> Unit,
-        success: (Boolean) -> Unit
-    ) {
+    override fun provisionResource(resourceId: ResourceId): Boolean {
         if (isConnected) {
             Thread.sleep(5)
-            success(true)
+            return true
         } else {
-            Thread.sleep(100)
-            timeout()
+            fail { "The RPC is not connected!" }
         }
     }
 
-    override fun readProtocolVersion(timeout: () -> Unit, success: (String) -> Unit) {
+    override fun readProtocolVersion(): String {
         if (isConnected) {
             Thread.sleep(5)
-            success("")
+            return ""
         } else {
-            Thread.sleep(100)
-            timeout()
+            fail { "The RPC is not connected!" }
         }
     }
 
-    override fun analogRead(
-        resourceId: ResourceId,
-        timeout: () -> Unit,
-        success: (Double) -> Unit
-    ) {
+    override fun analogRead(resourceId: ResourceId): Double {
         TODO("not implemented")
     }
 
-    override fun analogWrite(
-        resourceId: ResourceId,
-        value: Long,
-        timeout: () -> Unit,
-        success: () -> Unit
-    ) {
+    override fun analogWrite(resourceId: ResourceId, value: Long) {
         TODO("not implemented")
     }
 
-    override fun buttonRead(
-        resourceId: ResourceId,
-        timeout: () -> Unit,
-        success: (Boolean) -> Unit
-    ) {
+    override fun buttonRead(resourceId: ResourceId): Boolean {
         TODO("not implemented")
     }
 
-    override fun digitalRead(
-        resourceId: ResourceId,
-        timeout: () -> Unit,
-        success: (DigitalState) -> Unit
-    ) {
+    override fun digitalRead(resourceId: ResourceId): DigitalState {
         TODO("not implemented")
     }
 
-    override fun digitalWrite(
-        resourceId: ResourceId,
-        value: DigitalState,
-        timeout: () -> Unit,
-        success: () -> Unit
-    ) {
+    override fun digitalWrite(resourceId: ResourceId, value: DigitalState) {
         TODO("not implemented")
     }
 
-    override fun encoderRead(resourceId: ResourceId, timeout: () -> Unit, success: (Long) -> Unit) {
+    override fun encoderRead(resourceId: ResourceId): Long {
         TODO("not implemented")
     }
 
-    override fun toneWrite(
-        resourceId: ResourceId,
-        frequency: Long,
-        timeout: () -> Unit,
-        success: () -> Unit
-    ) {
+    override fun toneWrite(resourceId: ResourceId, frequency: Long) {
         TODO("not implemented")
     }
 
-    override fun toneWrite(
-        resourceId: ResourceId,
-        frequency: Long,
-        duration: Long,
-        timeout: () -> Unit,
-        success: () -> Unit
-    ) {
+    override fun toneWrite(resourceId: ResourceId, frequency: Long, duration: Long) {
         TODO("not implemented")
     }
 
-    override fun serialWrite(
-        resourceId: ResourceId,
-        message: String,
-        timeout: () -> Unit,
-        success: () -> Unit
-    ) {
+    override fun serialWrite(resourceId: ResourceId, message: String) {
         TODO("not implemented")
     }
 
-    override fun serialRead(
-        resourceId: ResourceId,
-        timeout: () -> Unit,
-        success: (String) -> Unit
-    ) {
+    override fun serialRead(resourceId: ResourceId): String {
         TODO("not implemented")
     }
 
-    override fun servoWrite(
-        resourceId: ResourceId,
-        angle: Double,
-        timeout: () -> Unit,
-        success: () -> Unit
-    ) {
+    override fun servoWrite(resourceId: ResourceId, angle: Double) {
         TODO("not implemented")
     }
 
-    override fun servoRead(resourceId: ResourceId, timeout: () -> Unit, success: (Double) -> Unit) {
+    override fun servoRead(resourceId: ResourceId): Double {
         TODO("not implemented")
     }
 
-    override fun ultrasonicRead(
-        resourceId: ResourceId,
-        timeout: () -> Unit,
-        success: (Long) -> Unit
-    ) {
+    override fun ultrasonicRead(resourceId: ResourceId): Long {
         TODO("not implemented")
     }
 }
