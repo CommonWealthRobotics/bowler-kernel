@@ -131,25 +131,39 @@ class SimplePacketComsProtocol(
         TODO("not implemented")
     }
 
+    /**
+     * Try to send a read packet. Re-sends the packet on timeout.
+     *
+     * @param resourceId The [ResourceId] to read.
+     * @param packetId The id of the packet.
+     * @param parse The function to parse the response packet.
+     * @return The response.
+     */
+    private tailrec fun <T> tryToSendRead(
+        resourceId: ResourceId,
+        packetId: Int,
+        parse: Array<Byte>.() -> T
+    ): T {
+        val latch = CountDownLatch(1)
+
+        readsLatches[packetId] = latch
+        comms.writeBytes(packetId, resourceId.validatedBytes())
+
+        // Wait for a response
+        latch.await()
+
+        return readsData[packetId]?.parse() ?: tryToSendRead(resourceId, packetId, parse)
+    }
+
     override fun analogRead(resourceId: ResourceId): Double {
         fun Array<Byte>.parse(): Double {
             TODO("Parse the bytes into a double for an analogRead.")
         }
 
         return packets[resourceId]?.idOfCommand?.let { id ->
-            // If the packet is a polling packet, grab the latest data.
-            pollingReadsData[id]?.parse() ?: let {
-                // Else, read a packet and wait for the response.
-                val latch = CountDownLatch(1)
-
-                readsLatches[id] = latch
-                comms.writeBytes(id, resourceId.validatedBytes())
-
-                // Wait for a response
-                latch.await()
-
-                readsData[id]?.parse()
-            } ?: TODO("Packet timed out.")
+            // If the packet is a polling packet, grab the latest data
+            pollingReadsData[id]?.parse() ?: tryToSendRead(resourceId, id) { parse() }
+            ?: TODO("Packet timed out.")
         } ?: throw UnsupportedOperationException(
             "ResourceId was not added at construction time: $resourceId"
         )
