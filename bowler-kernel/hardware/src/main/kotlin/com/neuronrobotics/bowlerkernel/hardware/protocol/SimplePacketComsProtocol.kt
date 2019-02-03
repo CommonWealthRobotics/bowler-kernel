@@ -22,9 +22,11 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Resour
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
 import edu.wpi.SimplePacketComs.BytePacketType
 import edu.wpi.SimplePacketComs.FloatPacketType
+import java.nio.ByteBuffer
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * An implementation of [BowlerRPCProtocol] using SimplePacketComs. Uses a continuous range of
+ * An implementation of [AsyncBowlerRPCProtocol] using SimplePacketComs. Uses a continuous range of
  * packet ids from [getLowestPacketId] through [getHighestPacketId]. Any numbers outside that
  * range are available for other packets.
  *
@@ -35,23 +37,66 @@ import edu.wpi.SimplePacketComs.FloatPacketType
 class SimplePacketComsProtocol(
     private val comms: AbstractSimpleComsDevice,
     private val startPacketId: Int = 1
-) : BowlerRPCProtocol {
+) : AsyncBowlerRPCProtocol {
 
-    private val isResourceInRangePacket = BytePacketType(startPacketId, 64)
-    private val provisionResourcePacket = BytePacketType(startPacketId + 1, 64)
-    private val readProtocolVersionPacket = BytePacketType(startPacketId + 2, 64)
-    private val analogReadPacket = FloatPacketType(startPacketId + 3, 64)
-    private val analogWritePacket = BytePacketType(startPacketId + 4, 64)
-    private val buttonReadPacket = BytePacketType(startPacketId + 5, 64)
-    private val digitalReadPacket = BytePacketType(startPacketId + 6, 64)
-    private val digitalWritePacket = BytePacketType(startPacketId + 7, 64)
-    private val encoderReadPacket = BytePacketType(startPacketId + 8, 64)
-    private val toneWritePacket = FloatPacketType(startPacketId + 9, 64)
-    private val serialWritePacket = BytePacketType(startPacketId + 10, 64)
-    private val serialReadPacket = BytePacketType(startPacketId + 11, 64)
-    private val servoWritePacket = FloatPacketType(startPacketId + 12, 64)
-    private val servoReadPacket = FloatPacketType(startPacketId + 13, 64)
-    private val ultrasonicReadPacket = FloatPacketType(startPacketId + 14, 64)
+    private val isResourceInRangePacket = BytePacketType(startPacketId, PACKET_SIZE)
+    private val provisionResourcePacket = BytePacketType(startPacketId + 1, PACKET_SIZE)
+    private val readProtocolVersionPacket = BytePacketType(startPacketId + 2, PACKET_SIZE)
+    private val analogReadPacket = FloatPacketType(startPacketId + 3, PACKET_SIZE)
+    private val analogWritePacket = BytePacketType(startPacketId + 4, PACKET_SIZE)
+    private val buttonReadPacket = BytePacketType(startPacketId + 5, PACKET_SIZE)
+    private val digitalReadPacket = BytePacketType(startPacketId + 6, PACKET_SIZE)
+    private val digitalWritePacket = BytePacketType(startPacketId + 7, PACKET_SIZE)
+    private val encoderReadPacket = BytePacketType(startPacketId + 8, PACKET_SIZE)
+    private val toneWritePacket = FloatPacketType(startPacketId + 9, PACKET_SIZE)
+    private val serialWritePacket = BytePacketType(startPacketId + 10, PACKET_SIZE)
+    private val serialReadPacket = BytePacketType(startPacketId + 11, PACKET_SIZE)
+    private val servoWritePacket = FloatPacketType(startPacketId + 12, PACKET_SIZE)
+    private val servoReadPacket = FloatPacketType(startPacketId + 13, PACKET_SIZE)
+    private val ultrasonicReadPacket = FloatPacketType(startPacketId + 14, PACKET_SIZE)
+
+    /**
+     * A counter used to distinguish between RPC calls. Each RPC call uses the same packet id, so
+     * this counter is used to distinguish between different instances of the call.
+     */
+    private val packetCounter = AtomicInteger(0)
+
+    /**
+     * An array of byte buffers to convert the packet count int into bytes.
+     */
+    private val writeByteBuffers = Array<ByteBuffer>(
+        (getHighestPacketId() - getLowestPacketId()) + 1
+    ) { ByteBuffer.allocate(4) }
+
+    /**
+     * An array of byte buffers to convert the packet count bytes into an int.
+     */
+    private val readByteBuffers = Array<ByteBuffer>(
+        (getHighestPacketId() - getLowestPacketId()) + 1
+    ) { ByteBuffer.allocate(4) }
+
+    /**
+     * A mutable map of the timeout and success callbacks for each packet.
+     */
+    private val packetCallbacks: MutableMap<Int, Pair<() -> Unit, (ByteArray) -> Unit>> =
+        mutableMapOf()
+
+    init {
+        comms.addEvent(isResourceInRangePacket.idOfCommand) {
+            val bytes = comms.readBytes(isResourceInRangePacket.idOfCommand).toByteArray()
+            val buffer = readByteBuffers[isResourceInRangePacket.idOfCommand - startPacketId]
+
+            // The first 4 bytes of any packet is the packet count
+            buffer.put(bytes, 0, 4)
+
+            packetCallbacks.remove(buffer.int)?.second?.invoke(bytes)
+        }
+
+        comms.addTimeout(isResourceInRangePacket.idOfCommand) {
+            // TODO: We need to recover the packet count somehow so we can index into the map:
+            // packetCallbacks.remove(<packet count here>)?.first?.invoke()
+        }
+    }
 
     override fun connect() = Try {
         comms.connect()
@@ -64,26 +109,21 @@ class SimplePacketComsProtocol(
         timeout: () -> Unit,
         success: (Boolean) -> Unit
     ) {
-        var eventCallback = {}
-        eventCallback = {
-            // TODO: Replace this once
-            // https://github.com/madhephaestus/SimplePacketComsJava/issues/1 is done
-            if (comms.isTimedOut) {
-                timeout()
-            } else {
-                /**
-                 * Byte 0: 0 for true, 1 for false
-                 */
-                success(comms.readBytes(isResourceInRangePacket.idOfCommand)[0] == 0.toByte())
-            }
+        val buffer = writeByteBuffers[isResourceInRangePacket.idOfCommand - startPacketId]
+        val newCount = packetCounter.incrementAndGet()
+        buffer.putInt(newCount)
 
-            // TODO: This line will break things until
-            // https://github.com/madhephaestus/SimplePacketComsJava/issues/2 is done
-            comms.removeEvent(isResourceInRangePacket.idOfCommand, eventCallback)
+        packetCallbacks[newCount] = timeout to { byteArray ->
+            // The first 4 bytes are packet count
+            // Next byte is a boolean for whether the resource was in range
+            success(byteArray[4] == 0.toByte())
         }
 
-        comms.addEvent(isResourceInRangePacket.idOfCommand, eventCallback)
-        comms.writeBytes(isResourceInRangePacket.idOfCommand, ByteArray(0))
+        comms.writeBytes(
+            isResourceInRangePacket.idOfCommand,
+            buffer.array() + resourceId.validatedBytes()
+        )
+
         isResourceInRangePacket.oneShotMode()
     }
 
@@ -213,4 +253,23 @@ class SimplePacketComsProtocol(
      */
     @SuppressWarnings("FunctionOnlyReturningConstant")
     fun getHighestPacketId() = startPacketId + 14
+
+    /**
+     * Get the [ResourceId.bytes] and validate it will fit in a packet.
+     */
+    private fun ResourceId.validatedBytes() = bytes.also {
+        require(it.size <= PAYLOAD_SIZE)
+    }
+
+    companion object {
+        /**
+         * The maximum size of a packet payload in bytes.
+         */
+        const val PAYLOAD_SIZE = 60
+
+        /**
+         * The size of a packet in bytes.
+         */
+        const val PACKET_SIZE = PAYLOAD_SIZE + 4
+    }
 }

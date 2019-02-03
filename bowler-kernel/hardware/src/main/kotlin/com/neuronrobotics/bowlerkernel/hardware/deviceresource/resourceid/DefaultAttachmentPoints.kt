@@ -33,7 +33,11 @@ sealed class DefaultAttachmentPoints(
     data class Pin(val pinNumber: Byte) : DefaultAttachmentPoints(1, immutableListOf(pinNumber))
 
     data class PinGroup(val pinNumbers: ImmutableList<Byte>) :
-        DefaultAttachmentPoints(2, pinNumbers)
+        DefaultAttachmentPoints(2, pinNumbers) {
+        init {
+            require(pinNumbers.size < 58)
+        }
+    }
 
     data class USBPort(val portNumber: Byte) :
         DefaultAttachmentPoints(3, immutableListOf(portNumber))

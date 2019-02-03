@@ -26,7 +26,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Resour
  * with the device, such as a packet being sent.
  */
 @SuppressWarnings("ComplexInterface", "TooManyFunctions")
-interface BowlerRPCProtocol {
+interface AsyncBowlerRPCProtocol {
 
     /**
      * Opens a persistent connection to the device. An error is returned if the connection is

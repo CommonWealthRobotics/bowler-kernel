@@ -26,6 +26,15 @@ data class ResourceId(
     val resourceType: ResourceType,
     val attachmentPoint: AttachmentPoint
 ) {
+
+    /**
+     * The representation of this [ResourceId] a [ByteArray] which can be transmitted over the
+     * Bowler RPC.
+     */
+    val bytes by lazy {
+        (listOf(resourceType.type, attachmentPoint.type) + attachmentPoint.data).toByteArray()
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
