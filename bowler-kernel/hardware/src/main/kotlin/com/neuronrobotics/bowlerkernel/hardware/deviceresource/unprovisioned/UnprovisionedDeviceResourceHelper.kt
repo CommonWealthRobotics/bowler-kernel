@@ -18,7 +18,6 @@ package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned
 
 import arrow.core.Either
 import arrow.core.left
-import arrow.core.right
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.ProvisionError
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.ProvisionedDeviceResource
@@ -33,17 +32,18 @@ internal fun <T : ProvisionedDeviceResource> provisionBlocking(
     val latch = CountDownLatch(1)
     var out: Either<ProvisionError, T> = "Return value not initialized.".left()
 
-    device.bowlerRPCProtocol.provisionResource(
-        resourceId,
-        {
-            out = "Provision command timed out.".left()
-            latch.countDown()
-        },
-        {
-            out = makeProvisionedDeviceResource().right()
-            latch.countDown()
-        }
-    )
+//    device.bowlerRPCProtocol.provisionResource(
+//        resourceId,
+//        {
+//            out = "Provision command timed out.".left()
+//            latch.countDown()
+//        },
+//        {
+//            out = makeProvisionedDeviceResource().right()
+//            latch.countDown()
+//        }
+//    )
+    TODO("Not implemented")
 
-    return out
+//    return out
 }

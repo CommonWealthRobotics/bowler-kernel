@@ -45,210 +45,127 @@ interface AsyncBowlerRPCProtocol {
      * Queries whether the [resourceId] is in the valid range of resources for this device.
      *
      * @param resourceId The id of a resource on this device.
-     * @param timeout Called if the device timed out.
-     * @param success Called if the device responded correctly. Parameter 1 is whether the
-     * resource id is in the valid range of resources for this device.
+     * @return Whether the resource id is in the valid range of resources for this device.
      */
-    fun isResourceInRange(
-        resourceId: ResourceId,
-        timeout: () -> Unit = {},
-        success: (Boolean) -> Unit
-    )
+    fun isResourceInRange(resourceId: ResourceId): Boolean
 
     /**
      * Tells the device to attach and set up a resource.
      *
      * @param resourceId The id of the resource.
-     * @param timeout Called if the device timed out.
-     * @param success Called if the device responded correctly. Parameter 1 is whether the
-     * resource was successfully provisioned.
+     * @return Whether the resource was provisioned.
      */
-    fun provisionResource(
-        resourceId: ResourceId,
-        timeout: () -> Unit = {},
-        success: (Boolean) -> Unit
-    )
+    fun provisionResource(resourceId: ResourceId): Boolean
 
     /**
      * Queries the device's Bowler RPC protocol version.
      *
-     * @param timeout Called if the device timed out.
-     * @param success Called if the device responded correctly. Parameter 1 is the protocol
-     * version string.
+     * @return The protocol version string.
      */
-    fun readProtocolVersion(
-        timeout: () -> Unit = {},
-        success: (String) -> Unit
-    )
+    fun readProtocolVersion(): String
 
     /**
      * Performs an analog read.
      *
-     * @param timeout Called if the device timed out.
-     * @param success Called if the device responded correctly. Parameter 1 is the analog value.
+     * @param resourceId The id of a resource on this device.
+     * @return The analog value.
      */
-    fun analogRead(
-        resourceId: ResourceId,
-        timeout: () -> Unit = {},
-        success: (Double) -> Unit
-    )
+    fun analogRead(resourceId: ResourceId): Double
 
     /**
      * Performs an analog write.
      *
+     * @param resourceId The id of a resource on this device.
      * @param value The analog value.
-     * @param timeout Called if the device timed out.
-     * @param success Called if the device responded correctly.
      */
-    fun analogWrite(
-        resourceId: ResourceId,
-        value: Long,
-        timeout: () -> Unit = {},
-        success: () -> Unit
-    )
+    fun analogWrite(resourceId: ResourceId, value: Long)
 
     /**
      * Performs a debounced button read.
      *
-     * @param timeout Called if the device timed out.
-     * @param success Called if the device responded correctly. Parameter 1 is whether the button
-     * is pressed.
+     * @param resourceId The id of a resource on this device.
+     * @return Whether the button is pressed.
      */
-    fun buttonRead(
-        resourceId: ResourceId,
-        timeout: () -> Unit = {},
-        success: (Boolean) -> Unit
-    )
+    fun buttonRead(resourceId: ResourceId): Boolean
 
     /**
      * Performs a digital read.
      *
-     * @param timeout Called if the device timed out.
-     * @param success Called if the device responded correctly. Parameter 1 is the digital value.
+     * @param resourceId The id of a resource on this device.
+     * @return The digital value.
      */
-    fun digitalRead(
-        resourceId: ResourceId,
-        timeout: () -> Unit = {},
-        success: (DigitalState) -> Unit
-    )
+    fun digitalRead(resourceId: ResourceId): DigitalState
 
     /**
      * Performs a digital write.
      *
+     * @param resourceId The id of a resource on this device.
      * @param value The digital value.
-     * @param timeout Called if the device timed out.
-     * @param success Called if the device responded correctly.
      */
-    fun digitalWrite(
-        resourceId: ResourceId,
-        value: DigitalState,
-        timeout: () -> Unit = {},
-        success: () -> Unit
-    )
+    fun digitalWrite(resourceId: ResourceId, value: DigitalState)
 
     /**
      * Performs an encoder read.
      *
-     * @param timeout Called if the device timed out.
-     * @param success Called if the device responded correctly. Parameter 1 is the encoder value.
+     * @param resourceId The id of a resource on this device.
+     * @return The encoder value.
      */
-    fun encoderRead(
-        resourceId: ResourceId,
-        timeout: () -> Unit = {},
-        success: (Long) -> Unit
-    )
+    fun encoderRead(resourceId: ResourceId): Long
 
     /**
      * Performs a tone write.
      *
+     * @param resourceId The id of a resource on this device.
      * @param frequency The frequency, in Hz, of the tone.
-     * @param timeout Called if the device timed out.
-     * @param success Called if the device responded correctly.
      */
-    fun toneWrite(
-        resourceId: ResourceId,
-        frequency: Long,
-        timeout: () -> Unit = {},
-        success: () -> Unit
-    )
+    fun toneWrite(resourceId: ResourceId, frequency: Long)
 
     /**
      * Performs a tone write.
      *
+     * @param resourceId The id of a resource on this device.
      * @param frequency The frequency, in Hz, of the tone.
      * @param duration The duration of the tone.
-     * @param timeout Called if the device timed out.
-     * @param success Called if the device responded correctly.
      */
-    fun toneWrite(
-        resourceId: ResourceId,
-        frequency: Long,
-        duration: Long,
-        timeout: () -> Unit = {},
-        success: () -> Unit
-    )
+    fun toneWrite(resourceId: ResourceId, frequency: Long, duration: Long)
 
     /**
      * Performs a serial write.
      *
+     * @param resourceId The id of a resource on this device.
      * @param message The serial message.
-     * @param timeout Called if the device timed out.
-     * @param success Called if the device responded correctly.
      */
-    fun serialWrite(
-        resourceId: ResourceId,
-        message: String,
-        timeout: () -> Unit = {},
-        success: () -> Unit
-    )
+    fun serialWrite(resourceId: ResourceId, message: String)
 
     /**
      * Performs a serial read.
      *
-     * @param timeout Called if the device timed out.
-     * @param success Called if the device responded correctly. Parameter 1 is the serial message.
+     * @param resourceId The id of a resource on this device.
+     * @return The serial data.
      */
-    fun serialRead(
-        resourceId: ResourceId,
-        timeout: () -> Unit = {},
-        success: (String) -> Unit
-    )
+    fun serialRead(resourceId: ResourceId): String
 
     /**
      * Performs a servo write.
      *
+     * @param resourceId The id of a resource on this device.
      * @param angle The servo angle (or speed for a continuous rotation servo).
-     * @param timeout Called if the device timed out.
-     * @param success Called if the device responded correctly.
      */
-    fun servoWrite(
-        resourceId: ResourceId,
-        angle: Double,
-        timeout: () -> Unit = {},
-        success: () -> Unit
-    )
+    fun servoWrite(resourceId: ResourceId, angle: Double)
 
     /**
      * Performs a servo read.
      *
-     * @param timeout Called if the device timed out.
-     * @param success Called if the device responded correctly. Parameter 1 is the servo angle.
+     * @param resourceId The id of a resource on this device.
+     * @return The servo angle.
      */
-    fun servoRead(
-        resourceId: ResourceId,
-        timeout: () -> Unit = {},
-        success: (Double) -> Unit
-    )
+    fun servoRead(resourceId: ResourceId): Double
 
     /**
      * Performs an ultrasonic read.
      *
-     * @param timeout Called if the device timed out.
-     * @param success Called if the device responded correctly. Parameter 1 is the raw distance.
+     * @param resourceId The id of a resource on this device.
+     * @return The raw distance.
      */
-    fun ultrasonicRead(
-        resourceId: ResourceId,
-        timeout: () -> Unit = {},
-        success: (Long) -> Unit
-    )
+    fun ultrasonicRead(resourceId: ResourceId): Long
 }

@@ -16,11 +16,13 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
-/**
- * An error which is caused by a timeout.
- *
- * @param timeoutDuration The duration, in ms, of the timeout.
- */
-data class TimeoutError(
-    val timeoutDuration: Long = 100
-)
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+
+interface BowlerRPCProtocolBuilder {
+
+    fun addPollingRead(resourceId: ResourceId)
+
+    fun addRead(resourceId: ResourceId)
+
+    fun addWrite(resourceId: ResourceId)
+}

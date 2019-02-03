@@ -19,7 +19,6 @@ package com.neuronrobotics.bowlerkernel.hardware.device
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.protocol.AsyncBowlerRPCProtocol
-import java.util.concurrent.CountDownLatch
 
 /**
  * A Bowler device is a serial device which runs the Bowler RPC protocol.
@@ -37,22 +36,7 @@ internal constructor(
     override fun disconnect() = bowlerRPCProtocol.disconnect()
 
     override fun isResourceInRange(resourceId: ResourceId): Boolean {
-        var out = false
-        val latch = CountDownLatch(1)
-
-        bowlerRPCProtocol.isResourceInRange(
-            resourceId,
-            {
-                out = false
-                latch.countDown()
-            },
-            {
-                out = it
-                latch.countDown()
-            })
-
-        latch.await()
-        return out
+        TODO("Not implemented")
     }
 
     override fun toString() = """`$deviceId`"""

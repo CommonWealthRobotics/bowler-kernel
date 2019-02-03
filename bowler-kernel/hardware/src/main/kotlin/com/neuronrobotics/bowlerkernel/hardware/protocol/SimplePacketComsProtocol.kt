@@ -17,13 +17,14 @@
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
 import arrow.core.Try
+import com.google.common.collect.ImmutableList
+import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
 import edu.wpi.SimplePacketComs.BytePacketType
-import edu.wpi.SimplePacketComs.FloatPacketType
-import java.nio.ByteBuffer
-import java.util.concurrent.atomic.AtomicInteger
+import org.octogonapus.guavautil.collections.toImmutableMap
+import java.util.concurrent.CountDownLatch
 
 /**
  * An implementation of [AsyncBowlerRPCProtocol] using SimplePacketComs. Uses a continuous range of
@@ -36,66 +37,80 @@ import java.util.concurrent.atomic.AtomicInteger
 @SuppressWarnings("TooManyFunctions")
 class SimplePacketComsProtocol(
     private val comms: AbstractSimpleComsDevice,
-    private val startPacketId: Int = 1
+    private val startPacketId: Int = 1,
+    private val pollingReads: ImmutableList<ResourceId>,
+    private val reads: ImmutableList<ResourceId>,
+    private val writes: ImmutableList<ResourceId>
 ) : AsyncBowlerRPCProtocol {
 
-    private val isResourceInRangePacket = BytePacketType(startPacketId, PACKET_SIZE)
-    private val provisionResourcePacket = BytePacketType(startPacketId + 1, PACKET_SIZE)
-    private val readProtocolVersionPacket = BytePacketType(startPacketId + 2, PACKET_SIZE)
-    private val analogReadPacket = FloatPacketType(startPacketId + 3, PACKET_SIZE)
-    private val analogWritePacket = BytePacketType(startPacketId + 4, PACKET_SIZE)
-    private val buttonReadPacket = BytePacketType(startPacketId + 5, PACKET_SIZE)
-    private val digitalReadPacket = BytePacketType(startPacketId + 6, PACKET_SIZE)
-    private val digitalWritePacket = BytePacketType(startPacketId + 7, PACKET_SIZE)
-    private val encoderReadPacket = BytePacketType(startPacketId + 8, PACKET_SIZE)
-    private val toneWritePacket = FloatPacketType(startPacketId + 9, PACKET_SIZE)
-    private val serialWritePacket = BytePacketType(startPacketId + 10, PACKET_SIZE)
-    private val serialReadPacket = BytePacketType(startPacketId + 11, PACKET_SIZE)
-    private val servoWritePacket = FloatPacketType(startPacketId + 12, PACKET_SIZE)
-    private val servoReadPacket = FloatPacketType(startPacketId + 13, PACKET_SIZE)
-    private val ultrasonicReadPacket = FloatPacketType(startPacketId + 14, PACKET_SIZE)
+    private val highestPacketId = startPacketId + pollingReads.size + reads.size + writes.size
 
     /**
-     * A counter used to distinguish between RPC calls. Each RPC call uses the same packet id, so
-     * this counter is used to distinguish between different instances of the call.
+     * The data for polled read packets.
      */
-    private val packetCounter = AtomicInteger(0)
+    private val pollingReadsData = mutableMapOf<Int, Array<Byte>>()
 
     /**
-     * An array of byte buffers to convert the packet count int into bytes.
+     * The data for manually sent read packets.
      */
-    private val writeByteBuffers = Array<ByteBuffer>(
-        (getHighestPacketId() - getLowestPacketId()) + 1
-    ) { ByteBuffer.allocate(4) }
+    private val readsData = mutableMapOf<Int, Array<Byte>?>()
 
     /**
-     * An array of byte buffers to convert the packet count bytes into an int.
+     * The synchronization latches for manually sent read packets.
      */
-    private val readByteBuffers = Array<ByteBuffer>(
-        (getHighestPacketId() - getLowestPacketId()) + 1
-    ) { ByteBuffer.allocate(4) }
+    private val readsLatches = mutableMapOf<Int, CountDownLatch>()
 
     /**
-     * A mutable map of the timeout and success callbacks for each packet.
+     * All the packets that got generated.
      */
-    private val packetCallbacks: MutableMap<Int, Pair<() -> Unit, (ByteArray) -> Unit>> =
-        mutableMapOf()
+    private val packets: ImmutableMap<ResourceId, BytePacketType>
 
     init {
-        comms.addEvent(isResourceInRangePacket.idOfCommand) {
-            val bytes = comms.readBytes(isResourceInRangePacket.idOfCommand).toByteArray()
-            val buffer = readByteBuffers[isResourceInRangePacket.idOfCommand - startPacketId]
+        var packetId = startPacketId
+        val newPackets = mutableMapOf<ResourceId, BytePacketType>()
 
-            // The first 4 bytes of any packet is the packet count
-            buffer.put(bytes, 0, 4)
+        pollingReads.forEach {
+            val packet = BytePacketType(packetId, PACKET_SIZE)
+            newPackets[it] = packet
 
-            packetCallbacks.remove(buffer.int)?.second?.invoke(bytes)
+            comms.addEvent(packetId) { pollingReadsData[packetId] = comms.readBytes(packetId) }
+            comms.writeBytes(packetId, it.validatedBytes())
+            comms.addPollingPacket(packet)
+
+            packetId++
         }
 
-        comms.addTimeout(isResourceInRangePacket.idOfCommand) {
-            // TODO: We need to recover the packet count somehow so we can index into the map:
-            // packetCallbacks.remove(<packet count here>)?.first?.invoke()
+        reads.forEach {
+            val packet = BytePacketType(packetId, PACKET_SIZE)
+            packet.oneShotMode()
+            newPackets[it] = packet
+
+            comms.addEvent(packetId) {
+                readsData[packetId] = comms.readBytes(packetId)
+                readsLatches[packetId]?.countDown()
+            }
+
+            comms.addTimeout(packetId) {
+                readsData[packetId] = null
+                readsLatches[packetId]?.countDown()
+            }
+
+            comms.addPollingPacket(packet)
+
+            packetId++
         }
+
+        writes.forEach {
+            val packet = BytePacketType(packetId, PACKET_SIZE)
+            packet.oneShotMode()
+            newPackets[it] = packet
+
+            comms.addPollingPacket(packet)
+
+            packetId++
+        }
+
+        packets = newPackets.toImmutableMap()
     }
 
     override fun connect() = Try {
@@ -104,141 +119,87 @@ class SimplePacketComsProtocol(
 
     override fun disconnect() = comms.disconnect()
 
-    override fun isResourceInRange(
-        resourceId: ResourceId,
-        timeout: () -> Unit,
-        success: (Boolean) -> Unit
-    ) {
-        val buffer = writeByteBuffers[isResourceInRangePacket.idOfCommand - startPacketId]
-        val newCount = packetCounter.incrementAndGet()
-        buffer.putInt(newCount)
+    override fun isResourceInRange(resourceId: ResourceId): Boolean {
+        TODO("not implemented")
+    }
 
-        packetCallbacks[newCount] = timeout to { byteArray ->
-            // The first 4 bytes are packet count
-            // Next byte is a boolean for whether the resource was in range
-            success(byteArray[4] == 0.toByte())
+    override fun provisionResource(resourceId: ResourceId): Boolean {
+        TODO("not implemented")
+    }
+
+    override fun readProtocolVersion(): String {
+        TODO("not implemented")
+    }
+
+    override fun analogRead(resourceId: ResourceId): Double {
+        fun Array<Byte>.parse(): Double {
+            TODO("Parse the bytes into a double for an analogRead.")
         }
 
-        comms.writeBytes(
-            isResourceInRangePacket.idOfCommand,
-            buffer.array() + resourceId.validatedBytes()
+        return packets[resourceId]?.idOfCommand?.let { id ->
+            // If the packet is a polling packet, grab the latest data.
+            pollingReadsData[id]?.parse() ?: let {
+                // Else, read a packet and wait for the response.
+                val latch = CountDownLatch(1)
+
+                readsLatches[id] = latch
+                comms.writeBytes(id, resourceId.validatedBytes())
+
+                // Wait for a response
+                latch.await()
+
+                readsData[id]?.parse()
+            } ?: TODO("Packet timed out.")
+        } ?: throw UnsupportedOperationException(
+            "ResourceId was not added at construction time: $resourceId"
         )
-
-        isResourceInRangePacket.oneShotMode()
     }
 
-    override fun provisionResource(
-        resourceId: ResourceId,
-        timeout: () -> Unit,
-        success: (Boolean) -> Unit
-    ) {
+    override fun analogWrite(resourceId: ResourceId, value: Long) {
         TODO("not implemented")
     }
 
-    override fun readProtocolVersion(timeout: () -> Unit, success: (String) -> Unit) {
+    override fun buttonRead(resourceId: ResourceId): Boolean {
         TODO("not implemented")
     }
 
-    override fun analogRead(
-        resourceId: ResourceId,
-        timeout: () -> Unit,
-        success: (Double) -> Unit
-    ) {
+    override fun digitalRead(resourceId: ResourceId): DigitalState {
         TODO("not implemented")
     }
 
-    override fun analogWrite(
-        resourceId: ResourceId,
-        value: Long,
-        timeout: () -> Unit,
-        success: () -> Unit
-    ) {
+    override fun digitalWrite(resourceId: ResourceId, value: DigitalState) {
         TODO("not implemented")
     }
 
-    override fun buttonRead(
-        resourceId: ResourceId,
-        timeout: () -> Unit,
-        success: (Boolean) -> Unit
-    ) {
+    override fun encoderRead(resourceId: ResourceId): Long {
         TODO("not implemented")
     }
 
-    override fun digitalRead(
-        resourceId: ResourceId,
-        timeout: () -> Unit,
-        success: (DigitalState) -> Unit
-    ) {
+    override fun toneWrite(resourceId: ResourceId, frequency: Long) {
         TODO("not implemented")
     }
 
-    override fun digitalWrite(
-        resourceId: ResourceId,
-        value: DigitalState,
-        timeout: () -> Unit,
-        success: () -> Unit
-    ) {
+    override fun toneWrite(resourceId: ResourceId, frequency: Long, duration: Long) {
         TODO("not implemented")
     }
 
-    override fun encoderRead(resourceId: ResourceId, timeout: () -> Unit, success: (Long) -> Unit) {
+    override fun serialWrite(resourceId: ResourceId, message: String) {
         TODO("not implemented")
     }
 
-    override fun toneWrite(
-        resourceId: ResourceId,
-        frequency: Long,
-        timeout: () -> Unit,
-        success: () -> Unit
-    ) {
+    override fun serialRead(resourceId: ResourceId): String {
         TODO("not implemented")
     }
 
-    override fun toneWrite(
-        resourceId: ResourceId,
-        frequency: Long,
-        duration: Long,
-        timeout: () -> Unit,
-        success: () -> Unit
-    ) {
+    override fun servoWrite(resourceId: ResourceId, angle: Double) {
         TODO("not implemented")
     }
 
-    override fun serialWrite(
-        resourceId: ResourceId,
-        message: String,
-        timeout: () -> Unit,
-        success: () -> Unit
-    ) {
+    override fun servoRead(resourceId: ResourceId): Double {
         TODO("not implemented")
     }
 
-    override fun serialRead(
-        resourceId: ResourceId,
-        timeout: () -> Unit,
-        success: (String) -> Unit
-    ) {
-        TODO("not implemented")
-    }
-
-    override fun servoWrite(
-        resourceId: ResourceId,
-        angle: Double,
-        timeout: () -> Unit,
-        success: () -> Unit
-    ) {
-        TODO("not implemented")
-    }
-
-    override fun servoRead(resourceId: ResourceId, timeout: () -> Unit, success: (Double) -> Unit) {
-        TODO("not implemented")
-    }
-
-    override fun ultrasonicRead(
-        resourceId: ResourceId,
-        timeout: () -> Unit,
-        success: (Long) -> Unit
-    ) {
+    override fun ultrasonicRead(resourceId: ResourceId): Long {
         TODO("not implemented")
     }
 
@@ -252,7 +213,7 @@ class SimplePacketComsProtocol(
      * The highest packet id.
      */
     @SuppressWarnings("FunctionOnlyReturningConstant")
-    fun getHighestPacketId() = startPacketId + 14
+    fun getHighestPacketId() = highestPacketId
 
     /**
      * Get the [ResourceId.bytes] and validate it will fit in a packet.
