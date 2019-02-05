@@ -20,6 +20,7 @@ import arrow.core.Try
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
 import edu.wpi.SimplePacketComs.BytePacketType
@@ -81,14 +82,68 @@ class SimplePacketComsProtocol(
      */
     private var isConnected = false
 
+    init {
+        require(startPacketId != DISCOVERY_PACKET_ID)
+    }
+
     private fun validateConnection() {
         if (!isConnected) {
             throw IllegalStateException("The RPC is not connected.")
         }
     }
 
+    private enum class DiscoveryStatus {
+        Accepted, Rejected
+    }
+
     private fun sendPacketInfoToDevice() {
-        // TODO: Tell the device what packets we are going to make
+        val discoveryPacket = BytePacketType(DISCOVERY_PACKET_ID, PACKET_SIZE).apply {
+            waitToSendMode()
+        }
+
+        lateinit var discoveryData: Array<Byte>
+        lateinit var discoveryLatch: CountDownLatch
+
+        comms.addPollingPacket(discoveryPacket)
+
+        comms.addEvent(DISCOVERY_PACKET_ID) {
+            discoveryData = comms.readBytes(DISCOVERY_PACKET_ID)
+            discoveryLatch.countDown()
+        }
+
+        comms.addTimeout(DISCOVERY_PACKET_ID) { discoveryPacket.oneShotMode() }
+
+        (pollingReads + reads + writes).forEachIndexed { index, resourceId ->
+            discoveryLatch = CountDownLatch(1)
+
+            comms.writeBytes(
+                DISCOVERY_PACKET_ID,
+                listOf(
+                    DefaultResourceTypes.Discovery.type,
+                    (startPacketId + index).toByte()
+                ).toByteArray() + resourceId.validatedBytes()
+            )
+
+            discoveryPacket.oneShotMode()
+
+            discoveryLatch.await()
+
+            println(discoveryData.joinToString())
+
+            val accepted = discoveryData[DISCOVERY_REPLY_STATUS_POS].let {
+                when (it) {
+                    DISCOVERY_REPLY_STATUS_ACCEPTED.toByte() -> DiscoveryStatus.Accepted
+                    DISCOVERY_REPLY_STATUS_REJECTED.toByte() -> DiscoveryStatus.Rejected
+                    else -> throw IllegalStateException("Unknown discovery status: $it")
+                }
+            }
+
+            if (accepted != DiscoveryStatus.Accepted) {
+                throw IllegalStateException(
+                    "Discovery packet was not accepted (got $accepted) for resourceId: $resourceId"
+                )
+            }
+        }
     }
 
     private fun createPackets() {
@@ -129,9 +184,7 @@ class SimplePacketComsProtocol(
             }
 
             // TODO: We could get a timeout up to 3 times for the same packet
-            comms.addTimeout(localPacketId) {
-                packet.oneShotMode()
-            }
+            comms.addTimeout(localPacketId) { packet.oneShotMode() }
 
             comms.writeBytes(localPacketId, it.validatedBytes())
 
@@ -154,9 +207,7 @@ class SimplePacketComsProtocol(
             }
 
             // TODO: We could get a timeout up to 3 times for the same packet
-            comms.addTimeout(localPacketId) {
-                packet.oneShotMode()
-            }
+            comms.addTimeout(localPacketId) { packet.oneShotMode() }
 
             packetId++
         }
@@ -390,5 +441,25 @@ class SimplePacketComsProtocol(
          * The size of a packet in bytes.
          */
         const val PACKET_SIZE = PAYLOAD_SIZE + 4
+
+        /**
+         * The id of the discovery packet.
+         */
+        const val DISCOVERY_PACKET_ID = 1
+
+        /**
+         * The flag for if a discovery packet was accepted.
+         */
+        private const val DISCOVERY_REPLY_STATUS_ACCEPTED = 1
+
+        /**
+         * The flag for if a discovery packet was rejected.
+         */
+        private const val DISCOVERY_REPLY_STATUS_REJECTED = 2
+
+        /**
+         * The position of the accepted byte.
+         */
+        private const val DISCOVERY_REPLY_STATUS_POS = 0
     }
 }

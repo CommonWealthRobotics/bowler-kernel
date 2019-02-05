@@ -83,6 +83,11 @@ sealed class DefaultResourceTypes(
     object PiezoelectricSpeaker : DefaultResourceTypes(11)
 
     /**
+     * A special type used for packet discovery.
+     */
+    object Discovery : DefaultResourceTypes(12)
+
+    /**
      * The lowest used type number.
      */
     @SuppressWarnings("FunctionOnlyReturningConstant")
@@ -92,5 +97,5 @@ sealed class DefaultResourceTypes(
      * The highest used type number.
      */
     @SuppressWarnings("FunctionOnlyReturningConstant")
-    fun getHighestTypeNumber(): Byte = 11
+    fun getHighestTypeNumber(): Byte = 12
 }
