@@ -74,9 +74,24 @@ class SimplePacketComsProtocol(
     /**
      * All the packets that got generated.
      */
-    private val packets: ImmutableMap<ResourceId, BytePacketType>
+    private lateinit var packets: ImmutableMap<ResourceId, BytePacketType>
 
-    init {
+    /**
+     * Whether the device is connected.
+     */
+    private var isConnected = false
+
+    private fun validateConnection() {
+        if (!isConnected) {
+            throw IllegalStateException("The RPC is not connected.")
+        }
+    }
+
+    private fun sendPacketInfoToDevice() {
+        // TODO: Tell the device what packets we are going to make
+    }
+
+    private fun createPackets() {
         var packetId = startPacketId
         val newPackets = mutableMapOf<ResourceId, BytePacketType>()
 
@@ -149,24 +164,6 @@ class SimplePacketComsProtocol(
         packets = newPackets.toImmutableMap()
     }
 
-    override fun connect() = Try {
-        comms.connect()
-    }.toEither { it.localizedMessage }.swap().toOption()
-
-    override fun disconnect() = comms.disconnect()
-
-    override fun isResourceInRange(resourceId: ResourceId): Boolean {
-        TODO("not implemented")
-    }
-
-    override fun provisionResource(resourceId: ResourceId): Boolean {
-        TODO("not implemented")
-    }
-
-    override fun readProtocolVersion(): String {
-        TODO("not implemented")
-    }
-
     /**
      * Sends a packet and waits for the response. Re-sends the packet on timeout.
      *
@@ -233,10 +230,39 @@ class SimplePacketComsProtocol(
         } while (true)
     }
 
+    override fun connect() = Try {
+        comms.connect()
+        sendPacketInfoToDevice()
+        createPackets()
+        isConnected = true
+    }.toEither { it.localizedMessage }.swap().toOption()
+
+    override fun disconnect() {
+        comms.disconnect()
+        isConnected = false
+    }
+
+    override fun isResourceInRange(resourceId: ResourceId): Boolean {
+        validateConnection()
+        TODO("not implemented")
+    }
+
+    override fun provisionResource(resourceId: ResourceId): Boolean {
+        validateConnection()
+        TODO("not implemented")
+    }
+
+    override fun readProtocolVersion(): String {
+        validateConnection()
+        TODO("not implemented")
+    }
+
     override fun analogRead(resourceId: ResourceId): Double {
+        validateConnection()
+
         fun Array<Byte>.parse(): Double {
             println(joinToString())
-            return this[4].toDouble()
+            return this[HEADER_SIZE + 1].toDouble()
         }
 
         return when {
@@ -256,6 +282,8 @@ class SimplePacketComsProtocol(
     }
 
     override fun analogWrite(resourceId: ResourceId, value: Short) {
+        validateConnection()
+
         when {
             writes.contains(resourceId) -> packets[resourceId]?.let { packet ->
                 // Send a new read packet
@@ -274,46 +302,57 @@ class SimplePacketComsProtocol(
     }
 
     override fun buttonRead(resourceId: ResourceId): Boolean {
+        validateConnection()
         TODO("not implemented")
     }
 
     override fun digitalRead(resourceId: ResourceId): DigitalState {
+        validateConnection()
         TODO("not implemented")
     }
 
     override fun digitalWrite(resourceId: ResourceId, value: DigitalState) {
+        validateConnection()
         TODO("not implemented")
     }
 
     override fun encoderRead(resourceId: ResourceId): Long {
+        validateConnection()
         TODO("not implemented")
     }
 
     override fun toneWrite(resourceId: ResourceId, frequency: Int) {
+        validateConnection()
         TODO("not implemented")
     }
 
     override fun toneWrite(resourceId: ResourceId, frequency: Int, duration: Long) {
+        validateConnection()
         TODO("not implemented")
     }
 
     override fun serialWrite(resourceId: ResourceId, message: String) {
+        validateConnection()
         TODO("not implemented")
     }
 
     override fun serialRead(resourceId: ResourceId): String {
+        validateConnection()
         TODO("not implemented")
     }
 
     override fun servoWrite(resourceId: ResourceId, angle: Double) {
+        validateConnection()
         TODO("not implemented")
     }
 
     override fun servoRead(resourceId: ResourceId): Double {
+        validateConnection()
         TODO("not implemented")
     }
 
     override fun ultrasonicRead(resourceId: ResourceId): Long {
+        validateConnection()
         TODO("not implemented")
     }
 
@@ -341,6 +380,11 @@ class SimplePacketComsProtocol(
          * The maximum size of a packet payload in bytes.
          */
         const val PAYLOAD_SIZE = 60
+
+        /**
+         * The number of bytes that the standard payload header takes.
+         */
+        const val HEADER_SIZE = 3
 
         /**
          * The size of a packet in bytes.
