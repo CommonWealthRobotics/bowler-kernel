@@ -27,14 +27,13 @@ internal class Test {
             },
             1,
             immutableListOf(),
-            immutableListOf(testPin),
-            immutableListOf()
+            immutableListOf(),
+            immutableListOf(testPin)
         )
 
         rpc.connect()
-        for (i in 0 until 5) {
-            println(rpc.analogRead(testPin))
-            Thread.sleep(10)
+        for (i in 0 until 50) {
+            println(rpc.analogWrite(testPin, i.toLong()))
         }
     }
 }

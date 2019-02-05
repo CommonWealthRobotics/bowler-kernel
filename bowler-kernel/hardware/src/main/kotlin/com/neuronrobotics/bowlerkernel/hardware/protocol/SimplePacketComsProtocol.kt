@@ -61,6 +61,16 @@ class SimplePacketComsProtocol(
     private val readsLatches = mutableMapOf<Int, CountDownLatch>()
 
     /**
+     * The data for manually sent write packets.
+     */
+    private val writesData = mutableMapOf<Int, Array<Byte>?>()
+
+    /**
+     * The synchronization latches for manually sent read write.
+     */
+    private val writesLatches = mutableMapOf<Int, CountDownLatch>()
+
+    /**
      * All the packets that got generated.
      */
     private val packets: ImmutableMap<ResourceId, BytePacketType>
@@ -104,8 +114,7 @@ class SimplePacketComsProtocol(
 
             // TODO: We could get a timeout up to 3 times for the same packet
             comms.addTimeout(localPacketId) {
-                readsData[localPacketId] = null
-                readsLatches[localPacketId]?.countDown()
+                packet.oneShotMode()
             }
 
             comms.writeBytes(localPacketId, it.validatedBytes())
@@ -123,7 +132,10 @@ class SimplePacketComsProtocol(
 
             comms.addPollingPacket(packet)
 
-            // TODO: Add an event to save data from the write and count down a latch
+            comms.addEvent(localPacketId) {
+                writesData[localPacketId] = comms.readBytes(localPacketId)
+                writesLatches[localPacketId]?.countDown()
+            }
 
             // TODO: We could get a timeout up to 3 times for the same packet
             comms.addTimeout(localPacketId) {
@@ -163,7 +175,7 @@ class SimplePacketComsProtocol(
      * @param parse The function to parse the response packet.
      * @return The response.
      */
-    private tailrec fun <T> reliablySendPacket(
+    private fun <T> reliablySendPacket(
         packet: BytePacketType,
         latches: MutableMap<Int, CountDownLatch>,
         data: MutableMap<Int, Array<Byte>?>,
@@ -182,7 +194,7 @@ class SimplePacketComsProtocol(
         latch.await()
 
         return data[packet.idOfCommand]?.parse()
-            ?: reliablySendPacket(packet, latches, data, parse)
+            ?: throw IllegalStateException("Packet response was still null after waiting.")
     }
 
     /**
@@ -196,6 +208,18 @@ class SimplePacketComsProtocol(
         packet: BytePacketType,
         parse: Array<Byte>.() -> T
     ): T = reliablySendPacket(packet, readsLatches, readsData, parse)
+
+    /**
+     * Try to send a write packet. Re-sends the packet on timeout.
+     *
+     * @param packet The packet to send.
+     * @param parse The function to parse the response packet.
+     * @return The response.
+     */
+    private fun <T> tryToSendWrite(
+        packet: BytePacketType,
+        parse: Array<Byte>.() -> T
+    ): T = reliablySendPacket(packet, writesLatches, writesData, parse)
 
     private fun waitForPollingRead(packetId: Int): Array<Byte> {
         do {
@@ -231,7 +255,23 @@ class SimplePacketComsProtocol(
     }
 
     override fun analogWrite(resourceId: ResourceId, value: Long) {
-        TODO("not implemented")
+        fun Array<Byte>.parse(): Double {
+            println(joinToString())
+            return this[4].toDouble()
+        }
+
+        when {
+            writes.contains(resourceId) -> packets[resourceId]?.let { packet ->
+                // Send a new read packet
+                comms.writeBytes(
+                    packet.idOfCommand,
+                    resourceId.validatedBytes() + listOf(value).map { it.toByte() }.toByteArray()
+                )
+                println(tryToSendWrite(packet) { parse() })
+            } ?: throw IllegalStateException("Unknown error.")
+
+            else -> throw IllegalArgumentException("Resource id not valid for write: $resourceId")
+        }
     }
 
     override fun buttonRead(resourceId: ResourceId): Boolean {
