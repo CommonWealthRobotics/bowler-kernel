@@ -6,7 +6,6 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Resour
 import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocol
 import edu.wpi.SimplePacketComs.device.UdpDevice
 import org.junit.jupiter.api.Test
-import org.octogonapus.guavautil.collections.emptyImmutableList
 import org.octogonapus.guavautil.collections.immutableListOf
 import java.net.InetAddress
 
@@ -27,9 +26,9 @@ internal class Test {
             ) {
             },
             1,
+            immutableListOf(),
             immutableListOf(testPin),
-            emptyImmutableList(),
-            emptyImmutableList()
+            immutableListOf()
         )
 
         rpc.connect()

@@ -72,13 +72,16 @@ class SimplePacketComsProtocol(
         pollingReads.forEach {
             val localPacketId = packetId
             val packet = BytePacketType(localPacketId, PACKET_SIZE)
+
             newPackets[it] = packet
 
             comms.addPollingPacket(packet)
+
             comms.addEvent(localPacketId) {
                 println("pollingReads event wrote bytes for $localPacketId")
                 pollingReadsData[localPacketId] = comms.readBytes(localPacketId)
             }
+
             comms.writeBytes(localPacketId, it.validatedBytes())
 
             packetId++
@@ -86,8 +89,10 @@ class SimplePacketComsProtocol(
 
         reads.forEach {
             val localPacketId = packetId
-            val packet = BytePacketType(localPacketId, PACKET_SIZE)
-            packet.oneShotMode()
+            val packet = BytePacketType(localPacketId, PACKET_SIZE).apply {
+                waitToSendMode()
+            }
+
             newPackets[it] = packet
 
             comms.addPollingPacket(packet)
@@ -97,22 +102,33 @@ class SimplePacketComsProtocol(
                 readsLatches[localPacketId]?.countDown()
             }
 
+            // TODO: We could get a timeout up to 3 times for the same packet
             comms.addTimeout(localPacketId) {
                 readsData[localPacketId] = null
                 readsLatches[localPacketId]?.countDown()
             }
+
+            comms.writeBytes(localPacketId, it.validatedBytes())
 
             packetId++
         }
 
         writes.forEach {
             val localPacketId = packetId
-            val packet = BytePacketType(localPacketId, PACKET_SIZE)
-            packet.oneShotMode()
+            val packet = BytePacketType(localPacketId, PACKET_SIZE).apply {
+                waitToSendMode()
+            }
+
             newPackets[it] = packet
 
             comms.addPollingPacket(packet)
-            // TODO: Re-send the write on timeout
+
+            // TODO: Add an event to save data from the write and count down a latch
+
+            // TODO: We could get a timeout up to 3 times for the same packet
+            comms.addTimeout(localPacketId) {
+                packet.oneShotMode()
+            }
 
             packetId++
         }
@@ -139,29 +155,47 @@ class SimplePacketComsProtocol(
     }
 
     /**
-     * Try to send a read packet. Re-sends the packet on timeout.
+     * Sends a packet and waits for the response. Re-sends the packet on timeout.
      *
-     * @param resourceId The [ResourceId] to read.
-     * @param packetId The id of the packet.
+     * @param packet The packet to send.
+     * @param latches A map of packet id to [CountDownLatch] used to wait for the response.
+     * @param data A map of packet id to response payload.
      * @param parse The function to parse the response packet.
      * @return The response.
      */
-    private tailrec fun <T> tryToSendRead(
-        resourceId: ResourceId,
-        packetId: Int,
+    private tailrec fun <T> reliablySendPacket(
+        packet: BytePacketType,
+        latches: MutableMap<Int, CountDownLatch>,
+        data: MutableMap<Int, Array<Byte>?>,
         parse: Array<Byte>.() -> T
     ): T {
         val latch = CountDownLatch(1)
 
-        readsLatches[packetId] = latch
-        comms.writeBytes(packetId, resourceId.validatedBytes())
+        // Reset the latch
+        latches[packet.idOfCommand] = latch
+
+        // Send a new packet
+        packet.oneShotMode()
 
         // Wait for a response
-        println("tryToSendRead waiting")
+        println("reliablySendPacket waiting")
         latch.await()
 
-        return readsData[packetId]?.parse() ?: tryToSendRead(resourceId, packetId, parse)
+        return data[packet.idOfCommand]?.parse()
+            ?: reliablySendPacket(packet, latches, data, parse)
     }
+
+    /**
+     * Try to send a read packet. Re-sends the packet on timeout.
+     *
+     * @param packet The packet to send.
+     * @param parse The function to parse the response packet.
+     * @return The response.
+     */
+    private fun <T> tryToSendRead(
+        packet: BytePacketType,
+        parse: Array<Byte>.() -> T
+    ): T = reliablySendPacket(packet, readsLatches, readsData, parse)
 
     private fun waitForPollingRead(packetId: Int): Array<Byte> {
         do {
@@ -182,16 +216,15 @@ class SimplePacketComsProtocol(
 
         return when {
             // The resource is a polling packet
-            pollingReads.contains(resourceId) ->
-                packets[resourceId]?.idOfCommand?.let { id ->
-                    pollingReadsData[id]?.parse() ?: waitForPollingRead(id).parse()
-                } ?: throw IllegalStateException("Unknown error.")
+            pollingReads.contains(resourceId) -> packets[resourceId]?.idOfCommand?.let { id ->
+                pollingReadsData[id]?.parse() ?: waitForPollingRead(id).parse()
+            } ?: throw IllegalStateException("Unknown error.")
 
             // The resource is a non-polling packet
-            reads.contains(resourceId) ->
-                packets[resourceId]?.idOfCommand?.let { id ->
-                    readsData[id]?.parse() ?: tryToSendRead(resourceId, id) { parse() }
-                } ?: throw IllegalStateException("Unknown error.")
+            reads.contains(resourceId) -> packets[resourceId]?.let { packet ->
+                // Send a new read packet
+                tryToSendRead(packet) { parse() }
+            } ?: throw IllegalStateException("Unknown error.")
 
             else -> throw IllegalArgumentException("Resource id not valid for read: $resourceId")
         }
