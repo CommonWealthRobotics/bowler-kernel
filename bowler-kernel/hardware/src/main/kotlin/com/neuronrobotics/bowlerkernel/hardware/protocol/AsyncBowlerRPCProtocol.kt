@@ -78,7 +78,7 @@ interface AsyncBowlerRPCProtocol {
      * @param resourceId The id of a resource on this device.
      * @param value The analog value.
      */
-    fun analogWrite(resourceId: ResourceId, value: Long)
+    fun analogWrite(resourceId: ResourceId, value: Short)
 
     /**
      * Performs a debounced button read.
@@ -118,7 +118,7 @@ interface AsyncBowlerRPCProtocol {
      * @param resourceId The id of a resource on this device.
      * @param frequency The frequency, in Hz, of the tone.
      */
-    fun toneWrite(resourceId: ResourceId, frequency: Long)
+    fun toneWrite(resourceId: ResourceId, frequency: Int)
 
     /**
      * Performs a tone write.
@@ -127,7 +127,7 @@ interface AsyncBowlerRPCProtocol {
      * @param frequency The frequency, in Hz, of the tone.
      * @param duration The duration of the tone.
      */
-    fun toneWrite(resourceId: ResourceId, frequency: Long, duration: Long)
+    fun toneWrite(resourceId: ResourceId, frequency: Int, duration: Long)
 
     /**
      * Performs a serial write.

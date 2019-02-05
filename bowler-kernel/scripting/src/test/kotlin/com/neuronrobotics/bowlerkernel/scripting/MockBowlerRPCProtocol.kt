@@ -70,7 +70,7 @@ class MockBowlerRPCProtocol : AsyncBowlerRPCProtocol {
         TODO("not implemented")
     }
 
-    override fun analogWrite(resourceId: ResourceId, value: Long) {
+    override fun analogWrite(resourceId: ResourceId, value: Short) {
         TODO("not implemented")
     }
 
@@ -90,11 +90,11 @@ class MockBowlerRPCProtocol : AsyncBowlerRPCProtocol {
         TODO("not implemented")
     }
 
-    override fun toneWrite(resourceId: ResourceId, frequency: Long) {
+    override fun toneWrite(resourceId: ResourceId, frequency: Int) {
         TODO("not implemented")
     }
 
-    override fun toneWrite(resourceId: ResourceId, frequency: Long, duration: Long) {
+    override fun toneWrite(resourceId: ResourceId, frequency: Int, duration: Long) {
         TODO("not implemented")
     }
 

@@ -14,7 +14,7 @@ internal class Test {
     @Test
     fun `test esp32`() {
         val testPin = ResourceId(
-            DefaultResourceTypes.DigitalIn,
+            DefaultResourceTypes.AnalogOut,
             DefaultAttachmentPoints.Pin(35)
         )
 
@@ -32,8 +32,8 @@ internal class Test {
         )
 
         rpc.connect()
-        for (i in 0 until 50) {
-            println(rpc.analogWrite(testPin, i.toLong()))
+        for (i in 0 until 1024) {
+            println(rpc.analogWrite(testPin, i.toShort()))
         }
     }
 }

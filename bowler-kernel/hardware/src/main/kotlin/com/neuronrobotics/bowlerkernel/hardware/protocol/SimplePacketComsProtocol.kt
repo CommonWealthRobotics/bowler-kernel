@@ -24,6 +24,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Resour
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
 import edu.wpi.SimplePacketComs.BytePacketType
 import org.octogonapus.guavautil.collections.toImmutableMap
+import java.nio.ByteBuffer
 import java.util.concurrent.CountDownLatch
 
 /**
@@ -254,20 +255,18 @@ class SimplePacketComsProtocol(
         }
     }
 
-    override fun analogWrite(resourceId: ResourceId, value: Long) {
-        fun Array<Byte>.parse(): Double {
-            println(joinToString())
-            return this[4].toDouble()
-        }
-
+    override fun analogWrite(resourceId: ResourceId, value: Short) {
         when {
             writes.contains(resourceId) -> packets[resourceId]?.let { packet ->
                 // Send a new read packet
+                val buffer = ByteBuffer.allocate(Short.SIZE_BYTES)
+                buffer.putShort(value)
                 comms.writeBytes(
                     packet.idOfCommand,
-                    resourceId.validatedBytes() + listOf(value).map { it.toByte() }.toByteArray()
+                    resourceId.validatedBytes() + buffer.array()
                 )
-                println(tryToSendWrite(packet) { parse() })
+
+                tryToSendWrite(packet) {}
             } ?: throw IllegalStateException("Unknown error.")
 
             else -> throw IllegalArgumentException("Resource id not valid for write: $resourceId")
@@ -290,11 +289,11 @@ class SimplePacketComsProtocol(
         TODO("not implemented")
     }
 
-    override fun toneWrite(resourceId: ResourceId, frequency: Long) {
+    override fun toneWrite(resourceId: ResourceId, frequency: Int) {
         TODO("not implemented")
     }
 
-    override fun toneWrite(resourceId: ResourceId, frequency: Long, duration: Long) {
+    override fun toneWrite(resourceId: ResourceId, frequency: Int, duration: Long) {
         TODO("not implemented")
     }
 
