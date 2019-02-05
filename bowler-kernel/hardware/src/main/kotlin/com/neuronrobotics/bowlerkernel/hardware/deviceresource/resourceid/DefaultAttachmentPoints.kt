@@ -19,6 +19,7 @@ package com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid
 import com.google.common.collect.ImmutableList
 import org.octogonapus.guavautil.collections.emptyImmutableList
 import org.octogonapus.guavautil.collections.immutableListOf
+import org.octogonapus.guavautil.collections.plus
 
 /**
  * The attachment points Bowler supports out-of-the-box. Uses a continuous range of bytes from
@@ -30,15 +31,34 @@ sealed class DefaultAttachmentPoints(
     override val data: ImmutableList<Byte> = emptyImmutableList()
 ) : AttachmentPoint {
 
+    /**
+     * A single pin. The data is the pin number.
+     *
+     * @param pinNumber The pi number.
+     */
     data class Pin(val pinNumber: Byte) : DefaultAttachmentPoints(1, immutableListOf(pinNumber))
 
+    /**
+     * A group of pins. The data is the number of pins followed by the pin numbers.
+     *
+     * @param pinNumbers The pin numbers.
+     */
     data class PinGroup(val pinNumbers: ImmutableList<Byte>) :
-        DefaultAttachmentPoints(2, pinNumbers) {
+        DefaultAttachmentPoints(
+            2,
+            immutableListOf(pinNumbers.size.toByte()) + pinNumbers
+        ) {
+
         init {
             require(pinNumbers.size < 58)
         }
     }
 
+    /**
+     * A USB port on the device. The data is the port number.
+     *
+     * @param portNumber The device-specific port number.
+     */
     data class USBPort(val portNumber: Byte) :
         DefaultAttachmentPoints(3, immutableListOf(portNumber))
 
