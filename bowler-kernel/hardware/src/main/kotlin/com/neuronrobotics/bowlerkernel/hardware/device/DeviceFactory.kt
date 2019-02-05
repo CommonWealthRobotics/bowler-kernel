@@ -18,7 +18,7 @@ package com.neuronrobotics.bowlerkernel.hardware.device
 
 import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-import com.neuronrobotics.bowlerkernel.hardware.protocol.AsyncBowlerRPCProtocol
+import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
 import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistry
 import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
 import org.jlleitschuh.guice.module
@@ -34,7 +34,7 @@ class DeviceFactory
 
     override fun makeBowlerDevice(
         deviceId: DeviceId,
-        bowlerRPCProtocol: AsyncBowlerRPCProtocol
+        bowlerRPCProtocol: BowlerRPCProtocol
     ): Either<RegisterError, BowlerDevice> =
         registry.registerDevice(deviceId) {
             BowlerDevice(it, bowlerRPCProtocol)

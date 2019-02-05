@@ -20,7 +20,6 @@ import arrow.core.Try
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
 import edu.wpi.SimplePacketComs.BytePacketType
@@ -29,7 +28,7 @@ import java.nio.ByteBuffer
 import java.util.concurrent.CountDownLatch
 
 /**
- * An implementation of [AsyncBowlerRPCProtocol] using SimplePacketComs. Uses a continuous range of
+ * An implementation of [BowlerRPCProtocol] using SimplePacketComs. Uses a continuous range of
  * packet ids from [getLowestPacketId] through [getHighestPacketId]. Any numbers outside that
  * range are available for other packets.
  *
@@ -43,7 +42,7 @@ class SimplePacketComsProtocol(
     private val pollingReads: ImmutableList<ResourceId>,
     private val reads: ImmutableList<ResourceId>,
     private val writes: ImmutableList<ResourceId>
-) : AsyncBowlerRPCProtocol {
+) : BowlerRPCProtocol {
 
     private val highestPacketId = startPacketId + pollingReads.size + reads.size + writes.size
 
@@ -82,8 +81,21 @@ class SimplePacketComsProtocol(
      */
     private var isConnected = false
 
+    private val discoveryPacket = BytePacketType(DISCOVERY_PACKET_ID, PACKET_SIZE).apply {
+        waitToSendMode()
+    }
+
+    private lateinit var discoveryData: Array<Byte>
+    private lateinit var discoveryLatch: CountDownLatch
+
     init {
         require(startPacketId != DISCOVERY_PACKET_ID)
+        comms.addPollingPacket(discoveryPacket)
+        comms.addEvent(DISCOVERY_PACKET_ID) {
+            discoveryData = comms.readBytes(DISCOVERY_PACKET_ID)
+            discoveryLatch.countDown()
+        }
+        comms.addTimeout(DISCOVERY_PACKET_ID) { discoveryPacket.oneShotMode() }
     }
 
     private fun validateConnection() {
@@ -97,52 +109,40 @@ class SimplePacketComsProtocol(
     }
 
     private fun sendPacketInfoToDevice() {
-        val discoveryPacket = BytePacketType(DISCOVERY_PACKET_ID, PACKET_SIZE).apply {
-            waitToSendMode()
-        }
+        synchronized(comms) {
+            (pollingReads + reads + writes).forEachIndexed { index, resourceId ->
+                val reply = sendDiscoveryPacket(
+                    listOf(
+                        DISCOVERY_OPERATION_ID.toByte(),
+                        (startPacketId + index).toByte()
+                    ).toByteArray() + resourceId.validatedBytes()
+                )
 
-        lateinit var discoveryData: Array<Byte>
-        lateinit var discoveryLatch: CountDownLatch
+                val accepted = reply[DISCOVERY_REPLY_STATUS_POS].let {
+                    when (it) {
+                        DISCOVERY_REPLY_STATUS_ACCEPTED.toByte() -> DiscoveryStatus.Accepted
+                        DISCOVERY_REPLY_STATUS_REJECTED.toByte() -> DiscoveryStatus.Rejected
+                        else -> throw IllegalStateException("Unknown discovery status: $it")
+                    }
+                }
 
-        comms.addPollingPacket(discoveryPacket)
-
-        comms.addEvent(DISCOVERY_PACKET_ID) {
-            discoveryData = comms.readBytes(DISCOVERY_PACKET_ID)
-            discoveryLatch.countDown()
-        }
-
-        comms.addTimeout(DISCOVERY_PACKET_ID) { discoveryPacket.oneShotMode() }
-
-        (pollingReads + reads + writes).forEachIndexed { index, resourceId ->
-            discoveryLatch = CountDownLatch(1)
-
-            comms.writeBytes(
-                DISCOVERY_PACKET_ID,
-                listOf(
-                    DefaultResourceTypes.Discovery.type,
-                    (startPacketId + index).toByte()
-                ).toByteArray() + resourceId.validatedBytes()
-            )
-
-            discoveryPacket.oneShotMode()
-
-            discoveryLatch.await()
-
-            println(discoveryData.joinToString())
-
-            val accepted = discoveryData[DISCOVERY_REPLY_STATUS_POS].let {
-                when (it) {
-                    DISCOVERY_REPLY_STATUS_ACCEPTED.toByte() -> DiscoveryStatus.Accepted
-                    DISCOVERY_REPLY_STATUS_REJECTED.toByte() -> DiscoveryStatus.Rejected
-                    else -> throw IllegalStateException("Unknown discovery status: $it")
+                if (accepted != DiscoveryStatus.Accepted) {
+                    throw IllegalStateException(
+                        "Discovery packet was not accepted (got $accepted) for resourceId: $resourceId"
+                    )
                 }
             }
+        }
+    }
 
-            if (accepted != DiscoveryStatus.Accepted) {
-                throw IllegalStateException(
-                    "Discovery packet was not accepted (got $accepted) for resourceId: $resourceId"
-                )
-            }
+    private fun sendDiscoveryPacket(payload: ByteArray): Array<Byte> {
+        synchronized(comms) {
+            discoveryLatch = CountDownLatch(1)
+            comms.writeBytes(DISCOVERY_PACKET_ID, payload)
+            discoveryPacket.oneShotMode()
+            discoveryLatch.await()
+            println(discoveryData.joinToString())
+            return discoveryData
         }
     }
 
@@ -283,8 +283,6 @@ class SimplePacketComsProtocol(
 
     override fun connect() = Try {
         comms.connect()
-        sendPacketInfoToDevice()
-        createPackets()
         isConnected = true
     }.toEither { it.localizedMessage }.swap().toOption()
 
@@ -293,13 +291,35 @@ class SimplePacketComsProtocol(
         isConnected = false
     }
 
+    override fun runDiscovery() {
+        validateConnection()
+        sendPacketInfoToDevice()
+        createPackets()
+    }
+
     override fun isResourceInRange(resourceId: ResourceId): Boolean {
         validateConnection()
-        TODO("not implemented")
+        synchronized(comms) {
+            val reply = sendDiscoveryPacket(
+                listOf(
+                    IS_RESOURCE_IN_RANGE_ID.toByte()
+                ).toByteArray() + resourceId.validatedBytes()
+            )
+
+            return reply[IS_RESOURCE_IN_RANGE_STATUS_POS].let {
+                when (it) {
+                    IS_RESOURCE_IN_RANGE_TRUE.toByte() -> true
+                    IS_RESOURCE_IN_RANGE_FALSE.toByte() -> false
+                    else -> throw IllegalStateException("Unknown isResourceInRange status: $it")
+                }
+            }
+        }
     }
 
     override fun provisionResource(resourceId: ResourceId): Boolean {
         validateConnection()
+        synchronized(comms) {
+        }
         TODO("not implemented")
     }
 
@@ -447,19 +467,16 @@ class SimplePacketComsProtocol(
          */
         const val DISCOVERY_PACKET_ID = 1
 
-        /**
-         * The flag for if a discovery packet was accepted.
-         */
-        private const val DISCOVERY_REPLY_STATUS_ACCEPTED = 1
+        private const val DISCOVERY_OPERATION_ID = 1
+        private const val IS_RESOURCE_IN_RANGE_ID = 2
+        private const val PROVISION_RESOURCE_ID = 3
 
-        /**
-         * The flag for if a discovery packet was rejected.
-         */
+        private const val DISCOVERY_REPLY_STATUS_POS = 0
+        private const val DISCOVERY_REPLY_STATUS_ACCEPTED = 1
         private const val DISCOVERY_REPLY_STATUS_REJECTED = 2
 
-        /**
-         * The position of the accepted byte.
-         */
-        private const val DISCOVERY_REPLY_STATUS_POS = 0
+        private const val IS_RESOURCE_IN_RANGE_STATUS_POS = 0
+        private const val IS_RESOURCE_IN_RANGE_TRUE = 1
+        private const val IS_RESOURCE_IN_RANGE_FALSE = 2
     }
 }

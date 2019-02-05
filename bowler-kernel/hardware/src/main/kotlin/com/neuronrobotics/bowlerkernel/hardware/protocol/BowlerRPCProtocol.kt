@@ -26,7 +26,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Resour
  * with the device, such as a packet being sent.
  */
 @SuppressWarnings("ComplexInterface", "TooManyFunctions")
-interface AsyncBowlerRPCProtocol {
+interface BowlerRPCProtocol {
 
     /**
      * Opens a persistent connection to the device. An error is returned if the connection is
@@ -40,6 +40,11 @@ interface AsyncBowlerRPCProtocol {
      * Closes the persistent connection to the device. Does nothing if there is no connection open.
      */
     fun disconnect()
+
+    /**
+     * Runs the discovery protocol to setup any RPC packets.
+     */
+    fun runDiscovery()
 
     /**
      * Queries whether the [resourceId] is in the valid range of resources for this device.

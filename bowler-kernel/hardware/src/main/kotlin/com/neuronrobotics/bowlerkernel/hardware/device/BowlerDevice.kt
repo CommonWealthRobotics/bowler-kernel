@@ -18,7 +18,7 @@ package com.neuronrobotics.bowlerkernel.hardware.device
 
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import com.neuronrobotics.bowlerkernel.hardware.protocol.AsyncBowlerRPCProtocol
+import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
 
 /**
  * A Bowler device is a serial device which runs the Bowler RPC protocol.
@@ -28,16 +28,15 @@ import com.neuronrobotics.bowlerkernel.hardware.protocol.AsyncBowlerRPCProtocol
 class BowlerDevice
 internal constructor(
     override val deviceId: DeviceId,
-    val bowlerRPCProtocol: AsyncBowlerRPCProtocol
+    val bowlerRPCProtocol: BowlerRPCProtocol
 ) : Device {
 
     override fun connect() = bowlerRPCProtocol.connect()
 
     override fun disconnect() = bowlerRPCProtocol.disconnect()
 
-    override fun isResourceInRange(resourceId: ResourceId): Boolean {
-        TODO("Not implemented")
-    }
+    override fun isResourceInRange(resourceId: ResourceId) =
+        bowlerRPCProtocol.isResourceInRange(resourceId)
 
     override fun toString() = """`$deviceId`"""
 }

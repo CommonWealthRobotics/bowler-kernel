@@ -31,8 +31,8 @@ internal class Test {
     @Test
     fun `test esp32`() {
         val testPin = ResourceId(
-            DefaultResourceTypes.DigitalIn,
-            DefaultAttachmentPoints.Pin(35)
+            DefaultResourceTypes.AnalogIn,
+            DefaultAttachmentPoints.Pin(1)
         )
 
         val rpc = SimplePacketComsProtocol(
@@ -42,18 +42,22 @@ internal class Test {
                 )
             ) {
             },
-            2,
+            8,
             immutableListOf(),
-            immutableListOf(),
-            immutableListOf(testPin)
+            immutableListOf(testPin),
+            immutableListOf()
         )
 
         rpc.connect().map {
             fail { it }
         }
 
+        println(rpc.isResourceInRange(testPin))
+
+        rpc.runDiscovery()
+
         for (i in 0 until 10) {
-            println(rpc.analogWrite(testPin, i.toShort()))
+            println(rpc.analogRead(testPin))
         }
     }
 }

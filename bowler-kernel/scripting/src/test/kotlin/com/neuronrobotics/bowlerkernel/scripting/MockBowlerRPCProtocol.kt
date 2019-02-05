@@ -19,14 +19,14 @@ package com.neuronrobotics.bowlerkernel.scripting
 import arrow.core.Option
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import com.neuronrobotics.bowlerkernel.hardware.protocol.AsyncBowlerRPCProtocol
+import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
 import org.junit.jupiter.api.fail
 
 /**
- * A mock implementation of the [AsyncBowlerRPCProtocol] which just checks for simple management of
+ * A mock implementation of the [BowlerRPCProtocol] which just checks for simple management of
  * connection state.
  */
-class MockBowlerRPCProtocol : AsyncBowlerRPCProtocol {
+class MockBowlerRPCProtocol : BowlerRPCProtocol {
 
     private var isConnected = false
 
