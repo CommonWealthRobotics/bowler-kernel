@@ -72,7 +72,7 @@ internal fun HardwareRegistry.makeDeviceOrFail(id: String): MockDevice =
 
 internal fun HardwareRegistry.makeDeviceResourceOrFail(
     device: Device,
-    attachmentPoint: Byte
+    attachmentPoint: Int
 ): MockUnprovisionedDeviceResource =
     registerDeviceResource(
         device,

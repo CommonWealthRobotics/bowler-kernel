@@ -186,8 +186,6 @@ class SimplePacketComsProtocol(
             // TODO: We could get a timeout up to 3 times for the same packet
             comms.addTimeout(localPacketId) { packet.oneShotMode() }
 
-            comms.writeBytes(localPacketId, it.validatedBytes())
-
             packetId++
         }
 
@@ -319,8 +317,20 @@ class SimplePacketComsProtocol(
     override fun provisionResource(resourceId: ResourceId): Boolean {
         validateConnection()
         synchronized(comms) {
+            val reply = sendDiscoveryPacket(
+                listOf(
+                    PROVISION_RESOURCE_ID.toByte()
+                ).toByteArray() + resourceId.validatedBytes()
+            )
+
+            return reply[PROVISION_RESOURCE_STATUS_POS].let {
+                when (it) {
+                    PROVISION_RESOURCE_TRUE.toByte() -> true
+                    PROVISION_RESOURCE_FALSE.toByte() -> false
+                    else -> throw IllegalStateException("Unknown provisionResource status: $it")
+                }
+            }
         }
-        TODO("not implemented")
     }
 
     override fun readProtocolVersion(): String {
@@ -362,7 +372,7 @@ class SimplePacketComsProtocol(
                 buffer.putShort(value)
                 comms.writeBytes(
                     packet.idOfCommand,
-                    resourceId.validatedBytes() + buffer.array()
+                    buffer.array()
                 )
 
                 tryToSendWrite(packet) {}
@@ -478,5 +488,9 @@ class SimplePacketComsProtocol(
         private const val IS_RESOURCE_IN_RANGE_STATUS_POS = 0
         private const val IS_RESOURCE_IN_RANGE_TRUE = 1
         private const val IS_RESOURCE_IN_RANGE_FALSE = 2
+
+        private const val PROVISION_RESOURCE_STATUS_POS = 0
+        private const val PROVISION_RESOURCE_TRUE = 1
+        private const val PROVISION_RESOURCE_FALSE = 2
     }
 }

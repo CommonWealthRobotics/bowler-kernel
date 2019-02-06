@@ -32,7 +32,7 @@ internal class Test {
     fun `test esp32`() {
         val testPin = ResourceId(
             DefaultResourceTypes.AnalogIn,
-            DefaultAttachmentPoints.Pin(1)
+            DefaultAttachmentPoints.Pin(35)
         )
 
         val rpc = SimplePacketComsProtocol(
@@ -52,7 +52,13 @@ internal class Test {
             fail { it }
         }
 
-        println(rpc.isResourceInRange(testPin))
+        if (!rpc.isResourceInRange(testPin)) {
+            fail { "Not in range" }
+        }
+
+        if (!rpc.provisionResource(testPin)) {
+            fail { "Not provisioned" }
+        }
 
         rpc.runDiscovery()
 
