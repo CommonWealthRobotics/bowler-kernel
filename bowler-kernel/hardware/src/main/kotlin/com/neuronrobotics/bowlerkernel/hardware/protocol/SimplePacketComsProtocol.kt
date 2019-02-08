@@ -16,16 +16,16 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
+import arrow.core.Option
 import arrow.core.Try
-import com.google.common.collect.ImmutableList
-import com.google.common.collect.ImmutableMap
+import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
 import edu.wpi.SimplePacketComs.BytePacketType
-import org.octogonapus.guavautil.collections.toImmutableMap
 import java.nio.ByteBuffer
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * An implementation of [BowlerRPCProtocol] using SimplePacketComs. Uses a continuous range of
@@ -38,13 +38,25 @@ import java.util.concurrent.CountDownLatch
 @SuppressWarnings("TooManyFunctions")
 class SimplePacketComsProtocol(
     private val comms: AbstractSimpleComsDevice,
-    private val startPacketId: Int = 1,
-    private val pollingReads: ImmutableList<ResourceId>,
-    private val reads: ImmutableList<ResourceId>,
-    private val writes: ImmutableList<ResourceId>
+    private val startPacketId: Int = 1
 ) : BowlerRPCProtocol {
 
-    private val highestPacketId = startPacketId + pollingReads.size + reads.size + writes.size
+    private var highestPacketId = AtomicInteger(startPacketId)
+
+    /**
+     * All resource ids used in polling reads.
+     */
+    private val pollingReads = mutableListOf<ResourceId>()
+
+    /**
+     * ALl resource ids used in reads.
+     */
+    private val reads = mutableListOf<ResourceId>()
+
+    /**
+     * All resource ids used in writes.
+     */
+    private val writes = mutableListOf<ResourceId>()
 
     /**
      * The data for polled read packets.
@@ -74,7 +86,7 @@ class SimplePacketComsProtocol(
     /**
      * All the packets that got generated.
      */
-    private lateinit var packets: ImmutableMap<ResourceId, BytePacketType>
+    private val packets = mutableMapOf<ResourceId, BytePacketType>()
 
     /**
      * Whether the device is connected.
@@ -104,113 +116,61 @@ class SimplePacketComsProtocol(
         }
     }
 
-    private enum class DiscoveryStatus {
-        Accepted, Rejected
-    }
+    /**
+     * Sends a discovery packet for a new packet (creates the packet on the device side).
+     *
+     * @param packetId The new packet id.
+     * @param resourceId The new resource id.
+     * @return The response, or [Option.empty] if the discovery packet was not accepted.
+     */
+    private fun sendDiscoveryForNewPacket(
+        packetId: Int,
+        resourceId: ResourceId
+    ): Option<Array<Byte>> {
+        validateConnection()
+        val reply = sendDiscoveryPacket(
+            listOf(
+                DISCOVERY_OPERATION_ID.toByte(),
+                packetId.toByte()
+            ).toByteArray() + resourceId.validatedBytes()
+        )
 
-    private fun sendPacketInfoToDevice() {
-        synchronized(comms) {
-            (pollingReads + reads + writes).forEachIndexed { index, resourceId ->
-                val reply = sendDiscoveryPacket(
-                    listOf(
-                        DISCOVERY_OPERATION_ID.toByte(),
-                        (startPacketId + index).toByte()
-                    ).toByteArray() + resourceId.validatedBytes()
-                )
-
-                val accepted = reply[DISCOVERY_REPLY_STATUS_POS].let {
-                    when (it) {
-                        DISCOVERY_REPLY_STATUS_ACCEPTED.toByte() -> DiscoveryStatus.Accepted
-                        DISCOVERY_REPLY_STATUS_REJECTED.toByte() -> DiscoveryStatus.Rejected
-                        else -> throw IllegalStateException("Unknown discovery status: $it")
-                    }
-                }
-
-                if (accepted != DiscoveryStatus.Accepted) {
-                    throw IllegalStateException(
-                        "Discovery packet was not accepted (got $accepted) for resourceId: $resourceId"
-                    )
-                }
+        val accepted = reply[DISCOVERY_REPLY_STATUS_INDEX].let {
+            when (it) {
+                DISCOVERY_REPLY_STATUS_ACCEPTED.toByte() -> true
+                DISCOVERY_REPLY_STATUS_REJECTED.toByte() -> false
+                else -> throw IllegalStateException("Unknown discovery status: $it")
             }
+        }
+
+        return if (accepted) {
+            Option.just(reply)
+        } else {
+            Option.empty()
         }
     }
 
+    /**
+     * Sends a discovery packet and waits for the response.
+     *
+     * @param payload The payload.
+     * @return The response payload.
+     */
     private fun sendDiscoveryPacket(payload: ByteArray): Array<Byte> {
-        synchronized(comms) {
-            discoveryLatch = CountDownLatch(1)
-            comms.writeBytes(DISCOVERY_PACKET_ID, payload)
-            discoveryPacket.oneShotMode()
-            discoveryLatch.await()
-            println(discoveryData.joinToString())
-            return discoveryData
-        }
-    }
+        validateConnection()
+        discoveryLatch = CountDownLatch(1)
+        comms.writeBytes(DISCOVERY_PACKET_ID, payload)
+        discoveryPacket.oneShotMode()
+        discoveryLatch.await()
 
-    private fun createPackets() {
-        var packetId = startPacketId
-        val newPackets = mutableMapOf<ResourceId, BytePacketType>()
+        println(
+            """
+            |Discovery response:
+            |${discoveryData.joinToString()}
+            """.trimMargin()
+        )
 
-        pollingReads.forEach {
-            val localPacketId = packetId
-            val packet = BytePacketType(localPacketId, PACKET_SIZE)
-
-            newPackets[it] = packet
-
-            comms.addPollingPacket(packet)
-
-            comms.addEvent(localPacketId) {
-                println("pollingReads event wrote bytes for $localPacketId")
-                pollingReadsData[localPacketId] = comms.readBytes(localPacketId)
-            }
-
-            comms.writeBytes(localPacketId, it.validatedBytes())
-
-            packetId++
-        }
-
-        reads.forEach {
-            val localPacketId = packetId
-            val packet = BytePacketType(localPacketId, PACKET_SIZE).apply {
-                waitToSendMode()
-            }
-
-            newPackets[it] = packet
-
-            comms.addPollingPacket(packet)
-
-            comms.addEvent(localPacketId) {
-                readsData[localPacketId] = comms.readBytes(localPacketId)
-                readsLatches[localPacketId]?.countDown()
-            }
-
-            // TODO: We could get a timeout up to 3 times for the same packet
-            comms.addTimeout(localPacketId) { packet.oneShotMode() }
-
-            packetId++
-        }
-
-        writes.forEach {
-            val localPacketId = packetId
-            val packet = BytePacketType(localPacketId, PACKET_SIZE).apply {
-                waitToSendMode()
-            }
-
-            newPackets[it] = packet
-
-            comms.addPollingPacket(packet)
-
-            comms.addEvent(localPacketId) {
-                writesData[localPacketId] = comms.readBytes(localPacketId)
-                writesLatches[localPacketId]?.countDown()
-            }
-
-            // TODO: We could get a timeout up to 3 times for the same packet
-            comms.addTimeout(localPacketId) { packet.oneShotMode() }
-
-            packetId++
-        }
-
-        packets = newPackets.toImmutableMap()
+        return discoveryData
     }
 
     /**
@@ -228,6 +188,7 @@ class SimplePacketComsProtocol(
         data: MutableMap<Int, Array<Byte>?>,
         parse: Array<Byte>.() -> T
     ): T {
+        validateConnection()
         val latch = CountDownLatch(1)
 
         // Reset the latch
@@ -289,46 +250,158 @@ class SimplePacketComsProtocol(
         isConnected = false
     }
 
-    override fun runDiscovery() {
-        validateConnection()
-        sendPacketInfoToDevice()
-        createPackets()
+    override fun addPollingRead(resourceId: ResourceId): Option<String> {
+        // Increment the highest packet id because we are adding a new packet and save it locally
+        // so the lambdas below keep the correct id
+        val localPacketId = highestPacketId.incrementAndGet()
+
+        val discoveryResponse = sendDiscoveryForNewPacket(localPacketId, resourceId)
+        if (discoveryResponse.isEmpty()) {
+            // Discovery failed
+            highestPacketId.decrementAndGet()
+            return Option.just(
+                """
+                |Discovery failed for resource $resourceId. Packet id at time of discovery:
+                |$localPacketId.
+                """.trimMargin()
+            )
+        }
+
+        val packet = BytePacketType(localPacketId, PACKET_SIZE).apply {
+            // Put the packet in waitToSendMode so it doesn't send before we writeBytes
+            waitToSendMode()
+        }
+
+        // Must call allPollingPacket before writeBytes
+        comms.addPollingPacket(packet)
+
+        comms.addEvent(localPacketId) {
+            println("pollingReads event wrote bytes for $localPacketId")
+            pollingReadsData[localPacketId] = comms.readBytes(localPacketId)
+        }
+
+        // Polling reads always write the same bytes so just write them once here
+        comms.writeBytes(localPacketId, resourceId.validatedBytes())
+
+        // After we call writeBytes then put the packet back into pollingMode
+        packet.pollingMode()
+
+        packets[resourceId] = packet
+        pollingReads.add(resourceId)
+
+        return Option.empty()
+    }
+
+    override fun addPollingReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
+        TODO("not implemented")
+    }
+
+    override fun addRead(resourceId: ResourceId): Option<String> {
+        // Increment the highest packet id because we are adding a new packet and save it locally
+        // so the lambdas below keep the correct id
+        val localPacketId = highestPacketId.incrementAndGet()
+
+        val discoveryResponse = sendDiscoveryForNewPacket(localPacketId, resourceId)
+        if (discoveryResponse.isEmpty()) {
+            // Discovery failed
+            highestPacketId.decrementAndGet()
+            return Option.just(
+                """
+                |Discovery failed for resource $resourceId. Packet id at time of discovery:
+                |$localPacketId.
+                """.trimMargin()
+            )
+        }
+
+        val packet = BytePacketType(localPacketId, PACKET_SIZE).apply {
+            // Put the packet in waitToSendMode so it doesn't send before we writeBytes. Also,
+            // read packets are sent with oneShotMode
+            waitToSendMode()
+        }
+
+        // Must call allPollingPacket before writeBytes
+        comms.addPollingPacket(packet)
+
+        comms.addEvent(localPacketId) {
+            readsData[localPacketId] = comms.readBytes(localPacketId)
+            readsLatches[localPacketId]?.countDown()
+        }
+
+        // TODO: We could get a timeout up to 3 times for the same packet
+        // Re-send the packet if it timed out
+        comms.addTimeout(localPacketId) { packet.oneShotMode() }
+
+        // Reads always write the same bytes so just write them once here
+        comms.writeBytes(localPacketId, resourceId.validatedBytes())
+
+        packets[resourceId] = packet
+        reads.add(resourceId)
+
+        return Option.empty()
+    }
+
+    override fun addReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
+        TODO("not implemented")
+    }
+
+    override fun addWrite(resourceId: ResourceId): Option<String> {
+        // Increment the highest packet id because we are adding a new packet and save it locally
+        // so the lambdas below keep the correct id
+        val localPacketId = highestPacketId.incrementAndGet()
+
+        val discoveryResponse = sendDiscoveryForNewPacket(localPacketId, resourceId)
+        if (discoveryResponse.isEmpty()) {
+            // Discovery failed
+            highestPacketId.decrementAndGet()
+            return Option.just(
+                """
+                |Discovery failed for resource $resourceId. Packet id at time of discovery:
+                |$localPacketId.
+                """.trimMargin()
+            )
+        }
+
+        val packet = BytePacketType(localPacketId, PACKET_SIZE).apply {
+            // Put the packet in waitToSendMode so it doesn't send before we writeBytes. Also,
+            // write packets are sent with oneShotMode
+            waitToSendMode()
+        }
+
+        // Must call allPollingPacket before writeBytes
+        comms.addPollingPacket(packet)
+
+        comms.addEvent(localPacketId) {
+            writesData[localPacketId] = comms.readBytes(localPacketId)
+            writesLatches[localPacketId]?.countDown()
+        }
+
+        // TODO: We could get a timeout up to 3 times for the same packet
+        // Re-send the packet if it timed out
+        comms.addTimeout(localPacketId) { packet.oneShotMode() }
+
+        packets[resourceId] = packet
+        writes.add(resourceId)
+
+        return Option.empty()
+    }
+
+    override fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
+        TODO("not implemented")
     }
 
     override fun isResourceInRange(resourceId: ResourceId): Boolean {
         validateConnection()
-        synchronized(comms) {
-            val reply = sendDiscoveryPacket(
-                listOf(
-                    IS_RESOURCE_IN_RANGE_ID.toByte()
-                ).toByteArray() + resourceId.validatedBytes()
-            )
+        val reply = sendDiscoveryPacket(
+            listOf(
+                IS_RESOURCE_IN_RANGE_ID.toByte()
+            ).toByteArray() + resourceId.validatedBytes()
+        )
 
-            return reply[IS_RESOURCE_IN_RANGE_STATUS_POS].let {
-                when (it) {
-                    IS_RESOURCE_IN_RANGE_TRUE.toByte() -> true
-                    IS_RESOURCE_IN_RANGE_FALSE.toByte() -> false
-                    else -> throw IllegalStateException("Unknown isResourceInRange status: $it")
-                }
-            }
-        }
-    }
-
-    override fun provisionResource(resourceId: ResourceId): Boolean {
-        validateConnection()
-        synchronized(comms) {
-            val reply = sendDiscoveryPacket(
-                listOf(
-                    PROVISION_RESOURCE_ID.toByte()
-                ).toByteArray() + resourceId.validatedBytes()
-            )
-
-            return reply[PROVISION_RESOURCE_STATUS_POS].let {
-                when (it) {
-                    PROVISION_RESOURCE_TRUE.toByte() -> true
-                    PROVISION_RESOURCE_FALSE.toByte() -> false
-                    else -> throw IllegalStateException("Unknown provisionResource status: $it")
-                }
+        return reply[DISCOVERY_REPLY_STATUS_INDEX].let {
+            when (it) {
+                DISCOVERY_REPLY_STATUS_ACCEPTED.toByte() -> true
+                DISCOVERY_REPLY_STATUS_REJECTED.toByte() -> false
+                else -> throw IllegalStateException("Unknown isResourceInRange status: $it")
             }
         }
     }
@@ -441,13 +514,13 @@ class SimplePacketComsProtocol(
      * The lowest packet id.
      */
     @SuppressWarnings("FunctionOnlyReturningConstant")
-    fun getLowestPacketId() = startPacketId
+    fun getLowestPacketId(): Int = startPacketId
 
     /**
      * The highest packet id.
      */
     @SuppressWarnings("FunctionOnlyReturningConstant")
-    fun getHighestPacketId() = highestPacketId
+    fun getHighestPacketId(): Int = highestPacketId.get()
 
     /**
      * Get the [ResourceId.bytes] and validate it will fit in a packet.
@@ -479,18 +552,9 @@ class SimplePacketComsProtocol(
 
         private const val DISCOVERY_OPERATION_ID = 1
         private const val IS_RESOURCE_IN_RANGE_ID = 2
-        private const val PROVISION_RESOURCE_ID = 3
 
-        private const val DISCOVERY_REPLY_STATUS_POS = 0
+        private const val DISCOVERY_REPLY_STATUS_INDEX = 0
         private const val DISCOVERY_REPLY_STATUS_ACCEPTED = 1
         private const val DISCOVERY_REPLY_STATUS_REJECTED = 2
-
-        private const val IS_RESOURCE_IN_RANGE_STATUS_POS = 0
-        private const val IS_RESOURCE_IN_RANGE_TRUE = 1
-        private const val IS_RESOURCE_IN_RANGE_FALSE = 2
-
-        private const val PROVISION_RESOURCE_STATUS_POS = 0
-        private const val PROVISION_RESOURCE_TRUE = 1
-        private const val PROVISION_RESOURCE_FALSE = 2
     }
 }

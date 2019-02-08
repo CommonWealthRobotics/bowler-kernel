@@ -17,6 +17,7 @@
 package com.neuronrobotics.bowlerkernel.scripting
 
 import arrow.core.Option
+import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
@@ -39,16 +40,61 @@ class MockBowlerRPCProtocol : BowlerRPCProtocol {
         isConnected = false
     }
 
-    override fun isResourceInRange(resourceId: ResourceId): Boolean {
+    override fun addPollingRead(resourceId: ResourceId): Option<String> {
         if (isConnected) {
             Thread.sleep(5)
-            return true
+            return Option.empty()
         } else {
             fail { "The RPC is not connected!" }
         }
     }
 
-    override fun provisionResource(resourceId: ResourceId): Boolean {
+    override fun addPollingReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
+        if (isConnected) {
+            Thread.sleep(5)
+            return Option.empty()
+        } else {
+            fail { "The RPC is not connected!" }
+        }
+    }
+
+    override fun addRead(resourceId: ResourceId): Option<String> {
+        if (isConnected) {
+            Thread.sleep(5)
+            return Option.empty()
+        } else {
+            fail { "The RPC is not connected!" }
+        }
+    }
+
+    override fun addReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
+        if (isConnected) {
+            Thread.sleep(5)
+            return Option.empty()
+        } else {
+            fail { "The RPC is not connected!" }
+        }
+    }
+
+    override fun addWrite(resourceId: ResourceId): Option<String> {
+        if (isConnected) {
+            Thread.sleep(5)
+            return Option.empty()
+        } else {
+            fail { "The RPC is not connected!" }
+        }
+    }
+
+    override fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
+        if (isConnected) {
+            Thread.sleep(5)
+            return Option.empty()
+        } else {
+            fail { "The RPC is not connected!" }
+        }
+    }
+
+    override fun isResourceInRange(resourceId: ResourceId): Boolean {
         if (isConnected) {
             Thread.sleep(5)
             return true

@@ -44,6 +44,8 @@ interface BowlerRPCProtocol {
 
     /**
      * Adds a read resource which is constantly polled.
+     *
+     * @return An error if there is a problem.
      */
     fun addPollingRead(resourceId: ResourceId): Option<String>
 
@@ -51,28 +53,38 @@ interface BowlerRPCProtocol {
      * Adds a group of read resources which is constantly polled. All resources in the group are
      * read from at the same time. If any resources are already polling reads, they are moved
      * into this group instead.
+     *
+     * @return An error if there is a problem.
      */
     fun addPollingReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String>
 
     /**
      * Adds a read resource.
+     *
+     * @return An error if there is a problem.
      */
     fun addRead(resourceId: ResourceId): Option<String>
 
     /**
      * Adds a group of read resources. All resources in the group are read from at the same time.
      * If any resources are already reads, they are moved into this group instead.
+     *
+     * @return An error if there is a problem.
      */
     fun addReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String>
 
     /**
      * Adds a write resource.
+     *
+     * @return An error if there is a problem.
      */
     fun addWrite(resourceId: ResourceId): Option<String>
 
     /**
      * Adds a group of write resources. All resources in the group are written to at the same
      * time. If any resources are already writes, they are moved into this group instead.
+     *
+     * @return An error if there is a problem.
      */
     fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>): Option<String>
 

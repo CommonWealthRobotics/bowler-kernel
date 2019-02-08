@@ -23,7 +23,6 @@ import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtoco
 import edu.wpi.SimplePacketComs.device.UdpDevice
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
-import org.octogonapus.guavautil.collections.immutableListOf
 import java.net.InetAddress
 
 internal class Test {
@@ -41,11 +40,7 @@ internal class Test {
                     listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
                 )
             ) {
-            },
-            8,
-            immutableListOf(),
-            immutableListOf(testPin),
-            immutableListOf()
+            }
         )
 
         rpc.connect().map {
@@ -56,11 +51,7 @@ internal class Test {
             fail { "Not in range" }
         }
 
-        if (!rpc.provisionResource(testPin)) {
-            fail { "Not provisioned" }
-        }
-
-        rpc.runDiscovery()
+        rpc.addRead(testPin)
 
         for (i in 0 until 10) {
             println(rpc.analogRead(testPin))
