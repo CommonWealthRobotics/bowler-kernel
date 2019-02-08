@@ -52,14 +52,29 @@ class SimplePacketComsProtocol(
     private val pollingReads = mutableListOf<ResourceId>()
 
     /**
+     * All resource ids used in polling read groups.
+     */
+    private val pollingReadGroups = mutableListOf<ImmutableSet<ResourceId>>()
+
+    /**
      * ALl resource ids used in reads.
      */
     private val reads = mutableListOf<ResourceId>()
 
     /**
+     * ALl resource ids used in read groups.
+     */
+    private val readGroups = mutableListOf<ImmutableSet<ResourceId>>()
+
+    /**
      * All resource ids used in writes.
      */
     private val writes = mutableListOf<ResourceId>()
+
+    /**
+     * All resource ids used in write groups.
+     */
+    private val writeGroups = mutableListOf<ImmutableSet<ResourceId>>()
 
     /**
      * The data for polled read packets.
@@ -273,6 +288,21 @@ class SimplePacketComsProtocol(
     }
 
     override fun addPollingReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
+        pollingReadGroups.add(resourceIds)
+        /*
+        PC Side
+        For reads, all the information is packed into one packet
+        Send a discovery packet to make a group, specifying the packet id, group number, and
+        length (number of elements)
+        Send another discovery packet for each resource in the group, specifying the group
+        number, range of bytes in the payload, and resource
+
+        Device Side
+        When we get a discovery packet to make a new group, allocate a vector of the specified
+        length in a map of group number to group
+        When we get a discovery packet for a group member, index into the map to get the group
+        and then push back the group member
+         */
         TODO("not implemented")
     }
 
@@ -321,6 +351,7 @@ class SimplePacketComsProtocol(
     }
 
     override fun addReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
+        readGroups.add(resourceIds)
         TODO("not implemented")
     }
 
@@ -366,6 +397,7 @@ class SimplePacketComsProtocol(
     }
 
     override fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
+        writeGroups.add(resourceIds)
         TODO("not implemented")
     }
 
