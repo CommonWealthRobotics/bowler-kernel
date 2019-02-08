@@ -16,8 +16,11 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
+import arrow.core.Either
 import arrow.core.Option
 import arrow.core.Try
+import arrow.core.left
+import arrow.core.right
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
@@ -182,15 +185,13 @@ class SimplePacketComsProtocol(
      * @param packet The packet to send.
      * @param latches A map of packet id to [CountDownLatch] used to wait for the response.
      * @param data A map of packet id to response payload.
-     * @param parse The function to parse the response packet.
-     * @return The response.
+     * @return The response payload.
      */
-    private fun <T> reliablySendPacket(
+    private fun reliablySendPacket(
         packet: BytePacketType,
         latches: MutableMap<Int, CountDownLatch>,
-        data: MutableMap<Int, Array<Byte>?>,
-        parse: Array<Byte>.() -> T
-    ): T {
+        data: MutableMap<Int, Array<Byte>?>
+    ): Array<Byte> {
         validateConnection()
         val latch = CountDownLatch(1)
 
@@ -204,7 +205,7 @@ class SimplePacketComsProtocol(
         println("reliablySendPacket waiting")
         latch.await()
 
-        return data[packet.idOfCommand]?.parse()
+        return data[packet.idOfCommand]
             ?: throw IllegalStateException("Packet response was still null after waiting.")
     }
 
@@ -212,25 +213,21 @@ class SimplePacketComsProtocol(
      * Try to send a read packet. Re-sends the packet on timeout.
      *
      * @param packet The packet to send.
-     * @param parse The function to parse the response packet.
-     * @return The response.
+     * @return The response payload.
      */
-    private fun <T> tryToSendRead(
-        packet: BytePacketType,
-        parse: Array<Byte>.() -> T
-    ): T = reliablySendPacket(packet, readsLatches, readsData, parse)
+    private fun tryToSendRead(
+        packet: BytePacketType
+    ): Array<Byte> = reliablySendPacket(packet, readsLatches, readsData)
 
     /**
      * Try to send a write packet. Re-sends the packet on timeout.
      *
      * @param packet The packet to send.
-     * @param parse The function to parse the response packet.
-     * @return The response.
+     * @return The response payload.
      */
-    private fun <T> tryToSendWrite(
-        packet: BytePacketType,
-        parse: Array<Byte>.() -> T
-    ): T = reliablySendPacket(packet, writesLatches, writesData, parse)
+    private fun tryToSendWrite(
+        packet: BytePacketType
+    ): Array<Byte> = reliablySendPacket(packet, writesLatches, writesData)
 
     private fun waitForPollingRead(packetId: Int): Array<Byte> {
         do {
@@ -414,78 +411,150 @@ class SimplePacketComsProtocol(
         TODO("not implemented")
     }
 
-    override fun analogRead(resourceId: ResourceId): Double {
+    /**
+     * Performs a read. If the resource corresponds to a polling read, the latest data from the
+     * cache is returned (if the cache has not been filled yet, this method waits). If the
+     * resource corresponds to a read, a new packet is sent and this method waits for the
+     * response. If the resource does not correspond to either, an error is returned.
+     *
+     * @param resourceId The resource id.
+     * @return The response payload.
+     */
+    private fun performRead(resourceId: ResourceId): Either<String, Array<Byte>> {
         validateConnection()
-
-        fun Array<Byte>.parse(): Double {
-            println(joinToString())
-            return this[HEADER_SIZE + 1].toDouble()
-        }
 
         return when {
             // The resource is a polling packet
             pollingReads.contains(resourceId) -> packets[resourceId]?.idOfCommand?.let { id ->
-                pollingReadsData[id]?.parse() ?: waitForPollingRead(id).parse()
-            } ?: throw IllegalStateException("Unknown error.")
+                pollingReadsData[id]?.right() ?: waitForPollingRead(id).right()
+            } ?: "Packet was not added.".left()
 
             // The resource is a non-polling packet
             reads.contains(resourceId) -> packets[resourceId]?.let { packet ->
                 // Send a new read packet
-                tryToSendRead(packet) { parse() }
-            } ?: throw IllegalStateException("Unknown error.")
+                reliablySendPacket(packet, readsLatches, readsData).right()
+            } ?: "Packet was not added.".left()
 
-            else -> throw IllegalArgumentException("Resource id not valid for read: $resourceId")
+            else -> "Resource id not valid for read: $resourceId".left()
+        }
+    }
+
+    /**
+     * Performs a read by calling [performRead]. If that method returned an error, an
+     * [IllegalStateException] is thrown.
+     *
+     * @param resourceId The resource id.
+     * @return The response payload.
+     */
+    private fun <T> performReadOrFail(
+        resourceId: ResourceId,
+        parse: (Array<Byte>) -> T
+    ): T = performRead(resourceId).fold(
+        { throw IllegalStateException(it) },
+        { parse(it) }
+    )
+
+    /**
+     * Performs a write. If the resource corresponds to a write, a new packet is sent and this
+     * method waits for the response. If the resource does not correspond to a write, an error is
+     * returned.
+     *
+     * @param resourceId The resource id.
+     * @param payload The payload to send.
+     * @return The response payload.
+     */
+    private fun performWrite(
+        resourceId: ResourceId,
+        payload: ByteArray
+    ): Either<String, Array<Byte>> {
+        validateConnection()
+
+        return when {
+            writes.contains(resourceId) -> packets[resourceId]?.let { packet ->
+                comms.writeBytes(packet.idOfCommand, payload)
+                // Send a new write packet
+                reliablySendPacket(packet, writesLatches, writesData).right()
+            } ?: "Packet was not added.".left()
+
+            else -> "Resource id not valid for write: $resourceId".left()
+        }
+    }
+
+    /**
+     * Performs a write by calling [performWrite]. If that method returned an error, an
+     * [IllegalStateException] is thrown.
+     *
+     * @param resourceId The resource id.
+     * @param payload The payload to send.
+     */
+    private fun performWriteOrFail(
+        resourceId: ResourceId,
+        payload: ByteArray
+    ) = performWrite(resourceId, payload).mapLeft { throw IllegalStateException(it) }
+
+    /**
+     * Performs a write by calling [performWrite]. If that method returned an error, an
+     * [IllegalStateException] is thrown.
+     *
+     * @param resourceId The resource id.
+     * @param payload The payload to send.
+     * @return The response payload.
+     */
+    private fun <T> performWriteOrFail(
+        resourceId: ResourceId,
+        payload: ByteArray,
+        parse: (Array<Byte>) -> T
+    ): T = performWrite(resourceId, payload).fold(
+        { throw IllegalStateException(it) },
+        { parse(it) }
+    )
+
+    override fun analogRead(resourceId: ResourceId): Double {
+        validateConnection()
+
+        return performReadOrFail(resourceId) {
+            it[0].toDouble()
         }
     }
 
     override fun analogWrite(resourceId: ResourceId, value: Short) {
         validateConnection()
 
-        when {
-            writes.contains(resourceId) -> packets[resourceId]?.let { packet ->
-                // Send a new read packet
-                val buffer = ByteBuffer.allocate(Short.SIZE_BYTES)
-                buffer.putShort(value)
-                comms.writeBytes(
-                    packet.idOfCommand,
-                    buffer.array()
-                )
-
-                tryToSendWrite(packet) {}
-            } ?: throw IllegalStateException("Unknown error.")
-
-            else -> throw IllegalArgumentException("Resource id not valid for write: $resourceId")
-        }
+        val buffer = ByteBuffer.allocate(Short.SIZE_BYTES)
+        buffer.putShort(value)
+        performWriteOrFail(resourceId, buffer.array())
     }
 
     override fun buttonRead(resourceId: ResourceId): Boolean {
         validateConnection()
-        TODO("not implemented")
+
+        return performReadOrFail(resourceId) {
+            when (it[0]) {
+                0.toByte() -> false
+                1.toByte() -> true
+                else -> throw IllegalStateException("Unknown buttonRead response: $it")
+            }
+        }
     }
 
     override fun digitalRead(resourceId: ResourceId): DigitalState {
         validateConnection()
-        TODO("not implemented")
+
+        return performReadOrFail(resourceId) {
+            when (it[0]) {
+                0.toByte() -> DigitalState.LOW
+                1.toByte() -> DigitalState.HIGH
+                else -> throw IllegalStateException("Unknown digitalRead response: $it")
+            }
+        }
     }
 
     override fun digitalWrite(resourceId: ResourceId, value: DigitalState) {
         validateConnection()
 
-        when {
-            writes.contains(resourceId) -> packets[resourceId]?.let { packet ->
-                // Send a new read packet
-                val buffer = ByteBuffer.allocate(1)
-                buffer.put(value.byte)
-                comms.writeBytes(
-                    packet.idOfCommand,
-                    buffer.array()
-                )
-
-                tryToSendWrite(packet) {}
-            } ?: throw IllegalStateException("Unknown error.")
-
-            else -> throw IllegalArgumentException("Resource id not valid for write: $resourceId")
-        }
+        val buffer = ByteBuffer.allocate(1)
+        buffer.put(value.byte)
+        performWriteOrFail(resourceId, buffer.array())
     }
 
     override fun encoderRead(resourceId: ResourceId): Long {
