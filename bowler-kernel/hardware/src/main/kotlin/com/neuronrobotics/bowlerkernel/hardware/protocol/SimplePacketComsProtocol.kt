@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger
 @SuppressWarnings("TooManyFunctions")
 class SimplePacketComsProtocol(
     private val comms: AbstractSimpleComsDevice,
-    private val startPacketId: Int = 1
+    private val startPacketId: Int = DISCOVERY_PACKET_ID + 1
 ) : BowlerRPCProtocol {
 
     private var highestPacketId = AtomicInteger(startPacketId)
@@ -101,7 +101,10 @@ class SimplePacketComsProtocol(
     private lateinit var discoveryLatch: CountDownLatch
 
     init {
-        require(startPacketId != DISCOVERY_PACKET_ID)
+        require(startPacketId != DISCOVERY_PACKET_ID) {
+            "The starting packet id ($startPacketId) cannot be equal to the discovery packet id " +
+                "($DISCOVERY_PACKET_ID)."
+        }
         comms.addPollingPacket(discoveryPacket)
         comms.addEvent(DISCOVERY_PACKET_ID) {
             discoveryData = comms.readBytes(DISCOVERY_PACKET_ID)
@@ -467,7 +470,22 @@ class SimplePacketComsProtocol(
 
     override fun digitalWrite(resourceId: ResourceId, value: DigitalState) {
         validateConnection()
-        TODO("not implemented")
+
+        when {
+            writes.contains(resourceId) -> packets[resourceId]?.let { packet ->
+                // Send a new read packet
+                val buffer = ByteBuffer.allocate(1)
+                buffer.put(value.byte)
+                comms.writeBytes(
+                    packet.idOfCommand,
+                    buffer.array()
+                )
+
+                tryToSendWrite(packet) {}
+            } ?: throw IllegalStateException("Unknown error.")
+
+            else -> throw IllegalArgumentException("Resource id not valid for write: $resourceId")
+        }
     }
 
     override fun encoderRead(resourceId: ResourceId): Long {

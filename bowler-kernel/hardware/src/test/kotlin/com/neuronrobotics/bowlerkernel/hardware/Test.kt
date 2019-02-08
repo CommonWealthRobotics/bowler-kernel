@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware
 
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
@@ -30,8 +31,8 @@ internal class Test {
     @Test
     fun `test esp32`() {
         val testPin = ResourceId(
-            DefaultResourceTypes.AnalogIn,
-            DefaultAttachmentPoints.Pin(35)
+            DefaultResourceTypes.DigitalOut,
+            DefaultAttachmentPoints.Pin(33)
         )
 
         val rpc = SimplePacketComsProtocol(
@@ -51,10 +52,27 @@ internal class Test {
             fail { "Not in range" }
         }
 
-        rpc.addRead(testPin)
+        rpc.addWrite(testPin)
 
-        for (i in 0 until 10) {
-            println(rpc.analogRead(testPin))
-        }
+        rpc.digitalWrite(testPin, DigitalState.HIGH)
+        Thread.sleep(500)
+        rpc.digitalWrite(testPin, DigitalState.LOW)
+        Thread.sleep(500)
+        rpc.digitalWrite(testPin, DigitalState.HIGH)
+        Thread.sleep(500)
+        rpc.digitalWrite(testPin, DigitalState.LOW)
+        Thread.sleep(500)
+        rpc.digitalWrite(testPin, DigitalState.HIGH)
+        Thread.sleep(500)
+        rpc.digitalWrite(testPin, DigitalState.LOW)
+        Thread.sleep(500)
+        rpc.digitalWrite(testPin, DigitalState.HIGH)
+        Thread.sleep(500)
+        rpc.digitalWrite(testPin, DigitalState.LOW)
+        Thread.sleep(500)
+
+//        for (i in 0 until 10) {
+//            println(rpc.analogRead(testPin))
+//        }
     }
 }

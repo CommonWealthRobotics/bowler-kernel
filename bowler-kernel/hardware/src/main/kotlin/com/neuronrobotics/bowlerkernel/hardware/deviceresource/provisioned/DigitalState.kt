@@ -16,6 +16,6 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned
 
-enum class DigitalState {
-    HIGH, LOW
+enum class DigitalState(val byte: Byte) {
+    HIGH(1), LOW(0)
 }
