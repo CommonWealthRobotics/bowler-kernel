@@ -209,26 +209,6 @@ class SimplePacketComsProtocol(
             ?: throw IllegalStateException("Packet response was still null after waiting.")
     }
 
-    /**
-     * Try to send a read packet. Re-sends the packet on timeout.
-     *
-     * @param packet The packet to send.
-     * @return The response payload.
-     */
-    private fun tryToSendRead(
-        packet: BytePacketType
-    ): Array<Byte> = reliablySendPacket(packet, readsLatches, readsData)
-
-    /**
-     * Try to send a write packet. Re-sends the packet on timeout.
-     *
-     * @param packet The packet to send.
-     * @return The response payload.
-     */
-    private fun tryToSendWrite(
-        packet: BytePacketType
-    ): Array<Byte> = reliablySendPacket(packet, writesLatches, writesData)
-
     private fun waitForPollingRead(packetId: Int): Array<Byte> {
         do {
             val data = pollingReadsData[packetId]
@@ -621,11 +601,6 @@ class SimplePacketComsProtocol(
          * The maximum size of a packet payload in bytes.
          */
         const val PAYLOAD_SIZE = 60
-
-        /**
-         * The number of bytes that the standard payload header takes.
-         */
-        const val HEADER_SIZE = 3
 
         /**
          * The size of a packet in bytes.
