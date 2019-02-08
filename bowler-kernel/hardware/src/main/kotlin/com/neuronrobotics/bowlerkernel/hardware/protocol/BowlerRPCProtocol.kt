@@ -17,6 +17,7 @@
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
 import arrow.core.Option
+import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
@@ -42,9 +43,38 @@ interface BowlerRPCProtocol {
     fun disconnect()
 
     /**
-     * Runs the discovery protocol to setup any RPC packets.
+     * Adds a read resource which is constantly polled.
      */
-    fun runDiscovery()
+    fun addPollingRead(resourceId: ResourceId): Option<String>
+
+    /**
+     * Adds a group of read resources which is constantly polled. All resources in the group are
+     * read from at the same time. If any resources are already polling reads, they are moved
+     * into this group instead.
+     */
+    fun addPollingReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String>
+
+    /**
+     * Adds a read resource.
+     */
+    fun addRead(resourceId: ResourceId): Option<String>
+
+    /**
+     * Adds a group of read resources. All resources in the group are read from at the same time.
+     * If any resources are already reads, they are moved into this group instead.
+     */
+    fun addReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String>
+
+    /**
+     * Adds a write resource.
+     */
+    fun addWrite(resourceId: ResourceId): Option<String>
+
+    /**
+     * Adds a group of write resources. All resources in the group are written to at the same
+     * time. If any resources are already writes, they are moved into this group instead.
+     */
+    fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>): Option<String>
 
     /**
      * Queries whether the [resourceId] is in the valid range of resources for this device.
@@ -53,14 +83,6 @@ interface BowlerRPCProtocol {
      * @return Whether the resource id is in the valid range of resources for this device.
      */
     fun isResourceInRange(resourceId: ResourceId): Boolean
-
-    /**
-     * Tells the device to attach and set up a resource.
-     *
-     * @param resourceId The id of the resource.
-     * @return Whether the resource was provisioned.
-     */
-    fun provisionResource(resourceId: ResourceId): Boolean
 
     /**
      * Queries the device's Bowler RPC protocol version.
