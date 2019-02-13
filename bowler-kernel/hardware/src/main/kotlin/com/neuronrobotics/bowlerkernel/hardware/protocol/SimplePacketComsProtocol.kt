@@ -139,22 +139,46 @@ class SimplePacketComsProtocol(
     }
 
     /**
+     * Sends a discovery packet and waits for the response.
+     *
+     * @param payload The payload.
+     * @return The response payload.
+     */
+    private fun sendDiscoveryPacket(payload: ByteArray): Array<Byte> {
+        validateConnection()
+        discoveryLatch = CountDownLatch(1)
+        comms.writeBytes(DISCOVERY_PACKET_ID, payload)
+        discoveryPacket.oneShotMode()
+        discoveryLatch.await()
+
+        println(
+            """
+            |Discovery response:
+            |${discoveryData.joinToString()}
+            """.trimMargin()
+        )
+
+        return discoveryData
+    }
+
+    /**
      * Sends a discovery packet for a new packet (creates the packet on the device side).
      *
      * @param packetId The new packet id.
-     * @param resourceId The new resource id.
+     * @param payload The payload.
      * @return The response, or [Option.empty] if the discovery packet was not accepted.
      */
     private fun sendDiscoveryForNewPacket(
+        operation: Int,
         packetId: Int,
-        resourceId: ResourceId
+        payload: ByteArray
     ): Option<Array<Byte>> {
         validateConnection()
         val reply = sendDiscoveryPacket(
             listOf(
-                DISCOVERY_OPERATION_ID.toByte(),
+                operation.toByte(),
                 packetId.toByte()
-            ).toByteArray() + resourceId.validatedBytes()
+            ).toByteArray() + payload
         )
 
         val accepted = reply[DISCOVERY_REPLY_STATUS_INDEX].let {
@@ -180,8 +204,12 @@ class SimplePacketComsProtocol(
      */
     private fun createPacketOnDevice(resourceId: ResourceId): Either<String, Int> {
         validateConnection()
+
         val localPacketId = highestPacketId.incrementAndGet()
-        val discoveryResponse = sendDiscoveryForNewPacket(localPacketId, resourceId)
+        val discoveryResponse = sendDiscoveryForNewPacket(
+            DISCOVERY_OPERATION_ID, localPacketId, resourceId.bytes
+        )
+
         return if (discoveryResponse.isEmpty()) {
             // Discovery failed
             highestPacketId.decrementAndGet()
@@ -192,29 +220,6 @@ class SimplePacketComsProtocol(
         } else {
             localPacketId.right()
         }
-    }
-
-    /**
-     * Sends a discovery packet and waits for the response.
-     *
-     * @param payload The payload.
-     * @return The response payload.
-     */
-    private fun sendDiscoveryPacket(payload: ByteArray): Array<Byte> {
-        validateConnection()
-        discoveryLatch = CountDownLatch(1)
-        comms.writeBytes(DISCOVERY_PACKET_ID, payload)
-        discoveryPacket.oneShotMode()
-        discoveryLatch.await()
-
-        println(
-            """
-            |Discovery response:
-            |${discoveryData.joinToString()}
-            """.trimMargin()
-        )
-
-        return discoveryData
     }
 
     /**
@@ -286,7 +291,7 @@ class SimplePacketComsProtocol(
         }
 
         // Polling reads always write the same bytes so just write them once here
-        comms.writeBytes(localPacketId, resourceId.validatedBytes())
+        comms.writeBytes(localPacketId, resourceId.bytes)
 
         // After we call writeBytes then put the packet back into pollingMode
         packet.pollingMode()
@@ -297,15 +302,20 @@ class SimplePacketComsProtocol(
         return Option.empty()
     }
 
+    private fun mapResourceIdToResponseLength(resourceId: ResourceId): Int {
+        TODO()
+    }
+
     override fun addPollingReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
         pollingReadGroups.add(resourceIds)
+
         /*
         PC Side
         For reads, all the information is packed into one packet
-        Send a discovery packet to make a group, specifying the packet id, group number, and
-        length (number of elements)
-        Send another discovery packet for each resource in the group, specifying the group
-        number, range of bytes in the payload, and resource
+        Send a discovery packet to make a group, specifying the packet id, and length (number of 
+        elements)
+        Send another discovery packet for each resource in the group, specifying the range of 
+        bytes in the payload (the start byte and the length), and resource
 
         Device Side
         When we get a discovery packet to make a new group, allocate a vector of the specified
@@ -313,6 +323,60 @@ class SimplePacketComsProtocol(
         When we get a discovery packet for a group member, index into the map to get the group
         and then push back the group member
          */
+
+        val localPacketId = highestPacketId.incrementAndGet()
+        val discoveryResponse = sendDiscoveryForNewPacket(
+            GROUP_DISCOVERY_OPERATION_ID,
+            localPacketId,
+            listOf(resourceIds.size.toByte()).toByteArray()
+        )
+
+        if (discoveryResponse.isEmpty()) {
+            // Discovery failed
+            highestPacketId.decrementAndGet()
+            return Option.just(
+                """
+                |Discovery failed for resources:
+                |${resourceIds.joinToString()}
+                |Packet id at time of discovery:
+                |$localPacketId
+                """.trimMargin()
+            )
+        }
+
+        /**
+         * Maps a resource id to the bytes it occupies in the group payload. The first int in the
+         * pair is the index of first byte of the read and the second int is the length.
+         */
+        val resourceIdToByteRange = mutableMapOf<ResourceId, Pair<Int, Int>>()
+        var resourceStartingIndex = 0
+        resourceIds.forEach {
+            val resourceReadLength = mapResourceIdToResponseLength(it)
+            resourceIdToByteRange[it] = resourceStartingIndex to resourceReadLength
+            resourceStartingIndex += resourceReadLength
+        }
+
+        resourceIds.forEach {
+            val response = sendDiscoveryForNewPacket(
+                GROUP_DISCOVERY_OPERATION_ID,
+                localPacketId,
+                it.bytes
+            )
+
+            if (response.isEmpty()) {
+                // Discovery failed
+                highestPacketId.decrementAndGet()
+                return Option.just(
+                    """
+                    |Discovery failed for resources:
+                    |${resourceIds.joinToString()}
+                    |Packet id at time of discovery:
+                    |$localPacketId
+                    """.trimMargin()
+                )
+            }
+        }
+
         TODO("not implemented")
     }
 
@@ -339,7 +403,7 @@ class SimplePacketComsProtocol(
         comms.addTimeout(localPacketId) { packet.oneShotMode() }
 
         // Reads always write the same bytes so just write them once here
-        comms.writeBytes(localPacketId, resourceId.validatedBytes())
+        comms.writeBytes(localPacketId, resourceId.bytes)
 
         packets[resourceId] = packet
         reads.add(resourceId)
@@ -390,7 +454,7 @@ class SimplePacketComsProtocol(
         val reply = sendDiscoveryPacket(
             listOf(
                 IS_RESOURCE_IN_RANGE_ID.toByte()
-            ).toByteArray() + resourceId.validatedBytes()
+            ).toByteArray() + resourceId.bytes
         )
 
         return reply[DISCOVERY_REPLY_STATUS_INDEX].let {
@@ -605,13 +669,6 @@ class SimplePacketComsProtocol(
     @SuppressWarnings("FunctionOnlyReturningConstant")
     fun getHighestPacketId(): Int = highestPacketId.get()
 
-    /**
-     * Get the [ResourceId.bytes] and validate it will fit in a packet.
-     */
-    private fun ResourceId.validatedBytes() = bytes.also {
-        require(it.size <= PAYLOAD_SIZE)
-    }
-
     companion object {
         /**
          * The maximum size of a packet payload in bytes.
@@ -630,6 +687,7 @@ class SimplePacketComsProtocol(
 
         private const val DISCOVERY_OPERATION_ID = 1
         private const val IS_RESOURCE_IN_RANGE_ID = 2
+        private const val GROUP_DISCOVERY_OPERATION_ID = 3
 
         private const val DISCOVERY_REPLY_STATUS_INDEX = 0
         private const val DISCOVERY_REPLY_STATUS_ACCEPTED = 1
