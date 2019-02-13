@@ -19,6 +19,7 @@ package com.neuronrobotics.bowlerkernel.hardware.protocol
 import arrow.core.Either
 import arrow.core.Option
 import arrow.core.Try
+import arrow.core.getOrHandle
 import arrow.core.left
 import arrow.core.right
 import com.google.common.collect.ImmutableSet
@@ -172,6 +173,28 @@ class SimplePacketComsProtocol(
     }
 
     /**
+     * Creates a packet on the device.
+     *
+     * @param resourceId The resource id.
+     * @return The new packet id or an error.
+     */
+    private fun createPacketOnDevice(resourceId: ResourceId): Either<String, Int> {
+        validateConnection()
+        val localPacketId = highestPacketId.incrementAndGet()
+        val discoveryResponse = sendDiscoveryForNewPacket(localPacketId, resourceId)
+        return if (discoveryResponse.isEmpty()) {
+            // Discovery failed
+            highestPacketId.decrementAndGet()
+            """
+            |Discovery failed for resource $resourceId. Packet id at time of discovery:
+            |$localPacketId.
+            """.trimMargin().left()
+        } else {
+            localPacketId.right()
+        }
+    }
+
+    /**
      * Sends a discovery packet and waits for the response.
      *
      * @param payload The payload.
@@ -246,21 +269,8 @@ class SimplePacketComsProtocol(
     }
 
     override fun addPollingRead(resourceId: ResourceId): Option<String> {
-        // Increment the highest packet id because we are adding a new packet and save it locally
-        // so the lambdas below keep the correct id
-        val localPacketId = highestPacketId.incrementAndGet()
-
-        val discoveryResponse = sendDiscoveryForNewPacket(localPacketId, resourceId)
-        if (discoveryResponse.isEmpty()) {
-            // Discovery failed
-            highestPacketId.decrementAndGet()
-            return Option.just(
-                """
-                |Discovery failed for resource $resourceId. Packet id at time of discovery:
-                |$localPacketId.
-                """.trimMargin()
-            )
-        }
+        // Make the packet on the device
+        val localPacketId = createPacketOnDevice(resourceId).getOrHandle { return Option.just(it) }
 
         val packet = BytePacketType(localPacketId, PACKET_SIZE).apply {
             // Put the packet in waitToSendMode so it doesn't send before we writeBytes
@@ -307,21 +317,8 @@ class SimplePacketComsProtocol(
     }
 
     override fun addRead(resourceId: ResourceId): Option<String> {
-        // Increment the highest packet id because we are adding a new packet and save it locally
-        // so the lambdas below keep the correct id
-        val localPacketId = highestPacketId.incrementAndGet()
-
-        val discoveryResponse = sendDiscoveryForNewPacket(localPacketId, resourceId)
-        if (discoveryResponse.isEmpty()) {
-            // Discovery failed
-            highestPacketId.decrementAndGet()
-            return Option.just(
-                """
-                |Discovery failed for resource $resourceId. Packet id at time of discovery:
-                |$localPacketId.
-                """.trimMargin()
-            )
-        }
+        // Make the packet on the device
+        val localPacketId = createPacketOnDevice(resourceId).getOrHandle { return Option.just(it) }
 
         val packet = BytePacketType(localPacketId, PACKET_SIZE).apply {
             // Put the packet in waitToSendMode so it doesn't send before we writeBytes. Also,
@@ -356,21 +353,8 @@ class SimplePacketComsProtocol(
     }
 
     override fun addWrite(resourceId: ResourceId): Option<String> {
-        // Increment the highest packet id because we are adding a new packet and save it locally
-        // so the lambdas below keep the correct id
-        val localPacketId = highestPacketId.incrementAndGet()
-
-        val discoveryResponse = sendDiscoveryForNewPacket(localPacketId, resourceId)
-        if (discoveryResponse.isEmpty()) {
-            // Discovery failed
-            highestPacketId.decrementAndGet()
-            return Option.just(
-                """
-                |Discovery failed for resource $resourceId. Packet id at time of discovery:
-                |$localPacketId.
-                """.trimMargin()
-            )
-        }
+        // Make the packet on the device
+        val localPacketId = createPacketOnDevice(resourceId).getOrHandle { return Option.just(it) }
 
         val packet = BytePacketType(localPacketId, PACKET_SIZE).apply {
             // Put the packet in waitToSendMode so it doesn't send before we writeBytes. Also,
