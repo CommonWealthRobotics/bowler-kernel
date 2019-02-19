@@ -30,16 +30,9 @@ import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDhParamList
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
-import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
-import com.neuronrobotics.kinematicschef.util.getTranslation
-import com.neuronrobotics.kinematicschef.util.immutableListOf
-import com.neuronrobotics.kinematicschef.util.length
-import com.neuronrobotics.kinematicschef.util.modulus
-import com.neuronrobotics.kinematicschef.util.projectionOntoPlane
-import com.neuronrobotics.kinematicschef.util.projectionOntoVector
-import com.neuronrobotics.kinematicschef.util.toImmutableList
-import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
+import com.neuronrobotics.kinematicschef.util.*
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
+import com.neuronrobotics.sdk.addons.kinematics.DHParameterKinematics
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation
@@ -89,7 +82,6 @@ class InverseKinematicsEngine
         jointSpaceVector: DoubleArray,
         chain: DHChain
     ): DoubleArray {
-        target.print()
         val dhParams = chain.toDhParams()
         val chainElements = immutableListOf(
             RevoluteJoint(immutableListOf(dhParams[0])),
@@ -97,55 +89,16 @@ class InverseKinematicsEngine
             RevoluteJoint(immutableListOf(dhParams[2])),
             SphericalWrist(immutableListOf(dhParams[3], dhParams[4], dhParams[5]))
         )
-//        val chainElements = chainIdentifier.identifyChain(dhParams)
-//
-//        val eulerAngles = chainElements
-//            .mapNotNull { it as? SphericalWrist }
-//            .map {
-//                it to dhClassifier.deriveEulerAngles(
-//                    it,
-//                    chainElements.subList(0, chainElements.indexOf(it)),
-//                    chainElements.subList(chainElements.indexOf(it) + 1, chainElements.size)
-//                )
-//            }.toImmutableMap()
-//
-//        // If there were any problems while deriving the spherical wrists' Euler angles we can't
-//        // solve the chain analytically
-//        if (eulerAngles.filter { it.value.isLeft() }.isNotEmpty()) {
-//            useIterativeSolver()
-//        }
 
         val wrist = chainElements.last() as? SphericalWrist ?: useIterativeSolver()
 
         val wristCenter = wrist.center(target)
-        println("wristCenter: $wristCenter")
         val newJointAngles = DoubleArray(jointSpaceVector.size) { 0.0 }
 
-        val dOffset = wrist.centerHomed(
-            chainElements.subList(0, chainElements.indexOf(wrist) + 1).toDhParamList()
-        ).projectionOntoPlane(
-            SimpleMatrix(3, 1).apply {
-                this[2, 0] = 1.0
-            }
-        ).extractMatrix(
-            0, 2,
-            0, 1
-        ).projectionOntoVector(
-            SimpleMatrix(2, 1).apply {
-                this[0, 0] = cos(toRadians(dhParams[0].alpha))
-                this[1, 0] = sin(toRadians(dhParams[0].alpha))
-            }
-        )
+        val dOffset = computeDOffset(dhParams).length()
 
-        val absDOffset = abs(dOffset)
-
-        println("dOffset: $absDOffset")
-
-        val lengthToWristSquared = wristCenter[0].pow(2) + wristCenter[1].pow(2) - absDOffset.pow(2)
-        println("lengthToWristSquared: $lengthToWristSquared")
-
-        when (absDOffset) {
-            0.0 -> {
+        when {
+            dOffset < 0.001 -> {
                 // next joint is along Z axis of shoulder
                 // check for singularity, if so then the shoulder joint angle does not need to change
                 if (wristCenter[0] == 0.0 && wristCenter[1] == 0.0) {
@@ -334,6 +287,34 @@ class InverseKinematicsEngine
         // return jointAngle <= link.maxEngineeringUnits && jointAngle >= link.minEngineeringUnits
         // TODO: Convert jointAngle to degrees and use the real bounds
         return true
+    }
+
+    /**
+     * Compute the offset distance for a 3+ DOF arm shoulder joint, see Spong robot dynamics and control page 89-91.
+     * This function assumes that the shoulder is located at the origin.
+     *
+     * @param chain the DH parameter chain for the arm
+     *
+     * @return a SimpleMatrix containing an x,y vector representing the origin offset for the shoulder
+     */
+    fun computeDOffset(chain : ImmutableList<DhParam>) : SimpleMatrix {
+        val vectorA = immutableListOf(
+                DhParam(chain[0].d, 0, chain[0].r, chain[0].alpha),
+                DhParam(chain[1].d, 0, chain[1].r, chain[1].alpha),
+                DhParam(chain[2].d, 0, 0, chain[2].alpha)
+        ).forwardKinematics(arrayOf(0.0, 0.0, 0.0).toDoubleArray()).cols(3, 4).rows(0, 2)
+
+        val vectorB = immutableListOf(
+                DhParam(chain[0].d, 0, chain[0].r, chain[0].alpha),
+                DhParam(chain[1].d, 0, chain[1].r, chain[1].alpha),
+                DhParam(chain[2].d, 0, 1, chain[2].alpha)
+        ).forwardKinematics(arrayOf(0.0, 0.0, 0.0).toDoubleArray()).cols(3, 4).rows(0, 2)
+
+        val vA = vectorA - vectorB
+        val vB = vectorB.negative()
+
+
+        return vectorB + (vA.elementMult(vA.dot(vB) / vA.length().pow(2)))
     }
 
     private fun ImmutableList<DhParam>.forwardKinematics(thetas: DoubleArray): SimpleMatrix {
