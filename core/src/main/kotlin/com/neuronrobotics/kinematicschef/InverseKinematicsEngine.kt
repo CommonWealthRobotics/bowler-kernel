@@ -18,21 +18,10 @@ package com.neuronrobotics.kinematicschef
 
 import com.google.common.collect.ImmutableList
 import com.google.inject.Guice
-import com.neuronrobotics.kinematicschef.classifier.ChainIdentifier
-import com.neuronrobotics.kinematicschef.classifier.DefaultChainIdentifier
-import com.neuronrobotics.kinematicschef.classifier.DefaultDhClassifier
-import com.neuronrobotics.kinematicschef.classifier.DefaultWristIdentifier
-import com.neuronrobotics.kinematicschef.classifier.DhClassifier
-import com.neuronrobotics.kinematicschef.classifier.WristIdentifier
-import com.neuronrobotics.kinematicschef.dhparam.DhParam
-import com.neuronrobotics.kinematicschef.dhparam.RevoluteJoint
-import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
-import com.neuronrobotics.kinematicschef.dhparam.toDhParamList
-import com.neuronrobotics.kinematicschef.dhparam.toDhParams
-import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
+import com.neuronrobotics.kinematicschef.classifier.*
+import com.neuronrobotics.kinematicschef.dhparam.*
 import com.neuronrobotics.kinematicschef.util.*
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
-import com.neuronrobotics.sdk.addons.kinematics.DHParameterKinematics
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation
@@ -42,15 +31,8 @@ import org.ejml.simple.SimpleMatrix
 import org.jlleitschuh.guice.key
 import org.jlleitschuh.guice.module
 import java.lang.Math.toDegrees
-import java.lang.Math.toRadians
 import javax.inject.Inject
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.pow
-import kotlin.math.sin
-import kotlin.math.sqrt
+import kotlin.math.*
 
 /**
  * A [DhInverseSolver] which attempts to generate and cache an analytic solver by deriving the
@@ -95,71 +77,7 @@ class InverseKinematicsEngine
         val wristCenter = wrist.center(target)
         val newJointAngles = DoubleArray(jointSpaceVector.size) { 0.0 }
 
-        val dOffset = computeDOffset(dhParams).length()
-
-        when {
-            dOffset < 0.001 -> {
-                // next joint is along Z axis of shoulder
-                // check for singularity, if so then the shoulder joint angle does not need to change
-                if (wristCenter[0] == 0.0 && wristCenter[1] == 0.0) {
-                    newJointAngles[0] = jointSpaceVector[0]
-                } else {
-                    // Normal atan2, spong writes his atan2 as (x, y) for some reason
-                    val theta1SolutionA = atan2(wristCenter[1], wristCenter[0])
-                    val theta1SolutionB = PI + theta1SolutionA
-
-                    when {
-                        chain.jointAngleInBounds(theta1SolutionA, 0) &&
-                            chain.jointAngleInBounds(theta1SolutionB, 0) -> {
-                            // TODO: Simplify this to just do a simple comparison without calling compareTo()
-                            val comparison = abs(jointSpaceVector[0] - theta1SolutionA)
-                                .compareTo(abs(jointSpaceVector[0] - theta1SolutionB))
-
-                            newJointAngles[0] = when {
-                                comparison > 0 -> theta1SolutionB
-                                else -> theta1SolutionA
-                            }
-                        }
-
-                        chain.jointAngleInBounds(theta1SolutionA, 0) -> newJointAngles[0] =
-                            theta1SolutionA
-
-                        chain.jointAngleInBounds(theta1SolutionB, 0) -> newJointAngles[0] =
-                            theta1SolutionB
-
-                        else -> throw IllegalStateException("The chain must be solved iteratively.")
-                    }
-                }
-            }
-
-            else -> {
-//                // left/right arm configuration
-//                val phi = atan2(wristCenter[1], wristCenter[0])
-// //                val d = dhParams[0].r + dhParams[1].d + dhParams[2].d
-//                val length = sqrt(lengthToWristSquared)
-//
-//                val theta1Left = phi - atan2(dOffset, length)
-//                val theta1Right = phi + atan2(-1 * dOffset, -1 * length)
-//
-//                when {
-//                    chain.jointAngleInBounds(theta1Left, 0) -> newJointAngles[0] = theta1Left
-//                    chain.jointAngleInBounds(theta1Right, 0) -> newJointAngles[0] = theta1Right
-//                    else -> useIterativeSolver()
-//                }
-
-                // Angle of shoulder
-                val angleFromFirstLinkToWristCoR =
-                    wrist.centerHomed(dhParams.subList(0, 3)).let {
-                        atan2(it[1], it[0])
-                    }
-
-                newJointAngles[0] =
-                    (atan2(
-                        wristCenter[1],
-                        wristCenter[0]
-                    ) - angleFromFirstLinkToWristCoR + PI).modulus(2.0 * PI)
-            }
-        }
+        val dOffset = dhParams.computeDOffset().length()
 
         // TODO: Implement offset addition when joints 2 and/or 3 have a non-zero d value (DH param)
         // compute theta3, then theta 2
@@ -289,61 +207,6 @@ class InverseKinematicsEngine
         return true
     }
 
-    /**
-     * Compute the offset distance for a 3+ DOF arm shoulder joint, see Spong robot dynamics and control page 89-91.
-     * This function assumes that the shoulder is located at the origin.
-     *
-     * @param chain the DH parameter chain for the arm
-     *
-     * @return a SimpleMatrix containing an x,y vector representing the origin offset for the shoulder
-     */
-    fun computeDOffset(chain : ImmutableList<DhParam>) : SimpleMatrix {
-        val vectorA = immutableListOf(
-                DhParam(chain[0].d, 0, chain[0].r, chain[0].alpha),
-                DhParam(chain[1].d, 0, chain[1].r, chain[1].alpha),
-                DhParam(chain[2].d, 0, 0, chain[2].alpha)
-        ).forwardKinematics(arrayOf(0.0, 0.0, 0.0).toDoubleArray()).cols(3, 4).rows(0, 2)
-
-        val vectorB = immutableListOf(
-                DhParam(chain[0].d, 0, chain[0].r, chain[0].alpha),
-                DhParam(chain[1].d, 0, chain[1].r, chain[1].alpha),
-                DhParam(chain[2].d, 0, 1, chain[2].alpha)
-        ).forwardKinematics(arrayOf(0.0, 0.0, 0.0).toDoubleArray()).cols(3, 4).rows(0, 2)
-
-        val vA = vectorA - vectorB
-        val vB = vectorB.negative()
-
-
-        return vectorB + (vA.elementMult(vA.dot(vB) / vA.length().pow(2)))
-    }
-
-    private fun ImmutableList<DhParam>.forwardKinematics(thetas: DoubleArray): SimpleMatrix {
-        val paramList = ArrayList<DhParam>()
-
-        for (i in 0 until this.size) {
-            when (i) {
-                0 -> paramList.add(
-                    DhParam(
-                        this[i].d,
-                        toDegrees(thetas[i]),
-                        this[i].r,
-                        this[i].alpha
-                    )
-                )
-                else -> paramList.add(
-                    DhParam(
-                        this[i].d,
-                        -toDegrees(thetas[i]),
-                        this[i].r,
-                        this[i].alpha
-                    )
-                )
-            }
-        }
-
-        return paramList.toImmutableList().toFrameTransformation()
-    }
-
     private fun useIterativeSolver(): Nothing = TODO("The chain must be solved iteratively.")
 
     companion object {
@@ -362,4 +225,98 @@ class InverseKinematicsEngine
                 .getInstance(key<InverseKinematicsEngine>())
         }
     }
+}
+
+/**
+ * Compute the offset distance for a 3+ DOF arm shoulder joint, see Spong robot dynamics and control page 89-91.
+ * This function assumes that the shoulder is located at the origin.
+ *
+ * @param chain the DH parameter chain for the arm
+ *
+ * @return a SimpleMatrix containing an x,y vector representing the origin offset for the shoulder
+ */
+fun ImmutableList<DhParam>.computeDOffset() : SimpleMatrix {
+    val vectorA = immutableListOf(
+            DhParam(this[0].d, 0, this[0].r, this[0].alpha),
+            DhParam(this[1].d, 0, this[1].r, this[1].alpha),
+            DhParam(this[2].d, 0, 0, this[2].alpha)
+    ).forwardKinematics(arrayOf(0.0, 0.0, 0.0).toDoubleArray()).cols(3, 4).rows(0, 2)
+
+    val vectorB = immutableListOf(
+            DhParam(this[0].d, 0, this[0].r, this[0].alpha),
+            DhParam(this[1].d, 0, this[1].r, this[1].alpha),
+            DhParam(this[2].d, 0, 1, this[2].alpha)
+    ).forwardKinematics(arrayOf(0.0, 0.0, 0.0).toDoubleArray()).cols(3, 4).rows(0, 2)
+
+    val vA = vectorA - vectorB
+    val vB = vectorB.negative()
+
+
+    return vectorB + (vA.elementMult(vA.dot(vB) / vA.length().pow(2)))
+}
+
+fun ImmutableList<DhParam>.computeTheta1(
+        wristCenter : SimpleMatrix) : ImmutableList<Double> = computeTheta1(wristCenter, 0.0)
+
+fun ImmutableList<DhParam>.computeTheta1(wristCenter : SimpleMatrix, currentTheta1 : Double) : ImmutableList<Double> {
+    val dOffset = this.computeDOffset()
+
+    if (dOffset.length().absoluteValue < 0.001) {
+        if(wristCenter[0, 3].absoluteValue < 0.001 && wristCenter[1, 3].absoluteValue < 0.001) {
+            return ImmutableList.of(currentTheta1)
+        }
+
+        return ImmutableList.of(
+                Math.atan2(wristCenter[1, 3], wristCenter[0, 3]),
+                PI + Math.atan2(wristCenter[1, 3], wristCenter[0, 3])
+        )
+    }
+
+    //left and right arm solutions, see spong pg. 90
+    val phi = Math.atan2(wristCenter[1, 3], wristCenter[0, 3])
+    val leftArmSolution = phi - Math.atan2(
+            dOffset.length(),
+            Math.sqrt(wristCenter[1, 3].pow(2) + wristCenter[0, 3].pow(2) - dOffset.length().pow(2))
+    )
+
+    val rightArmSolution = phi + Math.atan2(
+            -dOffset.length(),
+            -Math.sqrt(wristCenter[1, 3].pow(2) + wristCenter[0, 3].pow(2) - dOffset.length().pow(2))
+    )
+
+    return ImmutableList.of(leftArmSolution, rightArmSolution)
+}
+
+/**
+ * Do forward kinematics on a list of DH parameters given a set of joint angles
+ *
+ * @param thetas an array of joint angles. The length of this array should match the length of the DH param list
+ *
+ * @return a simpleMatrix representing the frame transformation of the tip given the input joint angles
+ */
+fun ImmutableList<DhParam>.forwardKinematics(thetas: DoubleArray): SimpleMatrix {
+    val paramList = ArrayList<DhParam>()
+
+    for (i in 0 until this.size) {
+        when (i) {
+            0 -> paramList.add(
+                    DhParam(
+                            this[i].d,
+                            toDegrees(thetas[i]),
+                            this[i].r,
+                            this[i].alpha
+                    )
+            )
+            else -> paramList.add(
+                    DhParam(
+                            this[i].d,
+                            -toDegrees(thetas[i]),
+                            this[i].r,
+                            this[i].alpha
+                    )
+            )
+        }
+    }
+
+    return paramList.toImmutableList().toFrameTransformation()
 }
