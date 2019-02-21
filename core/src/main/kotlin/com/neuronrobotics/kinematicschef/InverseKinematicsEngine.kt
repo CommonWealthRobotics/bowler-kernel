@@ -288,6 +288,60 @@ fun ImmutableList<DhParam>.computeTheta1(wristCenter : SimpleMatrix, currentThet
 }
 
 /**
+ * Computes thetas 2 through 4 for a 6DOF arm with a spherical wrist. This function makes the following assumptions
+ * about the joint configuration: the base is a shoulder joint, which is followed by two elbow joints, and joints 1
+ * through 4 are not prismatic joints.
+ *
+ * @param wristCenter the desired coordinates for the wrist center to compute for
+ * @param theta1 the computed joint angle of the first joint
+ *
+ * @return The set of solutions computed as a list of lists of joint angles {<t2, t3, t4>, <t2, t3, t4>, ...}
+ */
+fun ImmutableList<DhParam>.computeTheta23(wristCenter : SimpleMatrix, theta1 : Double)
+        : ImmutableList<ImmutableList<Double>> {
+    //the length values here are the shortest distances from the two joints
+    val lengthJoint2To3 = (this.subList(0, 2).forwardKinematics(arrayOf(0.0, 0.0).toDoubleArray()) -
+            this.subList(0, 1).forwardKinematics(arrayOf(0.0).toDoubleArray())).cols(3, 4).length()
+    val lengthJoint3ToWristCenter = (this.subList(0, 4).forwardKinematics(arrayOf(0.0, 0.0, 0.0, 0.0).toDoubleArray()) -
+            this.subList(0, 2).forwardKinematics(arrayOf(0.0, 0.0).toDoubleArray())).cols(3, 4).length()
+
+    /*
+    val lengthJoint3To4 = (this.subList(0, 3).forwardKinematics(arrayOf(0.0, 0.0, 0.0).toDoubleArray()) -
+            this.subList(0, 2).forwardKinematics(arrayOf(0.0, 0.0).toDoubleArray())).cols(3, 4).length()
+    val lengthJoint4ToWristCenter = (this.subList(0, 4).forwardKinematics(arrayOf(0.0, 0.0, 0.0, 0.0).toDoubleArray()) -
+            this.subList(0, 3).forwardKinematics(arrayOf(0.0, 0.0, 0.0).toDoubleArray())).cols(3, 4).length()
+    */
+
+    //projected coordinates of wrist center see spong pg. 93
+    val projectedWristCenter = SimpleMatrix(2, 1)
+    projectedWristCenter[0] = wristCenter.cols(3, 4).rows(0, 2).length()
+    projectedWristCenter[1] = wristCenter[3, 3]
+
+    val bigD = (
+            projectedWristCenter[0].pow(2) + projectedWristCenter[1].pow(2)
+            - lengthJoint2To3.pow(2) - lengthJoint3ToWristCenter.pow(2)
+        ) / (2 * lengthJoint2To3 * lengthJoint3ToWristCenter)
+
+    val thetas3 = ImmutableList.of(
+            Math.atan2(sqrt(1 - bigD.pow(2)), bigD),
+            Math.atan2(-sqrt(1 - bigD.pow(2)), bigD)
+    )
+
+    val thetas2 = ImmutableList.of(
+            Math.atan2(projectedWristCenter[1], projectedWristCenter[0]) - Math.atan2(
+                    lengthJoint3ToWristCenter*Math.sin(thetas3[0]),
+                    lengthJoint2To3 + lengthJoint3ToWristCenter * Math.cos(thetas3[0])
+            ),
+            Math.atan2(projectedWristCenter[1], projectedWristCenter[0]) - Math.atan2(
+                    lengthJoint3ToWristCenter*Math.sin(thetas3[1]),
+                    lengthJoint2To3 + lengthJoint3ToWristCenter * Math.cos(thetas3[1])
+            )
+    )
+
+    return ImmutableList.of(ImmutableList.of(thetas2[0], thetas3[0]), ImmutableList.of(thetas2[1], thetas3[1]))
+}
+
+/**
  * Do forward kinematics on a list of DH parameters given a set of joint angles
  *
  * @param thetas an array of joint angles. The length of this array should match the length of the DH param list

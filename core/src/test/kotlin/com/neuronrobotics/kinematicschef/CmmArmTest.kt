@@ -45,4 +45,15 @@ class CmmArmTest {
       assert (((pumaParams.computeTheta1(wristCenter)[0] - it * 0.01)) < 0.001)
     }
   }
+
+  @Test
+  fun `test compute theta 23` () {
+    val wristCenter = cmmParams.forwardKinematics(arrayOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray())
+    val theta23 = cmmParams.computeTheta23(
+            cmmParams.forwardKinematics(arrayOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray()),
+            0.0
+    )
+
+    val newCenter = cmmParams.subList(0, 4).forwardKinematics(arrayOf(0.0, theta23[0][0], theta23[0][1], 0.0).toDoubleArray())
+  }
 }
