@@ -228,6 +228,18 @@ class InverseKinematicsEngine
 }
 
 /**
+ * Project vectorB onto this vector
+ */
+fun SimpleMatrix.project(vectorB : SimpleMatrix) : SimpleMatrix? {
+    if (!this.isVector) return null
+
+    val vA = vectorB - this
+    val vB = this.negative()
+
+    return this + (vA.elementMult(vA.dot(vB) / vA.length().pow(2)))
+}
+
+/**
  * Compute the offset distance for a 3+ DOF arm shoulder joint, see Spong robot dynamics and control page 89-91.
  * This function assumes that the shoulder is located at the origin.
  *
@@ -235,25 +247,23 @@ class InverseKinematicsEngine
  *
  * @return a SimpleMatrix containing an x,y vector representing the origin offset for the shoulder
  */
-fun ImmutableList<DhParam>.computeDOffset() : SimpleMatrix {
+fun ImmutableList<DhParam>.computeDOffset(theta1 : Double) : SimpleMatrix {
     val vectorA = immutableListOf(
             DhParam(this[0].d, 0, this[0].r, this[0].alpha),
             DhParam(this[1].d, 0, this[1].r, this[1].alpha),
             DhParam(this[2].d, 0, 0, this[2].alpha)
-    ).forwardKinematics(arrayOf(0.0, 0.0, 0.0).toDoubleArray()).cols(3, 4).rows(0, 2)
+    ).forwardKinematics(arrayOf(theta1, 0.0, 0.0).toDoubleArray()).cols(3, 4).rows(0, 2)
 
     val vectorB = immutableListOf(
             DhParam(this[0].d, 0, this[0].r, this[0].alpha),
             DhParam(this[1].d, 0, this[1].r, this[1].alpha),
             DhParam(this[2].d, 0, 1, this[2].alpha)
-    ).forwardKinematics(arrayOf(0.0, 0.0, 0.0).toDoubleArray()).cols(3, 4).rows(0, 2)
+    ).forwardKinematics(arrayOf(theta1, 0.0, 0.0).toDoubleArray()).cols(3, 4).rows(0, 2)
 
-    val vA = vectorA - vectorB
-    val vB = vectorB.negative()
-
-
-    return vectorB + (vA.elementMult(vA.dot(vB) / vA.length().pow(2)))
+    return vectorB.project(vectorA) ?: SimpleMatrix(2, 1).also { it.zero() }
 }
+
+fun ImmutableList<DhParam>.computeDOffset() : SimpleMatrix = computeDOffset(0.0)
 
 fun ImmutableList<DhParam>.computeTheta1(
         wristCenter : SimpleMatrix) : ImmutableList<Double> = computeTheta1(wristCenter, 0.0)
@@ -300,27 +310,36 @@ fun ImmutableList<DhParam>.computeTheta1(wristCenter : SimpleMatrix, currentThet
 fun ImmutableList<DhParam>.computeTheta23(wristCenter : SimpleMatrix, theta1 : Double)
         : ImmutableList<ImmutableList<Double>> {
     //the length values here are the shortest distances from the two joints
-    val lengthJoint2To3 = (this.subList(0, 2).forwardKinematics(arrayOf(0.0, 0.0).toDoubleArray()) -
-            this.subList(0, 1).forwardKinematics(arrayOf(0.0).toDoubleArray())).cols(3, 4).length()
-    val lengthJoint3ToWristCenter = (this.subList(0, 4).forwardKinematics(arrayOf(0.0, 0.0, 0.0, 0.0).toDoubleArray()) -
-            this.subList(0, 2).forwardKinematics(arrayOf(0.0, 0.0).toDoubleArray())).cols(3, 4).length()
+    val joint2To3 = (this.subList(0, 2).forwardKinematics(arrayOf(0.0, 0.0).toDoubleArray()) -
+            this.subList(0, 1).forwardKinematics(arrayOf(0.0).toDoubleArray())).cols(3, 4).rows(0, 3)
+    val joint3ToWristCenter = (this.subList(0, 4).forwardKinematics(arrayOf(0.0, 0.0, 0.0, 0.0).toDoubleArray()) -
+            this.subList(0, 2).forwardKinematics(arrayOf(0.0, 0.0).toDoubleArray())).cols(3, 4).rows(0, 3)
+    val joint3To4 = (this.subList(0, 3).forwardKinematics(arrayOf(0.0, 0.0, 0.0).toDoubleArray()) -
+            this.subList(0, 2).forwardKinematics(arrayOf(0.0, 0.0).toDoubleArray())).cols(3, 4).rows(0, 3)
 
-    /*
-    val lengthJoint3To4 = (this.subList(0, 3).forwardKinematics(arrayOf(0.0, 0.0, 0.0).toDoubleArray()) -
-            this.subList(0, 2).forwardKinematics(arrayOf(0.0, 0.0).toDoubleArray())).cols(3, 4).length()
-    val lengthJoint4ToWristCenter = (this.subList(0, 4).forwardKinematics(arrayOf(0.0, 0.0, 0.0, 0.0).toDoubleArray()) -
-            this.subList(0, 3).forwardKinematics(arrayOf(0.0, 0.0, 0.0).toDoubleArray())).cols(3, 4).length()
-    */
+    val dOffset = this.computeDOffset(theta1)
+    val offsetOrigin = SimpleMatrix(3, 1)
+    offsetOrigin[0] = dOffset[0]
+    offsetOrigin[1] = dOffset[1]
+    offsetOrigin[2] =  this[0].d
 
     //projected coordinates of wrist center see spong pg. 93
     val projectedWristCenter = SimpleMatrix(2, 1)
     projectedWristCenter[0] = wristCenter.cols(3, 4).rows(0, 2).length()
-    projectedWristCenter[1] = wristCenter[3, 3]
+    projectedWristCenter[1] = wristCenter[2, 3]
+
+    val projectedJoint2 = SimpleMatrix(2, 1)
+    projectedJoint2[0] = offsetOriginTo2Projection.rows(0, 2).length()
+    projectedJoint2[1] = offsetOriginTo2Projection[2]
+
+    val projectedJoint3 = SimpleMatrix(2, 1)
+    projectedJoint3[0] = offsetOriginTo3Projection.rows(0, 2).length()
+    projectedJoint3[1] = offsetOriginTo3Projection[2]
 
     val bigD = (
             projectedWristCenter[0].pow(2) + projectedWristCenter[1].pow(2)
-            - lengthJoint2To3.pow(2) - lengthJoint3ToWristCenter.pow(2)
-        ) / (2 * lengthJoint2To3 * lengthJoint3ToWristCenter)
+            - joint2To3.length().pow(2) - joint3ToWristCenter.length().pow(2)
+        ) / (2 * joint2To3.length() * joint3ToWristCenter.length())
 
     val thetas3 = ImmutableList.of(
             Math.atan2(sqrt(1 - bigD.pow(2)), bigD),
@@ -329,12 +348,12 @@ fun ImmutableList<DhParam>.computeTheta23(wristCenter : SimpleMatrix, theta1 : D
 
     val thetas2 = ImmutableList.of(
             Math.atan2(projectedWristCenter[1], projectedWristCenter[0]) - Math.atan2(
-                    lengthJoint3ToWristCenter*Math.sin(thetas3[0]),
-                    lengthJoint2To3 + lengthJoint3ToWristCenter * Math.cos(thetas3[0])
+                    joint3ToWristCenter.length()*Math.sin(thetas3[0]),
+                    joint2To3.length() + joint3ToWristCenter.length() * Math.cos(thetas3[0])
             ),
             Math.atan2(projectedWristCenter[1], projectedWristCenter[0]) - Math.atan2(
-                    lengthJoint3ToWristCenter*Math.sin(thetas3[1]),
-                    lengthJoint2To3 + lengthJoint3ToWristCenter * Math.cos(thetas3[1])
+                    joint3ToWristCenter.length()*Math.sin(thetas3[1]),
+                    joint2To3.length() + joint3ToWristCenter.length() * Math.cos(thetas3[1])
             )
     )
 
