@@ -6,6 +6,7 @@ import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.util.length
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
+import kotlin.math.PI
 import kotlin.math.absoluteValue
 import kotlin.test.assert
 
@@ -27,11 +28,13 @@ class InverseKinematicsEngineThetaTest {
 
   private val pumaChain = pumaArm.base.appendages[1].chain
   private val pumaParams = pumaChain.toDhParams()
+  private val hephaestusParams = TestUtil.hephaestusArmDhParams
 
   @Test
   fun `test compute d offset` () {
     assert((cmmParams.computeDOffset().length() - 14.00).absoluteValue < 0.001)
     assert((pumaParams.computeDOffset().length() - 14.90).absoluteValue < 0.001)
+    assert(hephaestusParams.computeDOffset().length() < 0.001)
   }
 
   @Test
@@ -58,9 +61,20 @@ class InverseKinematicsEngineThetaTest {
     val newCenter = cmmParams.subList(0, 4).forwardKinematics(arrayOf(0.0, thetas23[1][0], thetas23[1][1], 0.0).toDoubleArray())
 
     val wristCenterVector = wristCenter.cols(3, 4).rows(0, 3)
-    val newCenterVector = wristCenter.cols(3, 4).rows(0, 3)
+    val newCenterVector = newCenter.cols(3, 4).rows(0, 3)
 
     assert((wristCenterVector - newCenterVector).length() < 0.001)
+
+    val newWristCenter = cmmParams.subList(0, 4).forwardKinematics(arrayOf(-PI/4, 0.0, PI/2, 0.0).toDoubleArray())
+    val newTheta1 = cmmParams.computeTheta1(newWristCenter)[0]
+    val newThetas23 = cmmParams.computeTheta23(newWristCenter, newTheta1)
+
+    val newNewCenter = cmmParams.subList(0, 4).forwardKinematics(arrayOf(newTheta1, newThetas23[0][0], newThetas23[0][1], 0.0).toDoubleArray())
+
+    val newWristCenterVector = newWristCenter.cols(3, 4).rows(0, 3)
+    val newNewCenterVector = newNewCenter.cols(3, 4).rows(0, 3)
+
+    assert((newWristCenterVector - newNewCenterVector).length() < 0.001)
   }
 
   @Test
@@ -74,5 +88,16 @@ class InverseKinematicsEngineThetaTest {
     val newCenterVector = wristCenter.cols(3, 4).rows(0, 3)
 
     assert((wristCenterVector - newCenterVector).length() < 0.001)
+
+    val newWristCenter = pumaParams.subList(0, 4).forwardKinematics(arrayOf(PI/4, 0.0, PI/2, 0.0).toDoubleArray())
+    val newTheta1 = pumaParams.computeTheta1(newWristCenter)[0]
+    val newThetas23 = pumaParams.computeTheta23(newWristCenter, newTheta1)
+
+    val newNewCenter = pumaParams.subList(0, 4).forwardKinematics(arrayOf(newTheta1, 0.0, newThetas23[0][1], 0.0).toDoubleArray())
+
+    val newWristCenterVector = newWristCenter.cols(3, 4).rows(0, 3)
+    val newNewCenterVector = newNewCenter.cols(3, 4).rows(0, 3)
+
+    assert((newWristCenterVector - newNewCenterVector).length() < 0.001)
   }
 }
