@@ -239,6 +239,24 @@ fun SimpleMatrix.project(vectorB : SimpleMatrix) : SimpleMatrix? {
     return this + (vA.elementMult(vA.dot(vB) / vA.length().pow(2)))
 }
 
+fun SimpleMatrix.projectOntoPlane(planePoint : SimpleMatrix, normal : SimpleMatrix) : SimpleMatrix? {
+    if (!this.isVector) return null
+
+    val a = normal[0]; val b = normal[1]; val c = normal[2]
+    val d = planePoint[0]; val e = planePoint[1]; val f = planePoint[2]
+    val x = this[0]; val y = this[1]; val z = this[2]
+
+    val t = (a*d - a*x + b*e - b*y + c*f - c*z) /
+            (a.pow(2) + b.pow(2) + c.pow(2))
+
+    val projection = SimpleMatrix(3, 1)
+    projection[0] = x + t*a
+    projection[1] = y + t*b
+    projection[2] = z + t*c
+
+    return projection
+}
+
 /**
  * Compute the offset distance for a 3+ DOF arm shoulder joint, see Spong robot dynamics and control page 89-91.
  * This function assumes that the shoulder is located at the origin.
@@ -309,7 +327,8 @@ fun ImmutableList<DhParam>.computeTheta1(wristCenter : SimpleMatrix, currentThet
  */
 fun ImmutableList<DhParam>.computeTheta23(wristCenter : SimpleMatrix, theta1 : Double)
         : ImmutableList<ImmutableList<Double>> {
-    //the length values here are the shortest distances from the two joints
+    //vectors between joints
+    val originTo2 = this.subList(0, 1).forwardKinematics(arrayOf(0.0).toDoubleArray()).cols(3, 4).rows(0, 3)
     val joint2To3 = (this.subList(0, 2).forwardKinematics(arrayOf(0.0, 0.0).toDoubleArray()) -
             this.subList(0, 1).forwardKinematics(arrayOf(0.0).toDoubleArray())).cols(3, 4).rows(0, 3)
     val joint3ToWristCenter = (this.subList(0, 4).forwardKinematics(arrayOf(0.0, 0.0, 0.0, 0.0).toDoubleArray()) -
@@ -321,25 +340,28 @@ fun ImmutableList<DhParam>.computeTheta23(wristCenter : SimpleMatrix, theta1 : D
     val offsetOrigin = SimpleMatrix(3, 1)
     offsetOrigin[0] = dOffset[0]
     offsetOrigin[1] = dOffset[1]
-    offsetOrigin[2] =  this[0].d
+    offsetOrigin[2] =  0.0
 
-    //projected coordinates of wrist center see spong pg. 93
-    val projectedWristCenter = SimpleMatrix(2, 1)
-    projectedWristCenter[0] = wristCenter.cols(3, 4).rows(0, 2).length()
-    projectedWristCenter[1] = wristCenter[2, 3]
+    val offsetNormal = offsetOrigin.negative().divide(offsetOrigin.length())
 
-    val projectedJoint2 = SimpleMatrix(2, 1)
-    projectedJoint2[0] = offsetOriginTo2Projection.rows(0, 2).length()
-    projectedJoint2[1] = offsetOriginTo2Projection[2]
+    val projectedOriginTo2 = (originTo2.projectOntoPlane(offsetOrigin, offsetNormal) as SimpleMatrix) - offsetOrigin
+    val projectedWristCenter = (this.subList(0, 4).forwardKinematics(arrayOf(theta1, 0.0, 0.0, 0.0).toDoubleArray()).cols(3, 4).rows(0, 3)
+            .projectOntoPlane(offsetOrigin, offsetNormal) as SimpleMatrix) - offsetOrigin - projectedOriginTo2
 
-    val projectedJoint3 = SimpleMatrix(2, 1)
-    projectedJoint3[0] = offsetOriginTo3Projection.rows(0, 2).length()
-    projectedJoint3[1] = offsetOriginTo3Projection[2]
+    val projected3ToCenter = (joint3ToWristCenter.projectOntoPlane(offsetOrigin, offsetNormal) as SimpleMatrix) - offsetOrigin
+    val projected3To4 = (joint3To4.projectOntoPlane(offsetOrigin, offsetNormal) as SimpleMatrix) - offsetOrigin
+    val projected2To3 = (joint2To3.projectOntoPlane(offsetOrigin, offsetNormal) as SimpleMatrix) - offsetOrigin
 
+    val theta3Offset = Math.acos(
+            (projected3To4.divide(projected3To4.length())).dot(projected3ToCenter.divide(projected3ToCenter.length()))
+    )
+
+    val r = Math.sqrt(projectedWristCenter[0].pow(2) + projectedWristCenter[1].pow(2))
+    val s = projectedWristCenter[2]
     val bigD = (
-            projectedWristCenter[0].pow(2) + projectedWristCenter[1].pow(2)
-            - joint2To3.length().pow(2) - joint3ToWristCenter.length().pow(2)
-        ) / (2 * joint2To3.length() * joint3ToWristCenter.length())
+            r.pow(2) + s.pow(2)
+            - projected2To3.length().pow(2) - projected3ToCenter.length().pow(2)
+        ) / (2 * projected2To3.length() * projected3ToCenter.length())
 
     val thetas3 = ImmutableList.of(
             Math.atan2(sqrt(1 - bigD.pow(2)), bigD),
@@ -347,17 +369,20 @@ fun ImmutableList<DhParam>.computeTheta23(wristCenter : SimpleMatrix, theta1 : D
     )
 
     val thetas2 = ImmutableList.of(
-            Math.atan2(projectedWristCenter[1], projectedWristCenter[0]) - Math.atan2(
-                    joint3ToWristCenter.length()*Math.sin(thetas3[0]),
-                    joint2To3.length() + joint3ToWristCenter.length() * Math.cos(thetas3[0])
+            Math.atan2(s, r) - Math.atan2(
+                    projected3ToCenter.length()*Math.sin(thetas3[0]),
+                    projected2To3.length() + projected3ToCenter.length() * Math.cos(thetas3[0])
             ),
-            Math.atan2(projectedWristCenter[1], projectedWristCenter[0]) - Math.atan2(
-                    joint3ToWristCenter.length()*Math.sin(thetas3[1]),
-                    joint2To3.length() + joint3ToWristCenter.length() * Math.cos(thetas3[1])
+            Math.atan2(s, r) - Math.atan2(
+                    projected3ToCenter.length()*Math.sin(thetas3[1]),
+                    projected2To3.length() + projected3ToCenter.length() * Math.cos(thetas3[1])
             )
     )
 
-    return ImmutableList.of(ImmutableList.of(thetas2[0], thetas3[0]), ImmutableList.of(thetas2[1], thetas3[1]))
+    return ImmutableList.of(
+            ImmutableList.of(thetas2[0], thetas3[0] + theta3Offset),
+            ImmutableList.of(thetas2[1], thetas3[1] + theta3Offset)
+    )
 }
 
 /**
