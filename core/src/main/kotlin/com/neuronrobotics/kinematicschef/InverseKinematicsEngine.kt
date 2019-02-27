@@ -418,9 +418,25 @@ fun ImmutableList<DhParam>.computeTheta23(wristCenter : SimpleMatrix, theta1 : D
             Math.signum(if (vectorC[1] == 0.0) 1.0 else vectorC[1])
     }.invoke()
 
+    val signTheta3Offset = {
+        val projection34To3Center = projected3To4.project(projected3ToCenter) as SimpleMatrix
+        val distance = projected3ToCenter.divide(projected3ToCenter.length())
+            .elementMult(projection34To3Center.length()).minus(projected3To4)
+
+        when {
+            distance[2] > 0.0 -> -1.0
+            distance[2] < 0.0 -> 1.0
+            else -> when {
+                distance[0] > 0.0 -> -1.0
+                else -> 1.0
+            }
+        }
+    }.invoke()
+
+
     val theta3Offset = Math.acos(
             (projected3To4.divide(projected3To4.length())).dot(projected3ToCenter.divide(projected3ToCenter.length()))
-    )
+    ) * signTheta3Offset
 
     val r = Math.sqrt(projectedWristCenter[0].pow(2) + projectedWristCenter[1].pow(2))
     val s = projectedWristCenter[2]

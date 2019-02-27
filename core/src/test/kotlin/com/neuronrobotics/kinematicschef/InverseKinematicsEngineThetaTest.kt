@@ -6,7 +6,6 @@ import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.util.length
-import org.junit.Ignore
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import kotlin.math.PI
@@ -112,8 +111,7 @@ class InverseKinematicsEngineThetaTest {
 
     assert((target.cols(3, 4).rows(0, 3) - newCenter.cols(3, 4).rows(0, 3)).length() < 0.001)
   }
-
-  @Ignore
+  
   @Test
   fun `test compute hephaestus theta 23` () {
     val wristCenter = hephaestusParams.forwardKinematics(arrayOf(0.0, 0.0, 0.0, 0.0).toDoubleArray())
@@ -131,7 +129,7 @@ class InverseKinematicsEngineThetaTest {
     val newTheta1 = hephaestusParams.computeTheta1(newWristCenter)[0]
     val newThetas23 = hephaestusParams.computeTheta23(newWristCenter, newTheta1)
 
-    val newNewCenter = hephaestusParams.forwardKinematics(arrayOf(newTheta1, newThetas23[1][0], newThetas23[1][1], 0.0).toDoubleArray())
+    val newNewCenter = hephaestusParams.forwardKinematics(arrayOf(newTheta1, newThetas23[0][0], newThetas23[0][1], 0.0).toDoubleArray())
 
     val newWristCenterVector = newWristCenter.cols(3, 4).rows(0, 3)
     val newNewCenterVector = newNewCenter.cols(3, 4).rows(0, 3)
@@ -151,11 +149,11 @@ class InverseKinematicsEngineThetaTest {
 
     assert((wristCenterVector - newCenterVector).length() < 0.001)
 
-    val newWristCenter = pumaParams.subList(0, 4).forwardKinematics(arrayOf(PI/4, 0.0, PI/2, 0.0).toDoubleArray())
+    val newWristCenter = pumaParams.subList(0, 4).forwardKinematics(arrayOf(0.0, 0.0, PI/2, 0.0).toDoubleArray())
     val newTheta1 = pumaParams.computeTheta1(newWristCenter)[0]
     val newThetas23 = pumaParams.computeTheta23(newWristCenter, newTheta1)
 
-    val newNewCenter = pumaParams.subList(0, 4).forwardKinematics(arrayOf(newTheta1, 0.0, newThetas23[0][1], 0.0).toDoubleArray())
+    val newNewCenter = pumaParams.subList(0, 4).forwardKinematics(arrayOf(newTheta1, newThetas23[0][0], newThetas23[0][1], 0.0).toDoubleArray())
 
     val newWristCenterVector = newWristCenter.cols(3, 4).rows(0, 3)
     val newNewCenterVector = newNewCenter.cols(3, 4).rows(0, 3)
