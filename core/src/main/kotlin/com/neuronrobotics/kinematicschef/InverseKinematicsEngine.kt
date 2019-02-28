@@ -101,7 +101,7 @@ class InverseKinematicsEngine
                 .forwardKinematics(arrayOf(theta1, theta23s[0][0], theta23s[0][1], 0.0).toDoubleArray())
                 .cols(3, 4).rows(0, 3)
 
-        val theta456 = if ((wristCenter.cols(3, 4).rows(0, 3) - wristCenterElbowUp).length() < 0.001) {
+        val theta456 = if ((wristCenter - wristCenterElbowUp).length() < 0.001) {
             theta23 = theta23s[0]
             dhParams.computeTheta456(target, wristCenter, theta1, theta23s[0][0], theta23s[0][1])
         } else {
@@ -109,7 +109,7 @@ class InverseKinematicsEngine
                     .forwardKinematics(arrayOf(theta1, theta23s[1][0], theta23s[1][1], 0.0).toDoubleArray())
                     .cols(3, 4).rows(0, 3)
 
-            if((wristCenter.cols(3, 4).rows(0, 3) - wristCenterElbowDown).length() > 0.001) {
+            if((wristCenter - wristCenterElbowDown).length() > 0.001) {
                 return jointSpaceVector
             }
             theta23 = theta23s[1]
@@ -270,26 +270,26 @@ fun ImmutableList<DhParam>.computeTheta1(wristCenter : SimpleMatrix, currentThet
     val dOffset = this.computeDOffset()
 
     if (dOffset.length().absoluteValue < 0.001) {
-        if(wristCenter[0, 3].absoluteValue < 0.001 && wristCenter[1, 3].absoluteValue < 0.001) {
+        if(wristCenter[0].absoluteValue < 0.001 && wristCenter[1].absoluteValue < 0.001) {
             return ImmutableList.of(currentTheta1)
         }
 
         return ImmutableList.of(
-                Math.atan2(wristCenter[1, 3], wristCenter[0, 3]),
-                PI + Math.atan2(wristCenter[1, 3], wristCenter[0, 3])
+                Math.atan2(wristCenter[1], wristCenter[0]),
+                PI + Math.atan2(wristCenter[1], wristCenter[0])
         )
     }
 
     //left and right arm solutions, see spong pg. 90
-    val phi = Math.atan2(wristCenter[1, 3], wristCenter[0, 3])
+    val phi = Math.atan2(wristCenter[1], wristCenter[0])
     val leftArmSolution = phi - Math.atan2(
             dOffset.length(),
-            Math.sqrt(wristCenter[1, 3].pow(2) + wristCenter[0, 3].pow(2) - dOffset.length().pow(2))
+            Math.sqrt(wristCenter[1].pow(2) + wristCenter[0].pow(2) - dOffset.length().pow(2))
     )
 
     val rightArmSolution = phi + Math.atan2(
             -dOffset.length(),
-            -Math.sqrt(wristCenter[1, 3].pow(2) + wristCenter[0, 3].pow(2) - dOffset.length().pow(2))
+            -Math.sqrt(wristCenter[1].pow(2) + wristCenter[0].pow(2) - dOffset.length().pow(2))
     )
 
     return ImmutableList.of(leftArmSolution, leftArmSolution + PI, rightArmSolution, rightArmSolution + PI)
@@ -316,7 +316,7 @@ fun ImmutableList<DhParam>.computeTheta23(wristCenter : SimpleMatrix, theta1 : D
     val joint3To4 = (this.subList(0, 3).forwardKinematics(arrayOf(0.0, 0.0, 0.0).toDoubleArray()) -
             this.subList(0, 2).forwardKinematics(arrayOf(0.0, 0.0).toDoubleArray())).cols(3, 4).rows(0, 3)
 
-    val theta1Rotation = SimpleMatrix(4, 4).also {
+    val theta1Rotation = SimpleMatrix(3, 3).also {
         it.zero()
 
         it[0, 0] = Math.cos(-theta1)
@@ -324,7 +324,6 @@ fun ImmutableList<DhParam>.computeTheta23(wristCenter : SimpleMatrix, theta1 : D
         it[1, 0] = Math.sin(-theta1)
         it[1, 1] = Math.cos(-theta1)
         it[2, 2] = 1.0
-        it[3, 3] = 1.0
     }
 
     val rotatedWristCenter = theta1Rotation.mult(wristCenter)
@@ -348,7 +347,7 @@ fun ImmutableList<DhParam>.computeTheta23(wristCenter : SimpleMatrix, theta1 : D
     }
 
     val projectedOriginTo2 = (originTo2.projectOntoPlane(offsetOrigin, offsetNormal) as SimpleMatrix) - offsetOrigin
-    val projectedWristCenter = (rotatedWristCenter.cols(3, 4).rows(0, 3)
+    val projectedWristCenter = (rotatedWristCenter
             .projectOntoPlane(offsetOrigin, offsetNormal) as SimpleMatrix) - offsetOrigin - projectedOriginTo2
 
     val projected3ToCenter = (joint3ToWristCenter.projectOntoPlane(offsetOrigin, offsetNormal) as SimpleMatrix) - offsetOrigin
@@ -529,11 +528,11 @@ fun ImmutableList<DhParam>.computeTheta456(
 
     val zUnit = SimpleMatrix(3, 1).also { it.zero(); it[2] = 1.0 }
 
-    val originToCenter = wristCenter.cols(3, 4).rows(0, 3) - wristOrigin
+    val originToCenter = wristCenter - wristOrigin
     val originRot = zUnit.getRotationBetween(originToCenter)
 
     val wristOriginToCenter = originRot.mult(originToCenter)
-    val wristCenterToTarget = originRot.mult(target.cols(3, 4).rows(0, 3) - wristCenter.cols(3, 4).rows(0, 3))
+    val wristCenterToTarget = originRot.mult(target.cols(3, 4).rows(0, 3) - wristCenter)
 
     val r = Math.sqrt(wristCenterToTarget[0].pow(2) + wristCenterToTarget[1].pow(2))
     val s = wristCenterToTarget[2]
