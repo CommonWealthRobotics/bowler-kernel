@@ -12,23 +12,8 @@ import kotlin.math.PI
 import kotlin.math.absoluteValue
 
 class InverseKinematicsEngineThetaTest {
-  private val cmmInputArm = ScriptingEngine.gitScriptRun(
-          "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
-          "InputArmBase_copy.xml",
-          null
-  ) as? MobileBaseLoader ?: fail { "The script did not return a MobileBaseLoader." }
-
-  private val cmmChain = cmmInputArm.base.appendages[0].chain
-  private val cmmParams = cmmChain.toDhParams()
-
-  private val pumaArm = ScriptingEngine.gitScriptRun(
-          "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
-          "InputArmBase_copy.xml",
-          null
-  ) as? MobileBaseLoader ?: fail { "The script did not return a MobileBaseLoader." }
-
-  private val pumaChain = pumaArm.base.appendages[1].chain
-  private val pumaParams = pumaChain.toDhParams()
+  private val cmmParams = TestUtil.cmmInputArmDhParams
+  private val pumaParams = TestUtil.pumaArmDhParams
   private val hephaestusParams = ImmutableList.of(
           TestUtil.hephaestusArmDhParams[0],
           TestUtil.hephaestusArmDhParams[1],
@@ -94,13 +79,13 @@ class InverseKinematicsEngineThetaTest {
 
   @Test
   fun `test compute cmm theta1to6` () {
-    val target = cmmParams.forwardKinematics(arrayOf(PI, -PI/2, PI/2, -PI/2, 0.0, PI/2).toDoubleArray())
-    val wristCenter = cmmParams.subList(0, 4).forwardKinematics(arrayOf(PI, -PI/2, PI/2, -PI/2).toDoubleArray())
+    val target = cmmParams.forwardKinematics(arrayOf(PI, -PI/2, PI/2, PI, PI/4, PI/2).toDoubleArray())
+    val wristCenter = cmmParams.subList(0, 4).forwardKinematics(arrayOf(PI, -PI/2, PI/2, 0.0).toDoubleArray())
     val theta1 = cmmParams.computeTheta1(wristCenter)[0]
     val thetas23 = cmmParams.computeTheta23(wristCenter, theta1)
-    val thetas456 = cmmParams.computeTheta456(target, wristCenter, theta1, thetas23[0][0], thetas23[0][1])
+    val thetas456 = cmmParams.computeTheta456(target, wristCenter, theta1, thetas23[1][0], thetas23[1][1])
 
-    val tip = cmmParams.forwardKinematics(arrayOf(
+    val tipElbowDown = cmmParams.forwardKinematics(arrayOf(
       theta1,
       thetas23[1][0],
       thetas23[1][1],
@@ -109,21 +94,56 @@ class InverseKinematicsEngineThetaTest {
       thetas456[0][2]
     ).toDoubleArray())
 
-    //assert((target.cols(3, 4).rows(0, 3) - tip.cols(3, 4).rows(0, 3)).length() < 0.001)
+    val tipElbowDownVec = tipElbowDown.cols(3, 4).rows(0, 3)
+    val targetVec = target.cols(3, 4).rows(0, 3)
+
+    assert((targetVec - tipElbowDownVec).length() < 0.001)
+  }
+
+  @Test
+  fun `test compute cmm elbowUp and elbowDown` () {
+    val target = cmmParams.forwardKinematics(arrayOf(0.0, -PI/4, -PI/4 - 0.52933 + 1.38545, 0.0, 0.0, 0.0).toDoubleArray())
+    val wristCenter = cmmParams.subList(0, 4).forwardKinematics(arrayOf(0.0, -PI/4, -PI/4 - 0.52933 + 1.38545, 0.0).toDoubleArray())
+    val theta1 = cmmParams.computeTheta1(wristCenter)[0]
+    val thetas23 = cmmParams.computeTheta23(wristCenter, theta1)
+    val thetas456ElbowUp = cmmParams.computeTheta456(target, wristCenter, theta1, thetas23[0][0], thetas23[0][1])
+    val thetas456ElbowDown = cmmParams.computeTheta456(target, wristCenter, theta1, thetas23[1][0], thetas23[1][1])
+
+    val wristElbowUp = cmmParams.subList(0, 4).forwardKinematics(arrayOf(
+            theta1,
+            thetas23[0][0],
+            thetas23[0][1],
+            0.0
+    ).toDoubleArray())
+
+    val wristElbowDown = cmmParams.subList(0, 4).forwardKinematics(arrayOf(
+            theta1,
+            thetas23[1][0],
+            thetas23[1][1],
+            0.0
+    ).toDoubleArray())
+
+    val wristElbowUpVec = wristElbowUp.cols(3, 4).rows(0, 3)
+    val wristElbowDownVec = wristElbowDown.cols(3, 4).rows(0, 3)
+
+    assert((wristElbowDownVec - wristElbowUpVec).length() < 0.001)
   }
   
   @Test
   fun `test compute hephaestus theta 23` () {
-    val wristCenter = hephaestusParams.forwardKinematics(arrayOf(0.0, 0.0, 0.0, 0.0).toDoubleArray())
+    val wristCenter = hephaestusParams.forwardKinematics(arrayOf(0.0, -PI/4, PI/4 + 0.81979, 0.0).toDoubleArray())
     val theta1 = hephaestusParams.computeTheta1(wristCenter)[0]
     val thetas23 = hephaestusParams.computeTheta23(wristCenter, 0.0)
 
-    val newCenter = hephaestusParams.forwardKinematics(arrayOf(theta1, thetas23[1][0], thetas23[1][1], 0.0).toDoubleArray())
+    val newCenterElbowUp = hephaestusParams.forwardKinematics(arrayOf(theta1, thetas23[0][0], thetas23[0][1], 0.0).toDoubleArray())
+    val newCenterElbowDown = hephaestusParams.forwardKinematics(arrayOf(theta1, thetas23[1][0], thetas23[1][1], 0.0).toDoubleArray())
 
     val wristCenterVector = wristCenter.cols(3, 4).rows(0, 3)
-    val newCenterVector = newCenter.cols(3, 4).rows(0, 3)
+    val newCenterElbowDownVector = newCenterElbowDown.cols(3, 4).rows(0, 3)
+    val newCenterElbowUpVector = newCenterElbowUp.cols(3, 4).rows(0, 3)
 
-    assert((wristCenterVector - newCenterVector).length() < 0.001)
+    assert((wristCenterVector - newCenterElbowDownVector).length() < 0.001)
+    assert((wristCenterVector - newCenterElbowUpVector).length() < 0.001)
 
     val newWristCenter = hephaestusParams.forwardKinematics(arrayOf(PI, -PI/2, PI/2, 0.0).toDoubleArray())
     val newTheta1 = hephaestusParams.computeTheta1(newWristCenter)[0]

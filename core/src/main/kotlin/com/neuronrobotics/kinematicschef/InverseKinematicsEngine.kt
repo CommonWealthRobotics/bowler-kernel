@@ -501,10 +501,13 @@ fun ImmutableList<DhParam>.computeTheta23(wristCenter : SimpleMatrix, theta1 : D
     }
     val projected23ElbowUp = projectedWristCenter + elbowUp
 
-    val theta2ElbowUp = Math.acos(SimpleMatrix(2, 1).also { it[0] = 1.0; it[1] = 0.0 }
-        .dot(projected23ElbowUp.divide(projected23ElbowUp.length())))
-    val theta2ElbowDown = Math.acos(SimpleMatrix(2, 1).also { it[0] = 1.0; it[1] = 0.0 }
-        .dot(projected23ElbowDown.divide(projected23ElbowDown.length())))
+    val theta2ElbowUp = Math.signum(projected23ElbowUp[2]) *
+            Math.acos(SimpleMatrix(2, 1).also { it[0] = 1.0; it[1] = 0.0 }
+                    .dot(projected23ElbowUp.divide(projected23ElbowUp.length())))
+
+    val theta2ElbowDown = Math.signum(projected23ElbowDown[2]) *
+            Math.acos(SimpleMatrix(2, 1).also { it[0] = 1.0; it[1] = 0.0 }
+                    .dot(projected23ElbowDown.divide(projected23ElbowDown.length())))
 
     /*val thetas2 = ImmutableList.of(
             Math.atan2(s, r) - Math.atan2(
@@ -524,12 +527,23 @@ fun ImmutableList<DhParam>.computeTheta23(wristCenter : SimpleMatrix, theta1 : D
 }
 
 fun ImmutableList<DhParam>.computeTheta456(
-    target : SimpleMatrix,
-    wristCenter : SimpleMatrix,
-    theta1 : Double,
-    theta2 : Double,
-    theta3 : Double
+        target : SimpleMatrix,
+        wristCenter : SimpleMatrix,
+        theta1 : Double,
+        theta2 : Double,
+        theta3 : Double
 ) : ImmutableList<ImmutableList<Double>> {
+    val theta1Rotation = SimpleMatrix(4, 4).also {
+        it.zero()
+
+        it[0, 0] = Math.cos(-theta1)
+        it[0, 1] = -Math.sin(-theta1)
+        it[1, 0] = Math.sin(-theta1)
+        it[1, 1] = Math.cos(-theta1)
+        it[2, 2] = 1.0
+        it[3, 3] = 1.0
+    }
+
     val wristOrigin = this.subList(0, 3).forwardKinematics(arrayOf(theta1, theta2, theta3).toDoubleArray())
         .cols(3, 4).rows(0, 3)
 
@@ -540,21 +554,19 @@ fun ImmutableList<DhParam>.computeTheta456(
     val s = wristCenterToTarget[2]
 
     //if singularity condition, theta4 is free, set to 0
-    val theta4 = if (Math.acos((wristOriginToCenter.divide(wristOriginToCenter.length())).dot(
-            wristCenterToTarget.divide(wristCenterToTarget.length())
-        )).absoluteValue < 0.001) {
+    val theta4 = if (r < 0.001) {
         ImmutableList.of(0.0, 0.0)
     } else {
         val wristOriginToTarget = target.cols(3, 4).rows(0, 3) - wristOrigin
         ImmutableList.of(
             atan2(wristOriginToTarget[1], wristOriginToTarget[0]),
-            atan2(wristOriginToTarget[1], wristOriginToTarget[0]) + PI/2
+            atan2(wristOriginToTarget[1], wristOriginToTarget[0]) + PI
         )
     }
 
     val theta5 = ImmutableList.of(
-        PI/2 + if (r.absoluteValue > 0.001) Math.atan(s/r) else 0.0,
-        0.0 - PI/2 - if (r.absoluteValue > 0.001) Math.atan(s/r) else 0.0
+        if (r.absoluteValue > 0.001) Math.atan(s/r) - PI/2 else 0.0,
+        if (r.absoluteValue > 0.001) PI/2 + Math.atan(s/r) else 0.0
     )
 
     val theta6 = ImmutableList.of(0.0, 0.0)
