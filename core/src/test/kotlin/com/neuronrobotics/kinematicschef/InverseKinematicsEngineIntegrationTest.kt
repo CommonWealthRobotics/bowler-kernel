@@ -36,10 +36,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
 import java.lang.Math.toRadians
-import kotlin.math.cos
-import kotlin.math.pow
-import kotlin.math.sin
-import kotlin.math.sqrt
+import kotlin.math.*
 
 class InverseKinematicsEngineIntegrationTest {
 
@@ -65,7 +62,37 @@ class InverseKinematicsEngineIntegrationTest {
     }
 
     @Test
-    fun `test cmm input arm`() {
+    fun `test cmm input arm` () {
+        val cmmInputArm = ScriptingEngine.gitScriptRun(
+                "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
+                "InputArmBase_copy.xml",
+                null
+        ) as? MobileBaseLoader ?: fail { "The script did not return a MobileBaseLoader." }
+
+        val chain = cmmInputArm.base.appendages[0].chain
+        val params = chain.toDhParams()
+
+        val engine = InverseKinematicsEngine.getInstance()
+        val target = params.forwardKinematics(arrayOf(
+                params[0].theta * PI/180,
+                params[1].theta * PI/180,
+                params[2].theta * PI/180,
+                params[3].theta * PI/180,
+                params[4].theta * PI/180,
+                params[5].theta * PI/180
+        ).toDoubleArray())
+
+        val jointAngles = engine.inverseKinematics(
+                target,
+                listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+                chain
+        )
+
+        val s = 3
+    }
+
+    @Test
+    fun `test cmm input arm old`() {
         val cmmInputArm = ScriptingEngine.gitScriptRun(
             "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
             "InputArmBase_copy.xml",

@@ -92,28 +92,28 @@ class InverseKinematicsEngine
         val wristCenter = wrist.center(target)
         val newJointAngles = DoubleArray(jointSpaceVector.size) { 0.0 }
 
-        val theta1 = dhParams.computeTheta1(wristCenter)[0]
+        val theta1 = dhParams.computeTheta1(wristCenter, jointSpaceVector[0])[0]
         val theta23s = dhParams.computeTheta23(wristCenter, theta1)
         var theta23 : ImmutableList<Double>
 
         //favor elbow up, switch to elbow down if wrist center is not reached
-        val wristCenterElbowUp = dhParams.subList(0, 4)
-                .forwardKinematics(arrayOf(theta1, theta23s[0][0], theta23s[0][1], 0.0).toDoubleArray())
+        val wristCenterElbowDown = dhParams.subList(0, 4)
+                .forwardKinematics(arrayOf(theta1, theta23s[1][0], theta23s[1][1], 0.0).toDoubleArray())
                 .cols(3, 4).rows(0, 3)
 
-        val theta456 = if ((wristCenter - wristCenterElbowUp).length() < 0.001) {
-            theta23 = theta23s[0]
-            dhParams.computeTheta456(target, wristCenter, theta1, theta23s[0][0], theta23s[0][1])
-        } else {
-            val wristCenterElbowDown = dhParams.subList(0, 4)
-                    .forwardKinematics(arrayOf(theta1, theta23s[1][0], theta23s[1][1], 0.0).toDoubleArray())
-                    .cols(3, 4).rows(0, 3)
-
-            if((wristCenter - wristCenterElbowDown).length() > 0.001) {
-                return jointSpaceVector
-            }
+        val theta456 = if ((wristCenter - wristCenterElbowDown).length() < 0.001) {
             theta23 = theta23s[1]
             dhParams.computeTheta456(target, wristCenter, theta1, theta23s[1][0], theta23s[1][1])
+        } else {
+            val wristCenterElbowUp = dhParams.subList(0, 4)
+                    .forwardKinematics(arrayOf(theta1, theta23s[0][0], theta23s[0][1], 0.0).toDoubleArray())
+                    .cols(3, 4).rows(0, 3)
+
+            if((wristCenter - wristCenterElbowUp).length() > 0.001) {
+                return jointSpaceVector
+            }
+            theta23 = theta23s[0]
+            dhParams.computeTheta456(target, wristCenter, theta1, theta23s[0][0], theta23s[0][1])
         }
 
         val wristA = dhParams.forwardKinematics(arrayOf(
@@ -137,7 +137,7 @@ class InverseKinematicsEngine
         if ((target.cols(3, 4).rows(0, 3) - wristA).length() < 0.001) {
             newJointAngles[0] = theta1
             newJointAngles[1] = theta23[0]
-            newJointAngles[2] = theta23[0]
+            newJointAngles[2] = theta23[1]
             newJointAngles[3] = theta456[0][0]
             newJointAngles[4] = theta456[0][1]
             newJointAngles[5] = theta456[0][2]
@@ -148,7 +148,7 @@ class InverseKinematicsEngine
 
             newJointAngles[0] = theta1
             newJointAngles[1] = theta23[0]
-            newJointAngles[2] = theta23[0]
+            newJointAngles[2] = theta23[1]
             newJointAngles[3] = theta456[1][0]
             newJointAngles[4] = theta456[1][1]
             newJointAngles[5] = theta456[1][2]
@@ -158,7 +158,7 @@ class InverseKinematicsEngine
             if (index > 2) {
                 toDegrees(elem)
             } else {
-                toDegrees(elem) + dhParams[index].theta
+                toDegrees(elem) - dhParams[index].theta
             }
         }.map {
             if (it >= 360 || it <= -360)
