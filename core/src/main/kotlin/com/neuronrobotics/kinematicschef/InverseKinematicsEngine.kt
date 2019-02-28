@@ -533,22 +533,51 @@ fun ImmutableList<DhParam>.computeTheta456(
         theta2 : Double,
         theta3 : Double
 ) : ImmutableList<ImmutableList<Double>> {
-    val theta1Rotation = SimpleMatrix(4, 4).also {
-        it.zero()
+    fun SimpleMatrix.cross(b : SimpleMatrix) : SimpleMatrix? {
+        if (!this.isVector || !b.isVector) return null
 
-        it[0, 0] = Math.cos(-theta1)
-        it[0, 1] = -Math.sin(-theta1)
-        it[1, 0] = Math.sin(-theta1)
-        it[1, 1] = Math.cos(-theta1)
-        it[2, 2] = 1.0
-        it[3, 3] = 1.0
+        return SimpleMatrix(3, 1).also {
+            it[0] = this[1]*b[2] - this[2]*b[1]
+            it[1] = this[2]*b[0] - this[0]*b[2]
+            it[2] = this[0]*b[1] - this[1]*b[0]
+        }
+    }
+
+    /*
+     * Rotate all transformations to be right side up for theta456 calculations, see following
+     * https://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d
+     */
+    fun SimpleMatrix.getRotationBetween(other : SimpleMatrix) : SimpleMatrix {
+        val unit = this.divide(this.length())
+        val b = other.divide(other.length())
+
+        val v = b.divide(b.length()).cross(unit) as SimpleMatrix
+        val cos = b.divide(b.length()).dot(unit) //cosine of angle
+
+        //skew-symmetric cross product of v
+        val vx = SimpleMatrix(3, 3).also {
+            it.zero()
+            it[0, 1] = -v[2]
+            it[0, 2] = v[1]
+            it[1, 0] = v[2]
+            it[1, 2] = -v[0]
+            it[2, 0] = -v[1]
+            it[2, 1] = v[0]
+        }
+
+        return SimpleMatrix.identity(3) + vx + vx.mult(vx).elementMult(1.0/(1.0 + cos))
     }
 
     val wristOrigin = this.subList(0, 3).forwardKinematics(arrayOf(theta1, theta2, theta3).toDoubleArray())
-        .cols(3, 4).rows(0, 3)
+            .cols(3, 4).rows(0, 3)
 
-    val wristOriginToCenter = wristCenter.cols(3, 4).rows(0, 3) - wristOrigin
-    val wristCenterToTarget = target.cols(3, 4).rows(0, 3) - wristCenter.cols(3, 4).rows(0, 3)
+    val zUnit = SimpleMatrix(3, 1).also { it.zero(); it[2] = 1.0 }
+
+    val originToCenter = wristCenter.cols(3, 4).rows(0, 3) - wristOrigin
+    val originRot = zUnit.getRotationBetween(originToCenter)
+
+    val wristOriginToCenter = originRot.mult(originToCenter)
+    val wristCenterToTarget = originRot.mult(target.cols(3, 4).rows(0, 3) - wristCenter.cols(3, 4).rows(0, 3))
 
     val r = Math.sqrt(wristCenterToTarget[0].pow(2) + wristCenterToTarget[1].pow(2))
     val s = wristCenterToTarget[2]
@@ -557,7 +586,7 @@ fun ImmutableList<DhParam>.computeTheta456(
     val theta4 = if (r < 0.001) {
         ImmutableList.of(0.0, 0.0)
     } else {
-        val wristOriginToTarget = target.cols(3, 4).rows(0, 3) - wristOrigin
+        val wristOriginToTarget = originRot.mult(target.cols(3, 4).rows(0, 3) - wristOrigin)
         ImmutableList.of(
             atan2(wristOriginToTarget[1], wristOriginToTarget[0]),
             atan2(wristOriginToTarget[1], wristOriginToTarget[0]) + PI

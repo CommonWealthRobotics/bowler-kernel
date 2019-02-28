@@ -79,16 +79,16 @@ class InverseKinematicsEngineThetaTest {
 
   @Test
   fun `test compute cmm theta1to6` () {
-    val target = cmmParams.forwardKinematics(arrayOf(PI, -PI/2, PI/2, PI, PI/4, PI/2).toDoubleArray())
-    val wristCenter = cmmParams.subList(0, 4).forwardKinematics(arrayOf(PI, -PI/2, PI/2, 0.0).toDoubleArray())
+    val target = cmmParams.forwardKinematics(arrayOf(PI, -PI/4, PI/4, -PI, PI/4, 0.0).toDoubleArray())
+    val wristCenter = cmmParams.subList(0, 4).forwardKinematics(arrayOf(PI, -PI/4, PI/4, -PI).toDoubleArray())
     val theta1 = cmmParams.computeTheta1(wristCenter)[0]
     val thetas23 = cmmParams.computeTheta23(wristCenter, theta1)
-    val thetas456 = cmmParams.computeTheta456(target, wristCenter, theta1, thetas23[1][0], thetas23[1][1])
+    val thetas456 = cmmParams.computeTheta456(target, wristCenter, theta1, thetas23[0][0], thetas23[0][1])
 
     val tipElbowDown = cmmParams.forwardKinematics(arrayOf(
       theta1,
-      thetas23[1][0],
-      thetas23[1][1],
+      thetas23[0][0],
+      thetas23[0][1],
       thetas456[0][0],
       thetas456[0][1],
       thetas456[0][2]
