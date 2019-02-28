@@ -36,6 +36,7 @@ import org.junit.jupiter.api.assertThrows
 internal class InverseKinematicsEngineTest {
 
     @Test
+    @Disabled
     fun `test for error when validating euler angles`() {
         val chain = TestUtil.makeMockChain(TestUtil.randomDhParamList(6).toDHLinks())
 

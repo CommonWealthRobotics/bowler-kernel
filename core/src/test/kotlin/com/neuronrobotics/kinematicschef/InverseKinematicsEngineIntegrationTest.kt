@@ -41,6 +41,7 @@ import kotlin.math.*
 class InverseKinematicsEngineIntegrationTest {
 
     @Test
+    @Disabled
     fun `one invalid spherical wrist`() {
         val chain = TestUtil.makeMockChain(
             arrayListOf(
@@ -88,7 +89,7 @@ class InverseKinematicsEngineIntegrationTest {
                 chain
         )
 
-        val s = 3
+
     }
 
     @Test
@@ -228,10 +229,10 @@ class InverseKinematicsEngineIntegrationTest {
         val tipHome = params.toFrameTransformation().getTranslation()
         val lengthToTip = sqrt(tipHome[0].pow(2) + tipHome[1].pow(2))
 
-//        testTheta1OnRadius(lengthToTip) // The radius for the home position
+        testTheta1OnRadius(lengthToTip) // The radius for the home position
         testThetasHomed()
-//        testTheta1OnXAxis()
-//        testThetasAlongXAxis()
+        testTheta1OnXAxis()
+        testThetasAlongXAxis()
 
         engine.inverseKinematics(
             getFrameTranslationMatrix(
