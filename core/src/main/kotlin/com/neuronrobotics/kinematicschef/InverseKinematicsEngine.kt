@@ -30,8 +30,6 @@ import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
 import com.neuronrobotics.kinematicschef.util.elementMult
-import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
-import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.length
 import com.neuronrobotics.kinematicschef.util.modulus
@@ -40,9 +38,6 @@ import com.neuronrobotics.kinematicschef.util.toSimpleMatrix
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DhInverseSolver
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 import org.ejml.simple.SimpleMatrix
 import org.jlleitschuh.guice.key
 import org.jlleitschuh.guice.module
@@ -51,9 +46,7 @@ import javax.inject.Inject
 import kotlin.math.PI
 import kotlin.math.absoluteValue
 import kotlin.math.atan2
-import kotlin.math.cos
 import kotlin.math.pow
-import kotlin.math.sin
 import kotlin.math.sqrt
 
 /**
@@ -99,104 +92,67 @@ class InverseKinematicsEngine
         val wristCenter = wrist.center(target)
         val newJointAngles = DoubleArray(jointSpaceVector.size) { 0.0 }
 
-        val dOffset = dhParams.computeDOffset().length()
+        val theta1 = dhParams.computeTheta1(wristCenter)[0]
+        val theta23s = dhParams.computeTheta23(wristCenter, theta1)
+        var theta23 : ImmutableList<Double>
 
-        // TODO: Implement offset addition when joints 2 and/or 3 have a non-zero d value (DH param)
-        // compute theta3, then theta 2
+        //favor elbow up, switch to elbow down if wrist center is not reached
+        val wristCenterElbowUp = dhParams.subList(0, 4)
+                .forwardKinematics(arrayOf(theta1, theta23s[0][0], theta23s[0][1], 0.0).toDoubleArray())
+                .cols(3, 4).rows(0, 3)
 
-        // spong 4.29 (xc^2 + yc^2 - d^2 + zc^2 - a2^2 - a3^2)/(2(a2)(a3))
-        val a2 = dhParams[1].r
-        val elbow2ToWristCenter = dhParams.subList(0, 5).toFrameTransformation().getTranslation() -
-            dhParams.subList(0, 3).toFrameTransformation().getTranslation()
-        elbow2ToWristCenter[1] = 0.0
-        elbow2ToWristCenter[0] = 24.0
-        val a3 = elbow2ToWristCenter.length()
-        val elbow2ThetaOffset = atan2(elbow2ToWristCenter[2], elbow2ToWristCenter[0])
+        val theta456 = if ((wristCenter.cols(3, 4).rows(0, 3) - wristCenterElbowUp).length() < 0.001) {
+            theta23 = theta23s[0]
+            dhParams.computeTheta456(target, wristCenter, theta1, theta23s[0][0], theta23s[0][1])
+        } else {
+            val wristCenterElbowDown = dhParams.subList(0, 4)
+                    .forwardKinematics(arrayOf(theta1, theta23s[1][0], theta23s[1][1], 0.0).toDoubleArray())
+                    .cols(3, 4).rows(0, 3)
 
-        val shoulderParam =
-            DhParam(dhParams[0].d, toDegrees(newJointAngles[0]), dhParams[0].r, dhParams[0].alpha)
+            if((wristCenter.cols(3, 4).rows(0, 3) - wristCenterElbowDown).length() > 0.001) {
+                return jointSpaceVector
+            }
+            theta23 = theta23s[1]
+            dhParams.computeTheta456(target, wristCenter, theta1, theta23s[1][0], theta23s[1][1])
+        }
 
-        val elbowTarget = wristCenter - shoulderParam.frameTransformation.getTranslation()
-        val s = elbowTarget[2]
+        val wristA = dhParams.forwardKinematics(arrayOf(
+                theta1,
+                theta23[0],
+                theta23[1],
+                theta456[0][0],
+                theta456[0][1],
+                theta456[0][2]
+        ).toDoubleArray()).cols(3, 4).rows(0, 3)
 
-        elbowTarget[0] -= 14.0 * cos(newJointAngles[0] + PI * 0.5)
-        elbowTarget[1] -= 14.0 * sin(newJointAngles[0] + PI * 0.5)
-        elbowTarget[2] = 0.0
+        val wristB = dhParams.forwardKinematics(arrayOf(
+                theta1,
+                theta23[0],
+                theta23[1],
+                theta456[1][0],
+                theta456[1][1],
+                theta456[1][2]
+        ).toDoubleArray()).cols(3, 4).rows(0, 3)
 
-        val r = elbowTarget.length()
+        if ((target.cols(3, 4).rows(0, 3) - wristA).length() < 0.001) {
+            newJointAngles[0] = theta1
+            newJointAngles[1] = theta23[0]
+            newJointAngles[2] = theta23[0]
+            newJointAngles[3] = theta456[0][0]
+            newJointAngles[4] = theta456[0][1]
+            newJointAngles[5] = theta456[0][2]
+        } else {
+            if ((target.cols(3, 4).rows(0, 3) - wristB).length() > 0.001) {
+                return jointSpaceVector
+            }
 
-        val cosTheta3 = (r.pow(2) + s.pow(2) - a2.pow(2) - a3.pow(2)) / (2 * a2 * a3)
-
-        val theta3ElbowUp = atan2(-sqrt(1 - cosTheta3.pow(2)), cosTheta3)
-        val theta3ElbowDown = atan2(sqrt(1 - cosTheta3.pow(2)), cosTheta3)
-
-        val theta2ElbowUp = atan2(s, r) -
-            atan2(
-                a3 * sin(theta3ElbowUp),
-                a2 + a3 * cos(theta3ElbowUp)
-            )
-
-        val theta2ElbowDown = atan2(s, r) -
-            atan2(
-                a3 * sin(theta3ElbowDown),
-                a2 + a3 * cos(theta3ElbowDown)
-            )
-
-        // TODO: Always pick elbow up for now
-        newJointAngles[1] = theta2ElbowUp
-        newJointAngles[2] = theta3ElbowUp - elbow2ThetaOffset
-
-        // TODO: Implement solver for computing wrist joint angles
-        // using previous angles for now
-        val wristCenterToOrigin = dhParams.subList(0, 3).forwardKinematics(newJointAngles).getTranslation() -
-            wristCenter
-        val wristCenterToTip = target.getTranslation() - wristCenter
-        val tipVector = target.getTranslation()
-
-        val homeCenterToTip = dhParams.toFrameTransformation().getTranslation() -
-            dhParams.subList(0, 4).toFrameTransformation().getTranslation()
-
-        val homeCenterToOrigin = dhParams.subList(0, 4).toFrameTransformation().getTranslation() -
-            dhParams.subList(0, 3).toFrameTransformation().getTranslation()
-
-        // TODO: This needs to translate the elbow up to where the wrist link is, maybe up by r?
-        val firstWristLink = dhParams.subList(0, 3).forwardKinematics(newJointAngles)
-            .mult(getFrameTranslationMatrix(0, 0, 0))
-            .getTranslation()
-
-        val u1 = Vector3D(firstWristLink[0], firstWristLink[1], firstWristLink[2])
-        val u2 = Vector3D(wristCenter[0], wristCenter[1], wristCenter[2])
-        val v1 = Vector3D(wristCenter[0], wristCenter[1], wristCenter[2])
-        val v2 = Vector3D(tipVector[0], tipVector[1], tipVector[2])
-
-        val rotation = Rotation(u1, u2, v1, v2)
-        val angles = rotation.getAngles(RotationOrder.XYX)
-
-        // TODO: move frame to first wrist joint and orient it so that the first wrist's joint axes align with xyz
-        /* We also need to make sure the target (the tip of the wrist) gets rotated in respect to this new frame
-         * in order to do the next theta calculations, else they break down when the wrist axes aren't already aligned.
-         */
-
-        // uncomment this once frame gets rotated
-//        if (abs(xTip) < 0.001 && abs(yTip) < 0.001) {
-//            newJointAngles[3] = jointSpaceVector[3]
-//        } else {
-//            newJointAngles[3] = atan2(yTip, xTip)
-//        }
-//
-//        newJointAngles[4] = atan2(wristS, rTip) + PI * 0.5
-//        //second solution for wrist center angle, basically 180 degree rotation
-//        val jointAngles4Solution2 = atan2(wristS, rTip) - PI * 0.5
-
-        newJointAngles[3] = angles[0]
-        newJointAngles[4] = angles[1]
-        newJointAngles[5] = angles[2]
-
-//        newJointAngles[3] = jointSpaceVector[3]
-//        newJointAngles[4] = jointSpaceVector[4]
-
-        // TODO: tip rotation via the last joint, getting rest of wrist aligned will make this easy
-//        newJointAngles[5] = jointSpaceVector[5]
+            newJointAngles[0] = theta1
+            newJointAngles[1] = theta23[0]
+            newJointAngles[2] = theta23[0]
+            newJointAngles[3] = theta456[1][0]
+            newJointAngles[4] = theta456[1][1]
+            newJointAngles[5] = theta456[1][2]
+        }
 
         return newJointAngles.mapIndexed { index, elem ->
             if (index > 2) {

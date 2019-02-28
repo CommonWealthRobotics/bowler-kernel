@@ -30,7 +30,7 @@ class InverseKinematicsEngineThetaTest {
 
   @Test
   fun `test compute cmm theta1` () {
-    (0..314).forEach {
+    (0..1000).forEach {
       val wristCenter = cmmParams.forwardKinematics(arrayOf(it * 0.01, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray())
       assert (((cmmParams.computeTheta1(wristCenter)[0] - it * 0.01)) < 0.001)
     }
@@ -38,7 +38,7 @@ class InverseKinematicsEngineThetaTest {
 
   @Test
   fun `test compute hephaestus theta1` () {
-    (0..314).forEach {
+    (0..1000).forEach {
       val wristCenter = hephaestusParams.forwardKinematics(arrayOf(it * 0.01, 0.0, 0.0, 0.0).toDoubleArray())
       assert (((hephaestusParams.computeTheta1(wristCenter)[0] - it * 0.01)) < 0.001)
     }
@@ -46,7 +46,7 @@ class InverseKinematicsEngineThetaTest {
 
   @Test
   fun `test compute puma theta1` () {
-    (0..314).forEach {
+    (0..1000).forEach {
       val wristCenter = pumaParams.forwardKinematics(arrayOf(it * 0.01, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray())
       assert (((pumaParams.computeTheta1(wristCenter)[0] - it * 0.01)) < 0.001)
     }
