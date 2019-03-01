@@ -99,7 +99,9 @@ class InverseKinematicsEngine
         }
 
         //theta1 is NaN when wrist center cannot be reached
-        if (theta1.isNaN()) return jointSpaceVector
+        if (theta1.isNaN()) return jointSpaceVector.also {
+            println("No solution found. Returning current jointAngles: ${it.joinToString()}")
+        }
 
         val theta23s = dhParams.computeTheta23(wristCenter, theta1)
         var theta23 : ImmutableList<Double>
@@ -118,7 +120,9 @@ class InverseKinematicsEngine
                     .cols(3, 4).rows(0, 3)
 
             if((wristCenter - wristCenterElbowUp).length() > 0.001) {
-                return jointSpaceVector
+                return jointSpaceVector.also {
+                    println("No solution found. Returning current jointAngles: ${it.joinToString()}")
+                }
             }
             theta23 = theta23s[0]
             dhParams.computeTheta456(target, wristCenter, theta1, theta23s[0][0], theta23s[0][1])
@@ -151,7 +155,9 @@ class InverseKinematicsEngine
             newJointAngles[5] = theta456[0][2]
         } else {
             if ((target.cols(3, 4).rows(0, 3) - wristB).length() > 0.001) {
-                return jointSpaceVector
+                return jointSpaceVector.also {
+                    println("No solution found. Returning current jointAngles: ${it.joinToString()}")
+                }
             }
 
             newJointAngles[0] = theta1
@@ -168,7 +174,7 @@ class InverseKinematicsEngine
             toDegrees(elem) - dhParams[index].theta
         }.map {
             if (it.isNaN())
-                0.0
+                0.0.also{ println("NaN found in jointSpaceVector. Replacing with 0.0") }
             else if (it >= 360 || it <= -360)
                 it.modulus(360)
             else
