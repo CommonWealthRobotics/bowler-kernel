@@ -558,10 +558,46 @@ fun ImmutableList<DhParam>.computeTheta456(
 
     val theta5 = ImmutableList.of(
         if (r.absoluteValue > 0.001) Math.atan(s/r) - PI/2 else 0.0,
-        if (r.absoluteValue > 0.001) PI/2 + Math.atan(s/r) else 0.0
+        if (r.absoluteValue > 0.001) PI/2 - Math.atan(s/r) else 0.0
     )
 
-    val theta6 = ImmutableList.of(0.0, 0.0)
+    val targetDirVector = target.mult(SimpleMatrix(4, 1)
+            .also{ it.zero(); it[0] = 1.0; it[3] = 1.0 }) - target.cols(3, 4).rows(0, 4)
+    val targetDirNormal = (target.mult(SimpleMatrix(4, 1)
+            .also{ it.zero(); it[1] = 1.0; it[3] = 1.0 }) - target.cols(3, 4).rows(0, 4)).cross(targetDirVector) as
+            SimpleMatrix
+
+    val currentDirVectors = ImmutableList.of(
+            ImmutableList.of(
+                    this[0], this[1], this[2], this[3], this[4], this[5],
+                    DhParam(0.0, 0.0, 1.0, 0.0)
+            ).forwardKinematics(arrayOf(theta1, theta2, theta3, theta4[0], theta5[0], 0.0, 0.0
+            ).toDoubleArray()).cols(3, 4).rows(0, 4) - target.cols(3, 4).rows(0, 4),
+
+            ImmutableList.of(
+                    this[0], this[1], this[2], this[3], this[4], this[5],
+                    DhParam(0.0, 0.0, 1.0, 0.0)
+            ).forwardKinematics(arrayOf(
+                    theta1, theta2, theta3, theta4[1], theta5[1], 0.0, 0.0
+            ).toDoubleArray()).cols(3, 4).rows(0, 4) - target.cols(3, 4).rows(0, 4)
+    )
+
+    val cross = ImmutableList.of(
+            targetDirVector.cross(currentDirVectors[0]) as SimpleMatrix,
+            targetDirVector.cross(currentDirVectors[1]) as SimpleMatrix
+    )
+
+    val theta6 = ImmutableList.of(
+            (if((targetDirNormal - cross[0]).length() < 0.001) 1.0 else -1.0) *
+                if ((targetDirVector - currentDirVectors[0]).length() < 0.001)
+                    0.0
+                else Math.acos(targetDirVector.dot(currentDirVectors[0])),
+
+            (if((targetDirNormal - cross[1]).length() < 0.001) 1.0 else -1.0) *
+                if ((targetDirVector - currentDirVectors[1]).length() < 0.001)
+                    0.0
+                else Math.acos(targetDirVector.dot(currentDirVectors[1]))
+    )
 
     return ImmutableList.of(
         ImmutableList.of(theta4[0], theta5[0], theta6[0]),
