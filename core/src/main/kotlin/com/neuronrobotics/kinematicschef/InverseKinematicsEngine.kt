@@ -92,7 +92,15 @@ class InverseKinematicsEngine
         val wristCenter = wrist.center(target)
         val newJointAngles = DoubleArray(jointSpaceVector.size) { 0.0 }
 
-        val theta1 = dhParams.computeTheta1(wristCenter, jointSpaceVector[0])[0]
+        val theta1 = if (Math.signum(dhParams[0].d) * (dhParams[0].alpha * PI / 180) % PI < 0) {
+            dhParams.computeTheta1(wristCenter, jointSpaceVector[0])[0]
+        } else {
+            dhParams.computeTheta1(wristCenter, jointSpaceVector[0])[2]
+        }
+
+        //theta1 is NaN when wrist center cannot be reached
+        if (theta1.isNaN()) return jointSpaceVector
+
         val theta23s = dhParams.computeTheta23(wristCenter, theta1)
         var theta23 : ImmutableList<Double>
 
@@ -154,14 +162,14 @@ class InverseKinematicsEngine
             newJointAngles[5] = theta456[1][2]
         }
 
+
+
         return newJointAngles.mapIndexed { index, elem ->
-            if (index > 2) {
-                toDegrees(elem)
-            } else {
-                toDegrees(elem) - dhParams[index].theta
-            }
+            toDegrees(elem) - dhParams[index].theta
         }.map {
-            if (it >= 360 || it <= -360)
+            if (it.isNaN())
+                0.0
+            else if (it >= 360 || it <= -360)
                 it.modulus(360)
             else
                 it

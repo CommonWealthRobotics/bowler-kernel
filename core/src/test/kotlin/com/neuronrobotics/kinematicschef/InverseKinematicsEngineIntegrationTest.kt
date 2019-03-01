@@ -83,13 +83,30 @@ class InverseKinematicsEngineIntegrationTest {
                 params[5].theta * PI/180
         ).toDoubleArray())
 
+
+        target[0, 3] = 14.0
+        target[1, 3] = -8.0
+        //target[2, 3] -= 60.0
+
+
         val jointAngles = engine.inverseKinematics(
                 target,
                 listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
                 chain
         )
 
+        val fkTip = params.forwardKinematics(arrayOf(
+                (jointAngles[0] + params[0].theta) * PI/180,
+                (jointAngles[1] + params[1].theta) * PI/180,
+                (jointAngles[2] + params[2].theta) * PI/180,
+                (jointAngles[3] + params[3].theta) * PI/180,
+                (jointAngles[4] + params[4].theta) * PI/180,
+                (jointAngles[5] + params[5].theta) * PI/180
+        ).toDoubleArray())
 
+        val targetVec = target.cols(3, 4).rows(0, 3)
+        val tipVec = fkTip.cols(3, 4).rows(0, 3)
+        val s = 2.0
     }
 
     @Test
