@@ -24,5 +24,9 @@ networktables.ini
 networktables.ini.bak
 CSGdatabase.json
 lib/
-
 .attach_pid*
+
+### Eclipse project files
+.project
+.settings/
+.classpath
