@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import java.lang.Math.toDegrees
+import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
@@ -95,7 +96,7 @@ internal class FrameTransformationTest {
 
     @Test
     fun `test fromRotation around z`() {
-        val angle = Math.PI / 2.0
+        val angle = PI / 2.0
         val cosAngle = cos(angle)
         val sinAngle = sin(angle)
 
@@ -127,7 +128,7 @@ internal class FrameTransformationTest {
 
     @Test
     fun `test fromRotation around y`() {
-        val angle = Math.PI / 2.0
+        val angle = PI / 2.0
         val cosAngle = cos(angle)
         val sinAngle = sin(angle)
 
@@ -159,7 +160,7 @@ internal class FrameTransformationTest {
 
     @Test
     fun `test fromRotation around x`() {
-        val angle = Math.PI / 2.0
+        val angle = PI / 2.0
         val cosAngle = cos(angle)
         val sinAngle = sin(angle)
 
@@ -294,5 +295,53 @@ internal class FrameTransformationTest {
         val json = klaxon.toJsonString(expected)
         val ftFromJson = klaxon.parse<FrameTransformation>(json)
         assertEquals(expected, ftFromJson)
+    }
+
+    @Test
+    fun `test getRotationMatrix around z only`() {
+        val zRad = PI / 3
+
+        val expected = SimpleMatrix.identity(3).apply {
+            this[0, 0] = cos(zRad)
+            this[0, 1] = -sin(zRad)
+            this[1, 0] = sin(zRad)
+            this[1, 1] = cos(zRad)
+        }
+
+        val actual = getRotationMatrix(0, 0, toDegrees(zRad))
+
+        assertTrue(expected.isIdentical(actual, equalityTolerance))
+    }
+
+    @Test
+    fun `test getRotationMatrix around y only`() {
+        val yRad = PI / 3
+
+        val expected = SimpleMatrix.identity(3).apply {
+            this[0, 0] = cos(yRad)
+            this[0, 2] = sin(yRad)
+            this[2, 0] = -sin(yRad)
+            this[2, 2] = cos(yRad)
+        }
+
+        val actual = getRotationMatrix(0, toDegrees(yRad), 0)
+
+        assertTrue(expected.isIdentical(actual, equalityTolerance))
+    }
+
+    @Test
+    fun `test getRotationMatrix around x only`() {
+        val xRad = PI / 3
+
+        val expected = SimpleMatrix.identity(3).apply {
+            this[1, 1] = cos(xRad)
+            this[1, 2] = -sin(xRad)
+            this[2, 1] = sin(xRad)
+            this[2, 2] = cos(xRad)
+        }
+
+        val actual = getRotationMatrix(toDegrees(xRad), 0, 0)
+
+        assertTrue(expected.isIdentical(actual, equalityTolerance))
     }
 }
