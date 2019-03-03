@@ -22,7 +22,6 @@ import com.google.inject.assistedinject.Assisted
 import com.neuronrobotics.bowlerkernel.gitfs.GitHubFS
 import com.neuronrobotics.bowlerkernel.scripting.DefaultScript
 import com.neuronrobotics.bowlerkernel.scripting.parser.ScriptLanguageParser
-import org.kohsuke.github.GitHub
 import javax.inject.Inject
 
 class DefaultGitScriptFactory
@@ -51,6 +50,6 @@ class DefaultGitScriptFactory
         }.toEither { it.localizedMessage }.flatMap { it }
 
     interface Factory {
-        fun create(gitHub: GitHub): DefaultGitScriptFactory
+        fun create(gitHubFS: GitHubFS): DefaultGitScriptFactory
     }
 }
