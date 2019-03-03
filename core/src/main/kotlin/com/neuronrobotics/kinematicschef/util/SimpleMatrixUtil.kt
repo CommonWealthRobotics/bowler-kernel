@@ -19,7 +19,6 @@ package com.neuronrobotics.kinematicschef.util
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import org.ejml.simple.SimpleMatrix
 import java.lang.Math.toRadians
-import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
@@ -247,23 +246,4 @@ fun SimpleMatrix.elementMult(term: Double): SimpleMatrix {
     }
 
     return elementMult(termMat)
-}
-
-/**
- * Returns which the receiver matrix approximately equals (within [delta]) the [other] matrix.
- */
-fun SimpleMatrix.approxEquals(other: SimpleMatrix?, delta: Double = 1e-10): Boolean {
-    if (other == null || numRows() != other.numRows() || numCols() != other.numCols()) {
-        return false
-    } else {
-        for (row in 0 until numRows()) {
-            for (col in 0 until numCols()) {
-                if (abs(abs(this[row, col]) - abs(other[row, col])) > delta) {
-                    return false
-                }
-            }
-        }
-
-        return true
-    }
 }

@@ -22,7 +22,6 @@ import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.toDHLinks
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
-import com.neuronrobotics.kinematicschef.util.approxEquals
 import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.kinematicschef.util.immutableListOf
@@ -45,6 +44,9 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 class InverseKinematicsEngineIntegrationTest {
+
+    // Used to check for SimpleMatrix equality
+    private val equalityTolerance = 1e-8
 
     @Test
     @Disabled
@@ -125,7 +127,7 @@ class InverseKinematicsEngineIntegrationTest {
                     }.toDoubleArray()
             )
 
-            assertTrue(target.approxEquals(targetUsingThetasFromIk))
+            assertTrue(target.isIdentical(targetUsingThetasFromIk, equalityTolerance))
         }
     }
 
@@ -210,8 +212,9 @@ class InverseKinematicsEngineIntegrationTest {
                 }
 
                 assertTrue(
-                    target.getTranslation().approxEquals(
-                        chainWithAngles.toFrameTransformation().getTranslation()
+                    target.getTranslation().isIdentical(
+                        chainWithAngles.toFrameTransformation().getTranslation(),
+                        equalityTolerance
                     )
                 )
             }
@@ -230,8 +233,9 @@ class InverseKinematicsEngineIntegrationTest {
             }
 
             assertTrue(
-                params.toFrameTransformation().approxEquals(
-                    chainWithAngles.toFrameTransformation()
+                params.toFrameTransformation().isIdentical(
+                    chainWithAngles.toFrameTransformation(),
+                    equalityTolerance
                 )
             )
         }
@@ -264,8 +268,9 @@ class InverseKinematicsEngineIntegrationTest {
                 println("ch: ${chainWithAngles.joinToString()}")
 
                 assertTrue(
-                    targetFrame.getTranslation().approxEquals(
-                        chainWithAngles.toFrameTransformation().getTranslation()
+                    targetFrame.getTranslation().isIdentical(
+                        chainWithAngles.toFrameTransformation().getTranslation(),
+                        equalityTolerance
                     )
                 )
             }
@@ -298,8 +303,9 @@ class InverseKinematicsEngineIntegrationTest {
                 println("ch: ${chainWithAngles.joinToString()}")
 
                 assertTrue(
-                    targetFrame.getTranslation().approxEquals(
-                        chainWithAngles.toFrameTransformation().getTranslation()
+                    targetFrame.getTranslation().isIdentical(
+                        chainWithAngles.toFrameTransformation().getTranslation(),
+                        equalityTolerance
                     )
                 )
             }
