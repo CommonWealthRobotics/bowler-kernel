@@ -104,71 +104,83 @@ class InverseKinematicsEngine
         }
 
         val theta23s = dhParams.computeTheta23(wristCenter, theta1)
-        var theta23 : ImmutableList<Double>
 
-        //favor elbow up, switch to elbow down if wrist center is not reached
-        val wristCenterElbowUp = dhParams.subList(0, 4)
-                .forwardKinematics(arrayOf(theta1, theta23s[0][0], theta23s[0][1], 0.0).toDoubleArray())
-                .cols(3, 4).rows(0, 3)
-
-        val theta456 = if ((wristCenter - wristCenterElbowUp).length() < 0.001) {
-            theta23 = theta23s[0]
-            dhParams.computeTheta456(target, wristCenter, theta1, theta23s[0][0], theta23s[0][1])
-        } else {
-            val wristCenterElbowDown = dhParams.subList(0, 4)
-                    .forwardKinematics(arrayOf(theta1, theta23s[1][0], theta23s[1][1], 0.0).toDoubleArray())
-                    .cols(3, 4).rows(0, 3)
-
-            if((wristCenter - wristCenterElbowDown).length() > 0.001) {
-                return jointSpaceVector.also {
-                    println("No solution found. Returning current jointAngles: ${it.joinToString()}")
-                }
-            }
-            theta23 = theta23s[1]
-            dhParams.computeTheta456(target, wristCenter, theta1, theta23s[1][0], theta23s[1][1])
-        }
+        val theta456ElbowUp = dhParams.computeTheta456(target, wristCenter, theta1, theta23s[0][0], theta23s[0][1])
+        val theta456ElbowDown = dhParams.computeTheta456(target, wristCenter, theta1, theta23s[1][0], theta23s[1][1])
 
         val wristA = dhParams.forwardKinematics(arrayOf(
-                theta1,
-                theta23[0],
-                theta23[1],
-                theta456[0][0],
-                theta456[0][1],
-                theta456[0][2]
+            theta1,
+            theta23s[0][0],
+            theta23s[0][1],
+            theta456ElbowUp[0][0],
+            theta456ElbowUp[0][1],
+            theta456ElbowUp[0][2]
         ).toDoubleArray()).cols(3, 4).rows(0, 3)
 
         val wristB = dhParams.forwardKinematics(arrayOf(
-                theta1,
-                theta23[0],
-                theta23[1],
-                theta456[1][0],
-                theta456[1][1],
-                theta456[1][2]
+            theta1,
+            theta23s[0][0],
+            theta23s[0][1],
+            theta456ElbowUp[1][0],
+            theta456ElbowUp[1][1],
+            theta456ElbowUp[1][2]
         ).toDoubleArray()).cols(3, 4).rows(0, 3)
 
-        if ((target.cols(3, 4).rows(0, 3) - wristA).length() < 0.001) {
-            newJointAngles[0] = theta1
-            newJointAngles[1] = theta23[0]
-            newJointAngles[2] = theta23[1]
-            newJointAngles[3] = theta456[0][0]
-            newJointAngles[4] = theta456[0][1]
-            newJointAngles[5] = theta456[0][2]
-        } else {
-            if ((target.cols(3, 4).rows(0, 3) - wristB).length() > 0.001) {
-                return jointSpaceVector.also {
-                    println("No solution found. Returning current jointAngles: ${it.joinToString()}")
-                }
+        val wristC = dhParams.forwardKinematics(arrayOf(
+            theta1,
+            theta23s[1][0],
+            theta23s[1][1],
+            theta456ElbowDown[0][0],
+            theta456ElbowDown[0][1],
+            theta456ElbowDown[0][2]
+        ).toDoubleArray()).cols(3, 4).rows(0, 3)
+
+        val wristD = dhParams.forwardKinematics(arrayOf(
+            theta1,
+            theta23s[1][0],
+            theta23s[1][1],
+            theta456ElbowDown[1][0],
+            theta456ElbowDown[1][1],
+            theta456ElbowDown[1][2]
+        ).toDoubleArray()).cols(3, 4).rows(0, 3)
+
+        when {
+            (target.cols(3, 4).rows(0, 3) - wristC).length() < 0.001 -> {
+                newJointAngles[0] = theta1
+                newJointAngles[1] = theta23s[1][0]
+                newJointAngles[2] = theta23s[1][1]
+                newJointAngles[3] = theta456ElbowDown[0][0]
+                newJointAngles[4] = theta456ElbowDown[0][1]
+                newJointAngles[5] = theta456ElbowDown[0][2]
             }
-
-            newJointAngles[0] = theta1
-            newJointAngles[1] = theta23[0]
-            newJointAngles[2] = theta23[1]
-            newJointAngles[3] = theta456[1][0]
-            newJointAngles[4] = theta456[1][1]
-            newJointAngles[5] = theta456[1][2]
+            (target.cols(3, 4).rows(0, 3) - wristD).length() < 0.001 -> {
+                newJointAngles[0] = theta1
+                newJointAngles[1] = theta23s[1][0]
+                newJointAngles[2] = theta23s[1][1]
+                newJointAngles[3] = theta456ElbowDown[1][0]
+                newJointAngles[4] = theta456ElbowDown[1][1]
+                newJointAngles[5] = theta456ElbowDown[1][2]
+            }
+            (target.cols(3, 4).rows(0, 3) - wristA).length() < 0.001 -> {
+                newJointAngles[0] = theta1
+                newJointAngles[1] = theta23s[0][0]
+                newJointAngles[2] = theta23s[0][1]
+                newJointAngles[3] = theta456ElbowUp[0][0]
+                newJointAngles[4] = theta456ElbowUp[0][1]
+                newJointAngles[5] = theta456ElbowUp[0][2]
+            }
+            (target.cols(3, 4).rows(0, 3) - wristB).length() < 0.001 -> {
+                newJointAngles[0] = theta1
+                newJointAngles[1] = theta23s[0][0]
+                newJointAngles[2] = theta23s[0][1]
+                newJointAngles[3] = theta456ElbowUp[1][0]
+                newJointAngles[4] = theta456ElbowUp[1][1]
+                newJointAngles[5] = theta456ElbowUp[1][2]
+            }
+            else -> return jointSpaceVector.also {
+                println("No solution found. Returning current jointAngles: ${it.joinToString()}")
+            }
         }
-
-
 
         return newJointAngles.mapIndexed { index, elem ->
             toDegrees(elem) - dhParams[index].theta

@@ -68,7 +68,43 @@ class InverseKinematicsEngineIntegrationTest {
     }
 
     @Test
-    fun `test cmm input arm` () {
+    fun `test cmm input arm global zero` () {
+        val cmmInputArm = ScriptingEngine.gitScriptRun(
+            "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
+            "InputArmBase_copy.xml",
+            null
+        ) as? MobileBaseLoader ?: fail { "The script did not return a MobileBaseLoader." }
+
+        val chain = cmmInputArm.base.appendages[0].chain
+        val params = chain.toDhParams()
+
+        val engine = InverseKinematicsEngine.getInstance()
+
+        val target = params.forwardKinematics(arrayOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray())
+
+        val jointAngles = engine.inverseKinematics(
+            target,
+            listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+            chain
+        )
+
+        val fkTip = params.forwardKinematics(arrayOf(
+            (jointAngles[0] + params[0].theta) * PI/180,
+            (jointAngles[1] + params[1].theta) * PI/180,
+            (jointAngles[2] + params[2].theta) * PI/180,
+            (jointAngles[3] + params[3].theta) * PI/180,
+            (jointAngles[4] + params[4].theta) * PI/180,
+            (jointAngles[5] + params[5].theta) * PI/180
+        ).toDoubleArray())
+
+        val targetVec = target.cols(3, 4).rows(0, 3)
+        val tipVec = fkTip.cols(3, 4).rows(0, 3)
+
+        assert((targetVec - tipVec).length() < 0.001)
+    }
+
+    @Test
+    fun `test cmm input arm home` () {
         val cmmInputArm = ScriptingEngine.gitScriptRun(
                 "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
                 "InputArmBase_copy.xml",
