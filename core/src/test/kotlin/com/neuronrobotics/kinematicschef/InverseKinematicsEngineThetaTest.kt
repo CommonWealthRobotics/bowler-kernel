@@ -1,13 +1,9 @@
 package com.neuronrobotics.kinematicschef
 
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerstudio.creature.MobileBaseLoader
-import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
-import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.util.length
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
 import kotlin.math.PI
 import kotlin.math.absoluteValue
 
@@ -82,8 +78,8 @@ class InverseKinematicsEngineThetaTest {
 
   @Test
   fun `test compute cmm theta1to6` () {
-    val target = cmmParams.forwardKinematics(arrayOf(PI, -PI/4, PI/4, -PI/2, PI/2, PI/4).toDoubleArray())
-    val wristCenter = cmmParams.subList(0, 4).forwardKinematics(arrayOf(PI, -PI/4, PI/4, -PI/2).toDoubleArray())
+    val target = cmmParams.forwardKinematics(arrayOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray())
+    val wristCenter = cmmParams.subList(0, 4).forwardKinematics(arrayOf(0.0, 0.0, 0.0, 0.0).toDoubleArray())
             .cols(3, 4).rows(0, 3)
     val theta1 = cmmParams.computeTheta1(wristCenter)[0]
     val thetas23 = cmmParams.computeTheta23(wristCenter, theta1)

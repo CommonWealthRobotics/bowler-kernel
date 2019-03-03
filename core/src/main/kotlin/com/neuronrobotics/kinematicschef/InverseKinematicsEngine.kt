@@ -520,8 +520,12 @@ fun ImmutableList<DhParam>.computeTheta456(
         val unit = this.divide(this.length())
         val b = other.divide(other.length())
 
+        if ((unit - b).length() < 0.001) return SimpleMatrix.identity(3)
+
         val v = b.divide(b.length()).cross(unit) as SimpleMatrix
         val cos = b.divide(b.length()).dot(unit) //cosine of angle
+
+        if (cos == -1.0) return SimpleMatrix.identity(3)
 
         //skew-symmetric cross product of v
         val vx = SimpleMatrix(3, 3).also {
