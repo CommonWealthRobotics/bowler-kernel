@@ -107,25 +107,25 @@ class InverseKinematicsEngine
         var theta23 : ImmutableList<Double>
 
         //favor elbow up, switch to elbow down if wrist center is not reached
-        val wristCenterElbowDown = dhParams.subList(0, 4)
-                .forwardKinematics(arrayOf(theta1, theta23s[1][0], theta23s[1][1], 0.0).toDoubleArray())
+        val wristCenterElbowUp = dhParams.subList(0, 4)
+                .forwardKinematics(arrayOf(theta1, theta23s[0][0], theta23s[0][1], 0.0).toDoubleArray())
                 .cols(3, 4).rows(0, 3)
 
-        val theta456 = if ((wristCenter - wristCenterElbowDown).length() < 0.001) {
-            theta23 = theta23s[1]
-            dhParams.computeTheta456(target, wristCenter, theta1, theta23s[1][0], theta23s[1][1])
+        val theta456 = if ((wristCenter - wristCenterElbowUp).length() < 0.001) {
+            theta23 = theta23s[0]
+            dhParams.computeTheta456(target, wristCenter, theta1, theta23s[0][0], theta23s[0][1])
         } else {
-            val wristCenterElbowUp = dhParams.subList(0, 4)
-                    .forwardKinematics(arrayOf(theta1, theta23s[0][0], theta23s[0][1], 0.0).toDoubleArray())
+            val wristCenterElbowDown = dhParams.subList(0, 4)
+                    .forwardKinematics(arrayOf(theta1, theta23s[1][0], theta23s[1][1], 0.0).toDoubleArray())
                     .cols(3, 4).rows(0, 3)
 
-            if((wristCenter - wristCenterElbowUp).length() > 0.001) {
+            if((wristCenter - wristCenterElbowDown).length() > 0.001) {
                 return jointSpaceVector.also {
                     println("No solution found. Returning current jointAngles: ${it.joinToString()}")
                 }
             }
-            theta23 = theta23s[0]
-            dhParams.computeTheta456(target, wristCenter, theta1, theta23s[0][0], theta23s[0][1])
+            theta23 = theta23s[1]
+            dhParams.computeTheta456(target, wristCenter, theta1, theta23s[1][0], theta23s[1][1])
         }
 
         val wristA = dhParams.forwardKinematics(arrayOf(

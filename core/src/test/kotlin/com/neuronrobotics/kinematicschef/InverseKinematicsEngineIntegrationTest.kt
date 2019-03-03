@@ -21,7 +21,14 @@ import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
-import com.neuronrobotics.kinematicschef.util.*
+import com.neuronrobotics.kinematicschef.util.approxEquals
+import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
+import com.neuronrobotics.kinematicschef.util.getTranslation
+import com.neuronrobotics.kinematicschef.util.immutableListOf
+import com.neuronrobotics.kinematicschef.util.length
+import com.neuronrobotics.kinematicschef.util.modulus
+import com.neuronrobotics.kinematicschef.util.step
+import com.neuronrobotics.kinematicschef.util.toTransformNR
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -30,7 +37,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
 import java.lang.Math.toRadians
-import kotlin.math.*
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 class InverseKinematicsEngineIntegrationTest {
 
@@ -76,7 +87,6 @@ class InverseKinematicsEngineIntegrationTest {
                 params[4].theta * PI/180,
                 params[5].theta * PI/180
         ).toDoubleArray())
-
 
         val jointAngles = engine.inverseKinematics(
                 target,
