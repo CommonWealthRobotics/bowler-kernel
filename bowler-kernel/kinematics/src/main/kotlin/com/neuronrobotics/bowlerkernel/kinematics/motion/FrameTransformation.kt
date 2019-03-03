@@ -38,28 +38,28 @@ private constructor(private val mat: SimpleMatrix) {
      *
      * @return A 3x1 translation vector.
      */
-    fun getTranslation() = mat.extractMatrix(0, 3, 3, 4)
+    fun getTranslation(): SimpleMatrix = mat.extractMatrix(0, 3, 3, 4)
 
     /**
      * Extracts the planar translation component.
      *
      * @return A 2x1 translation vector.
      */
-    fun getTranslationPlanar() = mat.extractMatrix(0, 2, 3, 4)
+    fun getTranslationPlanar(): SimpleMatrix = mat.extractMatrix(0, 2, 3, 4)
 
     /**
      * Extracts the translation component plus the element from the row below it.
      *
      * @return A 4x1 translation vector.
      */
-    fun getTranslationCol() = mat.extractMatrix(0, 4, 3, 4)
+    fun getTranslationCol(): SimpleMatrix = mat.extractMatrix(0, 4, 3, 4)
 
     /**
      * Extracts the rotation component.
      *
      * @return A 3x3 rotation matrix.
      */
-    fun getRotation() = mat.extractMatrix(0, 3, 0, 3)
+    fun getRotation(): SimpleMatrix = mat.extractMatrix(0, 3, 0, 3)
 
     /**
      * Extracts a generic submatrix.
@@ -75,7 +75,8 @@ private constructor(private val mat: SimpleMatrix) {
         rowEndExclusive: Int,
         colStartInclusive: Int,
         colEndExclusive: Int
-    ) = mat.extractMatrix(rowStartInclusive, rowEndExclusive, colStartInclusive, colEndExclusive)
+    ): SimpleMatrix =
+        mat.extractMatrix(rowStartInclusive, rowEndExclusive, colStartInclusive, colEndExclusive)
 
     operator fun plus(other: FrameTransformation) =
         FrameTransformation(mat + other.mat)
