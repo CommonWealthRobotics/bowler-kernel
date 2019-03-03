@@ -36,9 +36,16 @@ private constructor(private val mat: SimpleMatrix) {
     /**
      * Extracts the translation component.
      *
-     * @return A 3x1 translation matrix.
+     * @return A 3x1 translation vector.
      */
     fun getTranslation() = mat.extractMatrix(0, 3, 3, 4)
+
+    /**
+     * Extracts the translation component plus the element from the row below it.
+     *
+     * @return A 4x1 translation vector.
+     */
+    fun getTranslationCol() = mat.extractMatrix(0, 4, 3, 4)
 
     /**
      * Extracts the rotation component.
@@ -46,6 +53,22 @@ private constructor(private val mat: SimpleMatrix) {
      * @return A 3x3 rotation matrix.
      */
     fun getRotation() = mat.extractMatrix(0, 3, 0, 3)
+
+    /**
+     * Extracts a generic submatrix.
+     *
+     * @param rowStartInclusive The starting row index, inclusive.
+     * @param rowEndExclusive The ending row index, exclusive.
+     * @param colStartInclusive The starting column index, inclusive.
+     * @param colEndExclusive The ending column index, exclusive.
+     * @return A new submatrix.
+     */
+    fun subMatrix(
+        rowStartInclusive: Int,
+        rowEndExclusive: Int,
+        colStartInclusive: Int,
+        colEndExclusive: Int
+    ) = mat.extractMatrix(rowStartInclusive, rowEndExclusive, colStartInclusive, colEndExclusive)
 
     operator fun plus(other: FrameTransformation) =
         FrameTransformation(mat + other.mat)
@@ -195,7 +218,7 @@ private constructor(private val mat: SimpleMatrix) {
 }
 
 /**
- * Creates a 3x3 matrix representing a rotation.
+ * Creates a 3x3 matrix representing a rotation. Computed using ZYX rotation order.
  *
  * @param x The rotation around the x-axis in degrees.
  * @param y The rotation around the y-axis in degrees.

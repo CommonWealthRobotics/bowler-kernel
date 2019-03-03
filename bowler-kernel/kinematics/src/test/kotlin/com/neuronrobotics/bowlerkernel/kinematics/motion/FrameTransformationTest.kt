@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.motion
 
+import com.beust.klaxon.Klaxon
 import org.ejml.simple.SimpleMatrix
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -112,12 +113,14 @@ internal class FrameTransformationTest {
         assertAll(
             { assertEquals(expected, tested) },
             {
-                SimpleMatrix.identity(3).apply {
-                    this[0, 0] = cosAngle
-                    this[1, 0] = sinAngle
-                    this[0, 1] = -sinAngle
-                    this[1, 1] = cosAngle
-                }.isIdentical(tested.getRotation(), equalityTolerance)
+                assertTrue(
+                    SimpleMatrix.identity(3).apply {
+                        this[0, 0] = cosAngle
+                        this[1, 0] = sinAngle
+                        this[0, 1] = -sinAngle
+                        this[1, 1] = cosAngle
+                    }.isIdentical(tested.getRotation(), equalityTolerance)
+                )
             }
         )
     }
@@ -142,12 +145,14 @@ internal class FrameTransformationTest {
         assertAll(
             { assertEquals(expected, tested) },
             {
-                SimpleMatrix.identity(3).apply {
-                    this[0, 0] = cosAngle
-                    this[2, 0] = -sinAngle
-                    this[0, 2] = sinAngle
-                    this[2, 2] = cosAngle
-                }.isIdentical(tested.getRotation(), equalityTolerance)
+                assertTrue(
+                    SimpleMatrix.identity(3).apply {
+                        this[0, 0] = cosAngle
+                        this[2, 0] = -sinAngle
+                        this[0, 2] = sinAngle
+                        this[2, 2] = cosAngle
+                    }.isIdentical(tested.getRotation(), equalityTolerance)
+                )
             }
         )
     }
@@ -172,12 +177,14 @@ internal class FrameTransformationTest {
         assertAll(
             { assertEquals(expected, tested) },
             {
-                SimpleMatrix.identity(3).apply {
-                    this[1, 1] = cosAngle
-                    this[2, 1] = sinAngle
-                    this[1, 2] = -sinAngle
-                    this[2, 2] = cosAngle
-                }.isIdentical(tested.getRotation(), equalityTolerance)
+                assertTrue(
+                    SimpleMatrix.identity(3).apply {
+                        this[1, 1] = cosAngle
+                        this[2, 1] = sinAngle
+                        this[1, 2] = -sinAngle
+                        this[2, 2] = cosAngle
+                    }.isIdentical(tested.getRotation(), equalityTolerance)
+                )
             }
         )
     }
@@ -198,7 +205,12 @@ internal class FrameTransformationTest {
         assertAll(
             { assertEquals(expected, tested) },
             {
-                SimpleMatrix(3, 3).populate().isIdentical(tested.getRotation(), equalityTolerance)
+                assertTrue(
+                    SimpleMatrix(3, 3).populate().isIdentical(
+                        tested.getRotation(),
+                        equalityTolerance
+                    )
+                )
             }
         )
     }
@@ -225,5 +237,50 @@ internal class FrameTransformationTest {
                 this[0, 2] = 3.0
             }.length()
         )
+    }
+
+    @Test
+    fun `test getTranslationCol`() {
+        val expected = SimpleMatrix(4, 1).apply {
+            this[0] = 1.0
+            this[1] = 2.0
+            this[2] = 3.0
+            this[3] = 1.0
+        }
+
+        val actual = FrameTransformation.fromTranslation(1, 2, 3).getTranslationCol()
+
+        assertTrue(expected.isIdentical(actual, equalityTolerance))
+    }
+
+    @Test
+    fun `test subMatrix`() {
+        fun SimpleMatrix.populate(rowOffset: Int = 0, colOffset: Int = 0) {
+            this[rowOffset + 0, colOffset + 0] = 1.0
+            this[rowOffset + 0, colOffset + 1] = 2.0
+            this[rowOffset + 1, colOffset + 0] = 3.0
+            this[rowOffset + 1, colOffset + 1] = 4.0
+        }
+
+        val expected = SimpleMatrix(2, 2).apply {
+            populate()
+        }
+
+        val actual = FrameTransformation.fromSimpleMatrix(
+            SimpleMatrix(4, 4).apply {
+                populate(1, 1)
+            }
+        ).subMatrix(1, 3, 1, 3)
+
+        assertTrue(expected.isIdentical(actual, equalityTolerance))
+    }
+
+    @Test
+    fun `test json round trip`() {
+        val expected = FrameTransformation.fromTranslation(1, 2, 3)
+        val klaxon = Klaxon().converter(FrameTransformation.converter)
+        val json = klaxon.toJsonString(expected)
+        val ftFromJson = klaxon.parse<FrameTransformation>(json)
+        assertEquals(expected, ftFromJson)
     }
 }
