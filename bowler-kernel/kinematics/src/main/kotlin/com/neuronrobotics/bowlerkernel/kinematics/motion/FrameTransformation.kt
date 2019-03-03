@@ -41,6 +41,13 @@ private constructor(private val mat: SimpleMatrix) {
     fun getTranslation() = mat.extractMatrix(0, 3, 3, 4)
 
     /**
+     * Extracts the planar translation component.
+     *
+     * @return A 2x1 translation vector.
+     */
+    fun getTranslationPlanar() = mat.extractMatrix(0, 2, 3, 4)
+
+    /**
      * Extracts the translation component plus the element from the row below it.
      *
      * @return A 4x1 translation vector.

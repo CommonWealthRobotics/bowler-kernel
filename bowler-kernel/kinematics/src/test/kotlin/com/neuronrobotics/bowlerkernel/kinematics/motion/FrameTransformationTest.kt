@@ -240,6 +240,18 @@ internal class FrameTransformationTest {
     }
 
     @Test
+    fun `test getTranslationPlanar`() {
+        val expected = SimpleMatrix(2, 1).apply {
+            this[0] = 1.0
+            this[1] = 2.0
+        }
+
+        val actual = FrameTransformation.fromTranslation(1, 2, 3).getTranslationPlanar()
+
+        assertTrue(expected.isIdentical(actual, equalityTolerance))
+    }
+
+    @Test
     fun `test getTranslationCol`() {
         val expected = SimpleMatrix(4, 1).apply {
             this[0] = 1.0
