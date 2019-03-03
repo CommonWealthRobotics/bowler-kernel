@@ -19,6 +19,7 @@ package com.neuronrobotics.kinematicschef
 import com.neuronrobotics.bowlerstudio.creature.MobileBaseLoader
 import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
+import com.neuronrobotics.kinematicschef.dhparam.toDHLinks
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
 import com.neuronrobotics.kinematicschef.util.approxEquals
@@ -101,6 +102,31 @@ class InverseKinematicsEngineIntegrationTest {
         val tipVec = fkTip.cols(3, 4).rows(0, 3)
 
         assert((targetVec - tipVec).length() < 0.001)
+    }
+
+    @Test
+    fun `test IK with many theta permutations`() {
+        val engine = InverseKinematicsEngine.getInstance()
+        val thetaIncrement = (2 * PI) / 4
+        for (i in (0.0..2 * PI).step(thetaIncrement)) {
+            val target = TestUtil.cmmInputArmDhParams.forwardKinematics(
+                    DoubleArray(6) { i }
+            )
+
+            val thetasFromIk = engine.inverseKinematics(
+                    target,
+                    DoubleArray(6) { 0.0 },
+                    TestUtil.makeMockChain(TestUtil.cmmInputArmDhParams.toDHLinks())
+            )
+
+            val targetUsingThetasFromIk = TestUtil.cmmInputArmDhParams.forwardKinematics(
+                    thetasFromIk.mapIndexed { index, theta ->
+                        toRadians(theta + TestUtil.cmmInputArmDhParams[index].theta)
+                    }.toDoubleArray()
+            )
+
+            assertTrue(target.approxEquals(targetUsingThetasFromIk))
+        }
     }
 
     @Test

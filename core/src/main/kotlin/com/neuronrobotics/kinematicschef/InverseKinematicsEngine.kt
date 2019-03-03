@@ -573,8 +573,8 @@ fun ImmutableList<DhParam>.computeTheta456(
     } else {
         val wristOriginToTarget = originRot.mult(target.cols(3, 4).rows(0, 3) - wristOrigin)
         ImmutableList.of(
-            atan2(wristOriginToTarget[1], wristOriginToTarget[0]),
-            atan2(wristOriginToTarget[1], wristOriginToTarget[0]) + PI
+            atan2(wristOriginToTarget[1], wristOriginToTarget[0]) + PI/2,
+            atan2(wristOriginToTarget[1], wristOriginToTarget[0]) - PI/2
         )
     }
 
