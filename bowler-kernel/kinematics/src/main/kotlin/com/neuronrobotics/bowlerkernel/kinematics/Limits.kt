@@ -22,4 +22,6 @@ package com.neuronrobotics.bowlerkernel.kinematics
 data class Limits(
     val maximum: Double,
     val minimum: Double
-)
+) {
+    constructor(maximum: Number, minimum: Number) : this(maximum.toDouble(), minimum.toDouble())
+}

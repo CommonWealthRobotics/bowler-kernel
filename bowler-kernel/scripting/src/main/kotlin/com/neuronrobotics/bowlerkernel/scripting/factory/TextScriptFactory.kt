@@ -18,6 +18,7 @@ package com.neuronrobotics.bowlerkernel.scripting.factory
 
 import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.Script
+import com.neuronrobotics.bowlerkernel.scripting.ScriptLanguage
 
 interface TextScriptFactory {
 
@@ -29,4 +30,13 @@ interface TextScriptFactory {
      * @return A [Script] on success, a [String] on error.
      */
     fun createScriptFromText(language: String, scriptText: String): Either<String, Script>
+
+    /**
+     * Creates a [Script] from text.
+     *
+     * @param language The script language.
+     * @param scriptText The text content of the script.
+     * @return A [Script] on success, a [String] on error.
+     */
+    fun createScriptFromText(language: ScriptLanguage, scriptText: String): Script
 }
