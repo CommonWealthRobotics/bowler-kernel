@@ -53,8 +53,7 @@ class GitHubFS(
         branch: String
     ): Try<File> {
         return if (isValidHttpGitURL(gitUrl)) {
-            val directory =
-                gitUrlToDirectory(gitUrl)
+            val directory = gitUrlToDirectory(gitUrl)
             if (directory.mkdirs()) {
                 // If true, the directories were created which means a new repository is
                 // being cloned
