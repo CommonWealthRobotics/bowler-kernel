@@ -142,6 +142,8 @@ internal constructor(
                 if (result is KClass<*>) {
                     val instance = injector.getInstance(result.java)
                     if (instance is Script) {
+                        // Add all of this script's extra modules to the script to run
+                        instance.addToInjector(getModules())
                         instance.runScript(args)
                     } else {
                         instance.right()
