@@ -81,6 +81,20 @@ internal class DefaultLimbMotionPlanFollowerTest {
     }
 
     @Test
+    fun `test plan length validation with too few target joint angles part way down the list`() {
+        val plan = LimbMotionPlan(
+            immutableListOf(
+                LimbMotionPlanStep(immutableListOf(0.0), createMotionConstraints(0)),
+                LimbMotionPlanStep(emptyImmutableList(), createMotionConstraints(0))
+            )
+        )
+
+        assertThrows<IllegalArgumentException> {
+            follower.followPlan(plan)
+        }
+    }
+
+    @Test
     fun `test plan length validation with too many target joint angles`() {
         val plan = LimbMotionPlan(
             immutableListOf(

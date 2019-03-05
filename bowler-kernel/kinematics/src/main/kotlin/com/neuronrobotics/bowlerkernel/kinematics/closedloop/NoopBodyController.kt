@@ -14,14 +14,24 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics
+package com.neuronrobotics.bowlerkernel.kinematics.closedloop
+
+import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
+import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialState
+import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
 
 /**
- * A generic limits class.
+ * A [BodyController] which does nothing.
  */
-data class Limits(
-    val maximum: Double,
-    val minimum: Double
-) {
-    constructor(maximum: Number, minimum: Number) : this(maximum.toDouble(), minimum.toDouble())
+object NoopBodyController : BodyController {
+
+    override fun setDesiredWorldSpaceTransformDelta(
+        worldSpaceTransform: FrameTransformation,
+        motionConstraints: MotionConstraints
+    ) {
+    }
+
+    override fun getDeltaSinceLastDesiredTransform() = FrameTransformation.identity()
+
+    override fun getInertialState() = InertialState(0)
 }

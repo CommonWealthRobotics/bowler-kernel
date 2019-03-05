@@ -27,6 +27,8 @@ import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistry
 import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistryTracker
 import org.jlleitschuh.guice.key
 import org.jlleitschuh.guice.module
+import org.octogonapus.guavautil.collections.immutableListOf
+import org.octogonapus.guavautil.collections.toImmutableList
 
 /**
  * A script with managed hardware access.
@@ -41,6 +43,8 @@ abstract class Script {
         DeviceFactory.deviceFactoryModule(),
         UnprovisionedDeviceResourceFactory.unprovisionedDeviceResourceFactoryModule()
     )
+
+    private val scriptModules = mutableListOf<Module>()
 
     /**
      * Runs the script on the current thread.
@@ -70,6 +74,7 @@ abstract class Script {
      * @param modules The modules to add.
      */
     fun addToInjector(modules: ImmutableList<Module>) {
+        scriptModules.addAll(modules)
         injector = injector.createChildInjector(modules)
     }
 
@@ -79,9 +84,14 @@ abstract class Script {
      * @param modules The modules to add.
      */
     @SuppressWarnings("SpreadOperator")
-    fun addToInjector(vararg modules: Module) {
-        injector = injector.createChildInjector(*modules)
-    }
+    fun addToInjector(vararg modules: Module) = addToInjector(immutableListOf(*modules))
+
+    /**
+     * Returns the modules which have been added to this script's [injector].
+     *
+     * @return The modules added to this script's [injector].
+     */
+    fun getModules(): ImmutableList<Module> = scriptModules.toImmutableList()
 
     companion object {
         private fun scriptModule() = module {

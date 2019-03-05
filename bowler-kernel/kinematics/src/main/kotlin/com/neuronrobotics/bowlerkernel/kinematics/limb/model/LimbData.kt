@@ -21,14 +21,14 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
 data class LimbData(
     val id: SimpleLimbId,
     val links: List<LinkData>,
-    val forwardKinematicsSolverGitURL: String,
+    val forwardKinematicsSolverPullURL: String,
     val forwardKinematicsSolverFilename: String,
-    val inverseKinematicsSolverGitURL: String,
+    val inverseKinematicsSolverPullURL: String,
     val inverseKinematicsSolverFilename: String,
-    val limbMotionPlanGeneratorGitURL: String,
+    val limbMotionPlanGeneratorPullURL: String,
     val limbMotionPlanGeneratorFilename: String,
-    val limbMotionPlanFollowerGitURL: String,
+    val limbMotionPlanFollowerPullURL: String,
     val limbMotionPlanFollowerFilename: String,
-    val inertialStateEstimatorGitURL: String,
+    val inertialStateEstimatorPullURL: String,
     val inertialStateEstimatorFilename: String
 )

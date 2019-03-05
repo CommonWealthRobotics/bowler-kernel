@@ -14,14 +14,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics
+package com.neuronrobotics.bowlerkernel.kinematics.closedloop
+
+import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
 
 /**
- * A generic limits class.
+ * A [JointAngleController] which does nothing.
  */
-data class Limits(
-    val maximum: Double,
-    val minimum: Double
-) {
-    constructor(maximum: Number, minimum: Number) : this(maximum.toDouble(), minimum.toDouble())
+object NoopJointAngleController : JointAngleController {
+
+    override fun setTargetAngle(angle: Double, motionConstraints: MotionConstraints) {
+    }
+
+    override fun getCurrentAngle() = 0.0
 }
