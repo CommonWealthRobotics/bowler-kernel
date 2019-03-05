@@ -16,7 +16,7 @@ dependencies {
         version = "4.1.0"
     )
     implementation(group = "org.jlleitschuh.guice", name = "kotlin-guiced-core", version = "0.0.5")
-    implementation(group = "com.beust", name = "klaxon", version = "4.+")
+    implementation(group = "com.beust", name = "klaxon", version = "5.0.5")
 
     testImplementation(group = "com.natpryce", name = "hamkrest", version = "1.4.2.2")
     testImplementation(
