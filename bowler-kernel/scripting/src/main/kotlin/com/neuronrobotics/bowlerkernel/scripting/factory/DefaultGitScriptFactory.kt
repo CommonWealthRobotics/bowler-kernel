@@ -19,14 +19,14 @@ package com.neuronrobotics.bowlerkernel.scripting.factory
 import arrow.core.Either
 import arrow.core.flatMap
 import com.google.inject.assistedinject.Assisted
-import com.neuronrobotics.bowlerkernel.gitfs.GitHubFS
+import com.neuronrobotics.bowlerkernel.gitfs.GitFS
 import com.neuronrobotics.bowlerkernel.scripting.DefaultScript
 import com.neuronrobotics.bowlerkernel.scripting.parser.ScriptLanguageParser
 import javax.inject.Inject
 
 class DefaultGitScriptFactory
 @Inject internal constructor(
-    @Assisted private val gitHubFS: GitHubFS,
+    @Assisted private val gitFS: GitFS,
     private val scriptLanguageParser: ScriptLanguageParser
 ) : GitScriptFactory {
 
@@ -41,7 +41,7 @@ class DefaultGitScriptFactory
         gitUrl: String,
         filename: String
     ): Either<String, DefaultScript> =
-        gitHubFS.cloneRepoAndGetFiles(gitUrl).map {
+        gitFS.cloneRepoAndGetFiles(gitUrl).map {
             val file = it.first { it.name == filename }
             val language = scriptLanguageParser.parse(file.extension)
             language.map {
@@ -50,6 +50,6 @@ class DefaultGitScriptFactory
         }.toEither { it.localizedMessage }.flatMap { it }
 
     interface Factory {
-        fun create(gitHubFS: GitHubFS): DefaultGitScriptFactory
+        fun create(gitFS: GitFS): DefaultGitScriptFactory
     }
 }
