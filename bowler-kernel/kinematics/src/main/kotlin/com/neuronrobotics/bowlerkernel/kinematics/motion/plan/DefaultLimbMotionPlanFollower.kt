@@ -68,4 +68,12 @@ class DefaultLimbMotionPlanFollower(
             scheduled
         }
     }
+
+    class Factory :
+        LimbMotionPlanFollower.Factory {
+        override fun create(jointAngleControllers: ImmutableList<JointAngleController>) =
+            DefaultLimbMotionPlanFollower(
+                jointAngleControllers
+            )
+    }
 }
