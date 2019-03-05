@@ -35,7 +35,7 @@ interface GitScriptFactory {
 }
 
 /**
- * Creates an instance of [T] by running the [Script] given by its Git [pullUrl] and [filename].
+ * Creates an instance of [T] by running the [Script].
  *
  * @param pullUrl The Git url.
  * @param filename The file name (including extension).

@@ -64,17 +64,18 @@ internal constructor(
     override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> =
         when (language) {
             is ScriptLanguage.Groovy -> runBlocking {
-                handleGroovy(scriptText, args).toEither().mapLeft { it.localizedMessage }
+                handleGroovy(this, scriptText, args).toEither().mapLeft { it.localizedMessage }
             }
 
             is ScriptLanguage.Kotlin -> runBlocking {
-                handleKotlin(scriptText, args).toEither().mapLeft {
+                handleKotlin(this, scriptText, args).toEither().mapLeft {
                     it.localizedMessage
                 }.flatMap { it }
             }
         }
 
-    private suspend fun CoroutineScope.handleGroovy(
+    private suspend fun handleGroovy(
+        coroutineScope: CoroutineScope,
         scriptText: String,
         args: ImmutableList<Any?>
     ): Try<Any?> {
@@ -124,7 +125,7 @@ internal constructor(
                 configuration
             ).parse(scriptText)
 
-            async { script.run() }
+            coroutineScope.async { script.run() }
         }.map {
             scriptThread = it
             scriptThread?.await()
@@ -132,18 +133,19 @@ internal constructor(
     }
 
     @Suppress("UNCHECKED_CAST")
-    private suspend fun CoroutineScope.handleKotlin(
+    private suspend fun handleKotlin(
+        coroutineScope: CoroutineScope,
         scriptText: String,
         args: ImmutableList<Any?>
     ): Try<Either<String, Any?>> {
         return Try {
-            async {
+            coroutineScope.async {
                 val result = KtsObjectLoader().load<Any?>(scriptText)
                 if (result is KClass<*>) {
-                    val instance = injector.getInstance(result.java)
+                    val instance = this@DefaultScript.injector.getInstance(result.java)
                     if (instance is Script) {
                         // Add all of this script's extra modules to the script to run
-                        instance.addToInjector(getModules())
+                        instance.addToInjector(this@DefaultScript.getModules())
                         instance.runScript(args)
                     } else {
                         instance.right()
