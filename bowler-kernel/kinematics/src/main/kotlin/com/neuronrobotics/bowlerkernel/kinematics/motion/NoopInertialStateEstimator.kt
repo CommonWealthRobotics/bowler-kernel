@@ -19,7 +19,7 @@ package com.neuronrobotics.bowlerkernel.kinematics.motion
 /**
  * An [InertialStateEstimator] which does nothing.
  */
-class NoopInertialStateEstimator : InertialStateEstimator {
+object NoopInertialStateEstimator : InertialStateEstimator {
 
     override fun getInertialState() = InertialState(0)
 }
