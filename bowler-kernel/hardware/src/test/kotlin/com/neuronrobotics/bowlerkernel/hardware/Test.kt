@@ -22,6 +22,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocol
 import edu.wpi.SimplePacketComs.device.UdpDevice
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import java.net.InetAddress
@@ -29,6 +30,7 @@ import java.net.InetAddress
 internal class Test {
 
     @Test
+    @Disabled
     fun `test esp32`() {
         val testPin = ResourceId(
             DefaultResourceTypes.DigitalOut,
