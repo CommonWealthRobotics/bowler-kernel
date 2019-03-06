@@ -5,7 +5,7 @@ buildCache {
     }
 }
 
-rootProject.name = "kinematics-chef"
+rootProject.name = "bowler-kinematics"
 
 include(":core")
 

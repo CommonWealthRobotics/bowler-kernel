@@ -1,6 +1,6 @@
-import Kinematics_chef_gradle.Strings.spotlessLicenseHeaderDelimiter
-import Kinematics_chef_gradle.Versions.kinematicsChefVersion
-import Kinematics_chef_gradle.Versions.ktlintVersion
+import Bowler_kinematics_gradle.Strings.spotlessLicenseHeaderDelimiter
+import Bowler_kinematics_gradle.Versions.bowlerKinematicsVersion
+import Bowler_kinematics_gradle.Versions.ktlintVersion
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.spotbugs.SpotBugsTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
@@ -23,11 +23,11 @@ plugins {
 
 object Versions {
     const val ktlintVersion = "0.29.0"
-    const val kinematicsChefVersion = "0.0.15"
+    const val bowlerKinematicsVersion = "0.0.15"
 }
 
 allprojects {
-    version = kinematicsChefVersion
+    version = bowlerKinematicsVersion
     group = "com.neuronrobotics"
 }
 
@@ -208,7 +208,7 @@ configure(javaProjects) {
             endWithNewline()
             @Suppress("INACCESSIBLE_TYPE")
             licenseHeaderFile(
-                    "${rootProject.rootDir}/config/spotless/kinematicschef.license",
+                    "${rootProject.rootDir}/config/spotless/bowler-kinematics.license",
                     spotlessLicenseHeaderDelimiter
             )
         }
@@ -303,7 +303,7 @@ configure(kotlinProjects) {
             endWithNewline()
             @Suppress("INACCESSIBLE_TYPE")
             licenseHeaderFile(
-                    "${rootProject.rootDir}/config/spotless/kinematicschef.license",
+                    "${rootProject.rootDir}/config/spotless/bowler-kinematics.license",
                     spotlessLicenseHeaderDelimiter
             )
         }
@@ -335,27 +335,27 @@ configure(publishedProjects) {
     task<Jar>("sourcesJar") {
         from(sourceSets.main.get().allSource)
         classifier = "sources"
-        baseName = "kinematics-chef-${this@configure.name.toLowerCase()}"
+        baseName = "bowler-kinematics-${this@configure.name.toLowerCase()}"
     }
 
     task<Jar>("javadocJar") {
         from(tasks.javadoc)
         classifier = "javadoc"
-        baseName = "kinematics-chef-${this@configure.name.toLowerCase()}"
+        baseName = "bowler-kinematics-${this@configure.name.toLowerCase()}"
     }
 
     tasks {
         "shadowJar"(ShadowJar::class) {
-            baseName = "kinematics-chef-${this@configure.name.toLowerCase()}"
+            baseName = "bowler-kinematics-${this@configure.name.toLowerCase()}"
         }
     }
 
-    val publicationName = "publication-kinematics-chef-${name.toLowerCase()}"
+    val publicationName = "publication-bowler-kinematics-${name.toLowerCase()}"
 
     publishing {
         publications {
             create<MavenPublication>(publicationName) {
-                artifactId = "kinematics-chef-${this@configure.name.toLowerCase()}"
+                artifactId = "bowler-kinematics-${this@configure.name.toLowerCase()}"
                 from(components["java"])
                 artifact(tasks["sourcesJar"])
                 artifact(tasks["javadocJar"])
@@ -370,15 +370,15 @@ configure(publishedProjects) {
         setPublications(publicationName)
         with(pkg) {
             repo = "maven-artifacts"
-            name = "kinematics-chef"
+            name = "bowler-kinematics"
             userOrg = "commonwealthrobotics"
             publish = true
             setLicenses("LGPL-3.0")
-            vcsUrl = "https://github.com/CommonWealthRobotics/kinematics-chef.git"
-            githubRepo = "https://github.com/CommonWealthRobotics/kinematics-chef"
+            vcsUrl = "https://github.com/CommonWealthRobotics/bowler-kinematics.git"
+            githubRepo = "https://github.com/CommonWealthRobotics/bowler-kinematics"
             with(version) {
-                name = kinematicsChefVersion
-                desc = "Cooking up kinematics solutions."
+                name = bowlerKinematicsVersion
+                desc = "Kinematics for the Bowler stack."
             }
         }
     }
