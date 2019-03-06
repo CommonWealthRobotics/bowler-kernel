@@ -1,6 +1,7 @@
 import Bowler_kinematics_gradle.Strings.spotlessLicenseHeaderDelimiter
 import Bowler_kinematics_gradle.Versions.bowlerKinematicsVersion
 import Bowler_kinematics_gradle.Versions.ktlintVersion
+import com.adarshr.gradle.testlogger.theme.ThemeType
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.spotbugs.SpotBugsTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
@@ -19,6 +20,7 @@ plugins {
     id("com.jfrog.bintray") version "1.8.3"
     `java-library`
     id("com.github.johnrengelman.shadow") version "4.0.3"
+    id("com.adarshr.test-logger") version "1.6.0"
 }
 
 object Versions {
@@ -34,7 +36,7 @@ allprojects {
 val coreProject = project(":core")
 
 val kotlinProjects = setOf(
-        coreProject
+    coreProject
 )
 
 val javaProjects = setOf<Project>() + kotlinProjects
@@ -59,6 +61,7 @@ buildscript {
 allprojects {
     apply {
         plugin("com.diffplug.gradle.spotless")
+        plugin("com.adarshr.test-logger")
     }
 
     repositories {
@@ -80,6 +83,10 @@ allprojects {
             showStandardStreams = true
             exceptionFormat = TestExceptionFormat.FULL
         }
+    }
+
+    testlogger {
+        theme = ThemeType.STANDARD_PARALLEL
     }
 
     spotless {
@@ -116,10 +123,10 @@ configure(javaProjects) {
 
     dependencies {
         fun junitJupiter(name: String, version: String = "5.2.0") =
-                create(group = "org.junit.jupiter", name = name, version = version)
+            create(group = "org.junit.jupiter", name = name, version = version)
 
         fun testFx(name: String, version: String = "4.0.+") =
-                create(group = "org.testfx", name = name, version = version)
+            create(group = "org.testfx", name = name, version = version)
 
         "testCompile"(junitJupiter(name = "junit-jupiter-api"))
         "testCompile"(junitJupiter(name = "junit-jupiter-engine"))
@@ -130,9 +137,9 @@ configure(javaProjects) {
         "testCompile"(group = "org.mockito", name = "mockito-core", version = "2.12.0")
 
         "testRuntime"(
-                group = "org.junit.platform",
-                name = "junit-platform-launcher",
-                version = "1.0.0"
+            group = "org.junit.platform",
+            name = "junit-platform-launcher",
+            version = "1.0.0"
         )
         "testRuntime"(testFx(name = "openjfx-monocle", version = "8u76-b04"))
     }
@@ -165,20 +172,20 @@ configure(javaProjects) {
 
         if (project.hasProperty("jenkinsBuild") || project.hasProperty("headless")) {
             jvmArgs = listOf(
-                    "-Djava.awt.headless=true",
-                    "-Dtestfx.robot=glass",
-                    "-Dtestfx.headless=true",
-                    "-Dprism.order=sw",
-                    "-Dprism.text=t2k"
+                "-Djava.awt.headless=true",
+                "-Dtestfx.robot=glass",
+                "-Dtestfx.headless=true",
+                "-Dprism.order=sw",
+                "-Dprism.text=t2k"
             )
         }
 
         testLogging {
             events(
-                    TestLogEvent.FAILED,
-                    TestLogEvent.PASSED,
-                    TestLogEvent.SKIPPED,
-                    TestLogEvent.STARTED
+                TestLogEvent.FAILED,
+                TestLogEvent.PASSED,
+                TestLogEvent.SKIPPED,
+                TestLogEvent.STARTED
             )
             displayGranularity = 0
             showExceptions = true
@@ -209,8 +216,8 @@ configure(javaProjects) {
             endWithNewline()
             @Suppress("INACCESSIBLE_TYPE")
             licenseHeaderFile(
-                    "${rootProject.rootDir}/config/spotless/bowler-kinematics.license",
-                    spotlessLicenseHeaderDelimiter
+                "${rootProject.rootDir}/config/spotless/bowler-kinematics.license",
+                spotlessLicenseHeaderDelimiter
             )
         }
     }
@@ -254,9 +261,9 @@ configure(kotlinProjects) {
         "compile"(kotlin("stdlib", kotlinVersion))
         "compile"(kotlin("reflect", kotlinVersion))
         "compile"(
-                group = "org.jetbrains.kotlinx",
-                name = "kotlinx-coroutines-core",
-                version = "1.0.0"
+            group = "org.jetbrains.kotlinx",
+            name = "kotlinx-coroutines-core",
+            version = "1.0.0"
         )
 
         "testCompile"(kotlin("test", kotlinVersion))
@@ -267,7 +274,7 @@ configure(kotlinProjects) {
         kotlinOptions {
             jvmTarget = "1.8"
             freeCompilerArgs =
-                    listOf("-Xjvm-default=enable", "-progressive", "-XXLanguage:+InlineClasses")
+                listOf("-Xjvm-default=enable", "-progressive", "-XXLanguage:+InlineClasses")
         }
     }
 
@@ -282,15 +289,15 @@ configure(kotlinProjects) {
             configurations {
                 "apiElements" {
                     outgoing
-                            .variants
-                            .getByName("classes")
-                            .artifact(
-                                    mapOf(
-                                            "file" to compileKotlin.destinationDir,
-                                            "type" to "java-classes-directory",
-                                            "builtBy" to compileKotlin
-                                    )
+                        .variants
+                        .getByName("classes")
+                        .artifact(
+                            mapOf(
+                                "file" to compileKotlin.destinationDir,
+                                "type" to "java-classes-directory",
+                                "builtBy" to compileKotlin
                             )
+                        )
                 }
             }
         }
@@ -304,8 +311,8 @@ configure(kotlinProjects) {
             endWithNewline()
             @Suppress("INACCESSIBLE_TYPE")
             licenseHeaderFile(
-                    "${rootProject.rootDir}/config/spotless/bowler-kinematics.license",
-                    spotlessLicenseHeaderDelimiter
+                "${rootProject.rootDir}/config/spotless/bowler-kinematics.license",
+                spotlessLicenseHeaderDelimiter
             )
         }
     }
@@ -313,8 +320,8 @@ configure(kotlinProjects) {
     detekt {
         toolVersion = "1.0.0-RC12"
         input = files(
-                "src/main/kotlin",
-                "src/test/kotlin"
+            "src/main/kotlin",
+            "src/test/kotlin"
         )
         parallel = true
         config = files("${rootProject.rootDir}/config/detekt/config.yml")
@@ -427,13 +434,13 @@ tasks.wrapper {
  * Configures the [publishing][org.gradle.api.publish.PublishingExtension] project extension.
  */
 fun Project.`publishing`(configure: org.gradle.api.publish.PublishingExtension.() -> Unit) =
-        extensions.configure("publishing", configure)
+    extensions.configure("publishing", configure)
 
 /**
  * Configures the [checkstyle][org.gradle.api.plugins.quality.CheckstyleExtension] project extension.
  */
 fun Project.`checkstyle`(configure: org.gradle.api.plugins.quality.CheckstyleExtension.() -> Unit) =
-        extensions.configure("checkstyle", configure)
+    extensions.configure("checkstyle", configure)
 
 /**
  * Retrieves the [java][org.gradle.api.plugins.JavaPluginConvention] project convention.
@@ -445,10 +452,10 @@ val Project.`java`: org.gradle.api.plugins.JavaPluginConvention
  * Configures the [kotlin][org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension] project extension.
  */
 fun Project.`kotlin`(configure: org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension.() -> Unit): Unit =
-        extensions.configure("kotlin", configure)
+    extensions.configure("kotlin", configure)
 
 /**
  * Configures the [detekt][io.gitlab.arturbosch.detekt.extensions.DetektExtension] extension.
  */
 fun org.gradle.api.Project.`detekt`(configure: io.gitlab.arturbosch.detekt.extensions.DetektExtension.() -> Unit): Unit =
-        (this as org.gradle.api.plugins.ExtensionAware).extensions.configure("detekt", configure)
+    (this as org.gradle.api.plugins.ExtensionAware).extensions.configure("detekt", configure)
