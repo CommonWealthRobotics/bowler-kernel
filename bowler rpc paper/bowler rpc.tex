@@ -16,6 +16,35 @@
 
 \maketitle
 
+\section{Overview}
+
+\subsection{Motivation}
+
+\begin{enumerate}
+    \item We want a PC to talk to any Device which is running some Bowler software. We want
+    this software to require minimal to no configuration from the user.
+    
+    \item We want to support any Resource attached to the Device with minimal to no configuration
+    from the user.
+
+    \item We require the communications between the PC and Device satisfy hard real-time
+    requirements: 5ms RTT, 100ms timeout.
+
+    \item Therefore, we settle on a zeroconf protocol which can be used by the PC to establish
+    an RPC with the Device.
+\end{enumerate}
+
+\subsection{Configuration Process}
+
+The PC-Device RPC is established in the following order
+\begin{enumerate}
+    \item The PC connects to the Device using some Physical Layer implementation.
+    \item The PC sends Discovery packets to the Device to tell the device which Resources are
+    connected to it. The Device may reject any packet if it deems the Resource invalid.
+    \item Once all Resources have been discovered, the Discovery process is finished and the
+    PC and Device may use the configured RPC.
+\end{enumerate}
+
 \section{Discovery}
 
 \subsection{Packet Format}
@@ -346,5 +375,41 @@ entire packet is 64 bytes.
 \end{itemize}
 
 \FloatBarrier
+
+\subsection{Discovery Process}
+
+\subsubsection{Discovery}
+
+Sequence diagram for
+\begin{enumerate}
+    \item Send discovery packet and get response (accepted).
+    \item Send discovery packet and get response (rejected).
+\end{enumerate}
+
+\subsubsection{Group Discovery}
+
+Sequence diagram for
+\begin{enumerate}
+    \item Send group discovery packet and get response (accepted). Send multiple group member
+    discovery packets and get responses (accepted).
+    \item Send group discovery packet and get response (accepted). Send multiple group member
+    discovery packets and get responses (most accepted, some rejected).
+    \item Send group discovery packet and get response (rejected). Send multiple group member
+    discovery packets and get responses (rejected).
+\end{enumerate}
+
+\section{RPC}
+
+\subsection{Packet Format}
+
+\subsubsection{Non-Group}
+
+Packets for non-Group Resources correspond to a single Resource. These Resources do not have any
+timing constraints.
+
+\subsubsection{Group}
+
+Packets for Group Resources correspond to multiple Resources whose responses are packed into a
+single packet. These Resources can have timing constraints and are therefore put into a Group.
 
 \end{document}
