@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.octogonapus.guavautil.collections.emptyImmutableList
+import org.octogonapus.ktguava.collections.emptyImmutableList
 import java.time.Duration
 import kotlin.concurrent.thread
 

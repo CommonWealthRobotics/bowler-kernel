@@ -14,7 +14,7 @@ dependencies {
     api(group = "io.arrow-kt", name = "arrow-core", version = arrow_version)
     api(group = "org.kohsuke", name = "github-api", version = "1.95")
 
-    implementation(group = "org.octogonapus", name = "kt-guava-core", version = "0.0.1")
+    implementation(group = "org.octogonapus", name = "kt-guava-core", version = "0.0.5")
     implementation(group = "com.google.inject", name = "guice", version = "4.1.0")
     implementation(
         group = "com.google.inject.extensions",

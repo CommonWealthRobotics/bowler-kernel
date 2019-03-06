@@ -17,8 +17,8 @@
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid
 
 import com.google.common.collect.ImmutableList
-import org.octogonapus.guavautil.collections.emptyImmutableList
-import org.octogonapus.guavautil.collections.immutableListOf
+import org.octogonapus.ktguava.collections.emptyImmutableList
+import org.octogonapus.ktguava.collections.immutableListOf
 
 /**
  * The attachment points Bowler supports out-of-the-box. Uses a continuous range of bytes from

@@ -39,8 +39,8 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.octogonapus.guavautil.collections.immutableListOf
-import org.octogonapus.guavautil.collections.toImmutableList
+import org.octogonapus.ktguava.collections.immutableListOf
+import org.octogonapus.ktguava.collections.toImmutableList
 import kotlin.math.abs
 
 internal class DefaultLimbIntegrationTest {

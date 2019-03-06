@@ -31,7 +31,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.Unp
 import com.nhaarman.mockitokotlin2.mock
 import org.jlleitschuh.guice.key
 import org.junit.jupiter.api.Test
-import org.octogonapus.guavautil.collections.emptyImmutableList
+import org.octogonapus.ktguava.collections.emptyImmutableList
 import javax.inject.Inject
 
 internal class HardwareScriptIntegrationTest {

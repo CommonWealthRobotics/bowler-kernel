@@ -12,7 +12,7 @@ dependencies {
     api(project(":bowler-kernel:hardware"))
     api(project(":bowler-kernel:gitfs"))
 
-    implementation(group = "org.octogonapus", name = "kt-guava-core", version = "0.0.1")
+    implementation(group = "org.octogonapus", name = "kt-guava-core", version = "0.0.5")
     implementation(group = "com.google.inject", name = "guice", version = "4.1.0")
     implementation(
         group = "com.google.inject.extensions",

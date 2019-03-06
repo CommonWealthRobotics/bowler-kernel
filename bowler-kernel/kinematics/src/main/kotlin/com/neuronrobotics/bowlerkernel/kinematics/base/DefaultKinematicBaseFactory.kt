@@ -24,8 +24,8 @@ import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.LimbFactory
 import com.neuronrobotics.bowlerkernel.scripting.factory.GitScriptFactory
 import com.neuronrobotics.bowlerkernel.scripting.factory.getInstanceFromGit
-import org.octogonapus.guavautil.collections.toImmutableList
-import org.octogonapus.guavautil.collections.toImmutableMap
+import org.octogonapus.ktguava.collections.toImmutableList
+import org.octogonapus.ktguava.collections.toImmutableMap
 import javax.inject.Inject
 
 class DefaultKinematicBaseFactory

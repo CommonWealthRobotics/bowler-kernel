@@ -29,7 +29,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanFoll
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanGenerator
 import com.neuronrobotics.bowlerkernel.scripting.factory.GitScriptFactory
 import com.neuronrobotics.bowlerkernel.scripting.factory.getInstanceFromGit
-import org.octogonapus.guavautil.collections.toImmutableList
+import org.octogonapus.ktguava.collections.toImmutableList
 import javax.inject.Inject
 
 class DefaultLimbFactory
