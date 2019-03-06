@@ -71,7 +71,7 @@ class InverseKinematicsEngineIntegrationTest {
     }
 
     @Test
-    fun `test cmm input arm global zero` () {
+    fun `test cmm input arm global zero`() {
         val cmmInputArm = ScriptingEngine.gitScriptRun(
             "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
             "InputArmBase_copy.xml",
@@ -91,14 +91,16 @@ class InverseKinematicsEngineIntegrationTest {
             chain
         )
 
-        val fkTip = params.forwardKinematics(arrayOf(
-            (jointAngles[0] + params[0].theta) * PI/180,
-            (jointAngles[1] + params[1].theta) * PI/180,
-            (jointAngles[2] + params[2].theta) * PI/180,
-            (jointAngles[3] + params[3].theta) * PI/180,
-            (jointAngles[4] + params[4].theta) * PI/180,
-            (jointAngles[5] + params[5].theta) * PI/180
-        ).toDoubleArray())
+        val fkTip = params.forwardKinematics(
+            arrayOf(
+                (jointAngles[0] + params[0].theta) * PI / 180,
+                (jointAngles[1] + params[1].theta) * PI / 180,
+                (jointAngles[2] + params[2].theta) * PI / 180,
+                (jointAngles[3] + params[3].theta) * PI / 180,
+                (jointAngles[4] + params[4].theta) * PI / 180,
+                (jointAngles[5] + params[5].theta) * PI / 180
+            ).toDoubleArray()
+        )
 
         val targetVec = target.cols(3, 4).rows(0, 3)
         val tipVec = fkTip.cols(3, 4).rows(0, 3)
@@ -112,19 +114,19 @@ class InverseKinematicsEngineIntegrationTest {
         val thetaIncrement = (2 * PI) / 4
         for (i in (0.0..2 * PI).step(thetaIncrement)) {
             val target = TestUtil.cmmInputArmDhParams.forwardKinematics(
-                    DoubleArray(6) { i }
+                DoubleArray(6) { i }
             )
 
             val thetasFromIk = engine.inverseKinematics(
-                    target,
-                    DoubleArray(6) { 0.0 },
-                    TestUtil.makeMockChain(TestUtil.cmmInputArmDhParams.toDHLinks())
+                target,
+                DoubleArray(6) { 0.0 },
+                TestUtil.makeMockChain(TestUtil.cmmInputArmDhParams.toDHLinks())
             )
 
             val targetUsingThetasFromIk = TestUtil.cmmInputArmDhParams.forwardKinematics(
-                    thetasFromIk.mapIndexed { index, theta ->
-                        toRadians(theta + TestUtil.cmmInputArmDhParams[index].theta)
-                    }.toDoubleArray()
+                thetasFromIk.mapIndexed { index, theta ->
+                    toRadians(theta + TestUtil.cmmInputArmDhParams[index].theta)
+                }.toDoubleArray()
             )
 
             assertTrue(target.isIdentical(targetUsingThetasFromIk, equalityTolerance))
@@ -132,40 +134,44 @@ class InverseKinematicsEngineIntegrationTest {
     }
 
     @Test
-    fun `test cmm input arm home` () {
+    fun `test cmm input arm home`() {
         val cmmInputArm = ScriptingEngine.gitScriptRun(
-                "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
-                "InputArmBase_copy.xml",
-                null
+            "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
+            "InputArmBase_copy.xml",
+            null
         ) as? MobileBaseLoader ?: fail { "The script did not return a MobileBaseLoader." }
 
         val chain = cmmInputArm.base.appendages[0].chain
         val params = chain.toDhParams()
 
         val engine = InverseKinematicsEngine.getInstance()
-        val target = params.forwardKinematics(arrayOf(
-                params[0].theta * PI/180,
-                params[1].theta * PI/180,
-                params[2].theta * PI/180,
-                params[3].theta * PI/180,
-                params[4].theta * PI/180,
-                params[5].theta * PI/180
-        ).toDoubleArray())
-
-        val jointAngles = engine.inverseKinematics(
-                target,
-                listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
-                chain
+        val target = params.forwardKinematics(
+            arrayOf(
+                params[0].theta * PI / 180,
+                params[1].theta * PI / 180,
+                params[2].theta * PI / 180,
+                params[3].theta * PI / 180,
+                params[4].theta * PI / 180,
+                params[5].theta * PI / 180
+            ).toDoubleArray()
         )
 
-        val fkTip = params.forwardKinematics(arrayOf(
-                (jointAngles[0] + params[0].theta) * PI/180,
-                (jointAngles[1] + params[1].theta) * PI/180,
-                (jointAngles[2] + params[2].theta) * PI/180,
-                (jointAngles[3] + params[3].theta) * PI/180,
-                (jointAngles[4] + params[4].theta) * PI/180,
-                (jointAngles[5] + params[5].theta) * PI/180
-        ).toDoubleArray())
+        val jointAngles = engine.inverseKinematics(
+            target,
+            listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+            chain
+        )
+
+        val fkTip = params.forwardKinematics(
+            arrayOf(
+                (jointAngles[0] + params[0].theta) * PI / 180,
+                (jointAngles[1] + params[1].theta) * PI / 180,
+                (jointAngles[2] + params[2].theta) * PI / 180,
+                (jointAngles[3] + params[3].theta) * PI / 180,
+                (jointAngles[4] + params[4].theta) * PI / 180,
+                (jointAngles[5] + params[5].theta) * PI / 180
+            ).toDoubleArray()
+        )
 
         val targetVec = target.cols(3, 4).rows(0, 3)
         val tipVec = fkTip.cols(3, 4).rows(0, 3)
@@ -335,8 +341,8 @@ class InverseKinematicsEngineIntegrationTest {
 
         val jointAngles = engine.inverseKinematics(
             params.toFrameTransformation(),
-        listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
-        chain
+            listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+            chain
         )
     }
 
