@@ -312,9 +312,9 @@ class SimplePacketComsProtocol(
         /*
         PC Side
         For reads, all the information is packed into one packet
-        Send a discovery packet to make a group, specifying the packet id, and length (number of 
+        Send a discovery packet to make a group, specifying the packet id, and length (number of
         elements)
-        Send another discovery packet for each resource in the group, specifying the range of 
+        Send another discovery packet for each resource in the group, specifying the range of
         bytes in the payload (the start byte and the length), and resource
 
         Device Side

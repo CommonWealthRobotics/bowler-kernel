@@ -1,0 +1,160 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{bytefield}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{placeins}
+
+\title{Bowler RPC}
+\author{Ryan Benasutti}
+\date{March 2019}
+
+\begin{document}
+
+\maketitle
+
+\section{Discovery}
+
+\subsection{Packet Format}
+
+\subsubsection{General Discovery Packet Format}
+
+Figure~\ref{fig:discovery-time-send-packet-format} shows what the PC sends the device to initiate a
+discovery operation. Any additional operation-specific data is sent in the Payload section. The
+entire packet is 64 bytes.
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}[]{16}
+        \bitheader{0,7,8,15} \\
+        \wordbox{2}{DPID} \\
+        \bitbox{8}{Operation}
+        \bitbox[lrt]{8}{} \\
+        \wordbox[lr]{1}{Payload} \\
+        \skippedwords \\
+        \wordbox[lrb]{1}{}
+    \end{bytefield}
+    \caption{Discovery-time send packet format.}
+    \label{fig:discovery-time-send-packet-format}
+\end{figure}
+
+\begin{itemize}
+    \item DPID (Discovery Packet ID): 4 bytes
+    \begin{itemize}
+        \item The DPID field is typically filled by SimplePacketComs and contains the ID for the
+        packet it is contained in.
+    \end{itemize}
+
+    \item Operation: 1 byte
+    \begin{itemize}
+        \item The Operation field states the operation the packet performs.
+    \end{itemize}
+\end{itemize}
+
+Figure~\ref{fig:discovery-time-receive-packet-format} shows what the device sends the PC to complete
+a discovery operation. Any additional operation-specific data is sent in the Payload section. The
+entire packet is 64 bytes.
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}[]{16}
+        \bitheader{0,7,8,15} \\
+        \wordbox{2}{DPID} \\
+        \wordbox[lr]{1}{Payload} \\
+        \skippedwords \\
+        \wordbox[lrb]{1}{}
+    \end{bytefield}
+    \caption{Discovery-time receive packet format.}
+    \label{fig:discovery-time-receive-packet-format}
+\end{figure}
+
+\FloatBarrier
+
+\begin{itemize}
+    \item DPID (Discovery Packet ID): 4 bytes
+    \begin{itemize}
+        \item The DPID field is typically filled by SimplePacketComs and contains the ID for the
+        packet it is contained in.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Discovery Packet}
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}[]{16}
+        \bitheader{0,7,8,15} \\
+        \wordbox{2}{DPID} \\
+        \bitbox{8}{1}
+        \bitbox{8}{Packet ID} \\
+        \begin{leftwordgroup}{ResourceId}
+            \bitbox{8}{Resource}
+            \bitbox{8}{Attachment} \\
+            \wordbox[lr]{1}{Attachment Data} \\
+            \skippedwords \\
+            \wordbox[lrb]{1}{}
+        \end{leftwordgroup}
+    \end{bytefield}
+    \caption{Discovery send packet.}
+\end{figure}
+
+\begin{itemize}
+    \item DPID (Discovery Packet ID): 4 bytes
+    \begin{itemize}
+        \item The DPID field is typically filled by SimplePacketComs and contains the ID for the
+        packet it is contained in.
+    \end{itemize}
+
+    \item Packet ID: 1 byte
+    \begin{itemize}
+        \item The Packet ID is a new ID for the Packet being discovered.
+    \end{itemize}
+
+    \item Resource: 1 byte
+    \begin{itemize}
+        \item The Resource encodes the type of the resource. It is the \\
+        \texttt{ResourceId.resourceType.type}.
+    \end{itemize}
+
+    \item Attachment: 1 byte
+    \begin{itemize}
+        \item The Attachment encodes the type of the attachment point. It is the
+        \texttt{ResourceId.attachmentPoint.type}.
+    \end{itemize}
+
+    \item Attachment Data: 1+ bytes
+    \begin{itemize}
+        \item The Attachment Data is any data needed to fully describe the Attachment. It is the
+        \texttt{ResourceId.attachmentPoint.data}.
+    \end{itemize}
+\end{itemize}
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}[]{16}
+        \bitheader{0,7,8,15} \\
+        \wordbox{2}{DPID} \\
+        \bitbox{8}{Status}
+        \bitbox[lrt]{8}{} \\
+        \wordbox[lr]{1}{Reserved} \\
+        \skippedwords \\
+        \wordbox[lrb]{1}{}
+    \end{bytefield}
+    \caption{Discovery receive packet.}
+\end{figure}
+
+\begin{itemize}
+    \item DPID (Discovery Packet ID): 4 bytes
+    \begin{itemize}
+        \item The DPID field is typically filled by SimplePacketComs and contains the ID for the
+        packet it is contained in.
+    \end{itemize}
+
+    \item Status: 1 byte
+    \begin{itemize}
+        \item The Status field encodes the status of the discovery operation. 1 = Accepted, 2 =
+        Rejected.
+    \end{itemize}
+\end{itemize}
+
+\end{document}
