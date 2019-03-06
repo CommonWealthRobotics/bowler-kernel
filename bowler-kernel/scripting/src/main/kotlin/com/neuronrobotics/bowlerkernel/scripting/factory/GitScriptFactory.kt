@@ -20,7 +20,7 @@ import arrow.core.Either
 import arrow.core.flatMap
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.Script
-import org.octogonapus.guavautil.collections.emptyImmutableList
+import org.octogonapus.ktguava.collections.emptyImmutableList
 
 interface GitScriptFactory {
 

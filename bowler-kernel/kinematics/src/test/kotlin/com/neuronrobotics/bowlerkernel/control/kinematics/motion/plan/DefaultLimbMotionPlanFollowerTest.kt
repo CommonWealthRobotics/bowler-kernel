@@ -27,8 +27,8 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.octogonapus.guavautil.collections.emptyImmutableList
-import org.octogonapus.guavautil.collections.immutableListOf
+import org.octogonapus.ktguava.collections.emptyImmutableList
+import org.octogonapus.ktguava.collections.immutableListOf
 import kotlin.math.abs
 
 internal class DefaultLimbMotionPlanFollowerTest {

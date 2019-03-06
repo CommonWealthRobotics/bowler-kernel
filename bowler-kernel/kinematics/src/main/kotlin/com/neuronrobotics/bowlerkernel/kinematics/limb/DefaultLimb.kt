@@ -29,7 +29,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
 import com.neuronrobotics.bowlerkernel.kinematics.motion.length
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanGenerator
-import org.octogonapus.guavautil.collections.toImmutableList
+import org.octogonapus.ktguava.collections.toImmutableList
 import kotlin.concurrent.thread
 
 class DefaultLimb(

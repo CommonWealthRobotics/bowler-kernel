@@ -27,8 +27,8 @@ import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistry
 import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistryTracker
 import org.jlleitschuh.guice.key
 import org.jlleitschuh.guice.module
-import org.octogonapus.guavautil.collections.immutableListOf
-import org.octogonapus.guavautil.collections.toImmutableList
+import org.octogonapus.ktguava.collections.immutableListOf
+import org.octogonapus.ktguava.collections.toImmutableList
 
 /**
  * A script with managed hardware access.

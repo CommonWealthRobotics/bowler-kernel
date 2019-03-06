@@ -33,7 +33,7 @@ import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.octogonapus.guavautil.collections.immutableListOf
+import org.octogonapus.ktguava.collections.immutableListOf
 
 class UnprovisionedDeviceResourceFactoryTest {
 
