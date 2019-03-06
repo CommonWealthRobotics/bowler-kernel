@@ -38,6 +38,8 @@ entire packet is 64 bytes.
     \label{fig:discovery-time-send-packet-format}
 \end{figure}
 
+\FloatBarrier
+
 \begin{itemize}
     \item DPID (Discovery Packet ID): 4 bytes
     \begin{itemize}
@@ -50,6 +52,8 @@ entire packet is 64 bytes.
         \item The Operation field states the operation the packet performs.
     \end{itemize}
 \end{itemize}
+
+\FloatBarrier
 
 Figure~\ref{fig:discovery-time-receive-packet-format} shows what the device sends the PC to complete
 a discovery operation. Any additional operation-specific data is sent in the Payload section. The
@@ -98,6 +102,8 @@ entire packet is 64 bytes.
     \caption{Discovery send packet.}
 \end{figure}
 
+\FloatBarrier
+
 \begin{itemize}
     \item DPID (Discovery Packet ID): 4 bytes
     \begin{itemize}
@@ -107,27 +113,29 @@ entire packet is 64 bytes.
 
     \item Packet ID: 1 byte
     \begin{itemize}
-        \item The Packet ID is a new ID for the Packet being discovered.
+        \item The Packet ID field is a new ID for the Packet being discovered.
     \end{itemize}
 
     \item Resource: 1 byte
     \begin{itemize}
-        \item The Resource encodes the type of the resource. It is the \\
+        \item The Resource field is the type of the resource. It is the \\
         \texttt{ResourceId.resourceType.type}.
     \end{itemize}
 
     \item Attachment: 1 byte
     \begin{itemize}
-        \item The Attachment encodes the type of the attachment point. It is the
+        \item The Attachment field is the type of the attachment point. It is the
         \texttt{ResourceId.attachmentPoint.type}.
     \end{itemize}
 
     \item Attachment Data: 1+ bytes
     \begin{itemize}
-        \item The Attachment Data is any data needed to fully describe the Attachment. It is the
-        \texttt{ResourceId.attachmentPoint.data}.
+        \item The Attachment Data field is any data needed to fully describe the Attachment. It is
+        the \texttt{ResourceId.attachmentPoint.data}.
     \end{itemize}
 \end{itemize}
+
+\FloatBarrier
 
 \begin{figure}[h]
     \centering
@@ -143,6 +151,8 @@ entire packet is 64 bytes.
     \caption{Discovery receive packet.}
 \end{figure}
 
+\FloatBarrier
+
 \begin{itemize}
     \item DPID (Discovery Packet ID): 4 bytes
     \begin{itemize}
@@ -156,5 +166,182 @@ entire packet is 64 bytes.
         Rejected.
     \end{itemize}
 \end{itemize}
+
+\FloatBarrier
+
+\subsubsection{Group Discovery Packet}
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}[]{16}
+        \bitheader{0,7,8,15} \\
+        \wordbox{2}{DPID} \\
+        \bitbox{8}{3}
+        \bitbox{8}{Group ID} \\
+        \bitbox{8}{Packet ID}
+        \bitbox{8}{Count} \\
+        \wordbox[lr]{1}{Reserved} \\
+        \skippedwords \\
+        \wordbox[lrb]{1}{}
+    \end{bytefield}
+    \caption{Group discovery send packet.}
+\end{figure}
+
+\FloatBarrier
+
+\begin{itemize}
+    \item DPID (Discovery Packet ID): 4 bytes
+    \begin{itemize}
+        \item The DPID field is typically filled by SimplePacketComs and contains the ID for the
+        packet it is contained in.
+    \end{itemize}
+
+    
+    \item Group ID: 1 byte
+    \begin{itemize}
+        \item The Group ID field is the ID for the group being made. Future Group Member Discovery
+        Packets will need this ID to add Resources to the correct group.
+    \end{itemize}
+
+    \item Packet ID: 1 byte
+    \begin{itemize}
+        \item The Packet ID field is the ID for the packet the Group will use. All Resources in the
+        Group get packed into one packet.
+    \end{itemize}
+
+    \item Count: 1 byte
+    \begin{itemize}
+        \item The Count field is the number of Resources that will be added to the group.
+    \end{itemize}
+\end{itemize}
+
+\FloatBarrier
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}[]{16}
+        \bitheader{0,7,8,15} \\
+        \wordbox{2}{DPID} \\
+        \bitbox{8}{Status}
+        \bitbox[lrt]{8}{} \\
+        \wordbox[lr]{1}{Reserved} \\
+        \skippedwords \\
+        \wordbox[lrb]{1}{}
+    \end{bytefield}
+    \caption{Group discovery receive packet.}
+\end{figure}
+
+\FloatBarrier
+
+\begin{itemize}
+    \item DPID (Discovery Packet ID): 4 bytes
+    \begin{itemize}
+        \item The DPID field is typically filled by SimplePacketComs and contains the ID for the
+        packet it is contained in.
+    \end{itemize}
+
+    \item Status: 1 byte
+    \begin{itemize}
+        \item The Status field encodes the status of the discovery operation. 1 = Accepted, 2 =
+        Rejected.
+    \end{itemize}
+\end{itemize}
+
+\FloatBarrier
+
+\subsubsection{Group Member Discovery Packet}
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}[]{16}
+        \bitheader{0,7,8,15} \\
+        \wordbox{2}{DPID} \\
+        \bitbox{8}{4}
+        \bitbox{8}{Group ID} \\
+        \bitbox{8}{Start}
+        \bitbox{8}{End} \\
+        \begin{leftwordgroup}{ResourceId}
+            \bitbox{8}{Resource}
+            \bitbox{8}{Attachment} \\
+            \wordbox[lr]{1}{Attachment Data} \\
+            \skippedwords \\
+            \wordbox[lrb]{1}{}
+        \end{leftwordgroup}
+    \end{bytefield}
+    \caption{Group member discovery send packet.}
+\end{figure}
+
+\FloatBarrier
+
+\begin{itemize}
+    \item Group ID: 1 byte
+    \begin{itemize}
+        \item The Group ID field is the ID for the Group that this Resource will be added to.
+    \end{itemize}
+
+    \item Start: 1 byte
+    \begin{itemize}
+        \item The Start field is the starting byte index in the response Payload for this Resource's
+        response data.
+    \end{itemize}
+
+    \item End: 1 byte
+    \begin{itemize}
+        \item The End field is the ending byte index in the response Payload for this Resource's
+        response data.
+    \end{itemize}
+
+    \item Resource: 1 byte
+    \begin{itemize}
+        \item The Resource field is the type of the resource. It is the \\
+        \texttt{ResourceId.resourceType.type}.
+    \end{itemize}
+
+    \item Attachment: 1 byte
+    \begin{itemize}
+        \item The Attachment field is the type of the attachment point. It is the
+        \texttt{ResourceId.attachmentPoint.type}.
+    \end{itemize}
+
+    \item Attachment Data: 1+ bytes
+    \begin{itemize}
+        \item The Attachment Data field is any data needed to fully describe the Attachment. It is
+        the \texttt{ResourceId.attachmentPoint.data}.
+    \end{itemize}
+\end{itemize}
+
+\FloatBarrier
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}[]{16}
+        \bitheader{0,7,8,15} \\
+        \wordbox{2}{DPID} \\
+        \bitbox{8}{Status}
+        \bitbox[lrt]{8}{} \\
+        \wordbox[lr]{1}{Reserved} \\
+        \skippedwords \\
+        \wordbox[lrb]{1}{}
+    \end{bytefield}
+    \caption{Group member discovery receive packet.}
+\end{figure}
+
+\FloatBarrier
+
+\begin{itemize}
+    \item DPID (Discovery Packet ID): 4 bytes
+    \begin{itemize}
+        \item The DPID field is typically filled by SimplePacketComs and contains the ID for the
+        packet it is contained in.
+    \end{itemize}
+
+    \item Status: 1 byte
+    \begin{itemize}
+        \item The Status field encodes the status of the discovery operation. 1 = Accepted, 2 =
+        Rejected.
+    \end{itemize}
+\end{itemize}
+
+\FloatBarrier
 
 \end{document}
