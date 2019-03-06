@@ -21,15 +21,15 @@ import com.neuronrobotics.kinematicschef.TestUtil
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.util.toTranslation
-import com.neuronrobotics.kinematicschef.util.emptyImmutableList
-import com.neuronrobotics.kinematicschef.util.immutableListOf
-import com.neuronrobotics.kinematicschef.util.toImmutableList
 import org.ejml.simple.SimpleMatrix
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import org.octogonapus.ktguava.collections.emptyImmutableList
+import org.octogonapus.ktguava.collections.immutableListOf
+import org.octogonapus.ktguava.collections.toImmutableList
 import kotlin.test.assertEquals
 
 internal class DefaultWristIdentifierTest {

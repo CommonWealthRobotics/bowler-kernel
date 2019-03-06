@@ -36,9 +36,9 @@ import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZXY
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZXZ
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZYX
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZYZ
-import com.neuronrobotics.kinematicschef.util.immutableListOf
-import com.neuronrobotics.kinematicschef.util.immutableMapOf
-import com.neuronrobotics.kinematicschef.util.toImmutableList
+import org.octogonapus.ktguava.collections.immutableListOf
+import org.octogonapus.ktguava.collections.immutableMapOf
+import org.octogonapus.ktguava.collections.toImmutableList
 
 class DefaultDhClassifier
 internal constructor() : DhClassifier {

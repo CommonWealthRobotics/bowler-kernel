@@ -14,39 +14,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with kinematics-chef.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:SuppressWarnings("TooManyFunctions")
+
 package com.neuronrobotics.kinematicschef.util
 
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import org.ejml.simple.SimpleMatrix
-import java.lang.Math.toRadians
-import kotlin.math.cos
 import kotlin.math.pow
-import kotlin.math.sin
 import kotlin.math.sqrt
-
-/**
- * Maps a pair of two matrices representing points into a matrix representing a line. The
- * first matrix is treated as the first point and the second matrix is treated as the second
- * point.
- */
-fun Pair<SimpleMatrix, SimpleMatrix>.toLine(): SimpleMatrix {
-    require(first.numRows() == 4)
-    require(first.numCols() == 4)
-    require(second.numRows() == 4)
-    require(second.numCols() == 4)
-
-    val out = SimpleMatrix(3, 1)
-
-    fun writeDiffToElement(x: Int, y: Int) {
-        out[x, 0] = second[x, y] - first[x, y]
-    }
-
-    for (i in 0 until 3) {
-        writeDiffToElement(i, 3)
-    }
-
-    return out
-}
 
 /**
  * Extracts the translation component from a 4x4 frame transformation.
@@ -98,65 +73,12 @@ fun SimpleMatrix.length(): Double {
  * @param y The distance along the y-axis.
  * @param z The distance along the z-axis.
  */
-fun getFrameTranslationMatrix(x: Number, y: Number, z: Number) =
+fun getFrameTranslationMatrix(x: Number, y: Number, z: Number): SimpleMatrix =
     SimpleMatrix.identity(4).apply {
         this[0, 3] = x.toDouble()
         this[1, 3] = y.toDouble()
         this[2, 3] = z.toDouble()
     }
-
-/**
- * Creates a 4x4 frame transformation representing a rotation.
- *
- * @param x The rotation around the x-axis in degrees.
- * @param y The rotation around the y-axis in degrees.
- * @param z The rotation around the z-axis in degrees.
- */
-fun getFrameRotationMatrix(x: Number, y: Number, z: Number) =
-    SimpleMatrix.identity(4).apply {
-        val rotMat = getRotationMatrix(x, y, z)
-        for (row in 0 until rotMat.numRows()) {
-            for (col in 0 until rotMat.numCols()) {
-                this[row, col] = rotMat[row, col]
-            }
-        }
-    }
-
-/**
- * Creates a 3x3 matrix representing a rotation.
- *
- * @param x The rotation around the x-axis in degrees.
- * @param y The rotation around the y-axis in degrees.
- * @param z The rotation around the z-axis in degrees.
- */
-fun getRotationMatrix(x: Number, y: Number, z: Number): SimpleMatrix {
-    val xRad = toRadians(x.toDouble())
-    val yRad = toRadians(y.toDouble())
-    val zRad = toRadians(z.toDouble())
-
-    val zMat = SimpleMatrix.identity(3).apply {
-        this[0, 0] = cos(zRad)
-        this[0, 1] = -sin(zRad)
-        this[1, 0] = sin(zRad)
-        this[1, 1] = cos(zRad)
-    }
-
-    val yMat = SimpleMatrix.identity(3).apply {
-        this[0, 0] = cos(yRad)
-        this[0, 2] = sin(yRad)
-        this[2, 0] = -sin(yRad)
-        this[2, 2] = cos(yRad)
-    }
-
-    val xMat = SimpleMatrix.identity(3).apply {
-        this[1, 1] = cos(xRad)
-        this[1, 2] = -sin(xRad)
-        this[2, 1] = sin(xRad)
-        this[2, 2] = cos(xRad)
-    }
-
-    return zMat.mult(yMat).mult(xMat)
-}
 
 /**
  * Treats the receiver matrix as a 3x1 translation column vector and returns it as a 4x4 frame
@@ -171,7 +93,7 @@ fun SimpleMatrix.toTranslation(): SimpleMatrix {
 /**
  * Returns a frame transformation which applies no transformation.
  */
-fun identityFrameTransform() = SimpleMatrix.identity(4)
+fun identityFrameTransform(): SimpleMatrix = SimpleMatrix.identity(4)
 
 /**
  * Returns a [SimpleMatrix] which is equivalent to the [TransformNR].
@@ -207,43 +129,106 @@ fun SimpleMatrix.toTransformNR(): TransformNR {
 }
 
 /**
- * Projects the receiver vector onto the plane specified by [planeNormal].
- */
-fun SimpleMatrix.projectionOntoPlane(planeNormal: SimpleMatrix): SimpleMatrix {
-    require(numRows() == 3)
-    require(numCols() == 1)
-    require(planeNormal.numRows() == 3)
-    require(planeNormal.numCols() == 1)
-    return minus(planeNormal.elementMult(dot(planeNormal.normalize())))
-}
-
-/**
- * Projects the receiver vector onto [unitVector].
- */
-fun SimpleMatrix.projectionOntoVector(unitVector: SimpleMatrix): Double {
-    require(numRows() == 2)
-    require(numCols() == 1)
-    require(unitVector.numRows() == 2)
-    require(unitVector.numCols() == 1)
-    return dot(unitVector.normalize())
-}
-
-/**
- * Returns a normalized version of the receiver matrix.
- */
-private fun SimpleMatrix.normalize() = divide(length())
-
-/**
  * Elementwise multiplication between the receiver matrix and [term].
  */
 fun SimpleMatrix.elementMult(term: Double): SimpleMatrix {
-    val termMat = SimpleMatrix(numRows(), numCols()).apply {
-        for (row in 0 until numRows()) {
-            for (col in 0 until numCols()) {
-                this[row, col] = term
-            }
+    val termMat = SimpleMatrix(numRows(), numCols())
+
+    for (row in 0 until termMat.numRows()) {
+        for (col in 0 until termMat.numCols()) {
+            termMat[row, col] = term
         }
     }
 
     return elementMult(termMat)
+}
+
+/**
+ * Project [vectorB] onto this vector.
+ */
+fun SimpleMatrix.project(vectorB: SimpleMatrix): SimpleMatrix {
+    require(isVector)
+
+    val vA = vectorB - this
+    val vB = negative()
+
+    return this + vA.elementMult(vA.dot(vB) / vA.length().pow(2))
+}
+
+/**
+ * Project this vector onto the plane formed by [planePoint] and [normal].
+ */
+fun SimpleMatrix.projectOntoPlane(planePoint: SimpleMatrix, normal: SimpleMatrix): SimpleMatrix {
+    require(isVector)
+
+    if (normal.length() == 0.0) {
+        return this
+    }
+
+    val a = normal[0]
+    val b = normal[1]
+    val c = normal[2]
+    val d = planePoint[0]
+    val e = planePoint[1]
+    val f = planePoint[2]
+    val x = this[0]
+    val y = this[1]
+    val z = this[2]
+
+    val t = (a * d - a * x + b * e - b * y + c * f - c * z) /
+        (a.pow(2) + b.pow(2) + c.pow(2))
+
+    return SimpleMatrix(3, 1).apply {
+        this[0] = x + t * a
+        this[1] = y + t * b
+        this[2] = z + t * c
+    }
+}
+
+/**
+ * Cross product.
+ */
+fun SimpleMatrix.cross(b: SimpleMatrix): SimpleMatrix {
+    require(isVector)
+    require(b.isVector)
+
+    return SimpleMatrix(3, 1).also {
+        it[0] = this[1] * b[2] - this[2] * b[1]
+        it[1] = this[2] * b[0] - this[0] * b[2]
+        it[2] = this[0] * b[1] - this[1] * b[0]
+    }
+}
+
+/**
+ * Rotate all transformations to be right side up for theta456 calculations, see:
+ * https://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d
+ */
+@SuppressWarnings("ReturnCount")
+fun SimpleMatrix.getRotationBetween(other: SimpleMatrix): SimpleMatrix {
+    val unit = divide(length())
+    val b = other.divide(other.length())
+
+    if ((unit - b).length() < 0.001) {
+        return SimpleMatrix.identity(3)
+    }
+
+    val v = b.divide(b.length()).cross(unit)
+    val cos = b.divide(b.length()).dot(unit) // cosine of angle
+
+    if (cos == -1.0) {
+        return SimpleMatrix.identity(3)
+    }
+
+    // skew-symmetric cross product of v
+    val vx = SimpleMatrix(3, 3).also {
+        it.zero()
+        it[0, 1] = -v[2]
+        it[0, 2] = v[1]
+        it[1, 0] = v[2]
+        it[1, 2] = -v[0]
+        it[2, 0] = -v[1]
+        it[2, 1] = v[0]
+    }
+
+    return SimpleMatrix.identity(3) + vx + vx.mult(vx).elementMult(1.0 / (1.0 + cos))
 }

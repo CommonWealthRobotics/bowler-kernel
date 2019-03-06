@@ -24,7 +24,6 @@ import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
 import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
 import com.neuronrobotics.kinematicschef.util.getTranslation
-import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.kinematicschef.util.length
 import com.neuronrobotics.kinematicschef.util.modulus
 import com.neuronrobotics.kinematicschef.util.step
@@ -36,6 +35,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
+import org.octogonapus.ktguava.collections.immutableListOf
 import java.lang.Math.toRadians
 import kotlin.math.PI
 import kotlin.math.cos
@@ -64,7 +64,7 @@ class InverseKinematicsEngineIntegrationTest {
         assertThrows<NotImplementedError> {
             engine.inverseKinematics(
                 TransformNR(),
-                listOf(0.0, 0.0, 0.0).toDoubleArray(),
+                DoubleArray(3) { 0.0 },
                 chain
             )
         }
@@ -87,7 +87,7 @@ class InverseKinematicsEngineIntegrationTest {
 
         val jointAngles = engine.inverseKinematics(
             target,
-            listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+            DoubleArray(6) { 0.0 },
             chain
         )
 
@@ -111,7 +111,7 @@ class InverseKinematicsEngineIntegrationTest {
     @Test
     fun `test IK with many theta permutations`() {
         val engine = InverseKinematicsEngine.getInstance()
-        val thetaIncrement = (2 * PI) / 4
+        val thetaIncrement = 2 * PI / 4
         for (i in (0.0..2 * PI).step(thetaIncrement)) {
             val target = TestUtil.cmmInputArmDhParams.forwardKinematics(
                 DoubleArray(6) { i }
@@ -158,7 +158,7 @@ class InverseKinematicsEngineIntegrationTest {
 
         val jointAngles = engine.inverseKinematics(
             target,
-            listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+            DoubleArray(6) { 0.0 },
             chain
         )
 
@@ -203,7 +203,7 @@ class InverseKinematicsEngineIntegrationTest {
 
                 val jointAngles = engine.inverseKinematics(
                     target,
-                    listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+                    DoubleArray(6) { 0.0 },
                     chain
                 )
 
@@ -229,7 +229,7 @@ class InverseKinematicsEngineIntegrationTest {
         fun testThetasHomed() {
             val jointAngles = engine.inverseKinematics(
                 params.toFrameTransformation(),
-                listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+                DoubleArray(6) { 0.0 },
                 chain
             )
 
@@ -258,7 +258,7 @@ class InverseKinematicsEngineIntegrationTest {
 
                 val jointAngles = engine.inverseKinematics(
                     targetFrame,
-                    listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+                    DoubleArray(6) { 0.0 },
                     chain
                 )
 
@@ -293,7 +293,7 @@ class InverseKinematicsEngineIntegrationTest {
 
                 val jointAngles = engine.inverseKinematics(
                     targetFrame,
-                    listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+                    DoubleArray(6) { 0.0 },
                     chain
                 )
 
@@ -335,13 +335,13 @@ class InverseKinematicsEngineIntegrationTest {
                 8.0,
                 259.0
             ),
-            listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+            DoubleArray(6) { 0.0 },
             chain
         )
 
         val jointAngles = engine.inverseKinematics(
             params.toFrameTransformation(),
-            listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+            DoubleArray(6) { 0.0 },
             chain
         )
     }
@@ -371,7 +371,7 @@ class InverseKinematicsEngineIntegrationTest {
 
         val jointAngles = engine.inverseKinematics(
             chain.toDhParams().toFrameTransformation().toTransformNR(),
-            listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray(),
+            DoubleArray(6) { 0.0 },
             chain
         )
 

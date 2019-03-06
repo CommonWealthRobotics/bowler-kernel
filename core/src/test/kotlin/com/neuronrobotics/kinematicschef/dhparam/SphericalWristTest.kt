@@ -16,14 +16,19 @@
  */
 package com.neuronrobotics.kinematicschef.dhparam
 
-import com.neuronrobotics.kinematicschef.util.immutableListOf
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation
 import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
 import org.ejml.simple.SimpleMatrix
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
+import org.octogonapus.ktguava.collections.immutableListOf
 
 internal class SphericalWristTest {
+
+    private val delta = 0.00001
+
     @Test
     fun `test wrist center`() {
         val wrist = SphericalWrist(
@@ -44,14 +49,18 @@ internal class SphericalWristTest {
             0.0,
             Math.PI * 0.5
         ).matrix
-        target.setRow(0, 0, *(rotationMatrix[0] + 2.0))
-        target.setRow(1, 0, *(rotationMatrix[1] + 0.0))
-        target.setRow(2, 0, *(rotationMatrix[2] + 1.0))
+
+        target.setRow(0, 0, *rotationMatrix[0] + 2.0)
+        target.setRow(1, 0, *rotationMatrix[1] + 0.0)
+        target.setRow(2, 0, *rotationMatrix[2] + 1.0)
         target[3, 3] = 1.0
 
         val wristCenter = wrist.center(target)
-        assert(Math.abs(2.0 - wristCenter[0, 0]) < 0.00001)
-        assert(Math.abs(-2.0 - wristCenter[1, 0]) < 0.00001)
-        assert(Math.abs(1.0 - wristCenter[2, 0]) < 0.00001)
+
+        assertAll(
+            { assertEquals(2.0, wristCenter[0, 0], delta) },
+            { assertEquals(-2.0, wristCenter[1, 0], delta) },
+            { assertEquals(1.0, wristCenter[2, 0], delta) }
+        )
     }
 }

@@ -20,10 +20,10 @@ import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
 import com.neuronrobotics.kinematicschef.util.getTranslation
 import com.neuronrobotics.kinematicschef.util.identityFrameTransform
 import com.neuronrobotics.kinematicschef.util.length
-import com.neuronrobotics.kinematicschef.util.toImmutableList
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
 import org.ejml.simple.SimpleMatrix
+import org.octogonapus.ktguava.collections.toImmutableList
 import java.lang.Math.toDegrees
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -47,7 +47,7 @@ data class DhParam(
      * The 4x4 center of rotation frame transformation this [DhParam] represents. Computes using
      * the normal convention (CoR n to CoR n+1).
      */
-    val frameTransformation by lazy {
+    val frameTransformation: SimpleMatrix by lazy {
         SimpleMatrix.identity(4).apply {
             val thetaRadians = Math.toRadians(theta)
             val alphaRadians = Math.toRadians(alpha)
@@ -101,7 +101,7 @@ data class DhParam(
  * Maps this [Collection] of [DhParam] into a frame transformation representing the transform of
  * the tip.
  */
-fun Collection<DhParam>.toFrameTransformation() =
+fun Collection<DhParam>.toFrameTransformation(): SimpleMatrix =
     fold(identityFrameTransform()) { acc, dhParam ->
         acc.mult(dhParam.frameTransformation)
     }

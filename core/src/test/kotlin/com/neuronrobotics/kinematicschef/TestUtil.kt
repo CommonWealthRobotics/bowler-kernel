@@ -17,8 +17,6 @@
 package com.neuronrobotics.kinematicschef
 
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
-import com.neuronrobotics.kinematicschef.util.immutableListOf
-import com.neuronrobotics.kinematicschef.util.toImmutableList
 import com.neuronrobotics.sdk.addons.kinematics.AbstractLink
 import com.neuronrobotics.sdk.addons.kinematics.DHChain
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
@@ -28,6 +26,8 @@ import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
 import org.mockito.AdditionalMatchers
+import org.octogonapus.ktguava.collections.immutableListOf
+import org.octogonapus.ktguava.collections.toImmutableList
 import kotlin.random.Random
 
 internal object TestUtil {
@@ -88,6 +88,7 @@ internal object TestUtil {
         }
     }
 
+    @SuppressWarnings("UnnecessaryApply")
     internal fun makeFullMockChain(links: ArrayList<DHLink>) =
         DHChain(null).apply { setLinks(links) }
 

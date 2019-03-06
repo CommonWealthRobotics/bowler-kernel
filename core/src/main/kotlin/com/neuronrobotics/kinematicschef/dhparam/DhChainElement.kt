@@ -17,8 +17,8 @@
 package com.neuronrobotics.kinematicschef.dhparam
 
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.kinematicschef.util.emptyImmutableList
-import com.neuronrobotics.kinematicschef.util.toImmutableList
+import org.octogonapus.ktguava.collections.emptyImmutableList
+import org.octogonapus.ktguava.collections.toImmutableList
 
 interface DhChainElement {
 

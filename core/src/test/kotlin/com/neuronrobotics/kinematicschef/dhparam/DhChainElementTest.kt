@@ -17,9 +17,9 @@
 package com.neuronrobotics.kinematicschef.dhparam
 
 import com.neuronrobotics.kinematicschef.TestUtil
-import com.neuronrobotics.kinematicschef.util.immutableListOf
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.octogonapus.ktguava.collections.immutableListOf
 
 internal class DhChainElementTest {
 

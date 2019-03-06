@@ -25,12 +25,12 @@ import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.RevoluteJoint
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.not
-import com.neuronrobotics.kinematicschef.util.immutableListOf
-import com.neuronrobotics.kinematicschef.util.plus
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import org.ejml.simple.SimpleMatrix
 import org.junit.jupiter.api.Test
+import org.octogonapus.ktguava.collections.immutableListOf
+import org.octogonapus.ktguava.collections.plus
 import kotlin.test.assertEquals
 
 internal class DefaultChainIdentifierTest {

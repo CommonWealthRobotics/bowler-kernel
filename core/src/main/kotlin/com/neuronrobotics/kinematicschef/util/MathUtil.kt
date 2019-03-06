@@ -16,14 +16,22 @@
  */
 package com.neuronrobotics.kinematicschef.util
 
-fun Int.modulus(rhs: Int) =
-    ((this % rhs) + rhs) % rhs
+/**
+ * Computes this mod [rhs] using Euclidean division.
+ */
+fun Int.modulus(rhs: Int) = (this % rhs + rhs) % rhs
 
-fun Double.modulus(rhs: Int) =
-    ((this % rhs) + rhs) % rhs
+/**
+ * Computes this mod [rhs] using Euclidean division.
+ */
+fun Double.modulus(rhs: Int) = (this % rhs + rhs) % rhs
 
-fun Int.modulus(rhs: Double) =
-    ((this % rhs) + rhs) % rhs
+/**
+ * Computes this mod [rhs] using Euclidean division.
+ */
+fun Int.modulus(rhs: Double) = (this % rhs + rhs) % rhs
 
-fun Double.modulus(rhs: Double) =
-    ((this % rhs) + rhs) % rhs
+/**
+ * Computes this mod [rhs] using Euclidean division.
+ */
+fun Double.modulus(rhs: Double) = (this % rhs + rhs) % rhs

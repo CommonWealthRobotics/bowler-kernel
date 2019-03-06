@@ -21,8 +21,8 @@ import com.neuronrobotics.kinematicschef.dhparam.DhChainElement
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.RevoluteJoint
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
-import com.neuronrobotics.kinematicschef.util.immutableListOf
-import com.neuronrobotics.kinematicschef.util.toImmutableList
+import org.octogonapus.ktguava.collections.immutableListOf
+import org.octogonapus.ktguava.collections.toImmutableList
 import javax.inject.Inject
 
 class DefaultChainIdentifier
@@ -71,9 +71,5 @@ class DefaultChainIdentifier
         }
 
         return elements.toImmutableList()
-    }
-
-    companion object {
-        fun create(wristIdentifier: WristIdentifier) = DefaultChainIdentifier(wristIdentifier)
     }
 }

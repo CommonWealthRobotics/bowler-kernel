@@ -21,17 +21,16 @@ import com.neuronrobotics.kinematicschef.classifier.ChainIdentifier
 import com.neuronrobotics.kinematicschef.classifier.ClassifierError
 import com.neuronrobotics.kinematicschef.classifier.DhClassifier
 import com.neuronrobotics.kinematicschef.dhparam.DhChainElement
-import com.neuronrobotics.kinematicschef.dhparam.RevoluteJoint
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDHLinks
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
-import com.neuronrobotics.kinematicschef.util.immutableListOf
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.octogonapus.ktguava.collections.immutableListOf
 
 internal class InverseKinematicsEngineTest {
 
@@ -66,30 +65,5 @@ internal class InverseKinematicsEngineTest {
                 chain
             )
         }
-    }
-
-    @Test
-    @Disabled
-    fun `test 6DOF inverse kinematics`() {
-        val chain = TestUtil.makeMockChain(ArrayList(TestUtil.cmmInputArmDhParams.toDHLinks()))
-
-        val dhParams = chain.toDhParams()
-
-        val mockChainIdentifier = mock<ChainIdentifier> {
-            on { identifyChain(dhParams) } doReturn immutableListOf(
-                RevoluteJoint(dhParams.subList(0, 1)),
-                RevoluteJoint(dhParams.subList(1, 2)),
-                RevoluteJoint(dhParams.subList(2, 3)),
-                SphericalWrist(dhParams.subList(3, 6))
-            )
-        }
-
-        val mockDhClassifier = mock<DhClassifier> {
-        }
-
-        val ikEngine = InverseKinematicsEngine(
-            mockChainIdentifier,
-            mockDhClassifier
-        )
     }
 }

@@ -40,40 +40,76 @@ sealed class EulerAngle(
         """.trimMargin()
 }
 
+/**
+ * ZXZ order.
+ */
 object EulerAngleZXZ : EulerAngle(RotationOrder.ZXZ, null, null)
 
+/**
+ * ZYZ order.
+ */
 object EulerAngleZYZ : EulerAngle(RotationOrder.ZYZ, null, null)
 
+/**
+ * ZXY order.
+ */
 object EulerAngleZXY : EulerAngle(RotationOrder.ZXY, null, DhParam(0, 0, 0, 90))
 
+/**
+ * ZYX order.
+ */
 object EulerAngleZYX : EulerAngle(RotationOrder.ZYX, null, DhParam(0, -90, 0, -90))
 
+/**
+ * YXY order.
+ */
 object EulerAngleYXY : EulerAngle(RotationOrder.YXY, null, DhParam(0, 0, 0, 90))
 
+/**
+ * YZY order.
+ */
 object EulerAngleYZY : EulerAngle(RotationOrder.YZY, null, DhParam(0, 0, 0, 90))
 
+/**
+ * YXZ order.
+ */
 object EulerAngleYXZ : EulerAngle(RotationOrder.YXZ, null, null)
 
+/**
+ * YZX order.
+ */
 object EulerAngleYZX : EulerAngle(RotationOrder.YZX, null, DhParam(0, -90, 0, -90))
 
+/**
+ * XYX order.
+ */
 object EulerAngleXYX : EulerAngle(
     RotationOrder.XYX,
     DhParam(0, 90, 0, 0),
     DhParam(0, -90, 0, -90)
 )
 
+/**
+ * XZX order.
+ */
 object EulerAngleXZX : EulerAngle(
     RotationOrder.XZX,
     DhParam(0, 90, 0, 0),
     DhParam(0, -90, 0, -90)
 )
 
+/**
+ * XYZ order.
+ */
 object EulerAngleXYZ : EulerAngle(
     RotationOrder.XYZ,
     DhParam(0, 90, 0, 0),
     null
 )
 
+/**
+ * XZY order.
+ */
 object EulerAngleXZY : EulerAngle(
     RotationOrder.XZY,
     DhParam(0, 90, 0, 0),
