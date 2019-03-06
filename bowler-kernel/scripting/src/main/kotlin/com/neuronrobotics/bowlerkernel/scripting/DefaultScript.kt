@@ -82,7 +82,6 @@ internal constructor(
         val configuration = CompilerConfiguration().apply {
             addCompilationCustomizers(
                 ImportCustomizer().addStarImports(
-                    "com.neuronrobotics.kinematicschef",
                     "java.util",
                     "java.io",
                     "java.nio.file",

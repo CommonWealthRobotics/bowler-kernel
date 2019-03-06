@@ -1,4 +1,4 @@
-import Gitfs_gradle.Verions.arrow_version
+import Gitfs_gradle.Versions.arrow_version
 
 plugins {
     `java-library`
@@ -6,7 +6,7 @@ plugins {
 
 description = "An interface to a Git-based filesystem."
 
-object Verions {
+object Versions {
     const val arrow_version = "0.8.1"
 }
 
