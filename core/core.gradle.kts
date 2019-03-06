@@ -7,7 +7,7 @@ plugins {
 }
 
 object Versions {
-    const val kernel_version = "0.0.13"
+    const val kernel_version = "0.0.16"
 }
 
 dependencies {
@@ -15,6 +15,8 @@ dependencies {
     api(group = "com.neuronrobotics", name = "JavaCad", version = "0.18.1")
 
     implementation(group = "org.octogonapus", name = "kt-guava-core", version = "0.0.2")
+
+    testImplementation(group = "com.natpryce", name = "hamkrest", version = "1.4.2.2")
 }
 
 checkstyle {
