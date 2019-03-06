@@ -24,9 +24,14 @@ import javafx.scene.transform.Affine
  *
  * @return The [Affine] representation.
  */
-fun FrameTransformation.affine(): Affine {
-    val affine = Affine()
+fun FrameTransformation.affine(): Affine = Affine().also { setAffine(it) }
 
+/**
+ * Maps a [FrameTransformation] to an [Affine] and modifies the given [Affine].
+ *
+ * @param affine The [Affine] to modify.
+ */
+fun FrameTransformation.setAffine(affine: Affine) {
     getRotation().let {
         affine.mxx = it[0, 0]
         affine.mxy = it[0, 1]
@@ -44,6 +49,4 @@ fun FrameTransformation.affine(): Affine {
         affine.ty = it[1]
         affine.tz = it[2]
     }
-
-    return affine
 }
