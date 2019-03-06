@@ -31,7 +31,7 @@ import org.octogonapus.guavautil.collections.toImmutableSetMultimap
  * A simple [CadGenerator] that visualizes DH params as colored cuboids. The [DhParam.r] term is
  * red and the [DhParam.d] term is green.
  *
- * @param bodyThickness The thicnkess of the body cube.
+ * @param bodyThickness The thickness of the body cube.
  * @param cuboidThickness The thickness of the DH param cuboids.
  * @param lengthForParamZero The length to use for a DH param cuboid when its d or r is zero.
  */
