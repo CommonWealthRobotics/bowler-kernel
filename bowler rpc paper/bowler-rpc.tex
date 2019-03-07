@@ -60,6 +60,9 @@ The \gls{pc}-\gls{device} \gls{rpc} is established in the following order
 \clearpage
 \section{Discovery}
 
+Before the \gls{pc} can communicate with the \gls{device}, it must first configure the \gls{device}
+using the \gls{discovery} process. This section describes that process and the packets involved.
+
 \subsection{Packet Format}
 \subsubsection{General Discovery Packet Format}
 
@@ -380,9 +383,9 @@ protocol with 60 bytes.
 
 At any time, the \gls{pc} may tell the \gls{device} to discard everything which was allocated or
 configured during \gls{discovery}. The \gls{device} must then be ready to start the \gls{discovery}
-process again. To initiate this \gls{operation}, the \gls{pc} may send the \gls{device} a discard
+process again. To initiate this process, the \gls{pc} may send the \gls{device} a discard
 \gls{discovery} packet and continue polling the \gls{device} until it reports that the discard
-\gls{operation} is complete.
+process is complete.
 
 \begin{figure}[h]
     \centering
@@ -523,6 +526,11 @@ process again. To initiate this \gls{operation}, the \gls{pc} may send the \gls{
 \FloatBarrier
 \clearpage
 \section{RPC}
+
+After the \gls{discovery} process is complete and all \glspl{resource} have been discovered, the
+\gls{pc} may begin "talking" with the \gls{device}. This section describes the format of the
+configured packets.
+
 \subsection{Packet Format}
 \subsubsection{Non-Group}
 
