@@ -34,16 +34,13 @@
 
     \item We require the communications between the \gls{pc} and \gls{device} satisfy hard real-time
     requirements: 5ms \gls{rtt}, 100ms timeout.
-
-    \item Therefore, we settle on a \gls{zeroconf} protocol which can be used by the \gls{pc} to establish
-    a \gls{rpc} with the \gls{device}.
 \end{enumerate}
 
 \subsection{Configuration Process}
 
 The \gls{pc}-\gls{device} \gls{rpc} is established in the following order
 \begin{enumerate}
-    \item The \gls{pc} connects to the \gls{device} using some Physical Layer implementation.
+    \item The \gls{pc} connects to the \gls{device} using some \gls{transport-layer} implementation.
     
     \item The \gls{pc} sends \gls{discovery} packets to the \gls{device} to tell the \gls{device} which
     \glspl{resource} are connected to it. The \gls{device} may reject any packet if it deems the
@@ -66,8 +63,10 @@ The \gls{pc}-\gls{device} \gls{rpc} is established in the following order
 \subsubsection{General Discovery Packet Format}
 
 Figure~\ref{fig:discovery-time-send-packet-format} shows what the \gls{pc} sends the \gls{device} to
-initiate a \gls{discovery} operation. Any additional operation-specific data is sent in the Payload
-section. The entire packet is 64 bytes.
+run \gls{discovery}. Any additional \gls{operation}-specific data is sent in the Payload section.
+The entire packet is 60 bytes. Typically, this protocol is implemented using
+\texttt{SimplePacketComs}, which uses the first 4 bytes of the packet for its header, leaving this
+protocol with 60 bytes.
 
 \begin{figure}[h]
     \centering
@@ -88,15 +87,17 @@ section. The entire packet is 64 bytes.
 \begin{itemize}
     \item Operation: 1 byte
     \begin{itemize}
-        \item The Operation field states the operation the packet performs.
+        \item The Operation field states the \gls{operation} the packet performs.
     \end{itemize}
 \end{itemize}
 
 \FloatBarrier
 
 Figure~\ref{fig:discovery-time-receive-packet-format} shows what the \gls{device} sends the \gls{pc}
-to complete a \gls{discovery} operation. Any additional operation-specific data is sent in the Payload
-section. The entire packet is 64 bytes.
+to complete \gls{discovery}. Any additional operation-specific data is sent in the Payload section.
+The entire packet is 60 bytes. Typically, this protocol is implemented using
+\texttt{SimplePacketComs}, which uses the first 4 bytes of the packet for its header, leaving this
+protocol with 60 bytes.
 
 \begin{figure}[h]
     \centering
@@ -111,6 +112,8 @@ section. The entire packet is 64 bytes.
 \end{figure}
 
 \FloatBarrier
+
+\clearpage
 
 \subsubsection{Discovery Packet}
 
@@ -129,6 +132,7 @@ section. The entire packet is 64 bytes.
         \end{leftwordgroup}
     \end{bytefield}
     \caption{Discovery send packet.}
+    \label{fig:discovery-send-packet}
 \end{figure}
 
 \FloatBarrier
@@ -171,6 +175,7 @@ section. The entire packet is 64 bytes.
         \wordbox[lrb]{1}{}
     \end{bytefield}
     \caption{Discovery receive packet.}
+    \label{fig:discovery-receive-packet}
 \end{figure}
 
 \FloatBarrier
@@ -184,6 +189,8 @@ section. The entire packet is 64 bytes.
 \end{itemize}
 
 \FloatBarrier
+
+\clearpage
 
 \subsubsection{Group Discovery Packet}
 
@@ -200,6 +207,7 @@ section. The entire packet is 64 bytes.
         \wordbox[lrb]{1}{}
     \end{bytefield}
     \caption{Group discovery send packet.}
+    \label{fig:group-discovery-send-packet}
 \end{figure}
 
 \FloatBarrier
@@ -237,6 +245,7 @@ section. The entire packet is 64 bytes.
         \wordbox[lrb]{1}{}
     \end{bytefield}
     \caption{Group discovery receive packet.}
+    \label{fig:group-discovery-receive-packet}
 \end{figure}
 
 \FloatBarrier
@@ -250,6 +259,8 @@ section. The entire packet is 64 bytes.
 \end{itemize}
 
 \FloatBarrier
+
+\clearpage
 
 \subsubsection{Group Member Discovery Packet}
 
@@ -276,6 +287,7 @@ section. The entire packet is 64 bytes.
         \end{leftwordgroup}
     \end{bytefield}
     \caption{Group member discovery send packet.}
+    \label{fig:group-member-discovery-send-packet}
 \end{figure}
 
 \FloatBarrier
@@ -342,6 +354,7 @@ section. The entire packet is 64 bytes.
         \wordbox[lrb]{1}{}
     \end{bytefield}
     \caption{Group member discovery receive packet.}
+    \label{fig:group-member-discovery-receive-packet}
 \end{figure}
 
 \FloatBarrier
@@ -355,6 +368,8 @@ section. The entire packet is 64 bytes.
 \end{itemize}
 
 \FloatBarrier
+
+\clearpage
 
 \subsection{Discovery Process}
 
@@ -401,8 +416,8 @@ The non-\gls{group} send packet format consists of the write payload.
             \wordbox[lrb]{1}{}
         \end{leftwordgroup}
     \end{bytefield}
-    \caption{RPC send packet format.}
-    \label{fig:rpc-send-packet-format}
+    \caption{Non-group RPC send packet format.}
+    \label{fig:non-group-rpc-send-packet-format}
 \end{figure}
 
 \FloatBarrier
@@ -419,20 +434,23 @@ The non-\gls{group} receive packet format consists of the read payload.
             \wordbox[lrb]{1}{}
         \end{leftwordgroup}
     \end{bytefield}
-    \caption{RPC receive packet format.}
-    \label{fig:rpc-receive-packet-format}
+    \caption{Non-group RPC receive packet format.}
+    \label{fig:non-group-rpc-receive-packet-format}
 \end{figure}
 
 \FloatBarrier
 
+\clearpage
+
 \subsubsection{Group}
 
 Packets for \gls{group} \glspl{resource} correspond to multiple \glspl{resource} whose write and read
-payloads are packed into a single packet. These \glspl{resource} typically have timing constraints
+payloads are packed into single packets. These \glspl{resource} typically have timing constraints
 and are therefore put into a \gls{group}.
 
-The \gls{group} send packet format consists of packed \gls{resource} write payloads as specified by the
-Send Start and Send End indices from the \gls{group-member-discovery} packets.
+The \gls{group} send packet format consists of packed \gls{resource} write payloads as specified by
+the Send Start and Send End indices from the \gls{group-member-discovery} packet in
+Figure~\ref{fig:group-member-discovery-send-packet}.
 
 \begin{figure}[h]
     \centering
@@ -478,14 +496,15 @@ Send Start and Send End indices from the \gls{group-member-discovery} packets.
     \begin{equation}
         i \in [1, N], N = \textrm{Count}
     \end{equation}
-    \caption{RPC send packet format.}
-    \label{fig:rpc-send-packet-format}
+    \caption{Group RPC send packet format.}
+    \label{fig:group-rpc-send-packet-format}
 \end{figure}
 
 \FloatBarrier
 
-The \gls{group} write packet format consists of packed \gls{resource} read payloads as specified by the Receive
-Start and Receive End indices from the \gls{group-member-discovery} packets.
+The \gls{group} receive packet format consists of packed \gls{resource} read payloads as specified
+by the Receive Start and Receive End indices from the \gls{group-member-discovery} packet in
+Figure~\ref{fig:group-member-discovery-send-packet}.
 
 \begin{figure}[h]
     \centering
@@ -531,8 +550,8 @@ Start and Receive End indices from the \gls{group-member-discovery} packets.
     \begin{equation}
         i \in [1, N], N = \textrm{Count}
     \end{equation}
-    \caption{RPC receive packet format.}
-    \label{fig:rpc-receive-packet-format}
+    \caption{Group RPC receive packet format.}
+    \label{fig:group-rpc-receive-packet-format}
 \end{figure}
 
 \FloatBarrier
