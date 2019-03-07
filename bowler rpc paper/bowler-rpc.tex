@@ -33,7 +33,7 @@
     configuration from the user.
 
     \item We require the communications between the \gls{pc} and \gls{device} satisfy hard real-time
-    requirements: 5ms \gls{rtt}, 100ms timeout.
+    requirements: \gls{rtt} $\leq$ 5ms, timeout $=$ 100ms.
 \end{enumerate}
 
 \subsection{Configuration Process}
@@ -48,6 +48,10 @@ The \gls{pc}-\gls{device} \gls{rpc} is established in the following order
     
     \item Once all \glspl{resource} have been discovered, the \gls{discovery} process is finished and the
     \gls{pc} and \gls{device} may use the configured \gls{rpc}.
+
+    \item At any time, the \gls{pc} may tell the \gls{device} to discard everything which was
+    allocated or configured during \gls{discovery}. The \gls{device} must then be ready to start the
+    \gls{discovery} process again.
 \end{enumerate}
 
 \clearpage
@@ -121,27 +125,6 @@ protocol with 60 bytes.
 \end{itemize}
 
 \FloatBarrier
-
-\begin{table}
-    \centering
-    \begin{tabular}{r|l}
-        Status Code & Meaning \\
-        \hline
-        1 & Accepted \\
-        2 & Rejected: Generic \\
-        3 & Rejected: Unknown Resource \\
-        4 & Rejected: Unknown Attachment \\
-        5 & Rejected: Invalid Attachment \\
-        6 & Rejected: Invalid Attachment Data \\
-        7 & Rejected: Invalid Group ID \\
-        8 & Rejected: Group Full \\
-        9 & Rejected: Unknown Operation
-    \end{tabular}
-    \caption{Status codes.}
-    \label{tab:status-codes}
-\end{table}
-
-\FloatBarrier
 \clearpage
 \subsubsection{Discovery Packet}
 
@@ -151,7 +134,7 @@ protocol with 60 bytes.
         \bitheader{0,7,8,15} \\
         \bitbox{8}{1}
         \bitbox{8}{Packet ID} \\
-        \begin{leftwordgroup}{ResourceId}
+        \begin{leftwordgroup}{\texttt{ResourceId}}
             \bitbox{8}{Resource}
             \bitbox{8}{Attachment} \\
             \wordbox[lr]{1}{Attachment Data} \\
@@ -224,7 +207,7 @@ protocol with 60 bytes.
     \centering
     \begin{bytefield}{16}
         \bitheader{0,7,8,15} \\
-        \bitbox{8}{3}
+        \bitbox{8}{2}
         \bitbox{8}{Group ID} \\
         \bitbox{8}{Packet ID}
         \bitbox{8}{Count} \\
@@ -292,7 +275,7 @@ protocol with 60 bytes.
     \centering
     \begin{bytefield}{16}
         \bitheader{0,7,8,15} \\
-        \bitbox{8}{4}
+        \bitbox{8}{3}
         \bitbox{8}{Group ID} \\
         \begin{leftwordgroup}{Write Indices}
             \bitbox{8}{Send Start}
@@ -302,7 +285,7 @@ protocol with 60 bytes.
             \bitbox{8}{Receive Start}
             \bitbox{8}{Receive End}
         \end{leftwordgroup} \\
-        \begin{leftwordgroup}{ResourceId}
+        \begin{leftwordgroup}{\texttt{ResourceId}}
             \bitbox{8}{Resource}
             \bitbox{8}{Attachment} \\
             \wordbox[lr]{1}{Attachment Data} \\
@@ -393,6 +376,56 @@ protocol with 60 bytes.
 
 \FloatBarrier
 \clearpage
+\subsubsection{Discard Discovery Packet}
+
+At any time, the \gls{pc} may tell the \gls{device} to discard everything which was allocated or
+configured during \gls{discovery}. The \gls{device} must then be ready to start the \gls{discovery}
+process again. To initiate this \gls{operation}, the \gls{pc} may send the \gls{device} a discard
+\gls{discovery} packet and continue polling the \gls{device} until it reports that the discard
+\gls{operation} is complete.
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}{16}
+        \bitheader{0,7,8,15} \\
+        \bitbox{8}{4}
+        \bitbox[lrt]{8}{} \\
+        \wordbox[lr]{1}{Reserved} \\
+        \skippedwords \\
+        \wordbox[lrb]{1}{}
+    \end{bytefield}
+    \caption{Discard discovery send packet.}
+    \label{fig:discard-discovery-send-packet}
+\end{figure}
+
+\FloatBarrier
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}{16}
+        \bitheader{0,7,8,15} \\
+        \bitbox{8}{Status}
+        \bitbox[lrt]{8}{} \\
+        \wordbox[lr]{1}{Reserved} \\
+        \skippedwords \\
+        \wordbox[lrb]{1}{}
+    \end{bytefield}
+    \caption{Discard discovery receive packet.}
+    \label{fig:discard-discovery-receive-packet}
+\end{figure}
+
+\FloatBarrier
+
+\begin{itemize}
+    \item Status: 1 byte
+    \begin{itemize}
+        \item The Status field indicates the status of the discard operation. The status codes are
+        documented in Table~\ref{tab:status-codes}.
+    \end{itemize}
+\end{itemize}
+
+\FloatBarrier
+\clearpage
 \subsection{Discovery Process}
 \subsubsection{Discovery}
 
@@ -402,7 +435,7 @@ protocol with 60 bytes.
         \newthread{pc}{PC}
         \newinst[3]{device}{Device}
 
-        \begin{call}{pc}{Send discovery packet}{device}{Accept (Status = 1)}
+        \begin{call}{pc}{Send discovery}{device}{Status 1}
         \end{call}
     \end{sequencediagram}
     \caption{Successful discovery.}
@@ -415,7 +448,7 @@ protocol with 60 bytes.
         \newthread{pc}{PC}
         \newinst[3]{device}{Device}
 
-        \begin{call}{pc}{Send discovery packet}{device}{Reject (Status = 2)}
+        \begin{call}{pc}{Send discovery}{device}{Status 2}
         \end{call}
     \end{sequencediagram}
     \caption{Unsuccessful discovery.}
@@ -432,16 +465,13 @@ protocol with 60 bytes.
         \newthread{pc}{PC}
         \newinst[4]{device}{Device}
 
-        \begin{call}{pc}{Send group discovery packet}{device}{Accept (Status = 1)}
+        \begin{call}{pc}{Send group discovery}{device}{Status 1}
         \end{call}
 
-        \begin{call}{pc}{Send group member discovery}{device}{Accept (Status = 1)}
+        \begin{call}{pc}{Send group member discovery}{device}{Status 1}
         \end{call}
 
-        \begin{call}{pc}{Send group member discovery}{device}{Accept (Status = 1)}
-        \end{call}
-
-        \begin{call}{pc}{Send group member discovery}{device}{Accept (Status = 1)}
+        \begin{call}{pc}{Send group member discovery}{device}{Status 1}
         \end{call}
     \end{sequencediagram}
     \caption{Successful group discovery.}
@@ -454,21 +484,19 @@ protocol with 60 bytes.
         \newthread{pc}{PC}
         \newinst[4]{device}{Device}
 
-        \begin{call}{pc}{Send group discovery packet}{device}{Accept (Status = 1)}
+        \begin{call}{pc}{Send group discovery}{device}{Status 2}
         \end{call}
 
-        \begin{call}{pc}{Send group member discovery}{device}{Accept (Status = 1)}
-        \end{call}
-
-        \begin{call}{pc}{Send group member discovery}{device}{Reject (Status = 2)}
-        \end{call}
-
-        \begin{call}{pc}{Send group member discovery}{device}{Accept (Status = 1)}
+        \begin{call}{pc}{Send group member discovery}{device}{Status 7}
         \end{call}
     \end{sequencediagram}
-    \caption{Partially successful group discovery.}
-    \label{fig:partially-successful-group-discovery}
+    \caption{Unsuccessful group discovery.}
+    \label{fig:unsuccessful-group-discovery}
 \end{figure}
+
+\FloatBarrier
+\clearpage
+\subsubsection{Discard Discovery}
 
 \begin{figure}[h]
     \centering
@@ -476,20 +504,20 @@ protocol with 60 bytes.
         \newthread{pc}{PC}
         \newinst[4]{device}{Device}
 
-        \begin{call}{pc}{Send group discovery packet}{device}{Reject (Status = 2)}
+        \begin{call}{pc}{Send discard discovery}{device}{Status 10}
         \end{call}
 
-        \begin{call}{pc}{Send group member discovery}{device}{Reject (Status = 2)}
+        \begin{call}{pc}{Send discard discovery}{device}{Status 10}
         \end{call}
 
-        \begin{call}{pc}{Send group member discovery}{device}{Reject (Status = 2)}
+        \begin{call}{pc}{Send discard discovery}{device}{Status 11}
         \end{call}
 
-        \begin{call}{pc}{Send group member discovery}{device}{Reject (Status = 2)}
+        \begin{call}{pc}{Send discard discovery}{device}{Status 11}
         \end{call}
     \end{sequencediagram}
-    \caption{Unsuccessful group discovery.}
-    \label{fig:unsuccessful-group-discovery}
+    \caption{Discard discovery.}
+    \label{fig:discard-discovery}
 \end{figure}
 
 \FloatBarrier
@@ -648,6 +676,35 @@ Figure~\ref{fig:group-member-discovery-send-packet}.
     \caption{Group RPC receive packet format.}
     \label{fig:group-rpc-receive-packet-format}
 \end{figure}
+
+\FloatBarrier
+\clearpage
+
+\appendix
+\section{Tables}
+
+\FloatBarrier
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{r|l}
+        Status Code & Meaning \\
+        \hline
+        1 & Accepted \\
+        2 & Rejected: Generic \\
+        3 & Rejected: Unknown Resource \\
+        4 & Rejected: Unknown Attachment \\
+        5 & Rejected: Invalid Attachment \\
+        6 & Rejected: Invalid Attachment Data \\
+        7 & Rejected: Invalid Group ID \\
+        8 & Rejected: Group Full \\
+        9 & Rejected: Unknown Operation \\
+        10 & Discard in progress \\
+        11 & Discard complete
+    \end{tabular}
+    \caption{Status codes.}
+    \label{tab:status-codes}
+\end{table}
 
 \FloatBarrier
 \clearpage
