@@ -31,7 +31,9 @@ import kotlin.math.sqrt
 data class FrameTransformation
 private constructor(private val mat: SimpleMatrix) {
 
-    private val data = DoubleArray(mat.numRows() * mat.numCols()) { mat[it] }
+    private val internalData = DoubleArray(mat.numRows() * mat.numCols()) { mat[it] }
+    val data
+        get() = internalData.copyOf()
 
     /**
      * Extracts the translation component.
@@ -93,10 +95,10 @@ private constructor(private val mat: SimpleMatrix) {
 
         other as FrameTransformation
 
-        return Arrays.equals(data, other.data)
+        return Arrays.equals(internalData, other.internalData)
     }
 
-    override fun hashCode() = Arrays.hashCode(data)
+    override fun hashCode() = Arrays.hashCode(internalData)
 
     companion object {
 
@@ -201,7 +203,7 @@ private constructor(private val mat: SimpleMatrix) {
                     |{
                     |   "rows": ${value.mat.numRows()},
                     |   "cols": ${value.mat.numCols()},
-                    |   "data": [${value.data.joinToString(",")}]
+                    |   "data": [${value.internalData.joinToString(",")}]
                     |}
                 """.trimMargin()
             }
