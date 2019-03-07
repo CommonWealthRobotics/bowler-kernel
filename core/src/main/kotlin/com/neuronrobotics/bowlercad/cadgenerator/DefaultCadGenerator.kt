@@ -24,8 +24,8 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cube
 import javafx.scene.paint.Color
-import org.octogonapus.guavautil.collections.immutableSetOf
-import org.octogonapus.guavautil.collections.toImmutableSetMultimap
+import org.octogonapus.ktguava.collections.immutableSetOf
+import org.octogonapus.ktguava.collections.toImmutableSetMultimap
 
 /**
  * A simple [CadGenerator] that visualizes DH params as colored cuboids. The [DhParam.r] term is

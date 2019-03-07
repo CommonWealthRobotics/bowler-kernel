@@ -34,8 +34,8 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInertialStateEstima
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanGenerator
-import org.octogonapus.guavautil.collections.toImmutableList
-import org.octogonapus.guavautil.collections.toImmutableMap
+import org.octogonapus.ktguava.collections.toImmutableList
+import org.octogonapus.ktguava.collections.toImmutableMap
 
 internal fun createMockKinematicBase(limbs: ImmutableList<ImmutableList<DhParam>>): KinematicBase {
     return DefaultKinematicBase(

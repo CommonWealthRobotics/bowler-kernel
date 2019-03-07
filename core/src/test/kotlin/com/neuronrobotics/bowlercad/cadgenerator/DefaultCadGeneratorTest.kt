@@ -25,8 +25,8 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import javafx.scene.paint.Color
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.octogonapus.guavautil.collections.emptyImmutableList
-import org.octogonapus.guavautil.collections.immutableListOf
+import org.octogonapus.ktguava.collections.emptyImmutableList
+import org.octogonapus.ktguava.collections.immutableListOf
 import kotlin.test.assertEquals
 
 internal class DefaultCadGeneratorTest {
