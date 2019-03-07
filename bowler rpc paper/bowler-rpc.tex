@@ -5,6 +5,7 @@
 \usepackage{subcaption}
 \usepackage{placeins}
 \usepackage[acronym, toc]{glossaries}
+\usepackage{pgf-umlsd}
 
 \makenoidxglossaries
 
@@ -22,7 +23,6 @@
 \maketitle
 
 \section{Overview}
-
 \subsection{Motivation}
 
 \begin{enumerate}
@@ -51,15 +51,12 @@ The \gls{pc}-\gls{device} \gls{rpc} is established in the following order
 \end{enumerate}
 
 \clearpage
-
 \tableofcontents
 
 \clearpage
-
 \section{Discovery}
 
 \subsection{Packet Format}
-
 \subsubsection{General Discovery Packet Format}
 
 Figure~\ref{fig:discovery-time-send-packet-format} shows what the \gls{pc} sends the \gls{device} to
@@ -112,9 +109,7 @@ protocol with 60 bytes.
 \end{figure}
 
 \FloatBarrier
-
 \clearpage
-
 \subsubsection{Discovery Packet}
 
 \begin{figure}[h]
@@ -189,9 +184,7 @@ protocol with 60 bytes.
 \end{itemize}
 
 \FloatBarrier
-
 \clearpage
-
 \subsubsection{Group Discovery Packet}
 
 \begin{figure}[h]
@@ -259,9 +252,7 @@ protocol with 60 bytes.
 \end{itemize}
 
 \FloatBarrier
-
 \clearpage
-
 \subsubsection{Group Member Discovery Packet}
 
 \begin{figure}[h]
@@ -368,37 +359,110 @@ protocol with 60 bytes.
 \end{itemize}
 
 \FloatBarrier
-
 \clearpage
-
 \subsection{Discovery Process}
-
 \subsubsection{Discovery}
 
-Sequence diagram for
-\begin{enumerate}
-    \item Send \gls{discovery} packet and get response (accepted).
-    \item Send \gls{discovery} packet and get response (rejected).
-\end{enumerate}
+\begin{figure}[h]
+    \centering
+    \begin{sequencediagram}
+        \newthread{pc}{PC}
+        \newinst[3]{device}{Device}
 
+        \begin{call}{pc}{Send discovery packet}{device}{Accept (Status = 1)}
+        \end{call}
+    \end{sequencediagram}
+    \caption{Successful discovery.}
+    \label{fig:successful-discovery}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \begin{sequencediagram}
+        \newthread{pc}{PC}
+        \newinst[3]{device}{Device}
+
+        \begin{call}{pc}{Send discovery packet}{device}{Reject (Status = 2)}
+        \end{call}
+    \end{sequencediagram}
+    \caption{Unsuccessful discovery.}
+    \label{fig:unsuccessful-discovery}
+\end{figure}
+
+\FloatBarrier
+\clearpage
 \subsubsection{Group Discovery}
 
-Sequence diagram for
-\begin{enumerate}
-    \item Send \gls{group-discovery} packet and get response (accepted). Send multiple group member
-    discovery packets and get responses (accepted).
-    \item Send \gls{group-discovery} packet and get response (accepted). Send multiple group member
-    discovery packets and get responses (most accepted, some rejected).
-    \item Send \gls{group-discovery} packet and get response (rejected). Send multiple group member
-    discovery packets and get responses (rejected).
-\end{enumerate}
+\begin{figure}[h]
+    \centering
+    \begin{sequencediagram}
+        \newthread{pc}{PC}
+        \newinst[4]{device}{Device}
 
+        \begin{call}{pc}{Send group discovery packet}{device}{Accept (Status = 1)}
+        \end{call}
+
+        \begin{call}{pc}{Send group member discovery}{device}{Accept (Status = 1)}
+        \end{call}
+
+        \begin{call}{pc}{Send group member discovery}{device}{Accept (Status = 1)}
+        \end{call}
+
+        \begin{call}{pc}{Send group member discovery}{device}{Accept (Status = 1)}
+        \end{call}
+    \end{sequencediagram}
+    \caption{Successful group discovery.}
+    \label{fig:successful-group-discovery}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \begin{sequencediagram}
+        \newthread{pc}{PC}
+        \newinst[4]{device}{Device}
+
+        \begin{call}{pc}{Send group discovery packet}{device}{Accept (Status = 1)}
+        \end{call}
+
+        \begin{call}{pc}{Send group member discovery}{device}{Accept (Status = 1)}
+        \end{call}
+
+        \begin{call}{pc}{Send group member discovery}{device}{Reject (Status = 2)}
+        \end{call}
+
+        \begin{call}{pc}{Send group member discovery}{device}{Accept (Status = 1)}
+        \end{call}
+    \end{sequencediagram}
+    \caption{Partially successful group discovery.}
+    \label{fig:partially-successful-group-discovery}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \begin{sequencediagram}
+        \newthread{pc}{PC}
+        \newinst[4]{device}{Device}
+
+        \begin{call}{pc}{Send group discovery packet}{device}{Reject (Status = 2)}
+        \end{call}
+
+        \begin{call}{pc}{Send group member discovery}{device}{Reject (Status = 2)}
+        \end{call}
+
+        \begin{call}{pc}{Send group member discovery}{device}{Reject (Status = 2)}
+        \end{call}
+
+        \begin{call}{pc}{Send group member discovery}{device}{Reject (Status = 2)}
+        \end{call}
+    \end{sequencediagram}
+    \caption{Unsuccessful group discovery.}
+    \label{fig:unsuccessful-group-discovery}
+\end{figure}
+
+\FloatBarrier
 \clearpage
-
 \section{RPC}
-
 \subsection{Packet Format}
-
 \subsubsection{Non-Group}
 
 Packets for non-\gls{group} \glspl{resource} correspond to a single \gls{resource}. These \glspl{resource}
@@ -439,9 +503,7 @@ The non-\gls{group} receive packet format consists of the read payload.
 \end{figure}
 
 \FloatBarrier
-
 \clearpage
-
 \subsubsection{Group}
 
 Packets for \gls{group} \glspl{resource} correspond to multiple \glspl{resource} whose write and read
@@ -555,7 +617,6 @@ Figure~\ref{fig:group-member-discovery-send-packet}.
 \end{figure}
 
 \FloatBarrier
-
 \clearpage
 
 \printnoidxglossaries
