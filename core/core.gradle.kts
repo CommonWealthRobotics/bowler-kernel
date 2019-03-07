@@ -7,7 +7,7 @@ plugins {
 }
 
 object Versions {
-    const val kernel_version = "0.0.17"
+    const val kernel_version = "0.0.18"
 }
 
 dependencies {

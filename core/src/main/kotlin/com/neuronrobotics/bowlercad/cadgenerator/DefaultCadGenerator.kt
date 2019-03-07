@@ -45,10 +45,10 @@ class DefaultCadGenerator(
         Cube(bodyThickness, bodyThickness, bodyThickness).toCSG()
 
     override fun generateLimbs(base: KinematicBase): ImmutableSetMultimap<LimbId, ImmutableSet<CSG>> {
-        return base.limbs.map {
-            it.id to it.links.map {
+        return base.limbs.map { limb ->
+            limb.id to limb.links.map { link ->
                 val rLink = Cube(
-                    if (it.dhParam.r == 0.0) lengthForParamZero else it.dhParam.r,
+                    if (link.dhParam.r == 0.0) lengthForParamZero else link.dhParam.r,
                     cuboidThickness,
                     cuboidThickness
                 ).toCSG().toXMax().apply {
@@ -58,8 +58,8 @@ class DefaultCadGenerator(
                 val dLink = Cube(
                     cuboidThickness,
                     cuboidThickness,
-                    if (it.dhParam.d == 0.0) lengthForParamZero else it.dhParam.d
-                ).toCSG().toZMin().apply {
+                    if (link.dhParam.d == 0.0) lengthForParamZero else link.dhParam.d
+                ).toCSG().toZMin().moveByDhParam(link.dhParam).apply {
                     color = Color.GREEN
                 }
 
@@ -67,4 +67,7 @@ class DefaultCadGenerator(
             }
         }.toImmutableSetMultimap()
     }
+
+    private fun CSG.moveByDhParam(dhParam: DhParam): CSG =
+        transformed(dhParam.frameTransformation.toTransform())
 }
