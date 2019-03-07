@@ -1,0 +1,54 @@
+\newglossaryentry{pc}
+{
+    name=PC,
+    description={The host computer running the Bowler stack}
+}
+
+\newglossaryentry{device}
+{
+    name=device,
+    description={A microcontroller running an implementation of the Bowler RPC}
+}
+
+\newglossaryentry{resource}
+{
+    name=resource,
+    description={A hardware element connected to a \Gls{device}; typically an actuator or sensor}
+}
+
+\newglossaryentry{group}
+{
+    name=group,
+    description={A collection of \Glspl{resource} which must be written to/read from at the same
+    exact time.}
+}
+
+\newglossaryentry{discovery}
+{
+    name=discovery,
+    description={A procedure in which the \Gls{pc} tells the \Gls{device} which \Glspl{resource} are
+    connected to it}
+}
+
+\newglossaryentry{group-discovery}
+{
+    name=group discovery,
+    description={A procedure in which the \Gls{pc} tells the \Gls{device} about a \Gls{group}}
+}
+
+\newglossaryentry{group-member-discovery}
+{
+    name=group member discovery,
+    description={A procedure in which the \Gls{pc} tells the \Gls{device} about a
+    \Gls{resource} which is part of a \Gls{group}}
+}
+
+\newglossaryentry{zeroconf}
+{
+    name=zeroconf,
+    description={Zero-configuration; the automatic creation a computer network}
+}
+
+\newacronym{rpc}{RPC}{Remote Prodecure Call}
+
+\newacronym{rtt}{RTT}{Round Trip Time}
