@@ -57,9 +57,8 @@ entire packet is 64 bytes.
 
 \begin{figure}[h]
     \centering
-    \begin{bytefield}[]{16}
+    \begin{bytefield}{16}
         \bitheader{0,7,8,15} \\
-        \wordbox{2}{DPID} \\
         \bitbox{8}{Operation}
         \bitbox[lrt]{8}{} \\
         \wordbox[lr]{1}{Payload} \\
@@ -73,12 +72,6 @@ entire packet is 64 bytes.
 \FloatBarrier
 
 \begin{itemize}
-    \item DPID (Discovery Packet ID): 4 bytes
-    \begin{itemize}
-        \item The DPID field is typically filled by SimplePacketComs and contains the ID for the
-        packet it is contained in.
-    \end{itemize}
-
     \item Operation: 1 byte
     \begin{itemize}
         \item The Operation field states the operation the packet performs.
@@ -93,10 +86,9 @@ entire packet is 64 bytes.
 
 \begin{figure}[h]
     \centering
-    \begin{bytefield}[]{16}
+    \begin{bytefield}{16}
         \bitheader{0,7,8,15} \\
-        \wordbox{2}{DPID} \\
-        \wordbox[lr]{1}{Payload} \\
+        \wordbox[lrt]{1}{Payload} \\
         \skippedwords \\
         \wordbox[lrb]{1}{}
     \end{bytefield}
@@ -106,23 +98,12 @@ entire packet is 64 bytes.
 
 \FloatBarrier
 
-\begin{itemize}
-    \item DPID (Discovery Packet ID): 4 bytes
-    \begin{itemize}
-        \item The DPID field is typically filled by SimplePacketComs and contains the ID for the
-        packet it is contained in.
-    \end{itemize}
-\end{itemize}
-
-\FloatBarrier
-
 \subsubsection{Discovery Packet}
 
 \begin{figure}[h]
     \centering
-    \begin{bytefield}[]{16}
+    \begin{bytefield}{16}
         \bitheader{0,7,8,15} \\
-        \wordbox{2}{DPID} \\
         \bitbox{8}{1}
         \bitbox{8}{Packet ID} \\
         \begin{leftwordgroup}{ResourceId}
@@ -139,12 +120,6 @@ entire packet is 64 bytes.
 \FloatBarrier
 
 \begin{itemize}
-    \item DPID (Discovery Packet ID): 4 bytes
-    \begin{itemize}
-        \item The DPID field is typically filled by SimplePacketComs and contains the ID for the
-        packet it is contained in.
-    \end{itemize}
-
     \item Packet ID: 1 byte
     \begin{itemize}
         \item The Packet ID field is a new ID for the Packet being discovered.
@@ -173,9 +148,8 @@ entire packet is 64 bytes.
 
 \begin{figure}[h]
     \centering
-    \begin{bytefield}[]{16}
+    \begin{bytefield}{16}
         \bitheader{0,7,8,15} \\
-        \wordbox{2}{DPID} \\
         \bitbox{8}{Status}
         \bitbox[lrt]{8}{} \\
         \wordbox[lr]{1}{Reserved} \\
@@ -188,12 +162,6 @@ entire packet is 64 bytes.
 \FloatBarrier
 
 \begin{itemize}
-    \item DPID (Discovery Packet ID): 4 bytes
-    \begin{itemize}
-        \item The DPID field is typically filled by SimplePacketComs and contains the ID for the
-        packet it is contained in.
-    \end{itemize}
-
     \item Status: 1 byte
     \begin{itemize}
         \item The Status field encodes the status of the discovery operation. 1 = Accepted, 2 =
@@ -207,9 +175,8 @@ entire packet is 64 bytes.
 
 \begin{figure}[h]
     \centering
-    \begin{bytefield}[]{16}
+    \begin{bytefield}{16}
         \bitheader{0,7,8,15} \\
-        \wordbox{2}{DPID} \\
         \bitbox{8}{3}
         \bitbox{8}{Group ID} \\
         \bitbox{8}{Packet ID}
@@ -224,13 +191,6 @@ entire packet is 64 bytes.
 \FloatBarrier
 
 \begin{itemize}
-    \item DPID (Discovery Packet ID): 4 bytes
-    \begin{itemize}
-        \item The DPID field is typically filled by SimplePacketComs and contains the ID for the
-        packet it is contained in.
-    \end{itemize}
-
-    
     \item Group ID: 1 byte
     \begin{itemize}
         \item The Group ID field is the ID for the group being made. Future Group Member Discovery
@@ -253,9 +213,8 @@ entire packet is 64 bytes.
 
 \begin{figure}[h]
     \centering
-    \begin{bytefield}[]{16}
+    \begin{bytefield}{16}
         \bitheader{0,7,8,15} \\
-        \wordbox{2}{DPID} \\
         \bitbox{8}{Status}
         \bitbox[lrt]{8}{} \\
         \wordbox[lr]{1}{Reserved} \\
@@ -268,12 +227,6 @@ entire packet is 64 bytes.
 \FloatBarrier
 
 \begin{itemize}
-    \item DPID (Discovery Packet ID): 4 bytes
-    \begin{itemize}
-        \item The DPID field is typically filled by SimplePacketComs and contains the ID for the
-        packet it is contained in.
-    \end{itemize}
-
     \item Status: 1 byte
     \begin{itemize}
         \item The Status field encodes the status of the discovery operation. 1 = Accepted, 2 =
@@ -287,13 +240,18 @@ entire packet is 64 bytes.
 
 \begin{figure}[h]
     \centering
-    \begin{bytefield}[]{16}
+    \begin{bytefield}{16}
         \bitheader{0,7,8,15} \\
-        \wordbox{2}{DPID} \\
         \bitbox{8}{4}
         \bitbox{8}{Group ID} \\
-        \bitbox{8}{Start}
-        \bitbox{8}{End} \\
+        \begin{leftwordgroup}{Write Indices}
+            \bitbox{8}{Send Start}
+            \bitbox{8}{Send End}
+        \end{leftwordgroup} \\
+        \begin{leftwordgroup}{Read Indices}
+            \bitbox{8}{Receive Start}
+            \bitbox{8}{Receive End}
+        \end{leftwordgroup} \\
         \begin{leftwordgroup}{ResourceId}
             \bitbox{8}{Resource}
             \bitbox{8}{Attachment} \\
@@ -313,16 +271,28 @@ entire packet is 64 bytes.
         \item The Group ID field is the ID for the Group that this Resource will be added to.
     \end{itemize}
 
-    \item Start: 1 byte
+    \item Send Start: 1 byte
     \begin{itemize}
-        \item The Start field is the starting byte index in the receive Payload for this Resource's
-        receive data.
+        \item The Send Start field is the starting byte index in the send Payload for this
+        Resource's write data.
     \end{itemize}
 
-    \item End: 1 byte
+    \item Send End: 1 byte
     \begin{itemize}
-        \item The End field is the ending byte index in the receive Payload for this Resource's
-        receive data.
+        \item The Send End field is the ending byte index in the send Payload for this Resource's
+        write data.
+    \end{itemize}
+
+    \item Receive Start: 1 byte
+    \begin{itemize}
+        \item The Receive Start field is the starting byte index in the receive Payload for this
+        Resource's read data.
+    \end{itemize}
+
+    \item Receive End: 1 byte
+    \begin{itemize}
+        \item The Receive End field is the ending byte index in the receive Payload for this
+        Resource's read data.
     \end{itemize}
 
     \item Resource: 1 byte
@@ -348,9 +318,8 @@ entire packet is 64 bytes.
 
 \begin{figure}[h]
     \centering
-    \begin{bytefield}[]{16}
+    \begin{bytefield}{16}
         \bitheader{0,7,8,15} \\
-        \wordbox{2}{DPID} \\
         \bitbox{8}{Status}
         \bitbox[lrt]{8}{} \\
         \wordbox[lr]{1}{Reserved} \\
@@ -363,12 +332,6 @@ entire packet is 64 bytes.
 \FloatBarrier
 
 \begin{itemize}
-    \item DPID (Discovery Packet ID): 4 bytes
-    \begin{itemize}
-        \item The DPID field is typically filled by SimplePacketComs and contains the ID for the
-        packet it is contained in.
-    \end{itemize}
-
     \item Status: 1 byte
     \begin{itemize}
         \item The Status field encodes the status of the discovery operation. 1 = Accepted, 2 =
@@ -409,14 +372,17 @@ Sequence diagram for
 Packets for non-Group Resources correspond to a single Resource. These Resources do not have any
 timing constraints.
 
+The non-Group send packet format consists of the write payload.
+
 \begin{figure}[h]
     \centering
-    \begin{bytefield}[]{16}
+    \begin{bytefield}{16}
         \bitheader{0,7,8,15} \\
-        \wordbox{2}{DPID} \\
-        \wordbox[lr]{1}{Payload} \\
-        \skippedwords \\
-        \wordbox[lrb]{1}{}
+        \begin{leftwordgroup}{Resource Write}
+            \wordbox[lrt]{1}{Payload} \\
+            \skippedwords \\
+            \wordbox[lrb]{1}{}
+        \end{leftwordgroup}
     \end{bytefield}
     \caption{RPC send packet format.}
     \label{fig:rpc-send-packet-format}
@@ -424,96 +390,133 @@ timing constraints.
 
 \FloatBarrier
 
-\begin{itemize}
-    \item DPID (Discovery Packet ID): 4 bytes
-    \begin{itemize}
-        \item The DPID field is typically filled by SimplePacketComs and contains the ID for the
-        packet it is contained in.
-    \end{itemize}
-\end{itemize}
-
-\FloatBarrier
+The non-Group receive packet format consists of the read payload.
 
 \begin{figure}[h]
     \centering
-    \begin{bytefield}[]{16}
+    \begin{bytefield}{16}
         \bitheader{0,7,8,15} \\
-        \wordbox{2}{DPID} \\
-        \wordbox[lr]{1}{Payload} \\
-        \skippedwords \\
-        \wordbox[lrb]{1}{}
+        \begin{leftwordgroup}{Resource Read}
+            \wordbox[lrt]{1}{Payload} \\
+            \skippedwords \\
+            \wordbox[lrb]{1}{}
+        \end{leftwordgroup}
     \end{bytefield}
     \caption{RPC receive packet format.}
     \label{fig:rpc-receive-packet-format}
 \end{figure}
-
-\FloatBarrier
-
-\begin{itemize}
-    \item DPID (Discovery Packet ID): 4 bytes
-    \begin{itemize}
-        \item The DPID field is typically filled by SimplePacketComs and contains the ID for the
-        packet it is contained in.
-    \end{itemize}
-\end{itemize}
 
 \FloatBarrier
 
 \subsubsection{Group}
 
-Packets for Group Resources correspond to multiple Resources whose responses are packed into a
-single packet. These Resources can have timing constraints and are therefore put into a Group.
+Packets for Group Resources correspond to multiple Resources whose write and read payloads are
+packed into a single packet. These Resources typically have timing constraints and are therefore put
+into a Group.
+
+The Group send packet format consists of packed Resource write payloads as specified by the Send
+Start and Send End indices from the Group Member Discovery packets.
 
 \begin{figure}[h]
     \centering
-    \begin{bytefield}[]{16}
+    \begin{bytefield}[rightcurly=.]{16}
         \bitheader{0,7,8,15} \\
-        \wordbox{2}{DPID} \\
-        \wordbox[lr]{1}{Payload} \\
-        \skippedwords \\
-        \wordbox[lrb]{1}{}
+        \begin{leftwordgroup}{Resource Write}
+            \begin{rightwordgroup}{Send Start$_i$}
+                \bitbox{8}{Byte 0}
+                \bitbox{8}{Byte 1}
+            \end{rightwordgroup} \\
+            \bitbox[]{6}{}
+            \bitbox[]{4}{$\vdots$}
+            \bitbox[]{6}{} \\
+            [1ex]
+            \begin{rightwordgroup}{Send End$_i$}
+                \bitbox{8}{Byte $S(i) - 1$}
+                \bitbox{8}{Byte $S(i)$}
+            \end{rightwordgroup}
+        \end{leftwordgroup} \\
+        \wordbox[]{1}{$\vdots$} \\
+        [1ex]
+        \begin{leftwordgroup}{Resource Write}
+            \begin{rightwordgroup}{Send Start$_N$}
+                \bitbox{8}{\scriptsize Byte $S_S(i-1) + 1$}
+                \bitbox{8}{\scriptsize Byte $S_S(i-1) + 2$}
+            \end{rightwordgroup} \\
+            \bitbox[]{6}{}
+            \bitbox[]{4}{$\vdots$}
+            \bitbox[]{6}{} \\
+            [1ex]
+            \begin{rightwordgroup}{Send End$_N$}
+                \bitbox{8}{Byte $S_S(i) - 1$}
+                \bitbox{8}{Byte $S_S(i)$}
+            \end{rightwordgroup}
+        \end{leftwordgroup}
     \end{bytefield}
+    \begin{equation}
+        S_S(n)=\sum_{i=1}^{n}{S(i)}
+    \end{equation}
+    \begin{equation}
+        S(i) = \textrm{Send End}_i - \textrm{Send Start}_i
+    \end{equation}
+    \begin{equation}
+        i \in [1, N], N = \textrm{Count}
+    \end{equation}
     \caption{RPC send packet format.}
     \label{fig:rpc-send-packet-format}
 \end{figure}
 
 \FloatBarrier
 
-\begin{itemize}
-    \item DPID (Discovery Packet ID): 4 bytes
-    \begin{itemize}
-        \item The DPID field is typically filled by SimplePacketComs and contains the ID for the
-        packet it is contained in.
-    \end{itemize}
-\end{itemize}
-
-\FloatBarrier
+The Group write packet format consists of packed Resource read payloads as specified by the Receive
+Start and Receive End indices from the Group Member Discovery packets.
 
 \begin{figure}[h]
     \centering
-    \begin{bytefield}[]{16}
+    \begin{bytefield}[rightcurly=.]{16}
         \bitheader{0,7,8,15} \\
-        \wordbox{2}{DPID} \\
-        \wordbox[lr]{1}{Payload} \\
-        \skippedwords \\
-        \wordbox[lrb]{1}{} \\
-        \wordbox[lr]{1}{Payload} \\
-        \skippedwords \\
-        \wordbox[lrb]{1}{}
+        \begin{leftwordgroup}{Resource Read}
+            \begin{rightwordgroup}{Receive Start$_i$}
+                \bitbox{8}{Byte 0}
+                \bitbox{8}{Byte 1}
+            \end{rightwordgroup} \\
+            \bitbox[]{6}{}
+            \bitbox[]{4}{$\vdots$}
+            \bitbox[]{6}{} \\
+            [1ex]
+            \begin{rightwordgroup}{Receive End$_i$}
+                \bitbox{8}{Byte $R(i) - 1$}
+                \bitbox{8}{Byte $R(i)$}
+            \end{rightwordgroup}
+        \end{leftwordgroup} \\
+        \wordbox[]{1}{$\vdots$} \\
+        [1ex]
+        \begin{leftwordgroup}{Resource Read}
+            \begin{rightwordgroup}{Receive Start$_N$}
+                \bitbox{8}{\scriptsize Byte $S_R(i-1) + 1$}
+                \bitbox{8}{\scriptsize Byte $S_R(i-1) + 2$}
+            \end{rightwordgroup} \\
+            \bitbox[]{6}{}
+            \bitbox[]{4}{$\vdots$}
+            \bitbox[]{6}{} \\
+            [1ex]
+            \begin{rightwordgroup}{Receive End$_N$}
+                \bitbox{8}{Byte $S_R(i) - 1$}
+                \bitbox{8}{Byte $S_R(i)$}
+            \end{rightwordgroup}
+        \end{leftwordgroup}
     \end{bytefield}
+    \begin{equation}
+        S_R(n)=\sum_{i=1}^{n}{R(i)}
+    \end{equation}
+    \begin{equation}
+        R(i) = \textrm{Receive End}_i - \textrm{Receive Start}_i
+    \end{equation}
+    \begin{equation}
+        i \in [1, N], N = \textrm{Count}
+    \end{equation}
     \caption{RPC receive packet format.}
     \label{fig:rpc-receive-packet-format}
 \end{figure}
-
-\FloatBarrier
-
-\begin{itemize}
-    \item DPID (Discovery Packet ID): 4 bytes
-    \begin{itemize}
-        \item The DPID field is typically filled by SimplePacketComs and contains the ID for the
-        packet it is contained in.
-    \end{itemize}
-\end{itemize}
 
 \FloatBarrier
 
