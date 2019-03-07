@@ -100,13 +100,46 @@ protocol with 60 bytes.
     \centering
     \begin{bytefield}{16}
         \bitheader{0,7,8,15} \\
-        \wordbox[lrt]{1}{Payload} \\
+        \bitbox{8}{Status}
+        \bitbox[lrt]{8}{} \\
+        \wordbox[lr]{1}{Payload} \\
         \skippedwords \\
         \wordbox[lrb]{1}{}
     \end{bytefield}
     \caption{Discovery-time receive packet format.}
     \label{fig:discovery-time-receive-packet-format}
 \end{figure}
+
+\FloatBarrier
+
+\begin{itemize}
+    \item Status: 1 byte
+    \begin{itemize}
+        \item The Status field encodes the status of the \gls{discovery} operation. The status codes
+        are documented in Table~\ref{tab:status-codes}.
+    \end{itemize}
+\end{itemize}
+
+\FloatBarrier
+
+\begin{table}
+    \centering
+    \begin{tabular}{r|l}
+        Status Code & Meaning \\
+        \hline
+        1 & Accepted \\
+        2 & Rejected: Generic \\
+        3 & Rejected: Unknown Resource \\
+        4 & Rejected: Unknown Attachment \\
+        5 & Rejected: Invalid Attachment \\
+        6 & Rejected: Invalid Attachment Data \\
+        7 & Rejected: Invalid Group ID \\
+        8 & Rejected: Group Full \\
+        9 & Rejected: Unknown Operation
+    \end{tabular}
+    \caption{Status codes.}
+    \label{tab:status-codes}
+\end{table}
 
 \FloatBarrier
 \clearpage
@@ -178,8 +211,8 @@ protocol with 60 bytes.
 \begin{itemize}
     \item Status: 1 byte
     \begin{itemize}
-        \item The Status field encodes the status of the \gls{discovery} operation. 1 = Accepted, 2 =
-        Rejected.
+        \item The Status field encodes the status of the \gls{discovery} operation. The status codes
+        are documented in Table~\ref{tab:status-codes}.
     \end{itemize}
 \end{itemize}
 
@@ -246,8 +279,8 @@ protocol with 60 bytes.
 \begin{itemize}
     \item Status: 1 byte
     \begin{itemize}
-        \item The Status field encodes the status of the \gls{discovery} operation. 1 = Accepted, 2 =
-        Rejected.
+        \item The Status field encodes the status of the \gls{discovery} operation. The status codes
+        are documented in Table~\ref{tab:status-codes}.
     \end{itemize}
 \end{itemize}
 
@@ -353,8 +386,8 @@ protocol with 60 bytes.
 \begin{itemize}
     \item Status: 1 byte
     \begin{itemize}
-        \item The Status field encodes the status of the \gls{discovery} operation. 1 = Accepted, 2 =
-        Rejected.
+        \item The Status field encodes the status of the \gls{discovery} operation. The status codes
+        are documented in Table~\ref{tab:status-codes}.
     \end{itemize}
 \end{itemize}
 
