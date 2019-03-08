@@ -47,6 +47,7 @@ internal constructor(
 ) : Script() {
 
     private var scriptThread: Deferred<Any?>? = null
+    private var kotlinScript: Script? = null
 
     /**
      * Runs the script on the current thread.
@@ -145,6 +146,7 @@ internal constructor(
                     if (instance is Script) {
                         // Add all of this script's extra modules to the script to run
                         instance.addToInjector(this@DefaultScript.getModules())
+                        kotlinScript = instance
                         instance.runScript(args)
                     } else {
                         instance.right()
@@ -161,5 +163,6 @@ internal constructor(
 
     override fun stopScript() {
         scriptThread?.cancel()
+        kotlinScript?.stopAndCleanUp()
     }
 }
