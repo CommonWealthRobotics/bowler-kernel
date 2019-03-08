@@ -90,6 +90,6 @@ data class DhParam(
  * the tip.
  */
 fun Collection<DhParam>.toFrameTransformation(): FrameTransformation =
-    fold(FrameTransformation.identity()) { acc, dhParam ->
+    fold(FrameTransformation.identity) { acc, dhParam ->
         acc * dhParam.frameTransformation
     }

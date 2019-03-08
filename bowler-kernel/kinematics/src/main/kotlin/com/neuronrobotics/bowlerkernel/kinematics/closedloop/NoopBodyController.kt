@@ -31,7 +31,7 @@ object NoopBodyController : BodyController {
     ) {
     }
 
-    override fun getDeltaSinceLastDesiredTransform() = FrameTransformation.identity()
+    override fun getDeltaSinceLastDesiredTransform() = FrameTransformation.identity
 
     override fun getInertialState() = InertialState(0)
 }

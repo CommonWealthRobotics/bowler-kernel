@@ -24,5 +24,5 @@ import com.google.common.collect.ImmutableList
 object NoopForwardKinematicsSolver : ForwardKinematicsSolver {
 
     override fun solveChain(currentJointAngles: ImmutableList<Double>) =
-        FrameTransformation.identity()
+        FrameTransformation.identity
 }

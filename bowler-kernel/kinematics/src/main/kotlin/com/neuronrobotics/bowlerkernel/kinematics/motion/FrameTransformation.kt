@@ -103,13 +103,9 @@ private constructor(private val mat: SimpleMatrix) {
     companion object {
 
         /**
-         * Constructs the identity frame transformation.
-         *
-         * @return The identity frame transformation.
+         * The identity frame transformation.
          */
-        fun identity() = FrameTransformation(
-            SimpleMatrix.identity(4)
-        )
+        val identity = FrameTransformation(SimpleMatrix.identity(4))
 
         /**
          * Constructs a frame transformation from a translation.

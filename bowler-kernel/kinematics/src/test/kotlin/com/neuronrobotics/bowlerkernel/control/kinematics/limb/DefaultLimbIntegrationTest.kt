@@ -64,7 +64,7 @@ internal class DefaultLimbIntegrationTest {
                 override fun solveChain(
                     currentJointAngles: ImmutableList<Double>
                 ): FrameTransformation {
-                    return FrameTransformation.identity()
+                    return FrameTransformation.identity
                 }
             },
             mock {},
@@ -95,7 +95,7 @@ internal class DefaultLimbIntegrationTest {
 
         fun timeOnce(): Long {
             limb.setDesiredTaskSpaceTransform(
-                FrameTransformation.identity(),
+                FrameTransformation.identity,
                 createMotionConstraints(timestep * 2)
             )
 
