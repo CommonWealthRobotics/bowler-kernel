@@ -61,7 +61,7 @@ internal fun createMockKinematicBase(limbs: ImmutableList<ImmutableList<DhParam>
             )
         }.toImmutableList(),
         limbs.mapIndexed { index, _ ->
-            SimpleLimbId(index.toString()) to FrameTransformation.identity()
+            SimpleLimbId(index.toString()) to FrameTransformation.identity
         }.toImmutableMap(),
         NoopBodyController
     )
