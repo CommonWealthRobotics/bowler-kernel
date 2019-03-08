@@ -19,6 +19,7 @@ package com.neuronrobotics.bowlercad.cadgenerator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import eu.mihosoft.vrl.v3d.Transform
 import javafx.scene.transform.Affine
+import javafx.scene.transform.MatrixType
 import javax.vecmath.Matrix4d
 
 /**
@@ -59,3 +60,10 @@ fun FrameTransformation.setAffine(affine: Affine) {
  * @return The [Transform] representation.
  */
 fun FrameTransformation.toTransform(): Transform = Transform(Matrix4d(data))
+
+/**
+ * Maps an [Affine] to a [Transform].
+ *
+ * @return The [Transform] representation.
+ */
+fun Affine.toTransform(): Transform = Transform(Matrix4d(toArray(MatrixType.MT_3D_4x4)))

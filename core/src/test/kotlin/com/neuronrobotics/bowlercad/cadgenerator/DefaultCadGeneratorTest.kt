@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlercad.cadgenerator
 
+import com.google.common.collect.ImmutableSet
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.hasElement
@@ -30,6 +31,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import org.octogonapus.ktguava.collections.immutableListOf
+import org.octogonapus.ktguava.collections.toImmutableSet
 
 internal class DefaultCadGeneratorTest {
 
@@ -94,23 +96,39 @@ internal class DefaultCadGeneratorTest {
 
     @Test
     fun `test with cmm arm`() {
-        val result = generator.generateLimbs(
-            createMockKinematicBase(
-                immutableListOf(
-                    cmmInputArmDhParams
-                )
-            )
+        val base = createMockKinematicBase(immutableListOf(cmmInputArmDhParams))
+        var result = generator.generateLimbs(base).values().toImmutableSet()
+
+        DefaultCadGenerator.updateLimb(
+            result,
+            base.limbs.first().links.map { it.dhParam.frameTransformation },
+            listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         )
 
-        val union = CSG.hullAll(result.values().flatten())
+        result = transformLimbCSGsByManipulators(result)
+
+        val union = CSG.hullAll(result.flatten())
 
         assertAll(
-            { assertThat(result.values(), hasSize(equalTo(cmmInputArmDhParams.size))) },
-            { assertThat(result.values().first(), hasSize(equalTo(2))) },
+            { assertThat(result, hasSize(equalTo(cmmInputArmDhParams.size))) },
+            { assertThat(result.first(), hasSize(equalTo(2))) },
             { assertEquals(37.0, union.totalX, tolerance) },
             { assertEquals(30.0, union.totalY, tolerance) },
             { assertEquals(261.5, union.totalZ, tolerance) }
         )
+    }
+
+    /**
+     * Transforms a limb's CSGs by their respective manipulator.
+     *
+     * @return The transformed limb CSGs.
+     */
+    private fun transformLimbCSGsByManipulators(
+        result: ImmutableSet<ImmutableSet<CSG>>
+    ): ImmutableSet<ImmutableSet<CSG>> {
+        return result.map {
+            it.map { it.transformed(it.manipulator.toTransform()) }.toImmutableSet()
+        }.toImmutableSet()
     }
 
     @Test

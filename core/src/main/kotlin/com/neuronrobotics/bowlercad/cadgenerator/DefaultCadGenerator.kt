@@ -22,13 +22,17 @@ import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBase
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.toFrameTransformation
+import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cube
 import javafx.scene.paint.Color
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableSetOf
+import org.octogonapus.ktguava.collections.toImmutableList
 import org.octogonapus.ktguava.collections.toImmutableSet
 import org.octogonapus.ktguava.collections.toImmutableSetMultimap
+import java.lang.ref.WeakReference
+import kotlin.concurrent.thread
 
 /**
  * A simple [CadGenerator] that visualizes DH params as colored cuboids. The [DhParam.r] term is
@@ -49,7 +53,7 @@ class DefaultCadGenerator(
 
     override fun generateLimbs(base: KinematicBase): ImmutableSetMultimap<LimbId, ImmutableSet<CSG>> {
         return base.limbs.map { limb ->
-            limb.id to limb.links.mapIndexed { index, link ->
+            val limbCad = limb.links.mapIndexed { index, link ->
                 val rLink = Cube(
                     if (link.dhParam.r == 0.0) lengthForParamZero else link.dhParam.r,
                     cuboidThickness,
@@ -66,19 +70,79 @@ class DefaultCadGenerator(
                     color = Color.GREEN
                 }
 
-                immutableSetOf(rLink, dLink).map {
-                    if (index >= 1) {
-                        it.moveByDhParam(limb.links.subList(0, index).map { it.dhParam })
-                    } else {
-                        it
-                    }
-                }.toImmutableSet()
+                immutableSetOf(rLink, dLink)
+            }.toImmutableSet()
+
+            thread(name = "Update Limb CAD (${limb.id})", isDaemon = true) {
+                val cadRef = WeakReference(limbCad)
+                val linkTransforms =
+                    limb.links.map { it.dhParam.frameTransformation }.toImmutableList()
+
+                while (true) {
+                    cadRef.get()?.let { cad ->
+                        updateLimb(
+                            cad,
+                            linkTransforms,
+                            limb.jointAngleControllers.map { it.getCurrentAngle() }
+                        )
+                    } ?: break
+
+                    Thread.sleep(100)
+                }
             }
+
+            limb.id to limbCad
         }.toImmutableSetMultimap()
     }
 
-    private fun CSG.moveByDhParam(dhParams: Collection<DhParam>, inverse: Boolean = false): CSG =
-        transformed(
-            dhParams.toFrameTransformation().toTransform().apply { if (inverse) invert() }
-        )
+    companion object {
+
+        /**
+         * Updates the CAD for a limb with new thetas. Writes directly to the [CSG.manipulator].
+         *
+         * @param cad The limb CAD.
+         * @param linkTransforms A [FrameTransformation] for each link's [DhParam].
+         * @param thetas The new thetas.
+         */
+        internal fun updateLimb(
+            cad: ImmutableSet<ImmutableSet<CSG>>,
+            linkTransforms: List<FrameTransformation>,
+            thetas: List<Double>
+        ) {
+            val rotations = thetas.map { FrameTransformation.fromRotation(0, 0, it) }
+
+            val dhTransformList = mutableListOf<FrameTransformation>()
+            var transform = FrameTransformation.identity()
+            for (i in 0 until linkTransforms.size) {
+                val dhTransform = if (i == 0)
+                    FrameTransformation.identity()
+                else
+                    linkTransforms[i - 1]
+
+                transform *= dhTransform * rotations[i]
+                dhTransformList.add(transform)
+            }
+
+            cad.forEachIndexed { index, cadSet ->
+                cadSet.forEach {
+                    dhTransformList[index].setAffine(it.manipulator)
+                }
+            }
+        }
+
+        /**
+         * Moves [this] CSG by the [FrameTransformation] represented by the [dhParams].
+         *
+         * @param dhParams The params to move this CSG by.
+         * @param inverse Whether to invert the [FrameTransformation].
+         * @return The moved CSG.
+         */
+        internal fun CSG.moveByDhParam(
+            dhParams: Collection<DhParam>,
+            inverse: Boolean = false
+        ): CSG =
+            transformed(
+                dhParams.toFrameTransformation().toTransform().apply { if (inverse) invert() }
+            )
+    }
 }
