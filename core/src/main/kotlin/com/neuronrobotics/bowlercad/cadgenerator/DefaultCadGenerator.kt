@@ -21,10 +21,13 @@ import com.google.common.collect.ImmutableSetMultimap
 import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBase
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.toFrameTransformation
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cube
 import javafx.scene.paint.Color
+import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableSetOf
+import org.octogonapus.ktguava.collections.toImmutableSet
 import org.octogonapus.ktguava.collections.toImmutableSetMultimap
 
 /**
@@ -46,12 +49,12 @@ class DefaultCadGenerator(
 
     override fun generateLimbs(base: KinematicBase): ImmutableSetMultimap<LimbId, ImmutableSet<CSG>> {
         return base.limbs.map { limb ->
-            limb.id to limb.links.map { link ->
+            limb.id to limb.links.mapIndexed { index, link ->
                 val rLink = Cube(
                     if (link.dhParam.r == 0.0) lengthForParamZero else link.dhParam.r,
                     cuboidThickness,
                     cuboidThickness
-                ).toCSG().toXMax().apply {
+                ).toCSG().toXMax().moveByDhParam(immutableListOf(link.dhParam), false).apply {
                     color = Color.RED
                 }
 
@@ -59,15 +62,23 @@ class DefaultCadGenerator(
                     cuboidThickness,
                     cuboidThickness,
                     if (link.dhParam.d == 0.0) lengthForParamZero else link.dhParam.d
-                ).toCSG().toZMin().moveByDhParam(link.dhParam).apply {
+                ).toCSG().toZMin().apply {
                     color = Color.GREEN
                 }
 
-                immutableSetOf(rLink, dLink)
+                immutableSetOf(rLink, dLink).map {
+                    if (index >= 1) {
+                        it.moveByDhParam(limb.links.subList(0, index).map { it.dhParam })
+                    } else {
+                        it
+                    }
+                }.toImmutableSet()
             }
         }.toImmutableSetMultimap()
     }
 
-    private fun CSG.moveByDhParam(dhParam: DhParam): CSG =
-        transformed(dhParam.frameTransformation.toTransform())
+    private fun CSG.moveByDhParam(dhParams: Collection<DhParam>, inverse: Boolean = false): CSG =
+        transformed(
+            dhParams.toFrameTransformation().toTransform().apply { if (inverse) invert() }
+        )
 }

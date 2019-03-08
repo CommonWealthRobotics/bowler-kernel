@@ -53,4 +53,9 @@ fun FrameTransformation.setAffine(affine: Affine) {
     }
 }
 
+/**
+ * Maps a [FrameTransformation] to a [Transform].
+ *
+ * @return The [Transform] representation.
+ */
 fun FrameTransformation.toTransform(): Transform = Transform(Matrix4d(data))

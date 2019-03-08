@@ -34,6 +34,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInertialStateEstima
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanGenerator
+import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.toImmutableList
 import org.octogonapus.ktguava.collections.toImmutableMap
 
@@ -65,3 +66,12 @@ internal fun createMockKinematicBase(limbs: ImmutableList<ImmutableList<DhParam>
         NoopBodyController
     )
 }
+
+internal val cmmInputArmDhParams = immutableListOf(
+    DhParam(13, 180, 32, -90),
+    DhParam(25, -90, 93, 180),
+    DhParam(11, 90, 24, 90),
+    DhParam(128, -90, 0, 90),
+    DhParam(0, 0, 0, -90),
+    DhParam(25, 90, 0, 0)
+)

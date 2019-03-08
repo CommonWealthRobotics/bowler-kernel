@@ -20,14 +20,16 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.hasElement
 import com.natpryce.hamkrest.hasSize
+import com.neuronrobotics.bowlercad.cmmInputArmDhParams
 import com.neuronrobotics.bowlercad.createMockKinematicBase
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
+import eu.mihosoft.vrl.v3d.CSG
 import javafx.scene.paint.Color
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import org.octogonapus.ktguava.collections.immutableListOf
-import kotlin.test.assertEquals
 
 internal class DefaultCadGeneratorTest {
 
@@ -36,6 +38,8 @@ internal class DefaultCadGeneratorTest {
         cuboidThickness = 5.0,
         lengthForParamZero = 5.0
     )
+
+    private val tolerance = 0.00001
 
     @Test
     fun `test with zero dh params`() {
@@ -85,6 +89,27 @@ internal class DefaultCadGeneratorTest {
                     hasElement(12.0)
                 )
             }
+        )
+    }
+
+    @Test
+    fun `test with cmm arm`() {
+        val result = generator.generateLimbs(
+            createMockKinematicBase(
+                immutableListOf(
+                    cmmInputArmDhParams
+                )
+            )
+        )
+
+        val union = CSG.hullAll(result.values().flatten())
+
+        assertAll(
+            { assertThat(result.values(), hasSize(equalTo(cmmInputArmDhParams.size))) },
+            { assertThat(result.values().first(), hasSize(equalTo(2))) },
+            { assertEquals(37.0, union.totalX, tolerance) },
+            { assertEquals(30.0, union.totalY, tolerance) },
+            { assertEquals(261.5, union.totalZ, tolerance) }
         )
     }
 
