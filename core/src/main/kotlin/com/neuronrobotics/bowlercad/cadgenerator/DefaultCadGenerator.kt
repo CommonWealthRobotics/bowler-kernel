@@ -52,9 +52,10 @@ class DefaultCadGenerator(
     override fun generateBody(base: KinematicBase): CSG =
         Cube(bodyThickness, bodyThickness, bodyThickness).toCSG()
 
+    @SuppressWarnings("ComplexMethod", "SwallowedException")
     override fun generateLimbs(base: KinematicBase): ImmutableSetMultimap<LimbId, ImmutableSet<CSG>> {
         return base.limbs.map { limb ->
-            val limbCad = limb.links.mapIndexed { index, link ->
+            val limbCad = limb.links.map { link ->
                 val rLink = Cube(
                     if (link.dhParam.r == 0.0) lengthForParamZero else link.dhParam.r,
                     cuboidThickness,
@@ -86,7 +87,11 @@ class DefaultCadGenerator(
                             limb.jointAngleControllers.map { it.getCurrentAngle() }
                         )
 
-                        Thread.sleep(16)
+                        try {
+                            Thread.sleep(16)
+                        } catch (ex: InterruptedException) {
+                            Thread.currentThread().interrupt()
+                        }
                     }
                 }
             )
