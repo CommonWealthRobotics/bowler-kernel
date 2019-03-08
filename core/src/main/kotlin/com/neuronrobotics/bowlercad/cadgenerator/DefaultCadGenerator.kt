@@ -31,7 +31,6 @@ import org.octogonapus.ktguava.collections.immutableSetOf
 import org.octogonapus.ktguava.collections.toImmutableList
 import org.octogonapus.ktguava.collections.toImmutableSet
 import org.octogonapus.ktguava.collections.toImmutableSetMultimap
-import java.lang.ref.WeakReference
 import kotlin.concurrent.thread
 
 /**
@@ -47,6 +46,8 @@ class DefaultCadGenerator(
     private val cuboidThickness: Double = 5.0,
     private val lengthForParamZero: Double = 0.0
 ) : CadGenerator {
+
+    private val updateCadThreads = mutableListOf<Thread>()
 
     override fun generateBody(base: KinematicBase): CSG =
         Cube(bodyThickness, bodyThickness, bodyThickness).toCSG()
@@ -73,27 +74,31 @@ class DefaultCadGenerator(
                 immutableSetOf(rLink, dLink)
             }.toImmutableSet()
 
-            thread(name = "Update Limb CAD (${limb.id})", isDaemon = true) {
-                val cadRef = WeakReference(limbCad)
-                val linkTransforms =
-                    limb.links.map { it.dhParam.frameTransformation }.toImmutableList()
+            updateCadThreads.add(
+                thread(name = "Update Limb CAD (${limb.id})", isDaemon = true) {
+                    val linkTransforms =
+                        limb.links.map { it.dhParam.frameTransformation }.toImmutableList()
 
-                while (true) {
-                    cadRef.get()?.let { cad ->
+                    while (!Thread.currentThread().isInterrupted) {
                         updateLimb(
-                            cad,
+                            limbCad,
                             linkTransforms,
                             limb.jointAngleControllers.map { it.getCurrentAngle() }
                         )
-                    } ?: break
 
-                    Thread.sleep(100)
+                        Thread.sleep(16)
+                    }
                 }
-            }
+            )
 
             limb.id to limbCad
         }.toImmutableSetMultimap()
     }
+
+    /**
+     * Stops the threads updating the [CSG.manipulator] affines.
+     */
+    fun stopThreads() = updateCadThreads.forEach { it.interrupt() }
 
     companion object {
 
@@ -112,10 +117,10 @@ class DefaultCadGenerator(
             val rotations = thetas.map { FrameTransformation.fromRotation(0, 0, it) }
 
             val dhTransformList = mutableListOf<FrameTransformation>()
-            var transform = FrameTransformation.identity()
+            var transform = FrameTransformation.identity
             for (i in 0 until linkTransforms.size) {
                 val dhTransform = if (i == 0)
-                    FrameTransformation.identity()
+                    FrameTransformation.identity
                 else
                     linkTransforms[i - 1]
 
