@@ -82,7 +82,7 @@ fun createMockLimbData(
 fun createMockKinematicBaseData(
     id: SimpleKinematicBaseId = SimpleKinematicBaseId("kinBaseId"),
     limbs: List<LimbData> = immutableListOf(createMockLimbData()),
-    limbTransforms: List<FrameTransformation> = immutableListOf(FrameTransformation.identity()),
+    limbTransforms: List<FrameTransformation> = immutableListOf(FrameTransformation.identity),
     bodyControllerGistId: String = "bcGistId",
     bodyControllerFilename: String = "bcFilename"
 ) = KinematicBaseData(id, limbs, limbTransforms, bodyControllerGistId, bodyControllerFilename)

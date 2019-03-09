@@ -40,7 +40,7 @@ internal class FrameTransformationTest {
             FrameTransformation.fromSimpleMatrix(
                 SimpleMatrix.identity(4)
             ),
-            FrameTransformation.identity()
+            FrameTransformation.identity
         )
     }
 
