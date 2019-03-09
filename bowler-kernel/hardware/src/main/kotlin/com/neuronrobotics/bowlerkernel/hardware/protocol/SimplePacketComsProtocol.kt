@@ -27,6 +27,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.Digit
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
 import edu.wpi.SimplePacketComs.BytePacketType
+import java.nio.ByteBuffer
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.pow
@@ -47,7 +48,8 @@ class SimplePacketComsProtocol(
 
     private var highestPacketId = AtomicInteger(startPacketId)
 
-    private val resouceIdToPacketId = mutableMapOf<ResourceId, Int>()
+    private val resourceIdToPacket = mutableMapOf<ResourceId, BytePacketType>()
+    private val pollingResources = mutableListOf<ResourceId>()
     private val resourceIdToWriteData = mutableMapOf<ResourceId, Array<Byte>>()
     private val resourceIdToWriteLatch = mutableMapOf<ResourceId, CountDownLatch>()
     private val resourceIdToReadData = mutableMapOf<ResourceId, Array<Byte>>()
@@ -268,14 +270,14 @@ class SimplePacketComsProtocol(
 
         return status.fold(
             {
-                // Discovery packet was accepted
-                resouceIdToPacketId[resourceId] = packetId
-                resourceIdToReadData[resourceId] = arrayOf()
-                resourceIdToWriteData[resourceId] = arrayOf()
-
                 val packet = BytePacketType(packetId, PACKET_SIZE).apply {
                     waitToSendMode()
                 }
+
+                // Discovery packet was accepted
+                resourceIdToPacket[resourceId] = packet
+                resourceIdToReadData[resourceId] = arrayOf()
+                resourceIdToWriteData[resourceId] = arrayOf()
 
                 comms.addPollingPacket(packet)
 
@@ -301,16 +303,50 @@ class SimplePacketComsProtocol(
     }
 
     override fun addWrite(resourceId: ResourceId): Option<String> {
-        TODO("not implemented")
+        val packetId = getNextPacketId()
+
+        val status = sendDiscoveryPacket(
+            packetId.toByte(),
+            resourceId.resourceType.type,
+            resourceId.attachmentPoint.type,
+            resourceId.attachmentPoint.data
+        )
+
+        return status.fold(
+            {
+                val packet = BytePacketType(packetId, PACKET_SIZE).apply {
+                    waitToSendMode()
+                }
+
+                // Discovery packet was accepted
+                resourceIdToPacket[resourceId] = packet
+                resourceIdToReadData[resourceId] = arrayOf()
+                resourceIdToWriteData[resourceId] = arrayOf()
+
+                comms.addPollingPacket(packet)
+
+                comms.addEvent(packetId) {
+                    resourceIdToReadData[resourceId] = comms.readBytes(packetId)
+                    resourceIdToReadLatch[resourceId]?.countDown()
+                }
+
+                comms.addTimeout(packetId) {
+                    packet.oneShotMode()
+                }
+
+                Option.empty()
+            },
+            {
+                Option.just("Got status: $it")
+            }
+        )
     }
 
     override fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
         TODO("not implemented")
     }
 
-    override fun isResourceInRange(resourceId: ResourceId): Boolean {
-        TODO("not implemented")
-    }
+    override fun isResourceInRange(resourceId: ResourceId): Boolean = true
 
     override fun readProtocolVersion(): String {
         TODO("not implemented")
@@ -333,7 +369,21 @@ class SimplePacketComsProtocol(
     }
 
     override fun digitalWrite(resourceId: ResourceId, value: DigitalState) {
-        TODO("not implemented")
+        val buffer = ByteBuffer.allocate(1)
+        buffer.put(value.byte)
+        resourceIdToWriteData[resourceId] = buffer.array().toTypedArray()
+
+        if (pollingResources.contains(resourceId)) {
+            TODO()
+        } else {
+            val latch = CountDownLatch(1)
+            resourceIdToWriteLatch[resourceId] = latch
+            resourceIdToPacket[resourceId]?.let {
+                comms.writeBytes(it.idOfCommand, resourceIdToWriteData[resourceId])
+                it.oneShotMode()
+            }
+            latch.await()
+        }
     }
 
     override fun encoderRead(resourceId: ResourceId): Long {

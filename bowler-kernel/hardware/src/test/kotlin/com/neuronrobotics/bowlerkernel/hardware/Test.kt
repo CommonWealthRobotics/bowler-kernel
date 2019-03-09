@@ -16,11 +16,10 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware
 
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocolOld
+import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocol
 import edu.wpi.SimplePacketComs.device.UdpDevice
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -37,7 +36,7 @@ internal class Test {
             DefaultAttachmentPoints.Pin(33)
         )
 
-        val rpc = SimplePacketComsProtocolOld(
+        val rpc = SimplePacketComsProtocol(
             object : UdpDevice(
                 InetAddress.getByAddress(
                     listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
@@ -55,23 +54,24 @@ internal class Test {
         }
 
         rpc.addWrite(testPin)
+        Thread.sleep(500)
 
-        rpc.digitalWrite(testPin, DigitalState.HIGH)
-        Thread.sleep(500)
-        rpc.digitalWrite(testPin, DigitalState.LOW)
-        Thread.sleep(500)
-        rpc.digitalWrite(testPin, DigitalState.HIGH)
-        Thread.sleep(500)
-        rpc.digitalWrite(testPin, DigitalState.LOW)
-        Thread.sleep(500)
-        rpc.digitalWrite(testPin, DigitalState.HIGH)
-        Thread.sleep(500)
-        rpc.digitalWrite(testPin, DigitalState.LOW)
-        Thread.sleep(500)
-        rpc.digitalWrite(testPin, DigitalState.HIGH)
-        Thread.sleep(500)
-        rpc.digitalWrite(testPin, DigitalState.LOW)
-        Thread.sleep(500)
+//        rpc.digitalWrite(testPin, DigitalState.HIGH)
+//        Thread.sleep(500)
+//        rpc.digitalWrite(testPin, DigitalState.LOW)
+//        Thread.sleep(500)
+//        rpc.digitalWrite(testPin, DigitalState.HIGH)
+//        Thread.sleep(500)
+//        rpc.digitalWrite(testPin, DigitalState.LOW)
+//        Thread.sleep(500)
+//        rpc.digitalWrite(testPin, DigitalState.HIGH)
+//        Thread.sleep(500)
+//        rpc.digitalWrite(testPin, DigitalState.LOW)
+//        Thread.sleep(500)
+//        rpc.digitalWrite(testPin, DigitalState.HIGH)
+//        Thread.sleep(500)
+//        rpc.digitalWrite(testPin, DigitalState.LOW)
+//        Thread.sleep(500)
 
 //        for (i in 0 until 10) {
 //            println(rpc.analogRead(testPin))
