@@ -19,6 +19,11 @@ package com.neuronrobotics.bowlerkernel.scripting
 import arrow.core.Either
 import arrow.core.getOrHandle
 import com.google.common.collect.ImmutableList
+import com.google.inject.Binding
+import com.google.inject.Key
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.equalTo
+import com.natpryce.hamkrest.hasSize
 import com.neuronrobotics.bowlerkernel.hardware.Script
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
@@ -30,14 +35,16 @@ import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultTextScriptFactor
 import com.neuronrobotics.bowlerkernel.scripting.parser.DefaultScriptLanguageParser
 import com.nhaarman.mockitokotlin2.mock
 import org.jlleitschuh.guice.key
+import org.jlleitschuh.guice.module
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import javax.inject.Inject
 
-class ScriptIntegrationTest {
+internal class ScriptIntegrationTest {
 
     @Suppress("NestedLambdaShadowedImplicitParameter")
     private data class TestClass
@@ -530,4 +537,128 @@ class ScriptIntegrationTest {
 
         script.stopAndCleanUp()
     }
+
+    @Test
+    fun `test injector adds existing modules`() {
+        val scriptText = """
+            import arrow.core.Either
+            import arrow.core.right
+            import com.google.common.collect.ImmutableList
+            import com.neuronrobotics.bowlerkernel.hardware.Script
+
+            class TestScript : Script() {
+                override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
+                    return injector.allBindings.right()
+                }
+
+                override fun stopScript() {
+                }
+            }
+
+            TestScript::class
+        """.trimIndent()
+
+        val script = DefaultTextScriptFactory(
+            DefaultScriptLanguageParser()
+        ).createScriptFromText("kotlin", scriptText).fold(
+            {
+                fail {
+                    """
+                    |Failed to create script:
+                    |$it
+                    """.trimMargin()
+                }
+            },
+            { it }
+        )
+
+        script.addToInjector(module {
+            bind<IFoo>().to<Foo>()
+        })
+
+        // Run the script a first time, this should work fine
+        script.runScript(emptyImmutableList()).bimap(
+            {
+                fail {
+                    """
+                    |Failed to run script:
+                    |$it
+                    """.trimMargin()
+                }
+            },
+            {
+                @Suppress("UNCHECKED_CAST")
+                val bindings = it as Map<Key<*>, Binding<*>>
+
+                assertThat(
+                    bindings.keys.filter { it.typeLiteral.rawType == IFoo::class.java },
+                    hasSize(equalTo(1))
+                )
+            }
+        )
+    }
+
+    @Test
+    fun `test stopAndCleanUp is called`() {
+        val scriptText = """
+            import arrow.core.Either
+            import arrow.core.right
+            import com.google.common.collect.ImmutableList
+            import com.neuronrobotics.bowlerkernel.hardware.Script
+
+            class TestScript : Script() {
+
+                private val counter = mutableListOf(1)
+
+                override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
+                    return counter.right()
+                }
+
+                override fun stopScript() {
+                    counter.add(2)
+                }
+            }
+
+            TestScript::class
+        """.trimIndent()
+
+        val script = DefaultTextScriptFactory(
+            DefaultScriptLanguageParser()
+        ).createScriptFromText("kotlin", scriptText).fold(
+            {
+                fail {
+                    """
+                    |Failed to create script:
+                    |$it
+                    """.trimMargin()
+                }
+            },
+            { it }
+        )
+
+        // Run the script a first time, this should work fine
+        @Suppress("UNCHECKED_CAST")
+        val result = script.runScript(emptyImmutableList()).fold(
+            {
+                fail {
+                    """
+                    |Failed to run script:
+                    |$it
+                    """.trimMargin()
+                }
+            },
+            {
+                it as List<Int>
+            }
+        )
+
+        assertIterableEquals(result, listOf(1))
+
+        script.stopAndCleanUp()
+
+        assertIterableEquals(result, listOf(1, 2))
+    }
+
+    private interface IFoo
+    private class Foo : IFoo
 }
