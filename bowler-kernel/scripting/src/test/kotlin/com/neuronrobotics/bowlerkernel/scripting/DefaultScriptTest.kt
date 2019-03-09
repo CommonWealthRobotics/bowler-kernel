@@ -19,10 +19,17 @@ package com.neuronrobotics.bowlerkernel.scripting
 import arrow.core.flatMap
 import arrow.core.left
 import arrow.core.right
+import com.google.inject.Binding
+import com.google.inject.Key
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.equalTo
+import com.natpryce.hamkrest.hasSize
 import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultTextScriptFactory
+import com.neuronrobotics.bowlerkernel.scripting.parser.DefaultScriptLanguageParser
 import com.neuronrobotics.bowlerkernel.scripting.parser.ScriptLanguageParser
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
+import org.jlleitschuh.guice.module
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTimeout
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -157,7 +164,69 @@ internal class DefaultScriptTest {
             mockScriptLanguageParser
         ).createScriptFromText("qwerty", "")
 
-        val result = script.flatMap { it.runScript(emptyImmutableList()) }
-        assertTrue(result.isLeft())
+        assertTrue(script.isLeft())
     }
+
+    @Test
+    fun `test injector adds existing modules`() {
+        val scriptText = """
+        import arrow.core.Either
+        import arrow.core.right
+        import com.google.common.collect.ImmutableList
+        import com.neuronrobotics.bowlerkernel.hardware.Script
+
+        class TestScript : Script() {
+            override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
+                return injector.allBindings.right()
+            }
+
+            override fun stopScript() {
+            }
+        }
+
+        TestScript::class
+        """.trimIndent()
+
+        val script = DefaultTextScriptFactory(
+            DefaultScriptLanguageParser()
+        ).createScriptFromText("kotlin", scriptText).fold(
+            {
+                fail<DefaultScript> {
+                    """
+                    |Failed to create script:
+                    |$it
+                    """.trimMargin()
+                }
+            },
+            { it }
+        )
+
+        script.addToInjector(module {
+            bind<IFoo>().to<Foo>()
+        })
+
+        // Run the script a first time, this should work fine
+        script.runScript(emptyImmutableList()).bimap(
+            {
+                fail<Boolean> {
+                    """
+                    |Failed to run script:
+                    |$it
+                    """.trimMargin()
+                }
+            },
+            {
+                @Suppress("UNCHECKED_CAST")
+                val bindings = it as Map<Key<*>, Binding<*>>
+
+                assertThat(
+                    bindings.keys.filter { it.typeLiteral.rawType == IFoo::class.java },
+                    hasSize(equalTo(1))
+                )
+            }
+        )
+    }
+
+    private interface IFoo
+    private class Foo : IFoo
 }
