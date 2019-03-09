@@ -33,7 +33,6 @@ import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.octogonapus.ktguava.collections.immutableListOf
 
 class UnprovisionedDeviceResourceFactoryTest {
 
@@ -109,7 +108,7 @@ class UnprovisionedDeviceResourceFactoryTest {
 
     @Test
     fun `make unprovisioned encoder`() {
-        DefaultAttachmentPoints.PinGroup(immutableListOf(1, 2)).let {
+        DefaultAttachmentPoints.PinGroup(byteArrayOf(1, 2)).let {
             testRegistry(
                 ResourceId(DefaultResourceTypes.Encoder, it)
             ) { makeUnprovisionedEncoder(it) }
@@ -127,7 +126,7 @@ class UnprovisionedDeviceResourceFactoryTest {
 
     @Test
     fun `make unprovisioned serial connection`() {
-        DefaultAttachmentPoints.PinGroup(immutableListOf(1, 2)).let {
+        DefaultAttachmentPoints.PinGroup(byteArrayOf(1, 2)).let {
             testRegistry(
                 ResourceId(DefaultResourceTypes.SerialConnection, it)
             ) { makeUnprovisionedSerialConnection(it) }
@@ -145,7 +144,7 @@ class UnprovisionedDeviceResourceFactoryTest {
 
     @Test
     fun `make unprovisioned stepper`() {
-        DefaultAttachmentPoints.PinGroup(immutableListOf(1, 2, 3, 4)).let {
+        DefaultAttachmentPoints.PinGroup(byteArrayOf(1, 2, 3, 4)).let {
             testRegistry(
                 ResourceId(DefaultResourceTypes.Stepper, it)
             ) { makeUnprovisionedStepper(it) }
@@ -154,7 +153,7 @@ class UnprovisionedDeviceResourceFactoryTest {
 
     @Test
     fun `make unprovisioned ultrasonic`() {
-        DefaultAttachmentPoints.PinGroup(immutableListOf(1, 2)).let {
+        DefaultAttachmentPoints.PinGroup(byteArrayOf(1, 2)).let {
             testRegistry(
                 ResourceId(DefaultResourceTypes.Ultrasonic, it)
             ) { makeUnprovisionedUltrasonic(it) }

@@ -32,7 +32,7 @@ data class ResourceId(
      * Bowler RPC.
      */
     val bytes by lazy {
-        (listOf(resourceType.type, attachmentPoint.type) + attachmentPoint.data).toByteArray()
+        byteArrayOf(resourceType.type, attachmentPoint.type) + attachmentPoint.data
     }
 
     override fun equals(other: Any?): Boolean {

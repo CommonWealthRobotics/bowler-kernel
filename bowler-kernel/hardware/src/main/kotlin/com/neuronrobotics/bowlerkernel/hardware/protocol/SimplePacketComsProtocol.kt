@@ -18,13 +18,18 @@ package com.neuronrobotics.bowlerkernel.hardware.protocol
 
 import arrow.core.Either
 import arrow.core.Option
+import arrow.core.Try
 import arrow.core.getOrHandle
 import arrow.core.left
 import arrow.core.right
+import com.google.common.collect.ImmutableSet
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
 import edu.wpi.SimplePacketComs.BytePacketType
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.pow
 
 /**
  * An implementation of [BowlerRPCProtocol] using SimplePacketComs. Uses a continuous range of
@@ -38,9 +43,15 @@ import java.util.concurrent.atomic.AtomicInteger
 class SimplePacketComsProtocol(
     private val comms: AbstractSimpleComsDevice,
     private val startPacketId: Int = DISCOVERY_PACKET_ID + 1
-) {
+) : BowlerRPCProtocol {
 
     private var highestPacketId = AtomicInteger(startPacketId)
+
+    private val resouceIdToPacketId = mutableMapOf<ResourceId, Int>()
+    private val resourceIdToWriteData = mutableMapOf<ResourceId, Array<Byte>>()
+    private val resourceIdToWriteLatch = mutableMapOf<ResourceId, CountDownLatch>()
+    private val resourceIdToReadData = mutableMapOf<ResourceId, Array<Byte>>()
+    private val resourceIdToReadLatch = mutableMapOf<ResourceId, CountDownLatch>()
 
     /**
      * Whether the device is connected.
@@ -211,6 +222,151 @@ class SimplePacketComsProtocol(
      * The highest packet id.
      */
     fun getHighestPacketId(): Int = highestPacketId.get()
+
+    /**
+     * Computes the next packet id and validates that it can be sent to the device.
+     *
+     * @return The next packet id.
+     */
+    private fun getNextPacketId(): Int {
+        val id = highestPacketId.incrementAndGet()
+
+        if (id > 2.0.pow(Byte.SIZE_BITS) - 1) {
+            throw IllegalStateException("Cannot handle packet ids greater than a byte.")
+        }
+
+        return id
+    }
+
+    override fun connect() = Try {
+        comms.connect()
+        isConnected = true
+    }.toEither { it.localizedMessage }.swap().toOption()
+
+    override fun disconnect() {
+        comms.disconnect()
+        isConnected = false
+    }
+
+    override fun addPollingRead(resourceId: ResourceId): Option<String> {
+        TODO("not implemented")
+    }
+
+    override fun addPollingReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
+        TODO("not implemented")
+    }
+
+    override fun addRead(resourceId: ResourceId): Option<String> {
+        val packetId = getNextPacketId()
+
+        val status = sendDiscoveryPacket(
+            packetId.toByte(),
+            resourceId.resourceType.type,
+            resourceId.attachmentPoint.type,
+            resourceId.attachmentPoint.data
+        )
+
+        return status.fold(
+            {
+                // Discovery packet was accepted
+                resouceIdToPacketId[resourceId] = packetId
+                resourceIdToReadData[resourceId] = arrayOf()
+                resourceIdToWriteData[resourceId] = arrayOf()
+
+                val packet = BytePacketType(packetId, PACKET_SIZE).apply {
+                    waitToSendMode()
+                }
+
+                comms.addPollingPacket(packet)
+
+                comms.addEvent(packetId) {
+                    resourceIdToReadData[resourceId] = comms.readBytes(packetId)
+                    resourceIdToReadLatch[resourceId]?.countDown()
+                }
+
+                comms.addTimeout(packetId) {
+                    packet.oneShotMode()
+                }
+
+                Option.empty()
+            },
+            {
+                Option.just("Got status: $it")
+            }
+        )
+    }
+
+    override fun addReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
+        TODO("not implemented")
+    }
+
+    override fun addWrite(resourceId: ResourceId): Option<String> {
+        TODO("not implemented")
+    }
+
+    override fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
+        TODO("not implemented")
+    }
+
+    override fun isResourceInRange(resourceId: ResourceId): Boolean {
+        TODO("not implemented")
+    }
+
+    override fun readProtocolVersion(): String {
+        TODO("not implemented")
+    }
+
+    override fun analogRead(resourceId: ResourceId): Double {
+        TODO("not implemented")
+    }
+
+    override fun analogWrite(resourceId: ResourceId, value: Short) {
+        TODO("not implemented")
+    }
+
+    override fun buttonRead(resourceId: ResourceId): Boolean {
+        TODO("not implemented")
+    }
+
+    override fun digitalRead(resourceId: ResourceId): DigitalState {
+        TODO("not implemented")
+    }
+
+    override fun digitalWrite(resourceId: ResourceId, value: DigitalState) {
+        TODO("not implemented")
+    }
+
+    override fun encoderRead(resourceId: ResourceId): Long {
+        TODO("not implemented")
+    }
+
+    override fun toneWrite(resourceId: ResourceId, frequency: Int) {
+        TODO("not implemented")
+    }
+
+    override fun toneWrite(resourceId: ResourceId, frequency: Int, duration: Long) {
+        TODO("not implemented")
+    }
+
+    override fun serialWrite(resourceId: ResourceId, message: String) {
+        TODO("not implemented")
+    }
+
+    override fun serialRead(resourceId: ResourceId): String {
+        TODO("not implemented")
+    }
+
+    override fun servoWrite(resourceId: ResourceId, angle: Double) {
+        TODO("not implemented")
+    }
+
+    override fun servoRead(resourceId: ResourceId): Double {
+        TODO("not implemented")
+    }
+
+    override fun ultrasonicRead(resourceId: ResourceId): Long {
+        TODO("not implemented")
+    }
 
     companion object {
 
