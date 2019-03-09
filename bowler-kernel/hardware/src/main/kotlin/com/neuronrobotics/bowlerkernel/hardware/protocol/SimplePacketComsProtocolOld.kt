@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * @param startPacketId The starting range of the packets this class creates.
  */
 @SuppressWarnings("TooManyFunctions")
-class SimplePacketComsProtocol(
+class SimplePacketComsProtocolOld(
     private val comms: AbstractSimpleComsDevice,
     private val startPacketId: Int = DISCOVERY_PACKET_ID + 1
 ) : BowlerRPCProtocol {

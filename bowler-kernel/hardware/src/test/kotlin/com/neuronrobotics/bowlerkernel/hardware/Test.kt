@@ -20,7 +20,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.Digit
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocol
+import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocolOld
 import edu.wpi.SimplePacketComs.device.UdpDevice
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -37,7 +37,7 @@ internal class Test {
             DefaultAttachmentPoints.Pin(33)
         )
 
-        val rpc = SimplePacketComsProtocol(
+        val rpc = SimplePacketComsProtocolOld(
             object : UdpDevice(
                 InetAddress.getByAddress(
                     listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
