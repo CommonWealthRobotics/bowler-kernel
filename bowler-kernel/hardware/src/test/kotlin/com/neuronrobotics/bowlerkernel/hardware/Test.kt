@@ -32,9 +32,14 @@ internal class Test {
     @Test
     @Disabled
     fun `test esp32`() {
-        val testPin = ResourceId(
+        val led = ResourceId(
             DefaultResourceTypes.DigitalOut,
             DefaultAttachmentPoints.Pin(32)
+        )
+
+        val lineSensor = ResourceId(
+            DefaultResourceTypes.AnalogIn,
+            DefaultAttachmentPoints.Pin(33)
         )
 
         val rpc = SimplePacketComsProtocol(
@@ -50,29 +55,24 @@ internal class Test {
             fail { it }
         }
 
-        if (!rpc.isResourceInRange(testPin)) {
+        if (!rpc.isResourceInRange(led)) {
             fail { "Not in range" }
         }
 
-        rpc.addWrite(testPin)
+        rpc.addWrite(led)
         Thread.sleep(500)
 
-        rpc.digitalWrite(testPin, DigitalState.HIGH)
+        rpc.addRead(lineSensor)
         Thread.sleep(500)
-        rpc.digitalWrite(testPin, DigitalState.LOW)
-        Thread.sleep(500)
-        rpc.digitalWrite(testPin, DigitalState.HIGH)
-        Thread.sleep(500)
-        rpc.digitalWrite(testPin, DigitalState.LOW)
-        Thread.sleep(500)
-        rpc.digitalWrite(testPin, DigitalState.HIGH)
-        Thread.sleep(500)
-        rpc.digitalWrite(testPin, DigitalState.LOW)
-        Thread.sleep(500)
-        rpc.digitalWrite(testPin, DigitalState.HIGH)
-        Thread.sleep(500)
-        rpc.digitalWrite(testPin, DigitalState.LOW)
-        Thread.sleep(500)
+
+        for (i in 0 until 400) {
+            rpc.digitalWrite(led, DigitalState.HIGH)
+            println(rpc.analogRead(lineSensor))
+            Thread.sleep(500)
+            rpc.digitalWrite(led, DigitalState.LOW)
+            println(rpc.analogRead(lineSensor))
+            Thread.sleep(500)
+        }
 
 //        for (i in 0 until 10) {
 //            println(rpc.analogRead(testPin))

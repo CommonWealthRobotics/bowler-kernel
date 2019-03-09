@@ -203,6 +203,54 @@ class SimplePacketComsProtocol(
         ).swap().toOption()
 
     /**
+     * Adds a non-polling resource.
+     *
+     * @param resourceId The resource id.
+     * @return An error.
+     */
+    private fun addResource(resourceId: ResourceId): Option<String> {
+        val packetId = getNextPacketId()
+
+        val status = sendDiscoveryPacket(
+            packetId.toByte(),
+            resourceId.resourceType.type,
+            resourceId.attachmentPoint.type,
+            resourceId.attachmentPoint.data
+        )
+
+        return status.fold(
+            {
+                val packet = BytePacketType(packetId, PACKET_SIZE).apply {
+                    waitToSendMode()
+                }
+
+                // Discovery packet was accepted
+                resourceIdToPacket[resourceId] = packet
+                resourceIdToReceiveData[resourceId] = arrayOf()
+                resourceIdToSendData[resourceId] = arrayOf()
+
+                comms.addPollingPacket(packet)
+
+                comms.addEvent(packetId) {
+                    resourceIdToReceiveData[resourceId] = comms.readBytes(packetId).also {
+                        println(it.joinToString())
+                    }
+                    resourceIdToLatch[resourceId]?.countDown()
+                }
+
+                comms.addTimeout(packetId) {
+                    packet.oneShotMode()
+                }
+
+                Option.empty()
+            },
+            {
+                Option.just("Got status: $it")
+            }
+        )
+    }
+
+    /**
      * Sends a discard discovery packet.
      *
      * Section 2.1.5.
@@ -213,16 +261,6 @@ class SimplePacketComsProtocol(
         sendGeneralDiscoveryPacket(
             OPERATION_DISCARD_DISCOVERY_ID, byteArrayOf()
         ).swap().getOrHandle { it[0] }
-
-    /**
-     * The lowest packet id.
-     */
-    fun getLowestPacketId(): Int = startPacketId
-
-    /**
-     * The highest packet id.
-     */
-    fun getHighestPacketId(): Int = highestPacketId.get()
 
     /**
      * Computes the next packet id and validates that it can be sent to the device.
@@ -257,89 +295,13 @@ class SimplePacketComsProtocol(
         TODO("not implemented")
     }
 
-    override fun addRead(resourceId: ResourceId): Option<String> {
-        val packetId = getNextPacketId()
-
-        val status = sendDiscoveryPacket(
-            packetId.toByte(),
-            resourceId.resourceType.type,
-            resourceId.attachmentPoint.type,
-            resourceId.attachmentPoint.data
-        )
-
-        return status.fold(
-            {
-                val packet = BytePacketType(packetId, PACKET_SIZE).apply {
-                    waitToSendMode()
-                }
-
-                // Discovery packet was accepted
-                resourceIdToPacket[resourceId] = packet
-                resourceIdToReceiveData[resourceId] = arrayOf()
-                resourceIdToSendData[resourceId] = arrayOf()
-
-                comms.addPollingPacket(packet)
-
-                comms.addEvent(packetId) {
-                    resourceIdToReceiveData[resourceId] = comms.readBytes(packetId)
-                    resourceIdToLatch[resourceId]?.countDown()
-                }
-
-                comms.addTimeout(packetId) {
-                    packet.oneShotMode()
-                }
-
-                Option.empty()
-            },
-            {
-                Option.just("Got status: $it")
-            }
-        )
-    }
+    override fun addRead(resourceId: ResourceId) = addResource(resourceId)
 
     override fun addReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
         TODO("not implemented")
     }
 
-    override fun addWrite(resourceId: ResourceId): Option<String> {
-        val packetId = getNextPacketId()
-
-        val status = sendDiscoveryPacket(
-            packetId.toByte(),
-            resourceId.resourceType.type,
-            resourceId.attachmentPoint.type,
-            resourceId.attachmentPoint.data
-        )
-
-        return status.fold(
-            {
-                val packet = BytePacketType(packetId, PACKET_SIZE).apply {
-                    waitToSendMode()
-                }
-
-                // Discovery packet was accepted
-                resourceIdToPacket[resourceId] = packet
-                resourceIdToReceiveData[resourceId] = arrayOf()
-                resourceIdToSendData[resourceId] = arrayOf()
-
-                comms.addPollingPacket(packet)
-
-                comms.addEvent(packetId) {
-                    resourceIdToReceiveData[resourceId] = comms.readBytes(packetId)
-                    resourceIdToLatch[resourceId]?.countDown()
-                }
-
-                comms.addTimeout(packetId) {
-                    packet.oneShotMode()
-                }
-
-                Option.empty()
-            },
-            {
-                Option.just("Got status: $it")
-            }
-        )
-    }
+    override fun addWrite(resourceId: ResourceId) = addResource(resourceId)
 
     override fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
         TODO("not implemented")
@@ -352,11 +314,32 @@ class SimplePacketComsProtocol(
     }
 
     override fun analogRead(resourceId: ResourceId): Double {
-        TODO("not implemented")
+        resourceIdToSendData[resourceId] = arrayOf()
+
+        if (pollingResources.contains(resourceId)) {
+            TODO()
+        } else {
+            val latch = CountDownLatch(1)
+            resourceIdToLatch[resourceId] = latch
+
+            resourceIdToPacket[resourceId]!!.let {
+                comms.writeBytes(it.idOfCommand, resourceIdToSendData[resourceId])
+                it.oneShotMode()
+            }
+
+            latch.await()
+
+            val buffer = ByteBuffer.allocate(2)
+            resourceIdToReceiveData[resourceId]!!.let {
+                buffer.put(it[0])
+                buffer.put(it[1])
+            }
+            buffer.rewind()
+            return buffer.char.toDouble()
+        }
     }
 
     override fun analogWrite(resourceId: ResourceId, value: Short) {
-        TODO("not implemented")
     }
 
     override fun buttonRead(resourceId: ResourceId): Boolean {
@@ -418,6 +401,16 @@ class SimplePacketComsProtocol(
     override fun ultrasonicRead(resourceId: ResourceId): Long {
         TODO("not implemented")
     }
+
+    /**
+     * The lowest packet id.
+     */
+    fun getLowestPacketId(): Int = startPacketId
+
+    /**
+     * The highest packet id.
+     */
+    fun getHighestPacketId(): Int = highestPacketId.get()
 
     companion object {
 
