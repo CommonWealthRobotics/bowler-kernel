@@ -62,7 +62,7 @@ internal class Test {
         rpc.addWrite(led)
         Thread.sleep(500)
 
-        rpc.addRead(lineSensor)
+        rpc.addPollingRead(lineSensor)
         Thread.sleep(500)
 
         for (i in 0 until 400) {

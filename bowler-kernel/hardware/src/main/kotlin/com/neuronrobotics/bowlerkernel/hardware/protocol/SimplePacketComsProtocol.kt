@@ -206,9 +206,14 @@ class SimplePacketComsProtocol(
      * Adds a non-polling resource.
      *
      * @param resourceId The resource id.
+     * @param configureTimeoutBehavior Configures what the packet should do if it times out.
      * @return An error.
      */
-    private fun addResource(resourceId: ResourceId): Option<String> {
+    private fun addResource(
+        resourceId: ResourceId,
+        isPolling: Boolean = false,
+        configureTimeoutBehavior: (BytePacketType) -> Unit
+    ): Option<String> {
         val packetId = getNextPacketId()
 
         val status = sendDiscoveryPacket(
@@ -229,17 +234,21 @@ class SimplePacketComsProtocol(
                 resourceIdToReceiveData[resourceId] = arrayOf()
                 resourceIdToSendData[resourceId] = arrayOf()
 
+                if (isPolling) {
+                    pollingResources.add(resourceId)
+                }
+
                 comms.addPollingPacket(packet)
 
                 comms.addEvent(packetId) {
-                    resourceIdToReceiveData[resourceId] = comms.readBytes(packetId).also {
-                        println(it.joinToString())
-                    }
+                    resourceIdToReceiveData[resourceId] = comms.readBytes(packetId)
                     resourceIdToLatch[resourceId]?.countDown()
                 }
 
-                comms.addTimeout(packetId) {
-                    packet.oneShotMode()
+                configureTimeoutBehavior(packet)
+
+                if (isPolling) {
+                    packet.pollingMode()
                 }
 
                 Option.empty()
@@ -287,21 +296,23 @@ class SimplePacketComsProtocol(
         isConnected = false
     }
 
-    override fun addPollingRead(resourceId: ResourceId): Option<String> {
-        TODO("not implemented")
-    }
+    override fun addPollingRead(resourceId: ResourceId) = addResource(resourceId, true) {}
 
     override fun addPollingReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
         TODO("not implemented")
     }
 
-    override fun addRead(resourceId: ResourceId) = addResource(resourceId)
+    override fun addRead(resourceId: ResourceId) = addResource(resourceId) {
+        comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
+    }
 
     override fun addReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
         TODO("not implemented")
     }
 
-    override fun addWrite(resourceId: ResourceId) = addResource(resourceId)
+    override fun addWrite(resourceId: ResourceId) = addResource(resourceId) {
+        comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
+    }
 
     override fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
         TODO("not implemented")
@@ -313,30 +324,50 @@ class SimplePacketComsProtocol(
         TODO("not implemented")
     }
 
+    /**
+     * Send an RPC call and wait for the reply.
+     *
+     * @param resourceId The resource id.
+     */
+    private fun callAndWait(resourceId: ResourceId) {
+        if (resourceIdToPacket.containsKey(resourceId)) {
+            if (pollingResources.contains(resourceId)) {
+                resourceIdToPacket[resourceId]!!.let {
+                    comms.writeBytes(it.idOfCommand, resourceIdToSendData[resourceId])
+                }
+            } else {
+                val latch = CountDownLatch(1)
+                resourceIdToLatch[resourceId] = latch
+
+                resourceIdToPacket[resourceId]!!.let {
+                    comms.writeBytes(it.idOfCommand, resourceIdToSendData[resourceId])
+                    it.oneShotMode()
+                }
+
+                latch.await()
+            }
+        } else {
+            throw UnsupportedOperationException(
+                """
+                |Unknown ResourceId:
+                |$resourceId
+                """.trimMargin()
+            )
+        }
+    }
+
     override fun analogRead(resourceId: ResourceId): Double {
         resourceIdToSendData[resourceId] = arrayOf()
 
-        if (pollingResources.contains(resourceId)) {
-            TODO()
-        } else {
-            val latch = CountDownLatch(1)
-            resourceIdToLatch[resourceId] = latch
+        callAndWait(resourceId)
 
-            resourceIdToPacket[resourceId]!!.let {
-                comms.writeBytes(it.idOfCommand, resourceIdToSendData[resourceId])
-                it.oneShotMode()
-            }
-
-            latch.await()
-
-            val buffer = ByteBuffer.allocate(2)
-            resourceIdToReceiveData[resourceId]!!.let {
-                buffer.put(it[0])
-                buffer.put(it[1])
-            }
-            buffer.rewind()
-            return buffer.char.toDouble()
+        val buffer = ByteBuffer.allocate(2)
+        resourceIdToReceiveData[resourceId]!!.let {
+            buffer.put(it[0])
+            buffer.put(it[1])
         }
+        buffer.rewind()
+        return buffer.char.toDouble()
     }
 
     override fun analogWrite(resourceId: ResourceId, value: Short) {
@@ -355,19 +386,7 @@ class SimplePacketComsProtocol(
         buffer.put(value.byte)
         resourceIdToSendData[resourceId] = buffer.array().toTypedArray()
 
-        if (pollingResources.contains(resourceId)) {
-            TODO()
-        } else {
-            val latch = CountDownLatch(1)
-            resourceIdToLatch[resourceId] = latch
-
-            resourceIdToPacket[resourceId]!!.let {
-                comms.writeBytes(it.idOfCommand, resourceIdToSendData[resourceId])
-                it.oneShotMode()
-            }
-
-            latch.await()
-        }
+        callAndWait(resourceId)
     }
 
     override fun encoderRead(resourceId: ResourceId): Long {
