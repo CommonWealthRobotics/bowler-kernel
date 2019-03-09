@@ -48,12 +48,11 @@ class SimplePacketComsProtocol(
 
     private var highestPacketId = AtomicInteger(startPacketId)
 
-    private val resourceIdToPacket = mutableMapOf<ResourceId, BytePacketType>()
     private val pollingResources = mutableListOf<ResourceId>()
-    private val resourceIdToWriteData = mutableMapOf<ResourceId, Array<Byte>>()
-    private val resourceIdToWriteLatch = mutableMapOf<ResourceId, CountDownLatch>()
-    private val resourceIdToReadData = mutableMapOf<ResourceId, Array<Byte>>()
-    private val resourceIdToReadLatch = mutableMapOf<ResourceId, CountDownLatch>()
+    private val resourceIdToPacket = mutableMapOf<ResourceId, BytePacketType>()
+    private val resourceIdToLatch = mutableMapOf<ResourceId, CountDownLatch>()
+    private val resourceIdToSendData = mutableMapOf<ResourceId, Array<Byte>>()
+    private val resourceIdToReceiveData = mutableMapOf<ResourceId, Array<Byte>>()
 
     /**
      * Whether the device is connected.
@@ -231,7 +230,7 @@ class SimplePacketComsProtocol(
      * @return The next packet id.
      */
     private fun getNextPacketId(): Int {
-        val id = highestPacketId.incrementAndGet()
+        val id = highestPacketId.getAndIncrement()
 
         if (id > 2.0.pow(Byte.SIZE_BITS) - 1) {
             throw IllegalStateException("Cannot handle packet ids greater than a byte.")
@@ -276,14 +275,14 @@ class SimplePacketComsProtocol(
 
                 // Discovery packet was accepted
                 resourceIdToPacket[resourceId] = packet
-                resourceIdToReadData[resourceId] = arrayOf()
-                resourceIdToWriteData[resourceId] = arrayOf()
+                resourceIdToReceiveData[resourceId] = arrayOf()
+                resourceIdToSendData[resourceId] = arrayOf()
 
                 comms.addPollingPacket(packet)
 
                 comms.addEvent(packetId) {
-                    resourceIdToReadData[resourceId] = comms.readBytes(packetId)
-                    resourceIdToReadLatch[resourceId]?.countDown()
+                    resourceIdToReceiveData[resourceId] = comms.readBytes(packetId)
+                    resourceIdToLatch[resourceId]?.countDown()
                 }
 
                 comms.addTimeout(packetId) {
@@ -320,14 +319,14 @@ class SimplePacketComsProtocol(
 
                 // Discovery packet was accepted
                 resourceIdToPacket[resourceId] = packet
-                resourceIdToReadData[resourceId] = arrayOf()
-                resourceIdToWriteData[resourceId] = arrayOf()
+                resourceIdToReceiveData[resourceId] = arrayOf()
+                resourceIdToSendData[resourceId] = arrayOf()
 
                 comms.addPollingPacket(packet)
 
                 comms.addEvent(packetId) {
-                    resourceIdToReadData[resourceId] = comms.readBytes(packetId)
-                    resourceIdToReadLatch[resourceId]?.countDown()
+                    resourceIdToReceiveData[resourceId] = comms.readBytes(packetId)
+                    resourceIdToLatch[resourceId]?.countDown()
                 }
 
                 comms.addTimeout(packetId) {
@@ -371,17 +370,19 @@ class SimplePacketComsProtocol(
     override fun digitalWrite(resourceId: ResourceId, value: DigitalState) {
         val buffer = ByteBuffer.allocate(1)
         buffer.put(value.byte)
-        resourceIdToWriteData[resourceId] = buffer.array().toTypedArray()
+        resourceIdToSendData[resourceId] = buffer.array().toTypedArray()
 
         if (pollingResources.contains(resourceId)) {
             TODO()
         } else {
             val latch = CountDownLatch(1)
-            resourceIdToWriteLatch[resourceId] = latch
-            resourceIdToPacket[resourceId]?.let {
-                comms.writeBytes(it.idOfCommand, resourceIdToWriteData[resourceId])
+            resourceIdToLatch[resourceId] = latch
+
+            resourceIdToPacket[resourceId]!!.let {
+                comms.writeBytes(it.idOfCommand, resourceIdToSendData[resourceId])
                 it.oneShotMode()
             }
+
             latch.await()
         }
     }
