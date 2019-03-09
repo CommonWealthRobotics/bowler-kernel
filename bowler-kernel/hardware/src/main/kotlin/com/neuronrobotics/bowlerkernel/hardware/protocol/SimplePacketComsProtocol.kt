@@ -18,7 +18,12 @@ package com.neuronrobotics.bowlerkernel.hardware.protocol
 
 import arrow.core.Either
 import arrow.core.Option
+import arrow.core.getOrHandle
+import arrow.core.left
+import arrow.core.right
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
+import edu.wpi.SimplePacketComs.BytePacketType
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -38,15 +43,76 @@ class SimplePacketComsProtocol(
     private var highestPacketId = AtomicInteger(startPacketId)
 
     /**
+     * Whether the device is connected.
+     */
+    private var isConnected = false
+
+    private val discoveryPacket = BytePacketType(DISCOVERY_PACKET_ID, PACKET_SIZE).apply {
+        waitToSendMode()
+    }
+
+    private lateinit var discoveryData: ByteArray
+    private lateinit var discoveryLatch: CountDownLatch
+
+    init {
+        require(startPacketId > 0) {
+            "The starting packet id ($startPacketId) must be greater than zero."
+        }
+
+        require(startPacketId != DISCOVERY_PACKET_ID) {
+            "The starting packet id ($startPacketId) cannot be equal to the discovery packet id " +
+                "($DISCOVERY_PACKET_ID)."
+        }
+
+        comms.addPollingPacket(discoveryPacket)
+
+        comms.addEvent(DISCOVERY_PACKET_ID) {
+            discoveryData = comms.readBytes(DISCOVERY_PACKET_ID).toByteArray()
+            discoveryLatch.countDown()
+        }
+
+        comms.addTimeout(DISCOVERY_PACKET_ID) { discoveryPacket.oneShotMode() }
+    }
+
+    private fun validateConnection() {
+        if (!isConnected) {
+            throw IllegalStateException("The RPC is not connected.")
+        }
+    }
+
+    /**
      * Sends a general discovery packet.
      *
      * Section 2.1.1.
      *
      * @param operation The operation.
+     * @param payload The payload.
      * @return The payload if accepted, the status code if rejected.
      */
-    private fun sendGeneralDiscoveryPacket(operation: Byte): Either<Byte, ByteArray> {
-        TODO()
+    private fun sendGeneralDiscoveryPacket(
+        operation: Byte,
+        payload: ByteArray
+    ): Either<Byte, ByteArray> {
+        validateConnection()
+
+        discoveryLatch = CountDownLatch(1)
+        comms.writeBytes(DISCOVERY_PACKET_ID, byteArrayOf(operation) + payload)
+        discoveryPacket.oneShotMode()
+        discoveryLatch.await()
+
+        println(
+            """
+            |Discovery response:
+            |${discoveryData.joinToString()}
+            """.trimMargin()
+        )
+
+        val status = discoveryData[0]
+        return if (status == STATUS_ACCEPTED) {
+            discoveryData.right()
+        } else {
+            status.left()
+        }
     }
 
     /**
@@ -65,9 +131,11 @@ class SimplePacketComsProtocol(
         resource: Byte,
         attachment: Byte,
         attachmentData: ByteArray
-    ): Option<Byte> {
-        TODO()
-    }
+    ): Option<Byte> =
+        sendGeneralDiscoveryPacket(
+            OPERATION_DISCOVERY_ID,
+            byteArrayOf(packetId, resource, attachment) + attachmentData
+        ).swap().toOption()
 
     /**
      * Sends a group discovery packet.
@@ -83,9 +151,11 @@ class SimplePacketComsProtocol(
         groupId: Byte,
         packetId: Byte,
         count: Byte
-    ): Option<Byte> {
-        TODO()
-    }
+    ): Option<Byte> =
+        sendGeneralDiscoveryPacket(
+            OPERATION_GROUP_DISCOVERY_ID,
+            byteArrayOf(groupId, packetId, count)
+        ).swap().toOption()
 
     /**
      * Sends a group member discovery packet.
@@ -112,9 +182,13 @@ class SimplePacketComsProtocol(
         resource: Byte,
         attachment: Byte,
         attachmentData: ByteArray
-    ): Option<Byte> {
-        TODO()
-    }
+    ): Option<Byte> =
+        sendGeneralDiscoveryPacket(
+            OPERATION_GROUP_MEMBER_DISCOVERY_ID,
+            byteArrayOf(
+                groupId, sendStart, sendEnd, receiveStart, receiveEnd, resource, attachment
+            ) + attachmentData
+        ).swap().toOption()
 
     /**
      * Sends a discard discovery packet.
@@ -123,9 +197,10 @@ class SimplePacketComsProtocol(
      *
      * @return The status code.
      */
-    private fun sendDiscardDiscoveryPacket(): Byte {
-        TODO()
-    }
+    private fun sendDiscardDiscoveryPacket(): Byte =
+        sendGeneralDiscoveryPacket(
+            OPERATION_DISCARD_DISCOVERY_ID, byteArrayOf()
+        ).swap().getOrHandle { it[0] }
 
     /**
      * The lowest packet id.
@@ -157,24 +232,24 @@ class SimplePacketComsProtocol(
         /**
          * The operation ID's.
          */
-        private const val OPERATION_DISCOVERY_ID = 1
-        private const val OPERATION_GROUP_DISCOVERY_ID = 2
-        private const val OPERATION_GROUP_MEMBER_DISCOVERY_ID = 3
-        private const val OPERATION_DISCARD_DISCOVERY_ID = 4
+        private const val OPERATION_DISCOVERY_ID = 1.toByte()
+        private const val OPERATION_GROUP_DISCOVERY_ID = 2.toByte()
+        private const val OPERATION_GROUP_MEMBER_DISCOVERY_ID = 3.toByte()
+        private const val OPERATION_DISCARD_DISCOVERY_ID = 4.toByte()
 
         /**
          * The status codes.
          */
-        private const val STATUS_ACCEPTED = 1
-        private const val STATUS_REJECTED_GENERIC = 2
-        private const val STATUS_REJECTED_UNKNOWN_RESOURCE = 3
-        private const val STATUS_REJECTED_UNKNOWN_ATTACHMENT = 4
-        private const val STATUS_REJECTED_INVALID_ATTACHMENT = 5
-        private const val STATUS_REJECTED_INVALID_ATTACHMENT_DATA = 6
-        private const val STATUS_REJECTED_INVALID_GROUP_ID = 7
-        private const val STATUS_REJECTED_GROUP_FULL = 8
-        private const val STATUS_REJECTED_UNKNOWN_OPERATION = 9
-        private const val STATUS_DISCARD_IN_PROGRESS = 10
-        private const val STATUS_DISCARD_COMPLETE = 11
+        private const val STATUS_ACCEPTED = 1.toByte()
+        private const val STATUS_REJECTED_GENERIC = 2.toByte()
+        private const val STATUS_REJECTED_UNKNOWN_RESOURCE = 3.toByte()
+        private const val STATUS_REJECTED_UNKNOWN_ATTACHMENT = 4.toByte()
+        private const val STATUS_REJECTED_INVALID_ATTACHMENT = 5.toByte()
+        private const val STATUS_REJECTED_INVALID_ATTACHMENT_DATA = 6.toByte()
+        private const val STATUS_REJECTED_INVALID_GROUP_ID = 7.toByte()
+        private const val STATUS_REJECTED_GROUP_FULL = 8.toByte()
+        private const val STATUS_REJECTED_UNKNOWN_OPERATION = 9.toByte()
+        private const val STATUS_DISCARD_IN_PROGRESS = 10.toByte()
+        private const val STATUS_DISCARD_COMPLETE = 11.toByte()
     }
 }
