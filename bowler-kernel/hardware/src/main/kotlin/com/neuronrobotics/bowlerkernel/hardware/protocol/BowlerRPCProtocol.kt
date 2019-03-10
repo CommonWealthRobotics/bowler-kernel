@@ -116,7 +116,7 @@ interface BowlerRPCProtocol {
      * Performs an analog read.
      *
      * @param resourceIds The resources in the group.
-     * @return The analog values.
+     * @return The analog values in the same order as [resourceIds].
      */
     fun analogRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Double>
 

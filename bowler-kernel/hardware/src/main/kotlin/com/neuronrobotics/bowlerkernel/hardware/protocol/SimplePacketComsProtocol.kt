@@ -213,6 +213,28 @@ class SimplePacketComsProtocol(
             ) + attachmentData
         ).swap().toOption()
 
+    /**
+     * Sends a discard discovery packet.
+     *
+     * Section 2.1.5.
+     *
+     * @return The status code.
+     */
+    private fun sendDiscardDiscoveryPacket(): Byte =
+        sendGeneralDiscoveryPacket(
+            OPERATION_DISCARD_DISCOVERY_ID, byteArrayOf()
+        ).swap().getOrHandle { it[0] }
+
+    /**
+     * Adds a group by sending a group discovery packet followed by a group member discovery
+     * packet for each element of [resourceIds]. Does not fail-fast when discovering group members.
+     *
+     * @param resourceIds The group members.
+     * @param isPolling Whether the group packet is polling.
+     * @param configureTimeoutBehavior Called with the newly created packet. Should configure any
+     * packet timeout behavior. This method does not get a timeout event handler on its own.
+     * @return An error.
+     */
     private fun addGroup(
         resourceIds: ImmutableSet<ResourceId>,
         isPolling: Boolean = false,
@@ -316,10 +338,11 @@ class SimplePacketComsProtocol(
     }
 
     /**
-     * Adds a non-polling resource.
+     * Adds a non-polling resource by sending a discovery packet.
      *
      * @param resourceId The resource id.
-     * @param configureTimeoutBehavior Configures what the packet should do if it times out.
+     * @param configureTimeoutBehavior Called with the newly created packet. Should configure any
+     * packet timeout behavior. This method does not get a timeout event handler on its own.
      * @return An error.
      */
     private fun addResource(
@@ -374,19 +397,39 @@ class SimplePacketComsProtocol(
     }
 
     /**
-     * Sends a discard discovery packet.
+     * Computes the next packet id and validates that it can be sent to the device.
      *
-     * Section 2.1.5.
-     *
-     * @return The status code.
+     * @return The next packet id.
      */
-    private fun sendDiscardDiscoveryPacket(): Byte =
-        sendGeneralDiscoveryPacket(
-            OPERATION_DISCARD_DISCOVERY_ID, byteArrayOf()
-        ).swap().getOrHandle { it[0] }
+    private fun getNextPacketId(): Int {
+        val id = highestPacketId.getAndIncrement()
+
+        if (isGreaterThanUnsignedByte(id)) {
+            throw IllegalStateException("Cannot handle packet ids greater than a byte.")
+        }
+
+        return id
+    }
 
     /**
-     * Send an RPC call and wait for the reply.
+     * Computes the next group id and validates that it can be sent to the device.
+     *
+     * @return The next group id.
+     */
+    private fun getNextGroupId(): Int {
+        val id = highestGroupId.getAndIncrement()
+
+        if (isGreaterThanUnsignedByte(id)) {
+            throw IllegalStateException("Cannot handle group ids greater than a byte.")
+        }
+
+        return id
+    }
+
+    /**
+     * Sends an RPC call. If the [id] corresponds to a polling packet, this method does not wait.
+     * If it does not correspond to a polling packet, this method waits for the response. This
+     * method does not touch packet timeout behavior.
      *
      * @param id The packet id.
      */
@@ -488,33 +531,97 @@ class SimplePacketComsProtocol(
     }
 
     /**
-     * Computes the next packet id and validates that it can be sent to the device.
+     * Performs a full RPC read call:
+     * 1. Get packet id
+     * 2. Write to [idToSendData]
+     * 3. Call [callAndWait]
+     * 4. Call [parseReceivePayload] and return the result
      *
-     * @return The next packet id.
+     * @param resourceId The resource id.
+     * @param parseReceivePayload Parses the receive payload into a value.
+     * @return The value.
      */
-    private fun getNextPacketId(): Int {
-        val id = highestPacketId.getAndIncrement()
+    private fun <T> handleRead(
+        resourceId: ResourceId,
+        parseReceivePayload: (Array<Byte>) -> T
+    ): T {
+        val packetId = nonGroupedResourceIdToPacketId[resourceId]!!
 
-        if (isGreaterThanUnsignedByte(id)) {
-            throw IllegalStateException("Cannot handle packet ids greater than a byte.")
-        }
+        idToSendData[packetId] = arrayOf()
+        callAndWait(packetId)
 
-        return id
+        return parseReceivePayload(idToReceiveData[packetId]!!)
     }
 
     /**
-     * Computes the next group id and validates that it can be sent to the device.
+     * Performs a full RPC group read call:
+     * 1. Validate group and get group id
+     * 2. Get packet id
+     * 3. Write to [idToSendData]
+     * 4. Call [callAndWait]
+     * 5. Call [parseGroupReceivePayload] with [parseReceivePayload] and return the result
      *
-     * @return The next group id.
+     * @param resourceIds The group members.
+     * @param parseReceivePayload Parses a member's section of the group receive payload.
+     * @return The values in the same order as [resourceIds].
      */
-    private fun getNextGroupId(): Int {
-        val id = highestGroupId.getAndIncrement()
+    private fun <T> handleGroupRead(
+        resourceIds: ImmutableList<ResourceId>,
+        parseReceivePayload: (Array<Byte>) -> T
+    ): ImmutableList<T> {
+        val groupId = validateGroupReceiveResources(resourceIds)
+        val packetId = groupIdToPacketId[groupId]!!
 
-        if (isGreaterThanUnsignedByte(id)) {
-            throw IllegalStateException("Cannot handle group ids greater than a byte.")
-        }
+        idToSendData[packetId] = arrayOf()
+        callAndWait(packetId)
 
-        return id
+        return parseGroupReceivePayload(
+            resourceIds,
+            idToReceiveData[packetId]!!,
+            parseReceivePayload
+        )
+    }
+
+    /**
+     * Performs a full RPC write call:
+     * 1. Get packet id
+     * 2. Write to [idToSendData]
+     * 3. Call [callAndWait]
+     *
+     * @param resourceId The resource id.
+     * @param value The value to write.
+     * @param makeSendPayload Makes a send payload from a value.
+     */
+    private fun <T> handleWrite(
+        resourceId: ResourceId,
+        value: T,
+        makeSendPayload: (T) -> Array<Byte>
+    ) {
+        val packetId = nonGroupedResourceIdToPacketId[resourceId]!!
+        idToSendData[packetId] = makeSendPayload(value)
+        callAndWait(packetId)
+    }
+
+    /**
+     * Performs a full RPC group write call:
+     * 1. Validate group and get group id
+     * 2. Get packet id
+     * 3. Call [makeGroupSendPayload] with [makeSendPayload] and write the result to [idToSendData]
+     * 4. Call [callAndWait]
+     */
+    private fun <T> handleGroupWrite(
+        resourcesAndValues: ImmutableList<Pair<ResourceId, T>>,
+        makeSendPayload: (T) -> Array<Byte>
+    ) {
+        val groupId = validateGroupSendResources(resourcesAndValues)
+        val packetId = groupIdToPacketId[groupId]!!
+
+        idToSendData[packetId] = makeGroupSendPayload(
+            resourcesAndValues,
+            makeSendPayload
+        )
+
+        callAndWait(packetId)
     }
 
     override fun connect() = Try {
@@ -564,28 +671,11 @@ class SimplePacketComsProtocol(
         return buffer.char.toDouble()
     }
 
-    override fun analogRead(resourceId: ResourceId): Double {
-        val packetId = nonGroupedResourceIdToPacketId[resourceId]!!
+    override fun analogRead(resourceId: ResourceId) =
+        handleRead(resourceId, this::parseAnalogReadPayload)
 
-        idToSendData[packetId] = arrayOf()
-        callAndWait(packetId)
-
-        return parseAnalogReadPayload(idToReceiveData[packetId]!!)
-    }
-
-    override fun analogRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Double> {
-        val groupId = validateGroupReceiveResources(resourceIds)
-        val packetId = groupIdToPacketId[groupId]!!
-
-        idToSendData[packetId] = arrayOf()
-        callAndWait(packetId)
-
-        return parseGroupReceivePayload(
-            resourceIds,
-            idToReceiveData[packetId]!!,
-            this::parseAnalogReadPayload
-        )
-    }
+    override fun analogRead(resourceIds: ImmutableList<ResourceId>) =
+        handleGroupRead(resourceIds, this::parseAnalogReadPayload)
 
     private fun makeAnalogWritePayload(value: Short): Array<Byte> {
         val buffer = ByteBuffer.allocate(2)
@@ -593,23 +683,11 @@ class SimplePacketComsProtocol(
         return buffer.array().toTypedArray()
     }
 
-    override fun analogWrite(resourceId: ResourceId, value: Short) {
-        val packetId = nonGroupedResourceIdToPacketId[resourceId]!!
-        idToSendData[packetId] = makeAnalogWritePayload(value)
-        callAndWait(packetId)
-    }
+    override fun analogWrite(resourceId: ResourceId, value: Short) =
+        handleWrite(resourceId, value, this::makeAnalogWritePayload)
 
-    override fun analogWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Short>>) {
-        val groupId = validateGroupSendResources(resourcesAndValues)
-        val packetId = groupIdToPacketId[groupId]!!
-
-        idToSendData[packetId] = makeGroupSendPayload(
-            resourcesAndValues,
-            this::makeAnalogWritePayload
-        )
-
-        callAndWait(packetId)
-    }
+    override fun analogWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Short>>) =
+        handleGroupWrite(resourcesAndValues, this::makeAnalogWritePayload)
 
     override fun buttonRead(resourceId: ResourceId): Boolean {
         TODO("not implemented")
@@ -625,23 +703,11 @@ class SimplePacketComsProtocol(
         return buffer.array().toTypedArray()
     }
 
-    override fun digitalWrite(resourceId: ResourceId, value: DigitalState) {
-        val id = nonGroupedResourceIdToPacketId[resourceId]!!
-        idToSendData[id] = makeDigitalWritePayload(value)
-        callAndWait(id)
-    }
+    override fun digitalWrite(resourceId: ResourceId, value: DigitalState) =
+        handleWrite(resourceId, value, this::makeDigitalWritePayload)
 
-    override fun digitalWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, DigitalState>>) {
-        val groupId = validateGroupSendResources(resourcesAndValues)
-        val packetId = groupIdToPacketId[groupId]!!
-
-        idToSendData[packetId] = makeGroupSendPayload(
-            resourcesAndValues,
-            this::makeDigitalWritePayload
-        )
-
-        callAndWait(packetId)
-    }
+    override fun digitalWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, DigitalState>>) =
+        handleGroupWrite(resourcesAndValues, this::makeDigitalWritePayload)
 
     override fun encoderRead(resourceId: ResourceId): Long {
         TODO("not implemented")
@@ -693,7 +759,7 @@ class SimplePacketComsProtocol(
         const val DISCOVERY_PACKET_ID = 1
 
         /**
-         * The maximum size of a packet payload in bytes.
+         * The size of a payload in bytes.
          */
         const val PAYLOAD_SIZE = 60
 

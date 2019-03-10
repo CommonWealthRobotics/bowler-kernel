@@ -339,6 +339,15 @@ internal class SimplePacketComsProtocolTest {
                 assertIterableEquals(listOf(2.0, 1.0), reads2)
             }
         )
+
+        // Test a read with too few members
+        assertThrows<IllegalArgumentException> {
+            protocol.analogRead(
+                immutableListOf(
+                    lineSensor1
+                )
+            )
+        }
     }
 
     @ParameterizedTest
@@ -351,7 +360,8 @@ internal class SimplePacketComsProtocolTest {
     }
 
     private fun getPayload(vararg bytes: Byte): Array<Byte> =
-        bytes.toTypedArray() + (1..(60 - bytes.size)).map { 0.toByte() }.toTypedArray()
+        bytes.toTypedArray() + (1..(SimplePacketComsProtocol.PAYLOAD_SIZE - bytes.size))
+            .map { 0.toByte() }.toTypedArray()
 
     companion object {
 
