@@ -25,6 +25,7 @@ import arrow.core.right
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
 import edu.wpi.SimplePacketComs.BytePacketType
@@ -633,12 +634,63 @@ class SimplePacketComsProtocol(
         callAndWait(packetId)
     }
 
-    private fun validateResourceIsReadType(resourceId: ResourceId): Option<String> {
-        TODO()
+    /**
+     * Validates the resource can be read from.
+     *
+     * @param resourceId The resource id.
+     * @return An error.
+     */
+    internal fun validateResourceIsReadType(resourceId: ResourceId): Option<String> {
+        return if (resourceId.resourceType is DefaultResourceTypes) {
+            when (resourceId.resourceType) {
+                is DefaultResourceTypes.AnalogIn,
+                is DefaultResourceTypes.DigitalIn,
+                is DefaultResourceTypes.SerialConnection,
+                is DefaultResourceTypes.Servo,
+                is DefaultResourceTypes.Encoder,
+                is DefaultResourceTypes.Button,
+                is DefaultResourceTypes.Ultrasonic -> Option.empty()
+
+                else -> Option.just(
+                    """
+                    |Cannot add resource as a read type:
+                    |$resourceId
+                    """.trimMargin()
+                )
+            }
+        } else {
+            // Can't validate what we don't own
+            Option.empty()
+        }
     }
 
-    private fun validateResourceIsWriteType(resourceId: ResourceId): Option<String> {
-        TODO()
+    /**
+     * Validates the resource can be written to.
+     *
+     * @param resourceId The resource id.
+     * @return An error.
+     */
+    internal fun validateResourceIsWriteType(resourceId: ResourceId): Option<String> {
+        return if (resourceId.resourceType is DefaultResourceTypes) {
+            when (resourceId.resourceType) {
+                is DefaultResourceTypes.AnalogOut,
+                is DefaultResourceTypes.DigitalOut,
+                is DefaultResourceTypes.SerialConnection,
+                is DefaultResourceTypes.Servo,
+                is DefaultResourceTypes.Stepper,
+                is DefaultResourceTypes.PiezoelectricSpeaker -> Option.empty()
+
+                else -> Option.just(
+                    """
+                    |Cannot add resource as a write type:
+                    |$resourceId
+                    """.trimMargin()
+                )
+            }
+        } else {
+            // Can't validate what we don't own
+            Option.empty()
+        }
     }
 
     override fun connect() = Try {

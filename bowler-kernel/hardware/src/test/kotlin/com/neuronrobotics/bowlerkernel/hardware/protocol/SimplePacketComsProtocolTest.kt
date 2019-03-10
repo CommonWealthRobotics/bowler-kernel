@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.fail
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.octogonapus.ktguava.collections.immutableListOf
@@ -377,6 +378,26 @@ internal class SimplePacketComsProtocolTest {
     }
 
     @ParameterizedTest
+    @MethodSource("readResourceSource")
+    fun `test resource types are validated correctly`(
+        data: Pair<ResourceId, List<ResourceType>>
+    ) {
+        if (data.second.isEmpty()) {
+            fail {
+                "No resource types given"
+            }
+        }
+
+        if (data.second.contains(ResourceType.Write)) {
+            assertTrue(protocol.validateResourceIsWriteType(data.first).isEmpty())
+        }
+
+        if (data.second.contains(ResourceType.Read)) {
+            assertTrue(protocol.validateResourceIsReadType(data.first).isEmpty())
+        }
+    }
+
+    @ParameterizedTest
     @MethodSource("isGreaterThanUnsignedByteSource")
     fun `test isGreaterThanUnsignedByte`(data: Pair<Int, Boolean>) {
         assertEquals(
@@ -390,6 +411,59 @@ internal class SimplePacketComsProtocolTest {
             .map { 0.toByte() }.toTypedArray()
 
     companion object {
+
+        enum class ResourceType {
+            Write, Read
+        }
+
+        @Suppress("unused")
+        @JvmStatic
+        fun readResourceSource() = listOf(
+            ResourceId(
+                DefaultResourceTypes.DigitalIn,
+                DefaultAttachmentPoints.Pin(1)
+            ) to listOf(ResourceType.Read),
+            ResourceId(
+                DefaultResourceTypes.DigitalOut,
+                DefaultAttachmentPoints.Pin(1)
+            ) to listOf(ResourceType.Write),
+            ResourceId(
+                DefaultResourceTypes.AnalogIn,
+                DefaultAttachmentPoints.Pin(1)
+            ) to listOf(ResourceType.Read),
+            ResourceId(
+                DefaultResourceTypes.AnalogOut,
+                DefaultAttachmentPoints.Pin(1)
+            ) to listOf(ResourceType.Write),
+            ResourceId(
+                DefaultResourceTypes.SerialConnection,
+                DefaultAttachmentPoints.USBPort(1)
+            ) to listOf(ResourceType.Read, ResourceType.Write),
+            ResourceId(
+                DefaultResourceTypes.Servo,
+                DefaultAttachmentPoints.Pin(1)
+            ) to listOf(ResourceType.Read, ResourceType.Write),
+            ResourceId(
+                DefaultResourceTypes.Stepper,
+                DefaultAttachmentPoints.PinGroup(byteArrayOf(1, 2, 3, 4))
+            ) to listOf(ResourceType.Write),
+            ResourceId(
+                DefaultResourceTypes.Encoder,
+                DefaultAttachmentPoints.PinGroup(byteArrayOf(1, 2))
+            ) to listOf(ResourceType.Read),
+            ResourceId(
+                DefaultResourceTypes.Button,
+                DefaultAttachmentPoints.Pin(1)
+            ) to listOf(ResourceType.Read),
+            ResourceId(
+                DefaultResourceTypes.Ultrasonic,
+                DefaultAttachmentPoints.PinGroup(byteArrayOf(1, 2))
+            ) to listOf(ResourceType.Read),
+            ResourceId(
+                DefaultResourceTypes.PiezoelectricSpeaker,
+                DefaultAttachmentPoints.Pin(1)
+            ) to listOf(ResourceType.Write)
+        )
 
         @Suppress("unused")
         @JvmStatic
