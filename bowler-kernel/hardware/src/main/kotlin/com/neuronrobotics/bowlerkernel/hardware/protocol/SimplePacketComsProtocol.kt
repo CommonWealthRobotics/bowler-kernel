@@ -53,6 +53,7 @@ class SimplePacketComsProtocol(
 
     private val pollingResources = mutableMapOf<ResourceId, Int>()
     private val groupedResourceToGroupId = mutableMapOf<ResourceId, Int>()
+    private val groupIdToMembers = mutableMapOf<Int, MutableSet<ResourceId>>()
 
     private val nonGroupedResourceIdToPacketId = mutableMapOf<ResourceId, Int>()
     private val packetIdToPacket = mutableMapOf<Int, BytePacketType>()
@@ -293,6 +294,7 @@ class SimplePacketComsProtocol(
                     status.fold(
                         {
                             groupedResourceToGroupId[resourceId] = groupId
+                            groupIdToMembers.getOrPut(groupId) { mutableSetOf() }.add(resourceId)
                             groupMemberToSendRange[resourceId] = sendStart to sendEnd
                             groupMemberToReceiveRange[resourceId] = receiveStart to receiveEnd
 
@@ -452,8 +454,9 @@ class SimplePacketComsProtocol(
     }
 
     /**
-     * Validates that all resources are part of the same group and that there are the correct
-     * number of resources. Returns the group id if validation succeeded.
+     * Validates that all resources are part of the same group, there are the correct number of
+     * resources, and all resources in the group are present. Returns the group id if validation
+     * succeeded.
      *
      * @param resourcesAndValues The group members and their associated values to send.
      * @return The group id.
@@ -465,13 +468,18 @@ class SimplePacketComsProtocol(
 
         require(resourcesAndValues.size == groupIdToCount[groupId])
         require(resourcesAndValues.all { groupedResourceToGroupId[it.first] == groupId })
+        require(
+            resourcesAndValues.mapTo(LinkedHashSet(resourcesAndValues.size)) { it.first }
+                == groupIdToMembers[groupId]
+        )
 
         return groupId
     }
 
     /**
-     * Validates that all resources are part of the same group and that there are the correct
-     * number of resources. Returns the group id if validation succeeded.
+     * Validates that all resources are part of the same group, there are the correct number of
+     * resources, and all resources in the group are present. Returns the group id if validation
+     * succeeded.
      *
      * @param resourceIds The group members.
      * @return The group id.
@@ -481,6 +489,7 @@ class SimplePacketComsProtocol(
 
         require(resourceIds.size == groupIdToCount[groupId])
         require(resourceIds.all { groupedResourceToGroupId[it] == groupId })
+        require(resourceIds.toSet() == groupIdToMembers[groupId])
 
         return groupId
     }
@@ -622,6 +631,14 @@ class SimplePacketComsProtocol(
         )
 
         callAndWait(packetId)
+    }
+
+    private fun validateResourceIsReadType(resourceId: ResourceId): Option<String> {
+        TODO()
+    }
+
+    private fun validateResourceIsWriteType(resourceId: ResourceId): Option<String> {
+        TODO()
     }
 
     override fun connect() = Try {

@@ -110,13 +110,19 @@ internal class SimplePacketComsProtocolTest {
         val write = protocol.addWrite(led1)
         assertTrue(write.isEmpty())
 
-        assertThat(
-            device.writes[SimplePacketComsProtocol.DISCOVERY_PACKET_ID]!!,
-            hasSize(equalTo(1))
-        )
-        assertArrayEquals(
-            getPayload(1, 2, 2, 1, 32),
-            device.writes[SimplePacketComsProtocol.DISCOVERY_PACKET_ID]!!.last()
+        assertAll(
+            {
+                assertThat(
+                    device.writes[SimplePacketComsProtocol.DISCOVERY_PACKET_ID]!!,
+                    hasSize(equalTo(1))
+                )
+            },
+            {
+                assertArrayEquals(
+                    getPayload(1, 2, 2, 1, 32),
+                    device.writes[SimplePacketComsProtocol.DISCOVERY_PACKET_ID]!!.last()
+                )
+            }
         )
     }
 
@@ -239,6 +245,16 @@ internal class SimplePacketComsProtocolTest {
                 )
             )
         }
+
+        // Test a write with missing members
+        assertThrows<IllegalArgumentException> {
+            protocol.digitalWrite(
+                immutableListOf(
+                    led1 to DigitalState.HIGH,
+                    led1 to DigitalState.LOW
+                )
+            )
+        }
     }
 
     @Test
@@ -344,6 +360,16 @@ internal class SimplePacketComsProtocolTest {
         assertThrows<IllegalArgumentException> {
             protocol.analogRead(
                 immutableListOf(
+                    lineSensor1
+                )
+            )
+        }
+
+        // Test a read with missing members
+        assertThrows<IllegalArgumentException> {
+            protocol.analogRead(
+                immutableListOf(
+                    lineSensor1,
                     lineSensor1
                 )
             )
