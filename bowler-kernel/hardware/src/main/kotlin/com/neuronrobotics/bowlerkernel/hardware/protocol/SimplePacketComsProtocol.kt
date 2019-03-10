@@ -241,16 +241,18 @@ class SimplePacketComsProtocol(
                     val sendLength = resourceId.resourceType.sendLength
                     val receiveLength = resourceId.resourceType.receiveLength
 
+                    if (isGreaterThanUnsignedByte(currentSendIndex + sendLength) ||
+                        isGreaterThanUnsignedByte(currentReceiveIndex + receiveLength)
+                    ) {
+                        throw IllegalStateException(
+                            "Cannot handle payload indices greater than a byte."
+                        )
+                    }
+
                     val sendStart = currentSendIndex
                     val sendEnd = (currentSendIndex + sendLength).toByte()
                     val receiveStart = currentReceiveIndex
                     val receiveEnd = (currentReceiveIndex + receiveLength).toByte()
-
-                    if (sendEnd > 2.0.pow(Byte.SIZE_BITS) - 1) {
-                        TODO()
-                    } else if (receiveEnd > 2.0.pow(Byte.SIZE_BITS) - 1) {
-                        TODO()
-                    }
 
                     val status = sendGroupMemberDiscoveryPacket(
                         groupId.toByte(),
@@ -411,7 +413,7 @@ class SimplePacketComsProtocol(
     private fun getNextPacketId(): Int {
         val id = highestPacketId.getAndIncrement()
 
-        if (id > 2.0.pow(Byte.SIZE_BITS) - 1) {
+        if (isGreaterThanUnsignedByte(id)) {
             throw IllegalStateException("Cannot handle packet ids greater than a byte.")
         }
 
@@ -426,12 +428,21 @@ class SimplePacketComsProtocol(
     private fun getNextGroupId(): Int {
         val id = highestGroupId.getAndIncrement()
 
-        if (id > 2.0.pow(Byte.SIZE_BITS) - 1) {
+        if (isGreaterThanUnsignedByte(id)) {
             throw IllegalStateException("Cannot handle group ids greater than a byte.")
         }
 
         return id
     }
+
+    /**
+     * Computes whether the [testNumber] is outside the range of a unsigned byte.
+     *
+     * @param testNumber The test number.
+     * @return Whether the [testNumber] is outside the range of an unsigned byte.
+     */
+    private fun isGreaterThanUnsignedByte(testNumber: Int) =
+        testNumber > 2.0.pow(Byte.SIZE_BITS) - 1
 
     override fun connect() = Try {
         comms.connect()
