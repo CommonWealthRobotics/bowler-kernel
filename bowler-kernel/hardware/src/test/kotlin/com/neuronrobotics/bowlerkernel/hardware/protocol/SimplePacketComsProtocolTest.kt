@@ -41,8 +41,8 @@ internal class SimplePacketComsProtocolTest {
 
     private val device = object : AbstractSimpleComsDevice() {
 
-        val writes = mutableMapOf<Int, MutableList<Array<Byte>>>()
-        val reads = mutableMapOf<Int, MutableList<Array<Byte>>>()
+        val writes = mutableMapOf<Int, MutableList<ByteArray>>()
+        val reads = mutableMapOf<Int, MutableList<ByteArray>>()
 
         override fun write(message: ByteArray?, length: Int, howLongToWaitBeforeTimeout: Int) = 0
 
@@ -53,29 +53,23 @@ internal class SimplePacketComsProtocolTest {
         override fun disconnectDeviceImp() = true
 
         override fun writeBytes(id: Int, values: ByteArray) {
-            writes.getOrPut(id) { mutableListOf() }.add(values.toTypedArray().padToLength())
-        }
-
-        override fun writeBytes(id: Int, values: Array<Byte>) {
             writes.getOrPut(id) { mutableListOf() }.add(values.padToLength())
         }
 
-        override fun readBytes(id: Int): Array<Byte> {
-            return reads.getOrPut(id) {
-                mutableListOf(arrayOf<Byte>().padToLength())
-            }.last().padToLength()
-        }
+        override fun writeBytes(id: Int, values: Array<Byte>) = throw NotImplementedError()
+
+        override fun readBytes(id: Int) = throw NotImplementedError()
 
         override fun readBytes(id: Int, values: ByteArray) {
             reads.getOrPut(id) {
-                mutableListOf(arrayOf<Byte>().padToLength())
+                mutableListOf(ByteArray(60) { 0 })
             }.last().forEachIndexed { index, byte ->
                 values[index] = byte
             }
         }
 
-        private fun Array<Byte>.padToLength() =
-            this + (1..(60 - size)).map { 0.toByte() }.toTypedArray()
+        private fun ByteArray.padToLength() =
+            this + (1..(60 - size)).map { 0.toByte() }.toByteArray()
     }
 
     private val protocol = SimplePacketComsProtocol(device)
@@ -406,9 +400,8 @@ internal class SimplePacketComsProtocolTest {
         )
     }
 
-    private fun getPayload(vararg bytes: Byte): Array<Byte> =
-        bytes.toTypedArray() + (1..(SimplePacketComsProtocol.PAYLOAD_SIZE - bytes.size))
-            .map { 0.toByte() }.toTypedArray()
+    private fun getPayload(vararg bytes: Byte): ByteArray =
+        bytes + (1..(SimplePacketComsProtocol.PAYLOAD_SIZE - bytes.size)).map { 0.toByte() }
 
     companion object {
 

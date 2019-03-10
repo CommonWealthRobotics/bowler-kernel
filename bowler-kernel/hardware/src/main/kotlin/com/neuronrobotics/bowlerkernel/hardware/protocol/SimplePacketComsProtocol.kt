@@ -59,8 +59,8 @@ class SimplePacketComsProtocol(
     private val nonGroupedResourceIdToPacketId = mutableMapOf<ResourceId, Int>()
     private val packetIdToPacket = mutableMapOf<Int, BytePacketType>()
     private val idToLatch = mutableMapOf<Int, CountDownLatch>()
-    private val idToSendData = mutableMapOf<Int, Array<Byte>>()
-    private val idToReceiveData = mutableMapOf<Int, Array<Byte>>()
+    private val idToSendData = mutableMapOf<Int, ByteArray>()
+    private val idToReceiveData = mutableMapOf<Int, ByteArray>()
 
     private val groupIdToPacketId = mutableMapOf<Int, Int>()
     private val groupIdToCount = mutableMapOf<Int, Int>()
@@ -76,8 +76,8 @@ class SimplePacketComsProtocol(
         waitToSendMode()
     }
 
-    private lateinit var discoveryData: ByteArray
-    private lateinit var discoveryLatch: CountDownLatch
+    private var discoveryData = ByteArray(PAYLOAD_SIZE) { 0 }
+    private var discoveryLatch = CountDownLatch(1)
 
     init {
         require(startPacketId > 0) {
@@ -92,7 +92,7 @@ class SimplePacketComsProtocol(
         comms.addPollingPacket(discoveryPacket)
 
         comms.addEvent(DISCOVERY_PACKET_ID) {
-            discoveryData = comms.readBytes(DISCOVERY_PACKET_ID).toByteArray()
+            comms.readBytes(DISCOVERY_PACKET_ID, discoveryData)
             discoveryLatch.countDown()
         }
 
@@ -256,8 +256,8 @@ class SimplePacketComsProtocol(
                 }
 
                 packetIdToPacket[packetId] = packet
-                idToReceiveData[packetId] = arrayOf()
-                idToSendData[packetId] = arrayOf()
+                idToReceiveData[packetId] = ByteArray(PAYLOAD_SIZE) { 0 }
+                idToSendData[packetId] = ByteArray(PAYLOAD_SIZE) { 0 }
                 groupIdToPacketId[groupId] = packetId
                 groupIdToCount[groupId] = count
 
@@ -321,7 +321,7 @@ class SimplePacketComsProtocol(
                     comms.addPollingPacket(packet)
 
                     comms.addEvent(packetId) {
-                        idToReceiveData[packetId] = comms.readBytes(packetId)
+                        comms.readBytes(packetId, idToReceiveData[packetId])
                         idToLatch[packetId]?.countDown()
                     }
 
@@ -371,8 +371,8 @@ class SimplePacketComsProtocol(
                 // Discovery packet was accepted
                 nonGroupedResourceIdToPacketId[resourceId] = packetId
                 packetIdToPacket[packetId] = packet
-                idToReceiveData[packetId] = arrayOf()
-                idToSendData[packetId] = arrayOf()
+                idToReceiveData[packetId] = ByteArray(PAYLOAD_SIZE) { 0 }
+                idToSendData[packetId] = ByteArray(PAYLOAD_SIZE) { 0 }
 
                 if (isPolling) {
                     pollingResources[resourceId] = packetId
@@ -381,7 +381,7 @@ class SimplePacketComsProtocol(
                 comms.addPollingPacket(packet)
 
                 comms.addEvent(packetId) {
-                    idToReceiveData[packetId] = comms.readBytes(packetId)
+                    comms.readBytes(packetId, idToReceiveData[packetId])
                     idToLatch[packetId]?.countDown()
                 }
 
@@ -504,12 +504,12 @@ class SimplePacketComsProtocol(
      */
     private fun <T> makeGroupSendPayload(
         resourcesAndValues: ImmutableList<Pair<ResourceId, T>>,
-        makeResourcePayload: (T) -> Array<Byte>
-    ): Array<Byte> {
+        makeResourcePayload: (T) -> ByteArray
+    ): ByteArray {
         return resourcesAndValues.sortedWith(Comparator { first, second ->
             groupMemberToSendRange[first.first]!!.first -
                 groupMemberToSendRange[second.first]!!.first
-        }).fold(arrayOf()) { acc, (_, value) ->
+        }).fold(byteArrayOf()) { acc, (_, value) ->
             acc + makeResourcePayload(value)
         }
     }
@@ -519,23 +519,21 @@ class SimplePacketComsProtocol(
      *
      * @param resourceIds The group members.
      * @param fullPayload The entire receive payload.
-     * @param parseResourcePayload Parses one member's section of the payload.
+     * @param parseResourcePayload Parses one member's section of the payload. Gives the full
+     * payload and the starting and ending indices of that a member's data.
      * @return The parsed values in the same order as [resourceIds].
      */
     private fun <T> parseGroupReceivePayload(
         resourceIds: ImmutableList<ResourceId>,
-        fullPayload: Array<Byte>,
-        parseResourcePayload: (Array<Byte>) -> T
+        fullPayload: ByteArray,
+        parseResourcePayload: (ByteArray, Int, Int) -> T
     ): ImmutableList<T> {
-        val payload = fullPayload.toImmutableList()
         return resourceIds.map {
             val receiveRange = groupMemberToReceiveRange[it]!!
             parseResourcePayload(
-                // This subList uses an internal offset and bounds checking, so no copy is made
-                payload.subList(
-                    receiveRange.first.toInt(),
-                    receiveRange.second.toInt()
-                ).toTypedArray()
+                fullPayload,
+                receiveRange.first.toInt(),
+                receiveRange.second.toInt()
             )
         }.toImmutableList()
     }
@@ -553,14 +551,16 @@ class SimplePacketComsProtocol(
      */
     private fun <T> handleRead(
         resourceId: ResourceId,
-        parseReceivePayload: (Array<Byte>) -> T
+        parseReceivePayload: (ByteArray, Int, Int) -> T
     ): T {
         val packetId = nonGroupedResourceIdToPacketId[resourceId]!!
 
-        idToSendData[packetId] = arrayOf()
+        idToSendData[packetId] = ByteArray(PAYLOAD_SIZE) { 0 }
         callAndWait(packetId)
 
-        return parseReceivePayload(idToReceiveData[packetId]!!)
+        return idToReceiveData[packetId]!!.let {
+            parseReceivePayload(it, 0, it.size)
+        }
     }
 
     /**
@@ -577,12 +577,12 @@ class SimplePacketComsProtocol(
      */
     private fun <T> handleGroupRead(
         resourceIds: ImmutableList<ResourceId>,
-        parseReceivePayload: (Array<Byte>) -> T
+        parseReceivePayload: (ByteArray, Int, Int) -> T
     ): ImmutableList<T> {
         val groupId = validateGroupReceiveResources(resourceIds)
         val packetId = groupIdToPacketId[groupId]!!
 
-        idToSendData[packetId] = arrayOf()
+        idToSendData[packetId] = ByteArray(PAYLOAD_SIZE) { 0 }
         callAndWait(packetId)
 
         return parseGroupReceivePayload(
@@ -605,7 +605,7 @@ class SimplePacketComsProtocol(
     private fun <T> handleWrite(
         resourceId: ResourceId,
         value: T,
-        makeSendPayload: (T) -> Array<Byte>
+        makeSendPayload: (T) -> ByteArray
     ) {
         val packetId = nonGroupedResourceIdToPacketId[resourceId]!!
         idToSendData[packetId] = makeSendPayload(value)
@@ -621,7 +621,7 @@ class SimplePacketComsProtocol(
      */
     private fun <T> handleGroupWrite(
         resourcesAndValues: ImmutableList<Pair<ResourceId, T>>,
-        makeSendPayload: (T) -> Array<Byte>
+        makeSendPayload: (T) -> ByteArray
     ) {
         val groupId = validateGroupSendResources(resourcesAndValues)
         val packetId = groupIdToPacketId[groupId]!!
@@ -732,10 +732,10 @@ class SimplePacketComsProtocol(
         TODO("not implemented")
     }
 
-    internal fun parseAnalogReadPayload(payload: Array<Byte>): Double {
+    internal fun parseAnalogReadPayload(payload: ByteArray, start: Int, end: Int): Double {
         val buffer = ByteBuffer.allocate(2)
-        buffer.put(payload[0])
-        buffer.put(payload[1])
+        buffer.put(payload[start])
+        buffer.put(payload[start + 1])
         buffer.rewind()
         return buffer.char.toDouble()
     }
@@ -746,10 +746,10 @@ class SimplePacketComsProtocol(
     override fun analogRead(resourceIds: ImmutableList<ResourceId>) =
         handleGroupRead(resourceIds, this::parseAnalogReadPayload)
 
-    internal fun makeAnalogWritePayload(value: Short): Array<Byte> {
+    internal fun makeAnalogWritePayload(value: Short): ByteArray {
         val buffer = ByteBuffer.allocate(2)
         buffer.putShort(value)
-        return buffer.array().toTypedArray()
+        return buffer.array()
     }
 
     override fun analogWrite(resourceId: ResourceId, value: Short) =
@@ -758,8 +758,8 @@ class SimplePacketComsProtocol(
     override fun analogWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Short>>) =
         handleGroupWrite(resourcesAndValues, this::makeAnalogWritePayload)
 
-    internal fun parseButtonReadPayload(payload: Array<Byte>): Boolean {
-        return payload[0] == 0.toByte()
+    internal fun parseButtonReadPayload(payload: ByteArray, start: Int, end: Int): Boolean {
+        return payload[start] == 0.toByte()
     }
 
     override fun buttonRead(resourceId: ResourceId) =
@@ -768,8 +768,8 @@ class SimplePacketComsProtocol(
     override fun buttonRead(resourceIds: ImmutableList<ResourceId>) =
         handleGroupRead(resourceIds, this::parseButtonReadPayload)
 
-    internal fun parseDigitalReadPayload(payload: Array<Byte>): DigitalState {
-        return if (payload[0] == 0.toByte()) {
+    internal fun parseDigitalReadPayload(payload: ByteArray, start: Int, end: Int): DigitalState {
+        return if (payload[start] == 0.toByte()) {
             DigitalState.LOW
         } else {
             DigitalState.HIGH
@@ -782,10 +782,10 @@ class SimplePacketComsProtocol(
     override fun digitalRead(resourceIds: ImmutableList<ResourceId>) =
         handleGroupRead(resourceIds, this::parseDigitalReadPayload)
 
-    internal fun makeDigitalWritePayload(value: DigitalState): Array<Byte> {
+    internal fun makeDigitalWritePayload(value: DigitalState): ByteArray {
         val buffer = ByteBuffer.allocate(1)
         buffer.put(value.byte)
-        return buffer.array().toTypedArray()
+        return buffer.array()
     }
 
     override fun digitalWrite(resourceId: ResourceId, value: DigitalState) =
@@ -794,7 +794,7 @@ class SimplePacketComsProtocol(
     override fun digitalWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, DigitalState>>) =
         handleGroupWrite(resourcesAndValues, this::makeDigitalWritePayload)
 
-    internal fun parseEncoderReadPayload(payload: Array<Byte>): Long {
+    internal fun parseEncoderReadPayload(payload: ByteArray, start: Int, end: Int): Long {
         TODO()
     }
 
@@ -804,7 +804,7 @@ class SimplePacketComsProtocol(
     override fun encoderRead(resourceIds: ImmutableList<ResourceId>) =
         handleGroupRead(resourceIds, this::parseEncoderReadPayload)
 
-    internal fun makeToneWritePayload(frequencyAndDuration: Pair<Int, Long>): Array<Byte> {
+    internal fun makeToneWritePayload(frequencyAndDuration: Pair<Int, Long>): ByteArray {
         TODO()
     }
 
@@ -814,21 +814,21 @@ class SimplePacketComsProtocol(
     override fun toneWrite(resourceId: ResourceId, frequency: Int, duration: Long) =
         handleWrite(resourceId, frequency to duration, this::makeToneWritePayload)
 
-    internal fun makeSerialWritePayload(message: String): Array<Byte> {
+    internal fun makeSerialWritePayload(message: String): ByteArray {
         TODO()
     }
 
     override fun serialWrite(resourceId: ResourceId, message: String) =
         handleWrite(resourceId, message, this::makeSerialWritePayload)
 
-    internal fun parseSerialReadPayload(payload: Array<Byte>): String {
+    internal fun parseSerialReadPayload(payload: ByteArray, start: Int, end: Int): String {
         TODO()
     }
 
     override fun serialRead(resourceId: ResourceId) =
         handleRead(resourceId, this::parseSerialReadPayload)
 
-    internal fun makeServoWritePayload(angle: Double): Array<Byte> {
+    internal fun makeServoWritePayload(angle: Double): ByteArray {
         TODO()
     }
 
@@ -838,7 +838,7 @@ class SimplePacketComsProtocol(
     override fun servoWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Double>>) =
         handleGroupWrite(resourcesAndValues, this::makeServoWritePayload)
 
-    internal fun parseServoReadPayload(payload: Array<Byte>): Double {
+    internal fun parseServoReadPayload(payload: ByteArray, start: Int, end: Int): Double {
         TODO()
     }
 
@@ -848,7 +848,7 @@ class SimplePacketComsProtocol(
     override fun servoRead(resourceIds: ImmutableList<ResourceId>) =
         handleGroupRead(resourceIds, this::parseServoReadPayload)
 
-    internal fun parseUltrasonicReadPayload(payload: Array<Byte>): Long {
+    internal fun parseUltrasonicReadPayload(payload: ByteArray, start: Int, end: Int): Long {
         TODO()
     }
 
