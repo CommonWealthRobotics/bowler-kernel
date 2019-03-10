@@ -435,15 +435,6 @@ class SimplePacketComsProtocol(
         return id
     }
 
-    /**
-     * Computes whether the [testNumber] is outside the range of a unsigned byte.
-     *
-     * @param testNumber The test number.
-     * @return Whether the [testNumber] is outside the range of an unsigned byte.
-     */
-    private fun isGreaterThanUnsignedByte(testNumber: Int) =
-        testNumber > 2.0.pow(Byte.SIZE_BITS) - 1
-
     override fun connect() = Try {
         comms.connect()
         isConnected = true
@@ -633,5 +624,14 @@ class SimplePacketComsProtocol(
         private const val STATUS_REJECTED_UNKNOWN_OPERATION = 9.toByte()
         private const val STATUS_DISCARD_IN_PROGRESS = 10.toByte()
         private const val STATUS_DISCARD_COMPLETE = 11.toByte()
+
+        /**
+         * Computes whether the [testNumber] is outside the range of a unsigned byte.
+         *
+         * @param testNumber The test number.
+         * @return Whether the [testNumber] is outside the range of an unsigned byte.
+         */
+        internal fun isGreaterThanUnsignedByte(testNumber: Int) =
+            testNumber > 2.0.pow(Byte.SIZE_BITS) - 1
     }
 }
