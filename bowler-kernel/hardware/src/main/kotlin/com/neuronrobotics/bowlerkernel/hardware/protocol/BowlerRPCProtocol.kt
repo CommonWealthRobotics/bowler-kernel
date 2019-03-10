@@ -144,12 +144,28 @@ interface BowlerRPCProtocol {
     fun buttonRead(resourceId: ResourceId): Boolean
 
     /**
+     * Performs a debounced button read.
+     *
+     * @param resourceIds The resources in the group.
+     * @return The whether the buttons are pressed, in the same order as [resourceIds].
+     */
+    fun buttonRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Boolean>
+
+    /**
      * Performs a digital read.
      *
      * @param resourceId The id of a resource on this device.
      * @return The digital value.
      */
     fun digitalRead(resourceId: ResourceId): DigitalState
+
+    /**
+     * Performs a digital read.
+     *
+     * @param resourceIds The resources in the group.
+     * @return The digital values in the same order as [resourceIds].
+     */
+    fun digitalRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<DigitalState>
 
     /**
      * Performs a digital write.
@@ -173,6 +189,14 @@ interface BowlerRPCProtocol {
      * @return The encoder value.
      */
     fun encoderRead(resourceId: ResourceId): Long
+
+    /**
+     * Performs an encoder read.
+     *
+     * @param resourceIds The resources in the group.
+     * @return The encoder values in the same order as [resourceIds].
+     */
+    fun encoderRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Long>
 
     /**
      * Performs a tone write.
@@ -216,6 +240,13 @@ interface BowlerRPCProtocol {
     fun servoWrite(resourceId: ResourceId, angle: Double)
 
     /**
+     * Performs a servo write.
+     *
+     * @param resourcesAndValues The resources paired with their values.
+     */
+    fun servoWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Double>>)
+
+    /**
      * Performs a servo read.
      *
      * @param resourceId The id of a resource on this device.
@@ -224,10 +255,26 @@ interface BowlerRPCProtocol {
     fun servoRead(resourceId: ResourceId): Double
 
     /**
+     * Performs a servo read.
+     *
+     * @param resourceIds The resources in the group.
+     * @return The servo angles in the same order as [resourceIds].
+     */
+    fun servoRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Double>
+
+    /**
      * Performs an ultrasonic read.
      *
      * @param resourceId The id of a resource on this device.
      * @return The raw distance.
      */
     fun ultrasonicRead(resourceId: ResourceId): Long
+
+    /**
+     * Performs an ultrasonic read.
+     *
+     * @param resourceIds The resources in the group.
+     * @return The raw distances in the same order as [resourceIds].
+     */
+    fun ultrasonicRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Long>
 }

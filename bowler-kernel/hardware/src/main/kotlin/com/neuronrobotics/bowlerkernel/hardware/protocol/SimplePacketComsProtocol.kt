@@ -693,9 +693,23 @@ class SimplePacketComsProtocol(
         TODO("not implemented")
     }
 
-    override fun digitalRead(resourceId: ResourceId): DigitalState {
+    override fun buttonRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Boolean> {
         TODO("not implemented")
     }
+
+    private fun parseDigitalReadPayload(payload: Array<Byte>): DigitalState {
+        return if (payload[0] == 0.toByte()) {
+            DigitalState.LOW
+        } else {
+            DigitalState.HIGH
+        }
+    }
+
+    override fun digitalRead(resourceId: ResourceId) =
+        handleRead(resourceId, this::parseDigitalReadPayload)
+
+    override fun digitalRead(resourceIds: ImmutableList<ResourceId>) =
+        handleGroupRead(resourceIds, this::parseDigitalReadPayload)
 
     private fun makeDigitalWritePayload(value: DigitalState): Array<Byte> {
         val buffer = ByteBuffer.allocate(1)
@@ -710,6 +724,10 @@ class SimplePacketComsProtocol(
         handleGroupWrite(resourcesAndValues, this::makeDigitalWritePayload)
 
     override fun encoderRead(resourceId: ResourceId): Long {
+        TODO("not implemented")
+    }
+
+    override fun encoderRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Long> {
         TODO("not implemented")
     }
 
@@ -733,11 +751,23 @@ class SimplePacketComsProtocol(
         TODO("not implemented")
     }
 
+    override fun servoWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Double>>) {
+        TODO("not implemented")
+    }
+
     override fun servoRead(resourceId: ResourceId): Double {
         TODO("not implemented")
     }
 
+    override fun servoRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Double> {
+        TODO("not implemented")
+    }
+
     override fun ultrasonicRead(resourceId: ResourceId): Long {
+        TODO("not implemented")
+    }
+
+    override fun ultrasonicRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Long> {
         TODO("not implemented")
     }
 
