@@ -22,6 +22,7 @@ import arrow.core.Try
 import arrow.core.getOrHandle
 import arrow.core.left
 import arrow.core.right
+import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
@@ -47,12 +48,20 @@ class SimplePacketComsProtocol(
 ) : BowlerRPCProtocol {
 
     private var highestPacketId = AtomicInteger(startPacketId)
+    private var highestGroupId = AtomicInteger(1)
 
-    private val pollingResources = mutableListOf<ResourceId>()
-    private val resourceIdToPacket = mutableMapOf<ResourceId, BytePacketType>()
-    private val resourceIdToLatch = mutableMapOf<ResourceId, CountDownLatch>()
-    private val resourceIdToSendData = mutableMapOf<ResourceId, Array<Byte>>()
-    private val resourceIdToReceiveData = mutableMapOf<ResourceId, Array<Byte>>()
+    private val pollingResources = mutableMapOf<ResourceId, Int>()
+    private val groupedResourceToGroupId = mutableMapOf<ResourceId, Int>()
+
+    private val nonGroupedResourceIdToPacketId = mutableMapOf<ResourceId, Int>()
+    private val packetIdToPacket = mutableMapOf<Int, BytePacketType>()
+    private val idToLatch = mutableMapOf<Int, CountDownLatch>()
+    private val idToSendData = mutableMapOf<Int, Array<Byte>>()
+    private val idToReceiveData = mutableMapOf<Int, Array<Byte>>()
+
+    private val groupIdToPacketId = mutableMapOf<Int, Int>()
+    private val groupMemberToSendRange = mutableMapOf<ResourceId, Pair<Byte, Byte>>()
+    private val groupMemberToReceiveRange = mutableMapOf<ResourceId, Pair<Byte, Byte>>()
 
     /**
      * Whether the device is connected.
@@ -202,6 +211,105 @@ class SimplePacketComsProtocol(
             ) + attachmentData
         ).swap().toOption()
 
+    private fun addGroup(
+        resourceIds: ImmutableSet<ResourceId>,
+        isPolling: Boolean = false,
+        configureTimeoutBehavior: (BytePacketType) -> Unit
+    ): Option<String> {
+        val groupId = getNextGroupId()
+        val packetId = getNextPacketId()
+        val count = resourceIds.size
+
+        val groupStatus =
+            sendGroupDiscoveryPacket(groupId.toByte(), packetId.toByte(), count.toByte())
+
+        return groupStatus.fold(
+            {
+                val packet = BytePacketType(packetId, PACKET_SIZE).apply {
+                    waitToSendMode()
+                }
+
+                packetIdToPacket[packetId] = packet
+                idToReceiveData[packetId] = arrayOf()
+                idToSendData[packetId] = arrayOf()
+                groupIdToPacketId[groupId] = packetId
+
+                var currentSendIndex = 0.toByte()
+                var currentReceiveIndex = 0.toByte()
+
+                val failedResources = resourceIds.map { resourceId ->
+                    val sendLength = resourceId.resourceType.sendLength
+                    val receiveLength = resourceId.resourceType.receiveLength
+
+                    val sendStart = currentSendIndex
+                    val sendEnd = (currentSendIndex + sendLength).toByte()
+                    val receiveStart = currentReceiveIndex
+                    val receiveEnd = (currentReceiveIndex + receiveLength).toByte()
+
+                    if (sendEnd > 2.0.pow(Byte.SIZE_BITS) - 1) {
+                        TODO()
+                    } else if (receiveEnd > 2.0.pow(Byte.SIZE_BITS) - 1) {
+                        TODO()
+                    }
+
+                    val status = sendGroupMemberDiscoveryPacket(
+                        groupId.toByte(),
+                        sendStart,
+                        sendEnd,
+                        receiveStart,
+                        receiveEnd,
+                        resourceId.resourceType.type,
+                        resourceId.attachmentPoint.type,
+                        resourceId.attachmentPoint.data
+                    )
+
+                    status.fold(
+                        {
+                            groupedResourceToGroupId[resourceId] = groupId
+                            groupMemberToSendRange[resourceId] = sendStart to sendEnd
+                            groupMemberToReceiveRange[resourceId] = receiveStart to receiveEnd
+
+                            currentSendIndex = (currentSendIndex + sendLength).toByte()
+                            currentReceiveIndex = (currentReceiveIndex + receiveLength).toByte()
+
+                            Option.empty<String>()
+                        },
+                        {
+                            Option.just("Got status: $it")
+                        }
+                    )
+                }.filter { it.nonEmpty() }
+
+                if (failedResources.isNotEmpty()) {
+                    Option.just(
+                        """
+                        |Failed resource statuses:
+                        |${failedResources.joinToString()}
+                        """.trimMargin()
+                    )
+                } else {
+                    comms.addPollingPacket(packet)
+
+                    comms.addEvent(packetId) {
+                        idToReceiveData[packetId] = comms.readBytes(packetId)
+                        idToLatch[packetId]?.countDown()
+                    }
+
+                    configureTimeoutBehavior(packet)
+
+                    if (isPolling) {
+                        packet.pollingMode()
+                    }
+
+                    Option.empty()
+                }
+            },
+            {
+                Option.just("Got status: $it")
+            }
+        )
+    }
+
     /**
      * Adds a non-polling resource.
      *
@@ -230,19 +338,20 @@ class SimplePacketComsProtocol(
                 }
 
                 // Discovery packet was accepted
-                resourceIdToPacket[resourceId] = packet
-                resourceIdToReceiveData[resourceId] = arrayOf()
-                resourceIdToSendData[resourceId] = arrayOf()
+                nonGroupedResourceIdToPacketId[resourceId] = packetId
+                packetIdToPacket[packetId] = packet
+                idToReceiveData[packetId] = arrayOf()
+                idToSendData[packetId] = arrayOf()
 
                 if (isPolling) {
-                    pollingResources.add(resourceId)
+                    pollingResources[resourceId] = packetId
                 }
 
                 comms.addPollingPacket(packet)
 
                 comms.addEvent(packetId) {
-                    resourceIdToReceiveData[resourceId] = comms.readBytes(packetId)
-                    resourceIdToLatch[resourceId]?.countDown()
+                    idToReceiveData[packetId] = comms.readBytes(packetId)
+                    idToLatch[packetId]?.countDown()
                 }
 
                 configureTimeoutBehavior(packet)
@@ -272,6 +381,29 @@ class SimplePacketComsProtocol(
         ).swap().getOrHandle { it[0] }
 
     /**
+     * Send an RPC call and wait for the reply.
+     *
+     * @param id The packet id.
+     */
+    private fun callAndWait(id: Int) {
+        when {
+            pollingResources.containsValue(id) -> {
+                comms.writeBytes(id, idToSendData[id])
+            }
+
+            else -> {
+                val latch = CountDownLatch(1)
+                idToLatch[id] = latch
+
+                comms.writeBytes(id, idToSendData[id])
+                packetIdToPacket[id]!!.oneShotMode()
+
+                latch.await()
+            }
+        }
+    }
+
+    /**
      * Computes the next packet id and validates that it can be sent to the device.
      *
      * @return The next packet id.
@@ -281,6 +413,21 @@ class SimplePacketComsProtocol(
 
         if (id > 2.0.pow(Byte.SIZE_BITS) - 1) {
             throw IllegalStateException("Cannot handle packet ids greater than a byte.")
+        }
+
+        return id
+    }
+
+    /**
+     * Computes the next group id and validates that it can be sent to the device.
+     *
+     * @return The next group id.
+     */
+    private fun getNextGroupId(): Int {
+        val id = highestGroupId.getAndIncrement()
+
+        if (id > 2.0.pow(Byte.SIZE_BITS) - 1) {
+            throw IllegalStateException("Cannot handle group ids greater than a byte.")
         }
 
         return id
@@ -298,24 +445,25 @@ class SimplePacketComsProtocol(
 
     override fun addPollingRead(resourceId: ResourceId) = addResource(resourceId, true) {}
 
-    override fun addPollingReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
-        TODO("not implemented")
-    }
+    override fun addPollingReadGroup(resourceIds: ImmutableSet<ResourceId>) =
+        addGroup(resourceIds, true) {
+            comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
+        }
 
     override fun addRead(resourceId: ResourceId) = addResource(resourceId) {
         comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
     }
 
-    override fun addReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
-        TODO("not implemented")
+    override fun addReadGroup(resourceIds: ImmutableSet<ResourceId>) = addGroup(resourceIds) {
+        comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
     }
 
     override fun addWrite(resourceId: ResourceId) = addResource(resourceId) {
         comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
     }
 
-    override fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
-        TODO("not implemented")
+    override fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>) = addGroup(resourceIds) {
+        comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
     }
 
     override fun isResourceInRange(resourceId: ResourceId): Boolean = true
@@ -324,45 +472,14 @@ class SimplePacketComsProtocol(
         TODO("not implemented")
     }
 
-    /**
-     * Send an RPC call and wait for the reply.
-     *
-     * @param resourceId The resource id.
-     */
-    private fun callAndWait(resourceId: ResourceId) {
-        if (resourceIdToPacket.containsKey(resourceId)) {
-            if (pollingResources.contains(resourceId)) {
-                resourceIdToPacket[resourceId]!!.let {
-                    comms.writeBytes(it.idOfCommand, resourceIdToSendData[resourceId])
-                }
-            } else {
-                val latch = CountDownLatch(1)
-                resourceIdToLatch[resourceId] = latch
-
-                resourceIdToPacket[resourceId]!!.let {
-                    comms.writeBytes(it.idOfCommand, resourceIdToSendData[resourceId])
-                    it.oneShotMode()
-                }
-
-                latch.await()
-            }
-        } else {
-            throw UnsupportedOperationException(
-                """
-                |Unknown ResourceId:
-                |$resourceId
-                """.trimMargin()
-            )
-        }
-    }
-
     override fun analogRead(resourceId: ResourceId): Double {
-        resourceIdToSendData[resourceId] = arrayOf()
+        val id = nonGroupedResourceIdToPacketId[resourceId]!!
+        idToSendData[id] = arrayOf()
 
-        callAndWait(resourceId)
+        callAndWait(id)
 
         val buffer = ByteBuffer.allocate(2)
-        resourceIdToReceiveData[resourceId]!!.let {
+        idToReceiveData[id]!!.let {
             buffer.put(it[0])
             buffer.put(it[1])
         }
@@ -370,7 +487,27 @@ class SimplePacketComsProtocol(
         return buffer.char.toDouble()
     }
 
+    private fun makeAnalogWritePayload(value: Short): Array<Byte> {
+        val buffer = ByteBuffer.allocate(2)
+        buffer.putShort(value)
+        return buffer.array().toTypedArray()
+    }
+
     override fun analogWrite(resourceId: ResourceId, value: Short) {
+        val id = nonGroupedResourceIdToPacketId[resourceId]!!
+        idToSendData[id] = makeAnalogWritePayload(value)
+        callAndWait(id)
+    }
+
+    override fun analogWriteGroup(resourcesAndValues: ImmutableList<Pair<ResourceId, Short>>) {
+        val groupId = groupedResourceToGroupId[resourcesAndValues.first().first]!!
+        val packetId = groupIdToPacketId[groupId]!!
+
+        idToSendData[packetId] = resourcesAndValues.fold(arrayOf()) { acc, (_, value) ->
+            acc + makeAnalogWritePayload(value)
+        }
+
+        callAndWait(packetId)
     }
 
     override fun buttonRead(resourceId: ResourceId): Boolean {
@@ -382,11 +519,12 @@ class SimplePacketComsProtocol(
     }
 
     override fun digitalWrite(resourceId: ResourceId, value: DigitalState) {
+        val id = nonGroupedResourceIdToPacketId[resourceId]!!
         val buffer = ByteBuffer.allocate(1)
         buffer.put(value.byte)
-        resourceIdToSendData[resourceId] = buffer.array().toTypedArray()
+        idToSendData[id] = buffer.array().toTypedArray()
 
-        callAndWait(resourceId)
+        callAndWait(id)
     }
 
     override fun encoderRead(resourceId: ResourceId): Long {

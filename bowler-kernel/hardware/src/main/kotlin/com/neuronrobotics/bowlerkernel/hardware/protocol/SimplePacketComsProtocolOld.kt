@@ -22,6 +22,7 @@ import arrow.core.Try
 import arrow.core.getOrHandle
 import arrow.core.left
 import arrow.core.right
+import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
@@ -583,6 +584,10 @@ class SimplePacketComsProtocolOld(
         val buffer = ByteBuffer.allocate(Short.SIZE_BYTES)
         buffer.putShort(value)
         performWriteOrFail(resourceId, buffer.array())
+    }
+
+    override fun analogWriteGroup(resourcesAndValues: ImmutableList<Pair<ResourceId, Short>>) {
+        TODO("not implemented")
     }
 
     override fun buttonRead(resourceId: ResourceId): Boolean {
