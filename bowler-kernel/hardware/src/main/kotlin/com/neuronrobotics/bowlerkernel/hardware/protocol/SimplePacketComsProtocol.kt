@@ -896,17 +896,17 @@ class SimplePacketComsProtocol(
         /**
          * The status codes.
          */
-        private const val STATUS_ACCEPTED = 1.toByte()
-        private const val STATUS_REJECTED_GENERIC = 2.toByte()
-        private const val STATUS_REJECTED_UNKNOWN_RESOURCE = 3.toByte()
-        private const val STATUS_REJECTED_UNKNOWN_ATTACHMENT = 4.toByte()
-        private const val STATUS_REJECTED_INVALID_ATTACHMENT = 5.toByte()
-        private const val STATUS_REJECTED_INVALID_ATTACHMENT_DATA = 6.toByte()
-        private const val STATUS_REJECTED_INVALID_GROUP_ID = 7.toByte()
-        private const val STATUS_REJECTED_GROUP_FULL = 8.toByte()
-        private const val STATUS_REJECTED_UNKNOWN_OPERATION = 9.toByte()
-        private const val STATUS_DISCARD_IN_PROGRESS = 10.toByte()
-        private const val STATUS_DISCARD_COMPLETE = 11.toByte()
+        const val STATUS_ACCEPTED = 1.toByte()
+        const val STATUS_REJECTED_GENERIC = 2.toByte()
+        const val STATUS_REJECTED_UNKNOWN_RESOURCE = 3.toByte()
+        const val STATUS_REJECTED_UNKNOWN_ATTACHMENT = 4.toByte()
+        const val STATUS_REJECTED_INVALID_ATTACHMENT = 5.toByte()
+        const val STATUS_REJECTED_INVALID_ATTACHMENT_DATA = 6.toByte()
+        const val STATUS_REJECTED_INVALID_GROUP_ID = 7.toByte()
+        const val STATUS_REJECTED_GROUP_FULL = 8.toByte()
+        const val STATUS_REJECTED_UNKNOWN_OPERATION = 9.toByte()
+        const val STATUS_DISCARD_IN_PROGRESS = 10.toByte()
+        const val STATUS_DISCARD_COMPLETE = 11.toByte()
 
         /**
          * Computes whether the [testNumber] is outside the range of a unsigned byte.
