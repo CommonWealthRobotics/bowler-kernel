@@ -22,11 +22,13 @@ import arrow.core.Try
 import arrow.core.getOrHandle
 import arrow.core.left
 import arrow.core.right
+import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
 import edu.wpi.SimplePacketComs.BytePacketType
+import org.octogonapus.ktguava.collections.toImmutableList
 import java.nio.ByteBuffer
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
@@ -413,13 +415,29 @@ class SimplePacketComsProtocol(
      * @param resourcesAndValues The group members and their associated values to send.
      * @return The group id.
      */
-    private fun <T> validateGroupResources(
-        resourcesAndValues: ImmutableSet<Pair<ResourceId, T>>
+    private fun <T> validateGroupSendResources(
+        resourcesAndValues: ImmutableList<Pair<ResourceId, T>>
     ): Int {
         val groupId = groupedResourceToGroupId[resourcesAndValues.first().first]!!
 
         require(resourcesAndValues.size == groupIdToCount[groupId])
         require(resourcesAndValues.all { groupedResourceToGroupId[it.first] == groupId })
+
+        return groupId
+    }
+
+    /**
+     * Validates that all resources are part of the same group and that there are the correct
+     * number of resources. Returns the group id if validation succeeded.
+     *
+     * @param resourceIds The group members.
+     * @return The group id.
+     */
+    private fun validateGroupReceiveResources(resourceIds: ImmutableList<ResourceId>): Int {
+        val groupId = groupedResourceToGroupId[resourceIds.first()]!!
+
+        require(resourceIds.size == groupIdToCount[groupId])
+        require(resourceIds.all { groupedResourceToGroupId[it] == groupId })
 
         return groupId
     }
@@ -432,7 +450,7 @@ class SimplePacketComsProtocol(
      * @return The payload.
      */
     private fun <T> makeGroupSendPayload(
-        resourcesAndValues: ImmutableSet<Pair<ResourceId, T>>,
+        resourcesAndValues: ImmutableList<Pair<ResourceId, T>>,
         makeResourcePayload: (T) -> Array<Byte>
     ): Array<Byte> {
         return resourcesAndValues.sortedWith(Comparator { first, second ->
@@ -441,6 +459,32 @@ class SimplePacketComsProtocol(
         }).fold(arrayOf()) { acc, (_, value) ->
             acc + makeResourcePayload(value)
         }
+    }
+
+    /**
+     * Parses an entire receive payload for a group.
+     *
+     * @param resourceIds The group members.
+     * @param fullPayload The entire receive payload.
+     * @param parseResourcePayload Parses one member's section of the payload.
+     * @return The parsed values in the same order as [resourceIds].
+     */
+    private fun <T> parseGroupReceivePayload(
+        resourceIds: ImmutableList<ResourceId>,
+        fullPayload: Array<Byte>,
+        parseResourcePayload: (Array<Byte>) -> T
+    ): ImmutableList<T> {
+        val payload = fullPayload.toImmutableList()
+        return resourceIds.map {
+            val receiveRange = groupMemberToReceiveRange[it]!!
+            parseResourcePayload(
+                // This subList uses an internal offset and bounds checking, so no copy is made
+                payload.subList(
+                    receiveRange.first.toInt(),
+                    receiveRange.second.toInt()
+                ).toTypedArray()
+            )
+        }.toImmutableList()
     }
 
     /**
@@ -512,19 +556,35 @@ class SimplePacketComsProtocol(
         TODO("not implemented")
     }
 
-    override fun analogRead(resourceId: ResourceId): Double {
-        val id = nonGroupedResourceIdToPacketId[resourceId]!!
-        idToSendData[id] = arrayOf()
-
-        callAndWait(id)
-
+    private fun parseAnalogReadPayload(payload: Array<Byte>): Double {
         val buffer = ByteBuffer.allocate(2)
-        idToReceiveData[id]!!.let {
-            buffer.put(it[0])
-            buffer.put(it[1])
-        }
+        buffer.put(payload[0])
+        buffer.put(payload[1])
         buffer.rewind()
         return buffer.char.toDouble()
+    }
+
+    override fun analogRead(resourceId: ResourceId): Double {
+        val packetId = nonGroupedResourceIdToPacketId[resourceId]!!
+
+        idToSendData[packetId] = arrayOf()
+        callAndWait(packetId)
+
+        return parseAnalogReadPayload(idToReceiveData[packetId]!!)
+    }
+
+    override fun analogRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Double> {
+        val groupId = validateGroupReceiveResources(resourceIds)
+        val packetId = groupIdToPacketId[groupId]!!
+
+        idToSendData[packetId] = arrayOf()
+        callAndWait(packetId)
+
+        return parseGroupReceivePayload(
+            resourceIds,
+            idToReceiveData[packetId]!!,
+            this::parseAnalogReadPayload
+        )
     }
 
     private fun makeAnalogWritePayload(value: Short): Array<Byte> {
@@ -534,13 +594,13 @@ class SimplePacketComsProtocol(
     }
 
     override fun analogWrite(resourceId: ResourceId, value: Short) {
-        val id = nonGroupedResourceIdToPacketId[resourceId]!!
-        idToSendData[id] = makeAnalogWritePayload(value)
-        callAndWait(id)
+        val packetId = nonGroupedResourceIdToPacketId[resourceId]!!
+        idToSendData[packetId] = makeAnalogWritePayload(value)
+        callAndWait(packetId)
     }
 
-    override fun analogWrite(resourcesAndValues: ImmutableSet<Pair<ResourceId, Short>>) {
-        val groupId = validateGroupResources(resourcesAndValues)
+    override fun analogWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Short>>) {
+        val groupId = validateGroupSendResources(resourcesAndValues)
         val packetId = groupIdToPacketId[groupId]!!
 
         idToSendData[packetId] = makeGroupSendPayload(
@@ -571,8 +631,8 @@ class SimplePacketComsProtocol(
         callAndWait(id)
     }
 
-    override fun digitalWrite(resourcesAndValues: ImmutableSet<Pair<ResourceId, DigitalState>>) {
-        val groupId = validateGroupResources(resourcesAndValues)
+    override fun digitalWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, DigitalState>>) {
+        val groupId = validateGroupSendResources(resourcesAndValues)
         val packetId = groupIdToPacketId[groupId]!!
 
         idToSendData[packetId] = makeGroupSendPayload(

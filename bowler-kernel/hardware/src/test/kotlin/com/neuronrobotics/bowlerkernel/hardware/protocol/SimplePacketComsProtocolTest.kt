@@ -26,12 +26,14 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Resour
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableSetOf
 
 internal class SimplePacketComsProtocolTest {
@@ -185,7 +187,7 @@ internal class SimplePacketComsProtocolTest {
 
         // Test a correct write
         protocol.digitalWrite(
-            immutableSetOf(
+            immutableListOf(
                 led1 to DigitalState.HIGH,
                 led2 to DigitalState.LOW
             )
@@ -208,7 +210,7 @@ internal class SimplePacketComsProtocolTest {
 
         // Test a correct write in the opposite order
         protocol.digitalWrite(
-            immutableSetOf(
+            immutableListOf(
                 led2 to DigitalState.LOW,
                 led1 to DigitalState.HIGH
             )
@@ -232,7 +234,7 @@ internal class SimplePacketComsProtocolTest {
         // Test a write with too few members
         assertThrows<IllegalArgumentException> {
             protocol.digitalWrite(
-                immutableSetOf(
+                immutableListOf(
                     led1 to DigitalState.HIGH
                 )
             )
@@ -274,6 +276,67 @@ internal class SimplePacketComsProtocolTest {
                     getPayload(3, 1, 0, 0, 2, 4, 3, 1, 33),
                     device.writes[SimplePacketComsProtocol.DISCOVERY_PACKET_ID]!![2]
                 )
+            }
+        )
+
+        // Test a correct read
+        device.reads.getOrPut(2) { mutableListOf() }.add(getPayload(0, 1, 0, 2))
+        val reads1 = protocol.analogRead(
+            immutableListOf(
+                lineSensor1,
+                lineSensor2
+            )
+        )
+
+        assertAll(
+            {
+                assertThat(
+                    device.writes[2]!!,
+                    hasSize(equalTo(1))
+                )
+            },
+            {
+                assertArrayEquals(
+                    getPayload(),
+                    device.writes[2]!![0]
+                )
+            },
+            {
+                assertIterableEquals(
+                    listOf(1.0, 2.0),
+                    reads1
+                )
+            }
+        )
+
+        /*
+        Test a correct read in the opposite order. The RPC payload still needs to be sent and
+        replied to in the correct order.
+         */
+        device.reads.getOrPut(2) { mutableListOf() }.add(getPayload(0, 1, 0, 2))
+        val reads2 = protocol.analogRead(
+            immutableListOf(
+                lineSensor2,
+                lineSensor1
+            )
+        )
+
+        assertAll(
+            {
+                assertThat(
+                    device.writes[2]!!,
+                    hasSize(equalTo(2))
+                )
+            },
+            {
+                assertArrayEquals(
+                    getPayload(),
+                    device.writes[2]!![1]
+                )
+            },
+            {
+                // Should get the readings back in the order we requested them
+                assertIterableEquals(listOf(2.0, 1.0), reads2)
             }
         )
     }
