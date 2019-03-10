@@ -518,13 +518,27 @@ class SimplePacketComsProtocol(
         TODO("not implemented")
     }
 
-    override fun digitalWrite(resourceId: ResourceId, value: DigitalState) {
-        val id = nonGroupedResourceIdToPacketId[resourceId]!!
+    private fun makeDigitalWritePayload(value: DigitalState): Array<Byte> {
         val buffer = ByteBuffer.allocate(1)
         buffer.put(value.byte)
-        idToSendData[id] = buffer.array().toTypedArray()
+        return buffer.array().toTypedArray()
+    }
 
+    override fun digitalWrite(resourceId: ResourceId, value: DigitalState) {
+        val id = nonGroupedResourceIdToPacketId[resourceId]!!
+        idToSendData[id] = makeDigitalWritePayload(value)
         callAndWait(id)
+    }
+
+    override fun digitalWriteGroup(resourcesAndValues: ImmutableList<Pair<ResourceId, DigitalState>>) {
+        val groupId = groupedResourceToGroupId[resourcesAndValues.first().first]!!
+        val packetId = groupIdToPacketId[groupId]!!
+
+        idToSendData[packetId] = resourcesAndValues.fold(arrayOf()) { acc, (_, value) ->
+            acc + makeDigitalWritePayload(value)
+        }
+
+        callAndWait(packetId)
     }
 
     override fun encoderRead(resourceId: ResourceId): Long {

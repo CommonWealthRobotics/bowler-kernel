@@ -622,6 +622,10 @@ class SimplePacketComsProtocolOld(
         performWriteOrFail(resourceId, buffer.array())
     }
 
+    override fun digitalWriteGroup(resourcesAndValues: ImmutableList<Pair<ResourceId, DigitalState>>) {
+        TODO("not implemented")
+    }
+
     override fun encoderRead(resourceId: ResourceId): Long {
         validateConnection()
         TODO("not implemented")

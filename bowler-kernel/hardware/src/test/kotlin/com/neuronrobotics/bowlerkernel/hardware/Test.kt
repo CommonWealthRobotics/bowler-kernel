@@ -25,6 +25,8 @@ import edu.wpi.SimplePacketComs.device.UdpDevice
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
+import org.octogonapus.ktguava.collections.immutableListOf
+import org.octogonapus.ktguava.collections.immutableSetOf
 import java.net.InetAddress
 
 internal class Test {
@@ -32,13 +34,13 @@ internal class Test {
     @Test
     @Disabled
     fun `test esp32`() {
-        val led = ResourceId(
+        val led1 = ResourceId(
             DefaultResourceTypes.DigitalOut,
             DefaultAttachmentPoints.Pin(32)
         )
 
-        val lineSensor = ResourceId(
-            DefaultResourceTypes.AnalogIn,
+        val led2 = ResourceId(
+            DefaultResourceTypes.DigitalOut,
             DefaultAttachmentPoints.Pin(33)
         )
 
@@ -55,22 +57,32 @@ internal class Test {
             fail { it }
         }
 
-        if (!rpc.isResourceInRange(led)) {
+        if (!rpc.isResourceInRange(led1)) {
             fail { "Not in range" }
         }
 
-        rpc.addWrite(led)
-        Thread.sleep(500)
+        if (!rpc.isResourceInRange(led2)) {
+            fail { "Not in range" }
+        }
 
-        rpc.addPollingRead(lineSensor)
-        Thread.sleep(500)
+        val ledGroup = immutableSetOf(led1, led2)
+        rpc.addWriteGroup(ledGroup)
 
         for (i in 0 until 400) {
-            rpc.digitalWrite(led, DigitalState.HIGH)
-            println(rpc.analogRead(lineSensor))
+            rpc.digitalWriteGroup(
+                immutableListOf(
+                    led1 to DigitalState.HIGH,
+                    led2 to DigitalState.LOW
+                )
+            )
             Thread.sleep(500)
-            rpc.digitalWrite(led, DigitalState.LOW)
-            println(rpc.analogRead(lineSensor))
+
+            rpc.digitalWriteGroup(
+                immutableListOf(
+                    led1 to DigitalState.LOW,
+                    led2 to DigitalState.HIGH
+                )
+            )
             Thread.sleep(500)
         }
 

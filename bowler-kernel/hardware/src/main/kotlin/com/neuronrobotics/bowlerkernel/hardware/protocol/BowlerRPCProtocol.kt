@@ -152,6 +152,13 @@ interface BowlerRPCProtocol {
     fun digitalWrite(resourceId: ResourceId, value: DigitalState)
 
     /**
+     * Performs a digital write.
+     *
+     * @param resourcesAndValues The resources paired with their values.
+     */
+    fun digitalWriteGroup(resourcesAndValues: ImmutableList<Pair<ResourceId, DigitalState>>)
+
+    /**
      * Performs an encoder read.
      *
      * @param resourceId The id of a resource on this device.
