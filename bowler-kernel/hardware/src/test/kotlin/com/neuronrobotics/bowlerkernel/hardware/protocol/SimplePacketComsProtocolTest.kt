@@ -29,9 +29,9 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableSetOf
 
 internal class SimplePacketComsProtocolTest {
@@ -183,8 +183,9 @@ internal class SimplePacketComsProtocolTest {
             }
         )
 
-        protocol.digitalWriteGroup(
-            immutableListOf(
+        // Test a correct write
+        protocol.digitalWrite(
+            immutableSetOf(
                 led1 to DigitalState.HIGH,
                 led2 to DigitalState.LOW
             )
@@ -204,6 +205,38 @@ internal class SimplePacketComsProtocolTest {
                 )
             }
         )
+
+        // Test a correct write in the opposite order
+        protocol.digitalWrite(
+            immutableSetOf(
+                led2 to DigitalState.LOW,
+                led1 to DigitalState.HIGH
+            )
+        )
+
+        assertAll(
+            {
+                assertThat(
+                    device.writes[2]!!,
+                    hasSize(equalTo(2))
+                )
+            },
+            {
+                assertArrayEquals(
+                    getPayload(1, 0),
+                    device.writes[2]!![1]
+                )
+            }
+        )
+
+        // Test a write with too few members
+        assertThrows<IllegalArgumentException> {
+            protocol.digitalWrite(
+                immutableSetOf(
+                    led1 to DigitalState.HIGH
+                )
+            )
+        }
     }
 
     @Test

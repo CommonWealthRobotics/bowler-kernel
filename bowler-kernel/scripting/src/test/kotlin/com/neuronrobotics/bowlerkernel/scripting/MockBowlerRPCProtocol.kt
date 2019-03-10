@@ -17,7 +17,6 @@
 package com.neuronrobotics.bowlerkernel.scripting
 
 import arrow.core.Option
-import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
@@ -121,7 +120,7 @@ class MockBowlerRPCProtocol : BowlerRPCProtocol {
         TODO("not implemented")
     }
 
-    override fun analogWriteGroup(resourcesAndValues: ImmutableList<Pair<ResourceId, Short>>) {
+    override fun analogWrite(resourcesAndValues: ImmutableSet<Pair<ResourceId, Short>>) {
         TODO("not implemented")
     }
 
@@ -134,6 +133,10 @@ class MockBowlerRPCProtocol : BowlerRPCProtocol {
     }
 
     override fun digitalWrite(resourceId: ResourceId, value: DigitalState) {
+        TODO("not implemented")
+    }
+
+    override fun digitalWrite(resourcesAndValues: ImmutableSet<Pair<ResourceId, DigitalState>>) {
         TODO("not implemented")
     }
 

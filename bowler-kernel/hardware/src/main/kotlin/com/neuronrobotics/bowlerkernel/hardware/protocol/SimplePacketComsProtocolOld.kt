@@ -22,7 +22,6 @@ import arrow.core.Try
 import arrow.core.getOrHandle
 import arrow.core.left
 import arrow.core.right
-import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
@@ -586,7 +585,7 @@ class SimplePacketComsProtocolOld(
         performWriteOrFail(resourceId, buffer.array())
     }
 
-    override fun analogWriteGroup(resourcesAndValues: ImmutableList<Pair<ResourceId, Short>>) {
+    override fun analogWrite(resourcesAndValues: ImmutableSet<Pair<ResourceId, Short>>) {
         TODO("not implemented")
     }
 
@@ -622,7 +621,7 @@ class SimplePacketComsProtocolOld(
         performWriteOrFail(resourceId, buffer.array())
     }
 
-    override fun digitalWriteGroup(resourcesAndValues: ImmutableList<Pair<ResourceId, DigitalState>>) {
+    override fun digitalWrite(resourcesAndValues: ImmutableSet<Pair<ResourceId, DigitalState>>) {
         TODO("not implemented")
     }
 

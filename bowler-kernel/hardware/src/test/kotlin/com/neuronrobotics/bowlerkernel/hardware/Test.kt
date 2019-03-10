@@ -25,7 +25,6 @@ import edu.wpi.SimplePacketComs.device.UdpDevice
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
-import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableSetOf
 import java.net.InetAddress
 
@@ -69,16 +68,16 @@ internal class Test {
         rpc.addWriteGroup(ledGroup)
 
         for (i in 0 until 400) {
-            rpc.digitalWriteGroup(
-                immutableListOf(
+            rpc.digitalWrite(
+                immutableSetOf(
                     led1 to DigitalState.HIGH,
                     led2 to DigitalState.LOW
                 )
             )
             Thread.sleep(500)
 
-            rpc.digitalWriteGroup(
-                immutableListOf(
+            rpc.digitalWrite(
+                immutableSetOf(
                     led1 to DigitalState.LOW,
                     led2 to DigitalState.HIGH
                 )

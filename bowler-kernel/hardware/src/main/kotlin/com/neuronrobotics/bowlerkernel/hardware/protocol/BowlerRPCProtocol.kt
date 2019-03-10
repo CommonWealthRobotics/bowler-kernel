@@ -17,7 +17,6 @@
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
 import arrow.core.Option
-import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
@@ -125,7 +124,7 @@ interface BowlerRPCProtocol {
      *
      * @param resourcesAndValues The resources paired with their values.
      */
-    fun analogWriteGroup(resourcesAndValues: ImmutableList<Pair<ResourceId, Short>>)
+    fun analogWrite(resourcesAndValues: ImmutableSet<Pair<ResourceId, Short>>)
 
     /**
      * Performs a debounced button read.
@@ -152,11 +151,11 @@ interface BowlerRPCProtocol {
     fun digitalWrite(resourceId: ResourceId, value: DigitalState)
 
     /**
-     * Performs a digital write.
+     * Performs a digital write for a group.
      *
      * @param resourcesAndValues The resources paired with their values.
      */
-    fun digitalWriteGroup(resourcesAndValues: ImmutableList<Pair<ResourceId, DigitalState>>)
+    fun digitalWrite(resourcesAndValues: ImmutableSet<Pair<ResourceId, DigitalState>>)
 
     /**
      * Performs an encoder read.

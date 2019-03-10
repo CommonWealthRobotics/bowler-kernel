@@ -22,7 +22,6 @@ import arrow.core.Try
 import arrow.core.getOrHandle
 import arrow.core.left
 import arrow.core.right
-import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
@@ -60,6 +59,7 @@ class SimplePacketComsProtocol(
     private val idToReceiveData = mutableMapOf<Int, Array<Byte>>()
 
     private val groupIdToPacketId = mutableMapOf<Int, Int>()
+    private val groupIdToCount = mutableMapOf<Int, Int>()
     private val groupMemberToSendRange = mutableMapOf<ResourceId, Pair<Byte, Byte>>()
     private val groupMemberToReceiveRange = mutableMapOf<ResourceId, Pair<Byte, Byte>>()
 
@@ -233,6 +233,7 @@ class SimplePacketComsProtocol(
                 idToReceiveData[packetId] = arrayOf()
                 idToSendData[packetId] = arrayOf()
                 groupIdToPacketId[groupId] = packetId
+                groupIdToCount[groupId] = count
 
                 var currentSendIndex = 0.toByte()
                 var currentReceiveIndex = 0.toByte()
@@ -406,6 +407,43 @@ class SimplePacketComsProtocol(
     }
 
     /**
+     * Validates that all resources are part of the same group and that there are the correct
+     * number of resources. Returns the group id if validation succeeded.
+     *
+     * @param resourcesAndValues The group members and their associated values to send.
+     * @return The group id.
+     */
+    private fun <T> validateGroupResources(
+        resourcesAndValues: ImmutableSet<Pair<ResourceId, T>>
+    ): Int {
+        val groupId = groupedResourceToGroupId[resourcesAndValues.first().first]!!
+
+        require(resourcesAndValues.size == groupIdToCount[groupId])
+        require(resourcesAndValues.all { groupedResourceToGroupId[it.first] == groupId })
+
+        return groupId
+    }
+
+    /**
+     * Creates the send payload for a group.
+     *
+     * @param resourcesAndValues The group members and their associated values to send.
+     * @param makeResourcePayload Creates the payload for one resource given its value.
+     * @return The payload.
+     */
+    private fun <T> makeGroupSendPayload(
+        resourcesAndValues: ImmutableSet<Pair<ResourceId, T>>,
+        makeResourcePayload: (T) -> Array<Byte>
+    ): Array<Byte> {
+        return resourcesAndValues.sortedWith(Comparator { first, second ->
+            groupMemberToSendRange[first.first]!!.first -
+                groupMemberToSendRange[second.first]!!.first
+        }).fold(arrayOf()) { acc, (_, value) ->
+            acc + makeResourcePayload(value)
+        }
+    }
+
+    /**
      * Computes the next packet id and validates that it can be sent to the device.
      *
      * @return The next packet id.
@@ -501,13 +539,14 @@ class SimplePacketComsProtocol(
         callAndWait(id)
     }
 
-    override fun analogWriteGroup(resourcesAndValues: ImmutableList<Pair<ResourceId, Short>>) {
-        val groupId = groupedResourceToGroupId[resourcesAndValues.first().first]!!
+    override fun analogWrite(resourcesAndValues: ImmutableSet<Pair<ResourceId, Short>>) {
+        val groupId = validateGroupResources(resourcesAndValues)
         val packetId = groupIdToPacketId[groupId]!!
 
-        idToSendData[packetId] = resourcesAndValues.fold(arrayOf()) { acc, (_, value) ->
-            acc + makeAnalogWritePayload(value)
-        }
+        idToSendData[packetId] = makeGroupSendPayload(
+            resourcesAndValues,
+            this::makeAnalogWritePayload
+        )
 
         callAndWait(packetId)
     }
@@ -532,13 +571,14 @@ class SimplePacketComsProtocol(
         callAndWait(id)
     }
 
-    override fun digitalWriteGroup(resourcesAndValues: ImmutableList<Pair<ResourceId, DigitalState>>) {
-        val groupId = groupedResourceToGroupId[resourcesAndValues.first().first]!!
+    override fun digitalWrite(resourcesAndValues: ImmutableSet<Pair<ResourceId, DigitalState>>) {
+        val groupId = validateGroupResources(resourcesAndValues)
         val packetId = groupIdToPacketId[groupId]!!
 
-        idToSendData[packetId] = resourcesAndValues.fold(arrayOf()) { acc, (_, value) ->
-            acc + makeDigitalWritePayload(value)
-        }
+        idToSendData[packetId] = makeGroupSendPayload(
+            resourcesAndValues,
+            this::makeDigitalWritePayload
+        )
 
         callAndWait(packetId)
     }
