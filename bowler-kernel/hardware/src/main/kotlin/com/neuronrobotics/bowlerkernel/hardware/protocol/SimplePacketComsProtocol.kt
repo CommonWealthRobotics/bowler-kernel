@@ -21,12 +21,13 @@ import arrow.core.Option
 import arrow.core.Try
 import arrow.core.getOrHandle
 import arrow.core.left
+import arrow.core.or
 import arrow.core.right
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceIdValidator
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
 import edu.wpi.SimplePacketComs.BytePacketType
 import org.octogonapus.ktguava.collections.toImmutableList
@@ -46,7 +47,8 @@ import kotlin.math.pow
 @SuppressWarnings("TooManyFunctions")
 class SimplePacketComsProtocol(
     private val comms: AbstractSimpleComsDevice,
-    private val startPacketId: Int = DISCOVERY_PACKET_ID + 1
+    private val startPacketId: Int = DISCOVERY_PACKET_ID + 1,
+    private val resourceIdValidator: ResourceIdValidator
 ) : BowlerRPCProtocol {
 
     private var highestPacketId = AtomicInteger(startPacketId)
@@ -634,65 +636,6 @@ class SimplePacketComsProtocol(
         callAndWait(packetId)
     }
 
-    /**
-     * Validates the resource can be read from.
-     *
-     * @param resourceId The resource id.
-     * @return An error.
-     */
-    internal fun validateResourceIsReadType(resourceId: ResourceId): Option<String> {
-        return if (resourceId.resourceType is DefaultResourceTypes) {
-            when (resourceId.resourceType) {
-                is DefaultResourceTypes.AnalogIn,
-                is DefaultResourceTypes.DigitalIn,
-                is DefaultResourceTypes.SerialConnection,
-                is DefaultResourceTypes.Servo,
-                is DefaultResourceTypes.Encoder,
-                is DefaultResourceTypes.Button,
-                is DefaultResourceTypes.Ultrasonic -> Option.empty()
-
-                else -> Option.just(
-                    """
-                    |Cannot add resource as a read type:
-                    |$resourceId
-                    """.trimMargin()
-                )
-            }
-        } else {
-            // Can't validate what we don't own
-            Option.empty()
-        }
-    }
-
-    /**
-     * Validates the resource can be written to.
-     *
-     * @param resourceId The resource id.
-     * @return An error.
-     */
-    internal fun validateResourceIsWriteType(resourceId: ResourceId): Option<String> {
-        return if (resourceId.resourceType is DefaultResourceTypes) {
-            when (resourceId.resourceType) {
-                is DefaultResourceTypes.AnalogOut,
-                is DefaultResourceTypes.DigitalOut,
-                is DefaultResourceTypes.SerialConnection,
-                is DefaultResourceTypes.Servo,
-                is DefaultResourceTypes.Stepper,
-                is DefaultResourceTypes.PiezoelectricSpeaker -> Option.empty()
-
-                else -> Option.just(
-                    """
-                    |Cannot add resource as a write type:
-                    |$resourceId
-                    """.trimMargin()
-                )
-            }
-        } else {
-            // Can't validate what we don't own
-            Option.empty()
-        }
-    }
-
     override fun connect() = Try {
         comms.connect()
         isConnected = true
@@ -703,28 +646,51 @@ class SimplePacketComsProtocol(
         isConnected = false
     }
 
-    override fun addPollingRead(resourceId: ResourceId) = addResource(resourceId, true) {}
+    override fun addPollingRead(resourceId: ResourceId) =
+        resourceIdValidator.validateIsReadType(resourceId).toEither {
+            addResource(resourceId, true) {}
+        }.toOption()
 
     override fun addPollingReadGroup(resourceIds: ImmutableSet<ResourceId>) =
-        addGroup(resourceIds, true) {
-            comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
-        }
+        resourceIds.fold(Option.empty<String>()) { acc, elem ->
+            acc.or(resourceIdValidator.validateIsReadType(elem))
+        }.toEither {
+            addGroup(resourceIds, true) {
+                comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
+            }
+        }.toOption()
 
-    override fun addRead(resourceId: ResourceId) = addResource(resourceId) {
-        comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
-    }
+    override fun addRead(resourceId: ResourceId) =
+        resourceIdValidator.validateIsReadType(resourceId).toEither {
+            addResource(resourceId) {
+                comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
+            }
+        }.toOption()
 
-    override fun addReadGroup(resourceIds: ImmutableSet<ResourceId>) = addGroup(resourceIds) {
-        comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
-    }
+    override fun addReadGroup(resourceIds: ImmutableSet<ResourceId>) =
+        resourceIds.fold(Option.empty<String>()) { acc, elem ->
+            acc.or(resourceIdValidator.validateIsReadType(elem))
+        }.toEither {
+            addGroup(resourceIds) {
+                comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
+            }
+        }.toOption()
 
-    override fun addWrite(resourceId: ResourceId) = addResource(resourceId) {
-        comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
-    }
+    override fun addWrite(resourceId: ResourceId) =
+        resourceIdValidator.validateIsWriteType(resourceId).toEither {
+            addResource(resourceId) {
+                comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
+            }
+        }.toOption()
 
-    override fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>) = addGroup(resourceIds) {
-        comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
-    }
+    override fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>) =
+        resourceIds.fold(Option.empty<String>()) { acc, elem ->
+            acc.or(resourceIdValidator.validateIsWriteType(elem))
+        }.toEither {
+            addGroup(resourceIds) {
+                comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
+            }
+        }.toOption()
 
     override fun isResourceInRange(resourceId: ResourceId): Boolean = true
 

@@ -73,17 +73,7 @@ class ScriptIntegrationTest {
                     }
                 },
                 {
-                    it.provision().fold(
-                        {
-                            fail {
-                                """
-                                |Got a ProvisionError when provisioning the LED:
-                                |$it
-                                """.trimMargin()
-                            }
-                        },
-                        { it }
-                    )
+                    it.provision()
                 }
             )
 

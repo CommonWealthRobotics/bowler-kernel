@@ -17,7 +17,6 @@
 package com.neuronrobotics.bowlerkernel.hardware.registry
 
 import arrow.core.Option
-import arrow.core.right
 import com.neuronrobotics.bowlerkernel.hardware.device.Device
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
@@ -50,11 +49,8 @@ internal data class MockUnprovisionedDeviceResource(
     override val device: Device,
     override val resourceId: ResourceId
 ) : UnprovisionedDeviceResource {
-    override fun provision() =
-        MockProvisionedDeviceResource(
-            device,
-            resourceId
-        ).right()
+
+    override fun provision() = MockProvisionedDeviceResource(device, resourceId)
 }
 
 internal class MockProvisionedDeviceResource(

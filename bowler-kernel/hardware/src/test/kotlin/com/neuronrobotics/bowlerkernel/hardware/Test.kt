@@ -18,6 +18,7 @@ package com.neuronrobotics.bowlerkernel.hardware
 
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocol
@@ -45,12 +46,13 @@ internal class Test {
         )
 
         val rpc = SimplePacketComsProtocol(
-            object : UdpDevice(
+            comms = object : UdpDevice(
                 InetAddress.getByAddress(
                     listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
                 )
             ) {
-            }
+            },
+            resourceIdValidator = DefaultResourceIdValidator()
         )
 
         rpc.connect().map {

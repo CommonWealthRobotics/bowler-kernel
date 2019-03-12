@@ -22,7 +22,6 @@ import com.neuronrobotics.bowlerkernel.hardware.Script
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericDigitalOut
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericServo
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.ProvisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
@@ -30,6 +29,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.Unp
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedServoFactory
 import org.jlleitschuh.guice.key
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import javax.inject.Inject
 
@@ -74,14 +74,18 @@ internal class HardwareScriptIntegrationTest {
                 DefaultAttachmentPoints.Pin(1)
             ).provisionOrFail() as GenericDigitalOut
 
-            ledFactory.makeUnprovisionedDigitalOut(
+            val led1 = ledFactory.makeUnprovisionedDigitalOut(
                 DefaultAttachmentPoints.Pin(2)
-            ).provisionOrFail() as GenericDigitalOut
+            ).fold({ fail { "" } }, { it })
+
+            device.add(led1)
 
             val servoFactory = servoFactoryFactory.create(device)
-            servoFactory.makeUnprovisionedServo(
+            val servo1 = servoFactory.makeUnprovisionedServo(
                 DefaultAttachmentPoints.Pin(3)
-            ).provisionOrFail() as GenericServo
+            ).fold({ fail { "" } }, { it })
+
+            device.add(servo1)
 
             device.disconnect()
 
@@ -96,5 +100,4 @@ internal class HardwareScriptIntegrationTest {
 private inline fun <reified A : UnprovisionedDeviceResource> Either<String, A>.provisionOrFail():
     ProvisionedDeviceResource {
     return fold({ throw IllegalStateException(it) }, { it }).provision()
-        .fold({ throw IllegalStateException(it) }, { it })
 }

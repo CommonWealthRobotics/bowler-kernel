@@ -16,11 +16,15 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
+import arrow.core.Option
+import com.google.common.collect.ImmutableSet
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.hasSize
+import com.natpryce.hamkrest.isEmpty
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
@@ -31,7 +35,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.api.fail
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.octogonapus.ktguava.collections.immutableListOf
@@ -72,7 +75,10 @@ internal class SimplePacketComsProtocolTest {
             this + (1..(60 - size)).map { 0.toByte() }.toByteArray()
     }
 
-    private val protocol = SimplePacketComsProtocol(device)
+    private val protocol = SimplePacketComsProtocol(
+        comms = device,
+        resourceIdValidator = DefaultResourceIdValidator()
+    )
 
     private val led1 = ResourceId(
         DefaultResourceTypes.DigitalOut,
@@ -96,11 +102,10 @@ internal class SimplePacketComsProtocolTest {
 
     @Test
     fun `test add write with led`() {
+        connectProtocol()
+
         device.reads.getOrPut(SimplePacketComsProtocol.DISCOVERY_PACKET_ID) { mutableListOf() }
             .add(getPayload(1))
-
-        val connection = protocol.connect()
-        assertTrue(connection.isEmpty())
 
         val write = protocol.addWrite(led1)
         assertTrue(write.isEmpty())
@@ -119,17 +124,32 @@ internal class SimplePacketComsProtocolTest {
                 )
             }
         )
+
+        disconnectProtocol()
     }
 
     @Test
-    fun `test add read with analog in`() {
+    fun `test addRead`() {
+        testAddReadVariety(SimplePacketComsProtocol::addRead)
+    }
+
+    @Test
+    fun `test addPollingRead`() {
+        testAddReadVariety(SimplePacketComsProtocol::addPollingRead)
+    }
+
+    /**
+     * Tests adding a single read resource.
+     */
+    private fun testAddReadVariety(
+        addOperation: SimplePacketComsProtocol.(ResourceId) -> Option<String>
+    ) {
+        connectProtocol()
+
         device.reads.getOrPut(SimplePacketComsProtocol.DISCOVERY_PACKET_ID) { mutableListOf() }
             .add(getPayload(1))
 
-        val connection = protocol.connect()
-        assertTrue(connection.isEmpty())
-
-        val write = protocol.addRead(lineSensor1)
+        val write = protocol.addOperation(lineSensor1)
         assertTrue(write.isEmpty())
 
         assertAll(
@@ -146,121 +166,32 @@ internal class SimplePacketComsProtocolTest {
                 )
             }
         )
+
+        disconnectProtocol()
     }
 
     @Test
-    fun `test add writeGroup with two leds`() {
-        device.reads.getOrPut(SimplePacketComsProtocol.DISCOVERY_PACKET_ID) { mutableListOf() }
-            .add(getPayload(1))
-
-        val connection = protocol.connect()
-        assertTrue(connection.isEmpty())
-
-        val write = protocol.addWriteGroup(immutableSetOf(led1, led2))
-        assertTrue(write.isEmpty())
-
-        assertAll(
-            {
-                assertThat(
-                    device.writes[SimplePacketComsProtocol.DISCOVERY_PACKET_ID]!!,
-                    hasSize(equalTo(3))
-                )
-            },
-            {
-                assertArrayEquals(
-                    getPayload(2, 1, 2, 2),
-                    device.writes[SimplePacketComsProtocol.DISCOVERY_PACKET_ID]!![0]
-                )
-            },
-            {
-                assertArrayEquals(
-                    getPayload(3, 1, 0, 1, 0, 0, 2, 1, 32),
-                    device.writes[SimplePacketComsProtocol.DISCOVERY_PACKET_ID]!![1]
-                )
-            },
-            {
-                assertArrayEquals(
-                    getPayload(3, 1, 1, 2, 0, 0, 2, 1, 33),
-                    device.writes[SimplePacketComsProtocol.DISCOVERY_PACKET_ID]!![2]
-                )
-            }
-        )
-
-        // Test a correct write
-        protocol.digitalWrite(
-            immutableListOf(
-                led1 to DigitalState.HIGH,
-                led2 to DigitalState.LOW
-            )
-        )
-
-        assertAll(
-            {
-                assertThat(
-                    device.writes[2]!!,
-                    hasSize(equalTo(1))
-                )
-            },
-            {
-                assertArrayEquals(
-                    getPayload(1, 0),
-                    device.writes[2]!![0]
-                )
-            }
-        )
-
-        // Test a correct write in the opposite order
-        protocol.digitalWrite(
-            immutableListOf(
-                led2 to DigitalState.LOW,
-                led1 to DigitalState.HIGH
-            )
-        )
-
-        assertAll(
-            {
-                assertThat(
-                    device.writes[2]!!,
-                    hasSize(equalTo(2))
-                )
-            },
-            {
-                assertArrayEquals(
-                    getPayload(1, 0),
-                    device.writes[2]!![1]
-                )
-            }
-        )
-
-        // Test a write with too few members
-        assertThrows<IllegalArgumentException> {
-            protocol.digitalWrite(
-                immutableListOf(
-                    led1 to DigitalState.HIGH
-                )
-            )
-        }
-
-        // Test a write with missing members
-        assertThrows<IllegalArgumentException> {
-            protocol.digitalWrite(
-                immutableListOf(
-                    led1 to DigitalState.HIGH,
-                    led1 to DigitalState.LOW
-                )
-            )
-        }
+    fun `test addReadGroup`() {
+        testAddReadGroupVariety(SimplePacketComsProtocol::addReadGroup)
     }
 
     @Test
-    fun `test add readGroup with two line sensors`() {
+    fun `test addPollingReadGroup`() {
+        testAddReadGroupVariety(SimplePacketComsProtocol::addPollingReadGroup)
+    }
+
+    /**
+     * Tests adding a read group.
+     */
+    private fun testAddReadGroupVariety(
+        addOperation: SimplePacketComsProtocol.(ImmutableSet<ResourceId>) -> Option<String>
+    ) {
+        connectProtocol()
+
         device.reads.getOrPut(SimplePacketComsProtocol.DISCOVERY_PACKET_ID) { mutableListOf() }
             .add(getPayload(1))
 
-        val connection = protocol.connect()
-        assertTrue(connection.isEmpty())
-
-        val write = protocol.addReadGroup(immutableSetOf(lineSensor1, lineSensor2))
+        val write = protocol.addOperation(immutableSetOf(lineSensor1, lineSensor2))
         assertTrue(write.isEmpty())
 
         assertAll(
@@ -369,26 +300,141 @@ internal class SimplePacketComsProtocolTest {
                 )
             )
         }
+
+        disconnectProtocol()
     }
 
-    @ParameterizedTest
-    @MethodSource("readResourceSource")
-    fun `test resource types are validated correctly`(
-        data: Pair<ResourceId, List<ResourceType>>
-    ) {
-        if (data.second.isEmpty()) {
-            fail {
-                "No resource types given"
+    @Test
+    fun `test add writeGroup with two leds`() {
+        connectProtocol()
+
+        device.reads.getOrPut(SimplePacketComsProtocol.DISCOVERY_PACKET_ID) { mutableListOf() }
+            .add(getPayload(1))
+
+        val write = protocol.addWriteGroup(immutableSetOf(led1, led2))
+        assertTrue(write.isEmpty())
+
+        assertAll(
+            {
+                assertThat(
+                    device.writes[SimplePacketComsProtocol.DISCOVERY_PACKET_ID]!!,
+                    hasSize(equalTo(3))
+                )
+            },
+            {
+                assertArrayEquals(
+                    getPayload(2, 1, 2, 2),
+                    device.writes[SimplePacketComsProtocol.DISCOVERY_PACKET_ID]!![0]
+                )
+            },
+            {
+                assertArrayEquals(
+                    getPayload(3, 1, 0, 1, 0, 0, 2, 1, 32),
+                    device.writes[SimplePacketComsProtocol.DISCOVERY_PACKET_ID]!![1]
+                )
+            },
+            {
+                assertArrayEquals(
+                    getPayload(3, 1, 1, 2, 0, 0, 2, 1, 33),
+                    device.writes[SimplePacketComsProtocol.DISCOVERY_PACKET_ID]!![2]
+                )
             }
+        )
+
+        // Test a correct write
+        protocol.digitalWrite(
+            immutableListOf(
+                led1 to DigitalState.HIGH,
+                led2 to DigitalState.LOW
+            )
+        )
+
+        assertAll(
+            {
+                assertThat(
+                    device.writes[2]!!,
+                    hasSize(equalTo(1))
+                )
+            },
+            {
+                assertArrayEquals(
+                    getPayload(1, 0),
+                    device.writes[2]!![0]
+                )
+            }
+        )
+
+        // Test a correct write in the opposite order
+        protocol.digitalWrite(
+            immutableListOf(
+                led2 to DigitalState.LOW,
+                led1 to DigitalState.HIGH
+            )
+        )
+
+        assertAll(
+            {
+                assertThat(
+                    device.writes[2]!!,
+                    hasSize(equalTo(2))
+                )
+            },
+            {
+                assertArrayEquals(
+                    getPayload(1, 0),
+                    device.writes[2]!![1]
+                )
+            }
+        )
+
+        // Test a write with too few members
+        assertThrows<IllegalArgumentException> {
+            protocol.digitalWrite(
+                immutableListOf(
+                    led1 to DigitalState.HIGH
+                )
+            )
         }
 
-        if (data.second.contains(ResourceType.Write)) {
-            assertTrue(protocol.validateResourceIsWriteType(data.first).isEmpty())
+        // Test a write with missing members
+        assertThrows<IllegalArgumentException> {
+            protocol.digitalWrite(
+                immutableListOf(
+                    led1 to DigitalState.HIGH,
+                    led1 to DigitalState.LOW
+                )
+            )
         }
+    }
 
-        if (data.second.contains(ResourceType.Read)) {
-            assertTrue(protocol.validateResourceIsReadType(data.first).isEmpty())
-        }
+    @Test
+    fun `test resource types are validated in add operations`() {
+        assertAll(
+            { assertInteractionAndNoInteractionsWithDevice { protocol.addRead(led1) } },
+            { assertInteractionAndNoInteractionsWithDevice { protocol.addPollingRead(led1) } },
+            {
+                assertInteractionAndNoInteractionsWithDevice {
+                    protocol.addPollingReadGroup(
+                        immutableSetOf(led1, led2)
+                    )
+                }
+            },
+            {
+                assertInteractionAndNoInteractionsWithDevice {
+                    protocol.addReadGroup(
+                        immutableSetOf(led1, led2)
+                    )
+                }
+            },
+            { assertInteractionAndNoInteractionsWithDevice { protocol.addWrite(lineSensor1) } },
+            {
+                assertInteractionAndNoInteractionsWithDevice {
+                    protocol.addWriteGroup(
+                        immutableSetOf(lineSensor1, lineSensor2)
+                    )
+                }
+            }
+        )
     }
 
     @ParameterizedTest
@@ -400,63 +446,60 @@ internal class SimplePacketComsProtocolTest {
         )
     }
 
+    /**
+     * Connects the protocol and asserts it connected properly because no error was returned.
+     */
+    private fun connectProtocol() {
+        val connection = protocol.connect()
+        assertTrue(connection.isEmpty())
+    }
+
+    /**
+     * Disconnects the protocol.
+     */
+    private fun disconnectProtocol() {
+        protocol.disconnect()
+    }
+
+    /**
+     * Connects the protocol, runs the [interaction], and asserts that:
+     * 1. The operation failed because an error was returned
+     * 2. No interactions happened with the device (nothing was written or read)
+     *
+     * @param interaction The interaction to perform.
+     */
+    private fun assertInteractionAndNoInteractionsWithDevice(interaction: () -> Option<String>) {
+        connectProtocol()
+
+        val result = interaction()
+
+        assertAll(
+            { assertTrue(result.nonEmpty()) },
+            { assertNoInteractionsWithDevice() }
+        )
+    }
+
+    /**
+     * Asserts that no interactions have happened with the device (nothing written or read).
+     */
+    private fun assertNoInteractionsWithDevice() {
+        assertAll(
+            { assertThat(device.writes.entries, isEmpty) },
+            { assertThat(device.reads.entries, isEmpty) }
+        )
+    }
+
+    /**
+     * Creates a mock payload. The payload starts with the given [bytes] and is padded with
+     * zeroes to a length of [SimplePacketComsProtocol.PAYLOAD_SIZE].
+     *
+     * @param bytes The first bytes in the payload.
+     * @return The payload.
+     */
     private fun getPayload(vararg bytes: Byte): ByteArray =
         bytes + (1..(SimplePacketComsProtocol.PAYLOAD_SIZE - bytes.size)).map { 0.toByte() }
 
     companion object {
-
-        enum class ResourceType {
-            Write, Read
-        }
-
-        @Suppress("unused")
-        @JvmStatic
-        fun readResourceSource() = listOf(
-            ResourceId(
-                DefaultResourceTypes.DigitalIn,
-                DefaultAttachmentPoints.Pin(1)
-            ) to listOf(ResourceType.Read),
-            ResourceId(
-                DefaultResourceTypes.DigitalOut,
-                DefaultAttachmentPoints.Pin(1)
-            ) to listOf(ResourceType.Write),
-            ResourceId(
-                DefaultResourceTypes.AnalogIn,
-                DefaultAttachmentPoints.Pin(1)
-            ) to listOf(ResourceType.Read),
-            ResourceId(
-                DefaultResourceTypes.AnalogOut,
-                DefaultAttachmentPoints.Pin(1)
-            ) to listOf(ResourceType.Write),
-            ResourceId(
-                DefaultResourceTypes.SerialConnection,
-                DefaultAttachmentPoints.USBPort(1)
-            ) to listOf(ResourceType.Read, ResourceType.Write),
-            ResourceId(
-                DefaultResourceTypes.Servo,
-                DefaultAttachmentPoints.Pin(1)
-            ) to listOf(ResourceType.Read, ResourceType.Write),
-            ResourceId(
-                DefaultResourceTypes.Stepper,
-                DefaultAttachmentPoints.PinGroup(byteArrayOf(1, 2, 3, 4))
-            ) to listOf(ResourceType.Write),
-            ResourceId(
-                DefaultResourceTypes.Encoder,
-                DefaultAttachmentPoints.PinGroup(byteArrayOf(1, 2))
-            ) to listOf(ResourceType.Read),
-            ResourceId(
-                DefaultResourceTypes.Button,
-                DefaultAttachmentPoints.Pin(1)
-            ) to listOf(ResourceType.Read),
-            ResourceId(
-                DefaultResourceTypes.Ultrasonic,
-                DefaultAttachmentPoints.PinGroup(byteArrayOf(1, 2))
-            ) to listOf(ResourceType.Read),
-            ResourceId(
-                DefaultResourceTypes.PiezoelectricSpeaker,
-                DefaultAttachmentPoints.Pin(1)
-            ) to listOf(ResourceType.Write)
-        )
 
         @Suppress("unused")
         @JvmStatic

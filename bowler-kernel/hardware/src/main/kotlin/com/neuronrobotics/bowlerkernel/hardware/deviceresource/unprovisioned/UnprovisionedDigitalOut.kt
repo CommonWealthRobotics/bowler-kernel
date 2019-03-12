@@ -16,9 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned
 
-import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.ProvisionError
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericDigitalOut
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
@@ -27,8 +25,5 @@ class UnprovisionedDigitalOut(
     override val resourceId: ResourceId
 ) : UnprovisionedDeviceResource {
 
-    override fun provision(): Either<ProvisionError, GenericDigitalOut> =
-        provisionBlocking(device, resourceId) {
-            GenericDigitalOut(device, resourceId)
-        }
+    override fun provision() = GenericDigitalOut(device, resourceId)
 }

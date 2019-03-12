@@ -17,6 +17,8 @@
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid
 
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints.PinGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes.Companion.getHighestTypeNumber
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes.Companion.getLowestTypeNumber
 
 /**
  * The resource types Bowler supports out-of-the-box. Uses a continuous range of bytes from
@@ -84,15 +86,18 @@ sealed class DefaultResourceTypes(
      */
     object PiezoelectricSpeaker : DefaultResourceTypes(11, 8, 0)
 
-    /**
-     * The lowest used type number.
-     */
-    @SuppressWarnings("FunctionOnlyReturningConstant")
-    fun getLowestTypeNumber(): Byte = 1
+    companion object {
 
-    /**
-     * The highest used type number.
-     */
-    @SuppressWarnings("FunctionOnlyReturningConstant")
-    fun getHighestTypeNumber(): Byte = 11
+        /**
+         * The lowest used type number.
+         */
+        @SuppressWarnings("FunctionOnlyReturningConstant")
+        fun getLowestTypeNumber(): Byte = 1
+
+        /**
+         * The highest used type number.
+         */
+        @SuppressWarnings("FunctionOnlyReturningConstant")
+        fun getHighestTypeNumber(): Byte = 11
+    }
 }

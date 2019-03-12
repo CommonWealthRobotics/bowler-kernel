@@ -14,17 +14,28 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned
+package com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid
 
-import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericButton
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import arrow.core.Option
 
-class UnprovisionedButton
-internal constructor(
-    override val device: BowlerDevice,
-    override val resourceId: ResourceId
-) : UnprovisionedDeviceResource {
+/**
+ * Validates various properties of a [ResourceId].
+ */
+interface ResourceIdValidator {
 
-    override fun provision() = GenericButton(device, resourceId)
+    // TODO: Add AttachmentPoint validation
+
+    /**
+     * Validates the resource can be read from.
+     *
+     * @return An error.
+     */
+    fun validateIsReadType(resourceId: ResourceId): Option<String>
+
+    /**
+     * Validates the resource can be written to.
+     *
+     * @return An error.
+     */
+    fun validateIsWriteType(resourceId: ResourceId): Option<String>
 }

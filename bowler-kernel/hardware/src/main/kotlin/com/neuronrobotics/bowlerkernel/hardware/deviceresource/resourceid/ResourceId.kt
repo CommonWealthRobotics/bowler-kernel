@@ -33,10 +33,15 @@ data class ResourceId(
 
         other as ResourceId
 
+        if (resourceType != other.resourceType) return false
         if (attachmentPoint != other.attachmentPoint) return false
 
         return true
     }
 
-    override fun hashCode() = attachmentPoint.hashCode()
+    override fun hashCode(): Int {
+        var result = resourceType.hashCode()
+        result = 31 * result + attachmentPoint.hashCode()
+        return result
+    }
 }

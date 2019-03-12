@@ -38,13 +38,13 @@ abstract class Script {
     /**
      * An [Injector] available for the script to use.
      */
-    protected var injector: Injector = KernelHardwareModule.injector.createChildInjector(
-        scriptModule(),
-        DeviceFactory.deviceFactoryModule(),
-        UnprovisionedDeviceResourceFactory.unprovisionedDeviceResourceFactoryModule()
-    )
+    protected var injector: Injector =
+        KernelHardwareModule.injector.createChildInjector(scriptModule())
 
-    private val scriptModules = mutableListOf<Module>()
+    /**
+     * The modules which have been added by the user.
+     */
+    private val addedModules = mutableListOf<Module>()
 
     /**
      * Runs the script on the current thread.
@@ -74,7 +74,7 @@ abstract class Script {
      * @param modules The modules to add.
      */
     fun addToInjector(modules: ImmutableList<Module>) {
-        scriptModules.addAll(modules)
+        addedModules.addAll(modules)
         injector = injector.createChildInjector(modules)
     }
 
@@ -91,7 +91,19 @@ abstract class Script {
      *
      * @return The modules added to this script's [injector].
      */
-    fun getModules(): ImmutableList<Module> = scriptModules.toImmutableList()
+    fun getModules(): ImmutableList<Module> = addedModules.toImmutableList()
+
+    /**
+     * Returns the modules which bind default instances of various kernel interfaces. This list
+     * does not include required modules, such as the [scriptModule] or [KernelHardwareModule].
+     * You should use this module unless you need to override something specific.
+     *
+     * @return The default kernel modules.
+     */
+    fun getDefaultModules(): ImmutableList<Module> = immutableListOf(
+        DeviceFactory.deviceFactoryModule(),
+        UnprovisionedDeviceResourceFactory.unprovisionedDeviceResourceFactoryModule()
+    )
 
     companion object {
         private fun scriptModule() = module {
