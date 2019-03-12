@@ -440,9 +440,7 @@ class SimplePacketComsProtocol(
      */
     private fun callAndWait(id: Int) {
         when {
-            pollingResources.containsValue(id) -> {
-                comms.writeBytes(id, idToSendData[id])
-            }
+            pollingResources.containsValue(id) -> comms.writeBytes(id, idToSendData[id])
 
             else -> {
                 val latch = CountDownLatch(1)
@@ -724,9 +722,8 @@ class SimplePacketComsProtocol(
     override fun analogWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Short>>) =
         handleGroupWrite(resourcesAndValues, this::makeAnalogWritePayload)
 
-    internal fun parseButtonReadPayload(payload: ByteArray, start: Int, end: Int): Boolean {
-        return payload[start] == 0.toByte()
-    }
+    internal fun parseButtonReadPayload(payload: ByteArray, start: Int, end: Int): Boolean =
+        payload[start] == 0.toByte()
 
     override fun buttonRead(resourceId: ResourceId) =
         handleRead(resourceId, this::parseButtonReadPayload)
