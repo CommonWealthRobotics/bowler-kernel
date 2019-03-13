@@ -20,7 +20,7 @@ import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericServo
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
-class UnprovisionedServo
+data class UnprovisionedServo
 internal constructor(
     override val device: BowlerDevice,
     override val resourceId: ResourceId

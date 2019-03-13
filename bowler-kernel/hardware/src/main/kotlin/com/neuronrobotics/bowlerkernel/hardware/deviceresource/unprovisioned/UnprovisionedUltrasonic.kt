@@ -20,7 +20,7 @@ import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericUltrasonic
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
-class UnprovisionedUltrasonic
+data class UnprovisionedUltrasonic
 internal constructor(
     override val device: BowlerDevice,
     override val resourceId: ResourceId

@@ -20,7 +20,7 @@ import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericSerialConnection
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
-class UnprovisionedSerialConnection
+data class UnprovisionedSerialConnection
 internal constructor(
     override val device: BowlerDevice,
     override val resourceId: ResourceId

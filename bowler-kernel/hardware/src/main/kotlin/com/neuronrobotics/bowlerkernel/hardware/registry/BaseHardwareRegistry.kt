@@ -59,8 +59,8 @@ internal constructor() : HardwareRegistry {
         if (internalRegisteredDeviceIds.contains(deviceId)) {
             return Either.left(
                 """
-                Cannot register device $deviceId because the device is already registered.
-                """.trimIndent()
+                |Cannot register device $deviceId because the device is already registered.
+                """.trimMargin()
             )
         }
 
@@ -78,16 +78,25 @@ internal constructor() : HardwareRegistry {
         if (!internalRegisteredDeviceIds.contains(device.deviceId)) {
             return Either.left(
                 """
-                Cannot register resource $resourceId on device ${device.deviceId} because device
-                ${device.deviceId} is not registered.
-                """.trimIndent()
+                |Cannot register resource $resourceId on device ${device.deviceId} because device
+                |${device.deviceId} is not registered.
+                """.trimMargin()
             )
         } else if (internalRegisteredDeviceResourceIds.containsEntry(device.deviceId, resourceId)) {
             return Either.left(
                 """
-                Cannot register resource $resourceId on device ${device.deviceId} because the
-                resource is already registered.
-                """.trimIndent()
+                |Cannot register resource $resourceId on device ${device.deviceId} because the
+                |resource is already registered.
+                """.trimMargin()
+            )
+        } else if (internalRegisteredDeviceResourceIds.values().any {
+                it.attachmentPoint == resourceId.attachmentPoint
+            }) {
+            return Either.left(
+                """
+                |Cannot register resource $resourceId on device ${device.deviceId} because there
+                |is already a resource on the same attachment point.
+                """.trimMargin()
             )
         }
 
@@ -101,15 +110,15 @@ internal constructor() : HardwareRegistry {
         if (!internalRegisteredDeviceIds.contains(device.deviceId)) {
             return Option.just(
                 """
-                Cannot unregister device ${device.deviceId} because the device is not registered.
-                """.trimIndent()
+                |Cannot unregister device ${device.deviceId} because the device is not registered.
+                """.trimMargin()
             )
         } else if (internalRegisteredDeviceResourceIds[device.deviceId].isNotEmpty()) {
             return Option.just(
                 """
-                Cannot unregister device ${device.deviceId} because there are registered
-                resources attached to it.
-                """.trimIndent()
+                |Cannot unregister device ${device.deviceId} because there are registered
+                |resources attached to it.
+                """.trimMargin()
             )
         }
 
@@ -131,10 +140,10 @@ internal constructor() : HardwareRegistry {
         if (!internalRegisteredDeviceIds.contains(resource.device.deviceId)) {
             return Option.just(
                 """
-                Cannot unregister resource ${resource.resourceId} on device
-                ${resource.device.deviceId} because device ${resource.device.deviceId} is not
-                registered.
-                """.trimIndent()
+                |Cannot unregister resource ${resource.resourceId} on device
+                |${resource.device.deviceId} because device ${resource.device.deviceId} is not
+                |registered.
+                """.trimMargin()
             )
         } else if (!internalRegisteredDeviceResourceIds.containsEntry(
                 resource.device.deviceId,
@@ -143,9 +152,9 @@ internal constructor() : HardwareRegistry {
         ) {
             return Option.just(
                 """
-                Cannot unregister resource ${resource.resourceId} on device
-                ${resource.device.deviceId} because the resource is not registered on that device.
-                """.trimIndent()
+                |Cannot unregister resource ${resource.resourceId} on device
+                |${resource.device.deviceId} because the resource is not registered on that device.
+                """.trimMargin()
             )
         }
 

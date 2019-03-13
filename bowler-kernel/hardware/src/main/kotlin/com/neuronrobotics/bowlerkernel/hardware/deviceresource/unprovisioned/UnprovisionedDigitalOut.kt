@@ -20,7 +20,7 @@ import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericDigitalOut
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
-class UnprovisionedDigitalOut(
+data class UnprovisionedDigitalOut(
     override val device: BowlerDevice,
     override val resourceId: ResourceId
 ) : UnprovisionedDeviceResource {

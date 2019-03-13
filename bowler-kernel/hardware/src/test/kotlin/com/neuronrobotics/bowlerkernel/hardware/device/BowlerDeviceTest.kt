@@ -39,6 +39,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.fail
+import org.octogonapus.ktguava.collections.immutableSetOf
 
 internal class BowlerDeviceTest {
 
@@ -47,9 +48,19 @@ internal class BowlerDeviceTest {
         DefaultAttachmentPoints.Pin(1)
     )
 
+    private val led2Id = ResourceId(
+        DefaultResourceTypes.DigitalOut,
+        DefaultAttachmentPoints.Pin(2)
+    )
+
     private val line1Id = ResourceId(
         DefaultResourceTypes.AnalogIn,
-        DefaultAttachmentPoints.Pin(2)
+        DefaultAttachmentPoints.Pin(3)
+    )
+
+    private val line2Id = ResourceId(
+        DefaultResourceTypes.AnalogIn,
+        DefaultAttachmentPoints.Pin(4)
     )
 
     private val serial1Id = ResourceId(
@@ -57,28 +68,40 @@ internal class BowlerDeviceTest {
         DefaultAttachmentPoints.USBPort(1)
     )
 
-    private val unknownId = ResourceId(
-        object : ResourceType {
-            override val type = (DefaultResourceTypes.getHighestTypeNumber() + 1).toByte()
-            override val sendLength = 0.toByte()
-            override val receiveLength = 0.toByte()
-        },
-        DefaultAttachmentPoints.Pin(1)
-    )
+    private val unknownResourceType = object : ResourceType {
+        override val type = (DefaultResourceTypes.getHighestTypeNumber() + 1).toByte()
+        override val sendLength = 0.toByte()
+        override val receiveLength = 0.toByte()
+    }
+
+    private val unknownId1 = ResourceId(unknownResourceType, DefaultAttachmentPoints.Pin(1))
+    private val unknownId2 = ResourceId(unknownResourceType, DefaultAttachmentPoints.Pin(2))
 
     private val bowlerRPCProtocol = mock<BowlerRPCProtocol> {
         on { addWrite(led1Id) } doReturn Option.empty()
         on { addRead(led1Id) } doReturn Option.just("")
+        on { addPollingRead(led1Id) } doReturn Option.just("")
+
+        on { addWriteGroup(immutableSetOf(led1Id, led2Id)) } doReturn Option.empty()
+        on { addReadGroup(immutableSetOf(led1Id, led2Id)) } doReturn Option.just("")
+        on { addPollingReadGroup(immutableSetOf(led1Id, led2Id)) } doReturn Option.just("")
 
         on { addWrite(line1Id) } doReturn Option.just("")
         on { addRead(line1Id) } doReturn Option.empty()
+        on { addPollingRead(line1Id) } doReturn Option.empty()
+
+        on { addWriteGroup(immutableSetOf(line1Id, line2Id)) } doReturn Option.just("")
+        on { addReadGroup(immutableSetOf(line1Id, line2Id)) } doReturn Option.empty()
+        on { addPollingReadGroup(immutableSetOf(line1Id, line2Id)) } doReturn Option.empty()
 
         on { addWrite(serial1Id) } doReturn Option.empty()
         on { addRead(serial1Id) } doReturn Option.empty()
+        on { addPollingRead(serial1Id) } doReturn Option.empty()
 
         // Unknown resources can't be validated, so we must let them be added
-        on { addWrite(unknownId) } doReturn Option.empty()
-        on { addRead(unknownId) } doReturn Option.empty()
+        on { addWrite(unknownId1) } doReturn Option.empty()
+        on { addRead(unknownId1) } doReturn Option.empty()
+        on { addPollingRead(unknownId1) } doReturn Option.empty()
     }
 
     private val device = BowlerDevice(
@@ -88,15 +111,15 @@ internal class BowlerDeviceTest {
     )
 
     private val led1 = UnprovisionedDigitalOut(device, led1Id)
-
+    private val led2 = UnprovisionedDigitalOut(device, led2Id)
     private val line1 = UnprovisionedAnalogIn(device, line1Id)
-
+    private val line2 = UnprovisionedAnalogIn(device, line2Id)
     private val serial1 = UnprovisionedSerialConnection(device, serial1Id)
-
-    private val unknownResource = UnprovisionedAnalogIn(device, unknownId)
+    private val unknownResource1 = UnprovisionedAnalogIn(device, unknownId1)
+    private val unknownResource2 = UnprovisionedAnalogIn(device, unknownId2)
 
     @Test
-    fun `test adding a normal led`() {
+    fun `test adding an led`() {
         val result = device.add(led1)
 
         verify(bowlerRPCProtocol).addWrite(led1Id)
@@ -109,7 +132,7 @@ internal class BowlerDeviceTest {
     }
 
     @Test
-    fun `test adding a normal line sensor`() {
+    fun `test adding a line sensor`() {
         val result = device.add(line1)
 
         verify(bowlerRPCProtocol, never()).addWrite(line1Id)
@@ -136,10 +159,40 @@ internal class BowlerDeviceTest {
 
     @Test
     fun `test adding an unknown resource`() {
-        val result = device.add(unknownResource)
+        val result = device.add(unknownResource1)
 
-        verify(bowlerRPCProtocol, never()).addWrite(unknownId)
-        verify(bowlerRPCProtocol, never()).addRead(unknownId)
+        verify(bowlerRPCProtocol, never()).addWrite(unknownId1)
+        verify(bowlerRPCProtocol, never()).addRead(unknownId1)
+
+        assertTrue(result.isLeft())
+    }
+
+    @Test
+    fun `test adding an led group`() {
+        val result = device.add(immutableSetOf(led1, led2))
+
+        verify(bowlerRPCProtocol).addWriteGroup(immutableSetOf(led1Id, led2Id))
+        verify(bowlerRPCProtocol, never()).addReadGroup(immutableSetOf(led1Id, led2Id))
+
+        assertTrue(result.isRight())
+    }
+
+    @Test
+    fun `test adding a line sensor group`() {
+        val result = device.add(immutableSetOf(line1, line2))
+
+        verify(bowlerRPCProtocol, never()).addWriteGroup(immutableSetOf(line1Id, line2Id))
+        verify(bowlerRPCProtocol).addReadGroup(immutableSetOf(line1Id, line2Id))
+
+        assertTrue(result.isRight())
+    }
+
+    @Test
+    fun `test adding an unknown resource group`() {
+        val result = device.add(immutableSetOf(unknownResource1, unknownResource2))
+
+        verify(bowlerRPCProtocol, never()).addWriteGroup(immutableSetOf(unknownId1, unknownId2))
+        verify(bowlerRPCProtocol, never()).addReadGroup(immutableSetOf(unknownId1, unknownId2))
 
         assertTrue(result.isLeft())
     }

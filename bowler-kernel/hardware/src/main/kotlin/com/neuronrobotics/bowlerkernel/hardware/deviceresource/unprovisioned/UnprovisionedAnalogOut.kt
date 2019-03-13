@@ -20,7 +20,7 @@ import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericAnalogOut
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
-class UnprovisionedAnalogOut
+data class UnprovisionedAnalogOut
 internal constructor(
     override val device: BowlerDevice,
     override val resourceId: ResourceId

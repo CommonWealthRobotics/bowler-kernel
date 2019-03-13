@@ -28,6 +28,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Resour
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
+import org.octogonapus.ktguava.collections.toImmutableSet
 
 /**
  * A Bowler device is a serial device which runs the Bowler RPC protocol.
@@ -37,8 +38,10 @@ import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
 class BowlerDevice
 internal constructor(
     override val deviceId: DeviceId,
+    // We want to let users use the RPC directly
+    @Suppress("MemberVisibilityCanBePrivate")
     val bowlerRPCProtocol: BowlerRPCProtocol,
-    val resourceIdValidator: ResourceIdValidator
+    private val resourceIdValidator: ResourceIdValidator
 ) : Device {
 
     override fun connect() = bowlerRPCProtocol.connect()
@@ -65,17 +68,51 @@ internal constructor(
             |$resource
             """.trimMargin().left()
         } else {
-            resource.provision().right()
+            return resource.provision().right()
         }
     }
 
-    fun addGroup(
-        resources: ImmutableSet<UnprovisionedDeviceResource>
+    fun <T : UnprovisionedDeviceResource> add(
+        resources: ImmutableSet<T>
     ): Either<String, ImmutableSet<ProvisionedDeviceResource>> {
-        TODO("not implemented")
+        val resourceIds = resources.map { it.resourceId }.toImmutableSet()
+
+        val readResources = resources.map {
+            resourceIdValidator.validateIsReadType(it.resourceId)
+        }
+
+        val allReadResources = readResources.fold(true) { acc, elem ->
+            acc && elem.isEmpty()
+        }
+
+        if (allReadResources) {
+            bowlerRPCProtocol.addReadGroup(resourceIds)
+        }
+
+        val writeResources = resources.map {
+            resourceIdValidator.validateIsWriteType(it.resourceId)
+        }
+
+        val allWriteResources = writeResources.fold(true) { acc, elem ->
+            acc && elem.isEmpty()
+        }
+
+        if (allWriteResources) {
+            bowlerRPCProtocol.addWriteGroup(resourceIds)
+        }
+
+        return if (!allReadResources && !allWriteResources) {
+            """
+            |Could not add resources because they are neither all read types nor all write
+            |types:
+            |${resources.joinToString(separator = "\n")}
+            """.trimMargin().left()
+        } else {
+            resources.map { it.provision() }.toImmutableSet().right()
+        }
     }
 
     private fun <T> Option<T>.toSwappedEither(): Either<T, Unit> = toEither { Unit }.swap()
 
-    override fun toString() = """`$deviceId`"""
+    override fun toString() = """BowlerDevice(deviceId=$deviceId)"""
 }

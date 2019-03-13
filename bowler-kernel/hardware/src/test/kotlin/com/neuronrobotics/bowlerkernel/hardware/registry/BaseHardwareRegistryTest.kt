@@ -222,8 +222,8 @@ class BaseHardwareRegistryTest {
         }
 
         assertAll(
-            { assertTrue(digitalOut.isRight()) },
-            { assertTrue(servo.isLeft()) }
+            { assertTrue(digitalOut.isRight(), "digitalOut.isRight()") },
+            { assertTrue(servo.isLeft(), "servo.isLeft()") }
         )
     }
 }
