@@ -421,6 +421,17 @@ internal class SimplePacketComsProtocolTest {
         assertTrue(result.nonEmpty())
     }
 
+    @Test
+    fun `test total discard failure`() {
+        connectProtocol()
+
+        device.readsToSend.addLast(getPayload(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC))
+
+        val result = disconnectProtocol()
+
+        assertTrue(result.nonEmpty())
+    }
+
     /**
      * Connects the protocol and asserts it connected properly because no error was returned.
      */

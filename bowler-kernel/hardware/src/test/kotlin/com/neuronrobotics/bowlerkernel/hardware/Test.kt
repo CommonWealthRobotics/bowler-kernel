@@ -23,12 +23,12 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocol
 import edu.wpi.SimplePacketComs.device.UdpDevice
-import edu.wpi.SimplePacketComs.phy.UDPSimplePacketComs
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableSetOf
+import java.net.InetAddress
 
 internal class Test {
 
@@ -47,7 +47,11 @@ internal class Test {
 
         val rpc = SimplePacketComsProtocol(
             comms = object :
-                UdpDevice(UDPSimplePacketComs.getAllAddresses("BowlerRPCTeam").first()) {
+                UdpDevice(
+                    InetAddress.getByAddress(
+                        listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
+                    )
+                ) {
             },
             resourceIdValidator = DefaultResourceIdValidator()
         )
@@ -67,7 +71,7 @@ internal class Test {
         val ledGroup = immutableSetOf(led1, led2)
         rpc.addWriteGroup(ledGroup)
 
-        for (i in 0 until 400) {
+        for (i in 0 until 2) {
             rpc.digitalWrite(
                 immutableListOf(
                     led1 to DigitalState.HIGH,
@@ -85,8 +89,6 @@ internal class Test {
             Thread.sleep(500)
         }
 
-//        for (i in 0 until 10) {
-//            println(rpc.analogRead(testPin))
-//        }
+        println(rpc.disconnect())
     }
 }
