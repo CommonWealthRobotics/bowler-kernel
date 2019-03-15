@@ -319,25 +319,25 @@ internal class SimplePacketComsProtocolTest {
     @Test
     fun `test resource types are validated in add operations`() {
         assertAll(
-            { assertInteractionAndNoInteractionsWithDevice { protocol.addRead(led1) } },
-            { assertInteractionAndNoInteractionsWithDevice { protocol.addPollingRead(led1) } },
+            { assertOperationFailedAndNoInteractionsWithDevice { protocol.addRead(led1) } },
+            { assertOperationFailedAndNoInteractionsWithDevice { protocol.addPollingRead(led1) } },
             {
-                assertInteractionAndNoInteractionsWithDevice {
+                assertOperationFailedAndNoInteractionsWithDevice {
                     protocol.addPollingReadGroup(
                         immutableSetOf(led1, led2)
                     )
                 }
             },
             {
-                assertInteractionAndNoInteractionsWithDevice {
+                assertOperationFailedAndNoInteractionsWithDevice {
                     protocol.addReadGroup(
                         immutableSetOf(led1, led2)
                     )
                 }
             },
-            { assertInteractionAndNoInteractionsWithDevice { protocol.addWrite(lineSensor1) } },
+            { assertOperationFailedAndNoInteractionsWithDevice { protocol.addWrite(lineSensor1) } },
             {
-                assertInteractionAndNoInteractionsWithDevice {
+                assertOperationFailedAndNoInteractionsWithDevice {
                     protocol.addWriteGroup(
                         immutableSetOf(lineSensor1, lineSensor2)
                     )
@@ -435,16 +435,16 @@ internal class SimplePacketComsProtocolTest {
     private fun disconnectProtocol() = protocol.disconnect()
 
     /**
-     * Connects the protocol, runs the [interaction], and asserts that:
+     * Connects the protocol, runs the [operation], and asserts that:
      * 1. The operation failed because an error was returned
      * 2. No interactions happened with the device (nothing was written or read)
      *
-     * @param interaction The interaction to perform.
+     * @param operation The operation to perform.
      */
-    private fun assertInteractionAndNoInteractionsWithDevice(interaction: () -> Option<String>) {
+    private fun assertOperationFailedAndNoInteractionsWithDevice(operation: () -> Option<String>) {
         connectProtocol()
 
-        val result = interaction()
+        val result = operation()
 
         assertAll(
             { assertTrue(result.nonEmpty()) },
