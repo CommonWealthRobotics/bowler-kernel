@@ -639,9 +639,23 @@ class SimplePacketComsProtocol(
         isConnected = true
     }.toEither { it.localizedMessage }.swap().toOption()
 
-    override fun disconnect() {
+    override fun disconnect(): Option<String> {
+        var status = sendDiscardDiscoveryPacket()
+
+        // Wait for the discard operation to complete
+        while (status == STATUS_DISCARD_IN_PROGRESS) {
+            status = sendDiscardDiscoveryPacket()
+            Thread.sleep(100)
+        }
+
         comms.disconnect()
         isConnected = false
+
+        return if (status == STATUS_DISCARD_COMPLETE) {
+            Option.empty()
+        } else {
+            Option.just("Got status code while trying to disconnect: $status")
+        }
     }
 
     override fun addPollingRead(resourceId: ResourceId) =

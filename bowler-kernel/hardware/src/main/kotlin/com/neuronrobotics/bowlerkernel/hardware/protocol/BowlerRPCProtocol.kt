@@ -40,8 +40,10 @@ interface BowlerRPCProtocol {
 
     /**
      * Closes the persistent connection to the device. Does nothing if there is no connection open.
+     *
+     * @return An error if there is a disconnect problem.
      */
-    fun disconnect()
+    fun disconnect(): Option<String>
 
     /**
      * Adds a read resource which is constantly polled.

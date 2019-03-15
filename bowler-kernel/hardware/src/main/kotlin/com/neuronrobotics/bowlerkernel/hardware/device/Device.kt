@@ -37,8 +37,10 @@ interface Device {
 
     /**
      * Closes the persistent connection to the device. Does nothing if there is no connection open.
+     *
+     * @return An error if there is a disconnect problem.
      */
-    fun disconnect()
+    fun disconnect(): Option<String>
 
     /**
      * Returns whether the [resourceId] is in the valid range of resources for this device.

@@ -37,8 +37,9 @@ class MockBowlerRPCProtocol : BowlerRPCProtocol {
         return Option.empty()
     }
 
-    override fun disconnect() {
+    override fun disconnect(): Option<String> {
         isConnected = false
+        return Option.empty()
     }
 
     override fun addPollingRead(resourceId: ResourceId): Option<String> {

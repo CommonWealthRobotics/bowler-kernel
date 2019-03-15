@@ -24,6 +24,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -376,6 +377,50 @@ internal class SimplePacketComsProtocolTest {
         }
     }
 
+    @Test
+    fun `test discard success before disconnect`() {
+        connectProtocol()
+
+        device.readsToSend.addLast(getPayload(SimplePacketComsProtocol.STATUS_DISCARD_IN_PROGRESS))
+        device.readsToSend.addLast(getPayload(SimplePacketComsProtocol.STATUS_DISCARD_IN_PROGRESS))
+        device.readsToSend.addLast(getPayload(SimplePacketComsProtocol.STATUS_DISCARD_COMPLETE))
+
+        val result = disconnectProtocol()
+
+        assertAll(
+            listOf(
+                { assertTrue(result.isEmpty()) }
+            ) + device.writesReceived.map {
+                {
+                    val expected = getPayload(4)
+                    assertArrayEquals(
+                        expected,
+                        it,
+                        """
+                    |The sent payload:
+                    |${it.joinToString()}
+                    |should equal the expected payload:
+                    |${expected.joinToString()}
+                    """.trimMargin()
+                    )
+                }
+            }
+        )
+    }
+
+    @Test
+    fun `test discard failure before disconnect`() {
+        connectProtocol()
+
+        device.readsToSend.addLast(getPayload(SimplePacketComsProtocol.STATUS_DISCARD_IN_PROGRESS))
+        device.readsToSend.addLast(getPayload(SimplePacketComsProtocol.STATUS_DISCARD_IN_PROGRESS))
+        device.readsToSend.addLast(getPayload(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC))
+
+        val result = disconnectProtocol()
+
+        assertTrue(result.nonEmpty())
+    }
+
     /**
      * Connects the protocol and asserts it connected properly because no error was returned.
      */
@@ -387,9 +432,7 @@ internal class SimplePacketComsProtocolTest {
     /**
      * Disconnects the protocol.
      */
-    private fun disconnectProtocol() {
-        protocol.disconnect()
-    }
+    private fun disconnectProtocol() = protocol.disconnect()
 
     /**
      * Connects the protocol, runs the [interaction], and asserts that:
@@ -407,8 +450,6 @@ internal class SimplePacketComsProtocolTest {
             { assertTrue(result.nonEmpty()) },
             { assertNoInteractionsWithDevice() }
         )
-
-        disconnectProtocol()
     }
 
     /**

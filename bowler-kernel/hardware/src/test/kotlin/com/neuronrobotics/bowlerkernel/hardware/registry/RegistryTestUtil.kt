@@ -38,8 +38,9 @@ internal data class MockDevice(
         return Option.empty()
     }
 
-    override fun disconnect() {
+    override fun disconnect(): Option<String> {
         disconnectWasCalled = true
+        return Option.empty()
     }
 
     override fun isResourceInRange(resourceId: ResourceId) = true
