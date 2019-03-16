@@ -25,15 +25,15 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.model.DhParamData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LinkData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
-import org.octogonapus.guavautil.collections.immutableListOf
+import org.octogonapus.ktguava.collections.immutableListOf
 
 @SuppressWarnings("LongParameterList")
 fun createMockLinkData(
     type: LinkType = LinkType.Rotary,
     dhParamData: DhParamData = DhParamData(0.0, 0.0, 0.0, 0.0),
     jointLimits: Limits = Limits(
-        1.0,
-        0.0
+        1,
+        0
     ),
     jointAngleControllerGistId: String = "jacGistId",
     jointAngleControllerFilename: String = "jacFilename",
@@ -82,7 +82,7 @@ fun createMockLimbData(
 fun createMockKinematicBaseData(
     id: SimpleKinematicBaseId = SimpleKinematicBaseId("kinBaseId"),
     limbs: List<LimbData> = immutableListOf(createMockLimbData()),
-    limbTransforms: List<FrameTransformation> = immutableListOf(FrameTransformation.identity()),
+    limbTransforms: List<FrameTransformation> = immutableListOf(FrameTransformation.identity),
     bodyControllerGistId: String = "bcGistId",
     bodyControllerFilename: String = "bcFilename"
 ) = KinematicBaseData(id, limbs, limbTransforms, bodyControllerGistId, bodyControllerFilename)

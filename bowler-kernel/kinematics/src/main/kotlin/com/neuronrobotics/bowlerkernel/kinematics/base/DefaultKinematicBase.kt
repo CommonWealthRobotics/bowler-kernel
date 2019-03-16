@@ -33,7 +33,7 @@ class DefaultKinematicBase(
     override val bodyController: BodyController
 ) : KinematicBase {
 
-    private var currentWorldSpaceTransform = FrameTransformation.identity()
+    private var currentWorldSpaceTransform = FrameTransformation.identity
 
     override fun setDesiredWorldSpaceTransformDelta(
         worldSpaceTransform: FrameTransformation,

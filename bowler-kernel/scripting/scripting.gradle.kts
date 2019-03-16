@@ -12,7 +12,7 @@ dependencies {
     api(project(":bowler-kernel:hardware"))
     api(project(":bowler-kernel:gitfs"))
 
-    implementation(group = "org.octogonapus", name = "kt-guava-core", version = "0.0.1")
+    implementation(group = "org.octogonapus", name = "kt-guava-core", version = "0.0.5")
     implementation(group = "com.google.inject", name = "guice", version = "4.1.0")
     implementation(
         group = "com.google.inject.extensions",
@@ -28,6 +28,6 @@ dependencies {
     testImplementation(
         group = "com.nhaarman.mockitokotlin2",
         name = "mockito-kotlin",
-        version = "2.0.0"
+        version = "2.1.0"
     )
 }

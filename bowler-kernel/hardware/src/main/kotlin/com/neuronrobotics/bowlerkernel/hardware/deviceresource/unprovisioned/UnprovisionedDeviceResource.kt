@@ -16,22 +16,25 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned
 
-import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.DeviceResource
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.ProvisionError
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.ProvisionedDeviceResource
 
 /**
  * A [DeviceResource] which has been registered but not provisioned.
  */
-interface UnprovisionedDeviceResource : DeviceResource {
+abstract class UnprovisionedDeviceResource : DeviceResource {
 
     /**
      * Provisions this [DeviceResource] by communicating with the parent device to set up any
      * hardware-local requirements. For example, this could initialize GPIO pins or register
      * interrupt handlers.
      *
-     * @return A [ProvisionedDeviceResource] on success, a [ProvisionError] on failure.
+     * @return A [ProvisionedDeviceResource]
      */
-    fun provision(): Either<ProvisionError, ProvisionedDeviceResource>
+    protected abstract fun provision(): ProvisionedDeviceResource
+
+    /**
+     * Runs and returns [provision].
+     */
+    internal fun runProvision() = provision()
 }

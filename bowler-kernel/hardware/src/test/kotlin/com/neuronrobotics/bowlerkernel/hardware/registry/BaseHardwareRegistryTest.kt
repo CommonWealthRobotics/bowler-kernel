@@ -73,7 +73,7 @@ class BaseHardwareRegistryTest {
 
             override fun connect(): Option<String> = Option.empty()
 
-            override fun disconnect() {
+            override fun disconnect(): Option<String> {
                 throw IllegalStateException("Oops!")
             }
 
@@ -222,8 +222,8 @@ class BaseHardwareRegistryTest {
         }
 
         assertAll(
-            { assertTrue(digitalOut.isRight()) },
-            { assertTrue(servo.isLeft()) }
+            { assertTrue(digitalOut.isRight(), "digitalOut.isRight()") },
+            { assertTrue(servo.isLeft(), "servo.isLeft()") }
         )
     }
 }

@@ -32,7 +32,7 @@ import org.kohsuke.github.GHGist
 import org.kohsuke.github.GHGistFile
 import org.kohsuke.github.GHObject
 import org.kohsuke.github.GitHub
-import org.octogonapus.guavautil.collections.toImmutableList
+import org.octogonapus.ktguava.collections.toImmutableList
 import java.io.File
 import java.io.IOException
 import java.nio.file.Paths
@@ -53,8 +53,7 @@ class GitHubFS(
         branch: String
     ): Try<File> {
         return if (isValidHttpGitURL(gitUrl)) {
-            val directory =
-                gitUrlToDirectory(gitUrl)
+            val directory = gitUrlToDirectory(gitUrl)
             if (directory.mkdirs()) {
                 // If true, the directories were created which means a new repository is
                 // being cloned

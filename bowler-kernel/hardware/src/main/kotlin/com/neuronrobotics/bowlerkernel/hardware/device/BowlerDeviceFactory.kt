@@ -26,7 +26,7 @@ interface BowlerDeviceFactory {
     /**
      * Makes a Bowler device (which runs the Bowler RPC protocol) with the specified id.
      *
-     * @param deviceId The serial port the device is on.
+     * @param deviceId The id of the device.
      * @return A [BowlerDevice] on success, a [RegisterError] on failure.
      */
     fun makeBowlerDevice(

@@ -16,8 +16,6 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid
 
-import com.google.common.collect.ImmutableList
-
 /**
  * An attachment point encoded as a [Byte], i.e. a pin number, etc. The attachment point is
  * actually an unsigned byte, not a signed byte.
@@ -29,5 +27,5 @@ interface AttachmentPoint {
     /**
      * Extra bytes for data about the attachment point.
      */
-    val data: ImmutableList<Byte>
+    val data: ByteArray
 }

@@ -17,7 +17,6 @@
 package com.neuronrobotics.bowlerkernel.hardware.registry
 
 import arrow.core.Option
-import arrow.core.right
 import com.neuronrobotics.bowlerkernel.hardware.device.Device
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
@@ -39,8 +38,9 @@ internal data class MockDevice(
         return Option.empty()
     }
 
-    override fun disconnect() {
+    override fun disconnect(): Option<String> {
         disconnectWasCalled = true
+        return Option.empty()
     }
 
     override fun isResourceInRange(resourceId: ResourceId) = true
@@ -49,12 +49,9 @@ internal data class MockDevice(
 internal data class MockUnprovisionedDeviceResource(
     override val device: Device,
     override val resourceId: ResourceId
-) : UnprovisionedDeviceResource {
-    override fun provision() =
-        MockProvisionedDeviceResource(
-            device,
-            resourceId
-        ).right()
+) : UnprovisionedDeviceResource() {
+
+    override fun provision() = MockProvisionedDeviceResource(device, resourceId)
 }
 
 internal class MockProvisionedDeviceResource(

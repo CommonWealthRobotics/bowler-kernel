@@ -16,54 +16,79 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware
 
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocol
 import edu.wpi.SimplePacketComs.device.UdpDevice
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
-import org.octogonapus.guavautil.collections.immutableListOf
+import org.octogonapus.ktguava.collections.immutableListOf
+import org.octogonapus.ktguava.collections.immutableSetOf
 import java.net.InetAddress
 
 internal class Test {
 
     @Test
+    @Disabled
     fun `test esp32`() {
-        val testPin = ResourceId(
-            DefaultResourceTypes.AnalogIn,
-            DefaultAttachmentPoints.Pin(35)
+        val led1 = ResourceId(
+            DefaultResourceTypes.DigitalOut,
+            DefaultAttachmentPoints.Pin(32)
+        )
+
+        val led2 = ResourceId(
+            DefaultResourceTypes.DigitalOut,
+            DefaultAttachmentPoints.Pin(33)
         )
 
         val rpc = SimplePacketComsProtocol(
-            object : UdpDevice(
-                InetAddress.getByAddress(
-                    listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
-                )
-            ) {
+            comms = object :
+                UdpDevice(
+                    InetAddress.getByAddress(
+                        listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
+                    )
+                ) {
             },
-            8,
-            immutableListOf(),
-            immutableListOf(testPin),
-            immutableListOf()
+            resourceIdValidator = DefaultResourceIdValidator()
         )
 
         rpc.connect().map {
             fail { it }
         }
 
-        if (!rpc.isResourceInRange(testPin)) {
+        if (!rpc.isResourceInRange(led1)) {
             fail { "Not in range" }
         }
 
-        if (!rpc.provisionResource(testPin)) {
-            fail { "Not provisioned" }
+        if (!rpc.isResourceInRange(led2)) {
+            fail { "Not in range" }
         }
 
-        rpc.runDiscovery()
+        val ledGroup = immutableSetOf(led1, led2)
+        rpc.addWriteGroup(ledGroup)
 
-        for (i in 0 until 10) {
-            println(rpc.analogRead(testPin))
+        for (i in 0 until 2) {
+            rpc.digitalWrite(
+                immutableListOf(
+                    led1 to DigitalState.HIGH,
+                    led2 to DigitalState.LOW
+                )
+            )
+            Thread.sleep(500)
+
+            rpc.digitalWrite(
+                immutableListOf(
+                    led1 to DigitalState.LOW,
+                    led2 to DigitalState.HIGH
+                )
+            )
+            Thread.sleep(500)
         }
+
+        println(rpc.disconnect())
     }
 }

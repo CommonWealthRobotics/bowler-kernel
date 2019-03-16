@@ -180,7 +180,8 @@ class UnprovisionedDeviceResourceFactory
         }
 
     companion object {
-        internal fun unprovisionedDeviceResourceFactoryModule() = module {
+
+        fun unprovisionedDeviceResourceFactoryModule() = module {
             install(
                 FactoryModuleBuilder()
                     .implement(

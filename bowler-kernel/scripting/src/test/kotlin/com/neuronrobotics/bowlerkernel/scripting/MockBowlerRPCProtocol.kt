@@ -17,6 +17,8 @@
 package com.neuronrobotics.bowlerkernel.scripting
 
 import arrow.core.Option
+import com.google.common.collect.ImmutableList
+import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
@@ -35,20 +37,66 @@ class MockBowlerRPCProtocol : BowlerRPCProtocol {
         return Option.empty()
     }
 
-    override fun disconnect() {
+    override fun disconnect(): Option<String> {
         isConnected = false
+        return Option.empty()
     }
 
-    override fun isResourceInRange(resourceId: ResourceId): Boolean {
+    override fun addPollingRead(resourceId: ResourceId): Option<String> {
         if (isConnected) {
             Thread.sleep(5)
-            return true
+            return Option.empty()
         } else {
             fail { "The RPC is not connected!" }
         }
     }
 
-    override fun provisionResource(resourceId: ResourceId): Boolean {
+    override fun addPollingReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
+        if (isConnected) {
+            Thread.sleep(5)
+            return Option.empty()
+        } else {
+            fail { "The RPC is not connected!" }
+        }
+    }
+
+    override fun addRead(resourceId: ResourceId): Option<String> {
+        if (isConnected) {
+            Thread.sleep(5)
+            return Option.empty()
+        } else {
+            fail { "The RPC is not connected!" }
+        }
+    }
+
+    override fun addReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
+        if (isConnected) {
+            Thread.sleep(5)
+            return Option.empty()
+        } else {
+            fail { "The RPC is not connected!" }
+        }
+    }
+
+    override fun addWrite(resourceId: ResourceId): Option<String> {
+        if (isConnected) {
+            Thread.sleep(5)
+            return Option.empty()
+        } else {
+            fail { "The RPC is not connected!" }
+        }
+    }
+
+    override fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
+        if (isConnected) {
+            Thread.sleep(5)
+            return Option.empty()
+        } else {
+            fail { "The RPC is not connected!" }
+        }
+    }
+
+    override fun isResourceInRange(resourceId: ResourceId): Boolean {
         if (isConnected) {
             Thread.sleep(5)
             return true
@@ -70,7 +118,15 @@ class MockBowlerRPCProtocol : BowlerRPCProtocol {
         TODO("not implemented")
     }
 
+    override fun analogRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Double> {
+        TODO("not implemented")
+    }
+
     override fun analogWrite(resourceId: ResourceId, value: Short) {
+        TODO("not implemented")
+    }
+
+    override fun analogWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Short>>) {
         TODO("not implemented")
     }
 
@@ -78,7 +134,15 @@ class MockBowlerRPCProtocol : BowlerRPCProtocol {
         TODO("not implemented")
     }
 
+    override fun buttonRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Boolean> {
+        TODO("not implemented")
+    }
+
     override fun digitalRead(resourceId: ResourceId): DigitalState {
+        TODO("not implemented")
+    }
+
+    override fun digitalRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<DigitalState> {
         TODO("not implemented")
     }
 
@@ -86,7 +150,15 @@ class MockBowlerRPCProtocol : BowlerRPCProtocol {
         TODO("not implemented")
     }
 
+    override fun digitalWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, DigitalState>>) {
+        TODO("not implemented")
+    }
+
     override fun encoderRead(resourceId: ResourceId): Long {
+        TODO("not implemented")
+    }
+
+    override fun encoderRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Long> {
         TODO("not implemented")
     }
 
@@ -110,11 +182,23 @@ class MockBowlerRPCProtocol : BowlerRPCProtocol {
         TODO("not implemented")
     }
 
+    override fun servoWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Double>>) {
+        TODO("not implemented")
+    }
+
     override fun servoRead(resourceId: ResourceId): Double {
         TODO("not implemented")
     }
 
+    override fun servoRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Double> {
+        TODO("not implemented")
+    }
+
     override fun ultrasonicRead(resourceId: ResourceId): Long {
+        TODO("not implemented")
+    }
+
+    override fun ultrasonicRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Long> {
         TODO("not implemented")
     }
 }

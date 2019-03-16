@@ -39,8 +39,8 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.octogonapus.guavautil.collections.immutableListOf
-import org.octogonapus.guavautil.collections.toImmutableList
+import org.octogonapus.ktguava.collections.immutableListOf
+import org.octogonapus.ktguava.collections.toImmutableList
 import kotlin.math.abs
 
 internal class DefaultLimbIntegrationTest {
@@ -53,7 +53,7 @@ internal class DefaultLimbIntegrationTest {
         val links = immutableListOf(
             DefaultLink(
                 LinkType.Rotary, DhParam.zero,
-                Limits(0.0, 0.0), mock {})
+                Limits(0, 0), mock {})
         )
 
         val controller = MockJointAngleController()
@@ -65,7 +65,7 @@ internal class DefaultLimbIntegrationTest {
                 override fun solveChain(
                     currentJointAngles: ImmutableList<Double>
                 ): FrameTransformation {
-                    return FrameTransformation.identity()
+                    return FrameTransformation.identity
                 }
             },
             mock {},
@@ -96,7 +96,7 @@ internal class DefaultLimbIntegrationTest {
 
         fun timeOnce(): Long {
             limb.setDesiredTaskSpaceTransform(
-                FrameTransformation.identity(),
+                FrameTransformation.identity,
                 createMotionConstraints(timestep * 2)
             )
 

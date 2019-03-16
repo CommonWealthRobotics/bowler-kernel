@@ -17,7 +17,10 @@
 package com.neuronrobotics.bowlerkernel.scripting.factory
 
 import arrow.core.Either
+import arrow.core.flatMap
+import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.Script
+import org.octogonapus.ktguava.collections.emptyImmutableList
 
 interface GitScriptFactory {
 
@@ -30,3 +33,20 @@ interface GitScriptFactory {
      */
     fun createScriptFromGit(gitUrl: String, filename: String): Either<String, Script>
 }
+
+/**
+ * Creates an instance of [T] by running the [Script].
+ *
+ * @param pullUrl The Git url.
+ * @param filename The file name (including extension).
+ * @param args The arguments to the script.
+ * @return The result of running the [Script] and casting its result to [T].
+ */
+inline fun <reified T> GitScriptFactory.getInstanceFromGit(
+    pullUrl: String,
+    filename: String,
+    args: ImmutableList<Any?> = emptyImmutableList()
+) =
+    createScriptFromGit(pullUrl, filename).flatMap { script ->
+        script.runScript(args).map { it as T }
+    }

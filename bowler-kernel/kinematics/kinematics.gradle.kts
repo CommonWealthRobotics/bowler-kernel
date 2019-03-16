@@ -8,7 +8,7 @@ dependencies {
     api(group = "org.ejml", name = "ejml-all", version = "0.37.1")
     api(project(":bowler-kernel:scripting"))
 
-    implementation(group = "org.octogonapus", name = "kt-guava-core", version = "0.0.1")
+    implementation(group = "org.octogonapus", name = "kt-guava-core", version = "0.0.5")
     implementation(group = "com.google.inject", name = "guice", version = "4.1.0")
     implementation(
         group = "com.google.inject.extensions",
@@ -16,12 +16,12 @@ dependencies {
         version = "4.1.0"
     )
     implementation(group = "org.jlleitschuh.guice", name = "kotlin-guiced-core", version = "0.0.5")
-    implementation(group = "com.beust", name = "klaxon", version = "4.+")
+    implementation(group = "com.beust", name = "klaxon", version = "5.0.5")
 
     testImplementation(group = "com.natpryce", name = "hamkrest", version = "1.4.2.2")
     testImplementation(
         group = "com.nhaarman.mockitokotlin2",
         name = "mockito-kotlin",
-        version = "2.0.0"
+        version = "2.1.0"
     )
 }

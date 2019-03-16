@@ -22,7 +22,6 @@ import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.Script
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericDigitalOut
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
 import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultTextScriptFactory
@@ -32,7 +31,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
-import org.octogonapus.guavautil.collections.emptyImmutableList
+import org.octogonapus.ktguava.collections.emptyImmutableList
 import javax.inject.Inject
 
 class ScriptIntegrationTest {
@@ -43,8 +42,6 @@ class ScriptIntegrationTest {
         val bowlerDeviceFactory: BowlerDeviceFactory,
         val unprovisionedDigitalOutFactory: UnprovisionedDigitalOutFactory.Factory
     ) {
-        val digitalOut: GenericDigitalOut
-
         init {
             val device = bowlerDeviceFactory.makeBowlerDevice(
                 SimpleDeviceId("bowler-device-id"),
@@ -62,30 +59,9 @@ class ScriptIntegrationTest {
 
             val unprovisionedDigitalOut = unprovisionedDigitalOutFactory.create(device)
                 .makeUnprovisionedDigitalOut(DefaultAttachmentPoints.Pin(7))
+                .fold({ fail { "" } }, { it })
 
-            digitalOut = unprovisionedDigitalOut.fold(
-                {
-                    fail {
-                        """
-                        |Got a RegisterError when making the LED:
-                        |$it
-                        """.trimMargin()
-                    }
-                },
-                {
-                    it.provision().fold(
-                        {
-                            fail {
-                                """
-                                |Got a ProvisionError when provisioning the LED:
-                                |$it
-                                """.trimMargin()
-                            }
-                        },
-                        { it }
-                    )
-                }
-            )
+            device.add(unprovisionedDigitalOut)
 
             device.disconnect()
         }
@@ -103,6 +79,7 @@ class ScriptIntegrationTest {
             }
         }
 
+        script.addToInjector(script.getDefaultModules())
         script.runScript(emptyImmutableList())
         script.stopAndCleanUp()
     }
@@ -133,18 +110,12 @@ class ScriptIntegrationTest {
                     ).map {
                         it.connect()
 
-                        ledFactoryFactory.create(it).makeUnprovisionedDigitalOut(
+                        it.add(ledFactoryFactory.create(it).makeUnprovisionedDigitalOut(
                                 new DefaultAttachmentPoints.Pin(1 as byte)
-                        ).bimap(
-                                {
-                                    print it
-                                },
-                                {
-                                    it.provision().map {
-                                        worked = true
-                                    }
-                                }
-                        )
+                        ).fold({ }, {
+                            worked = true
+                            it
+                        }))
 
                         it.disconnect()
                     }
@@ -167,6 +138,8 @@ class ScriptIntegrationTest {
             },
             { it }
         )
+
+        script.addToInjector(script.getDefaultModules())
 
         // Run the script a first time, this should work fine
         script.runScript(emptyImmutableList()).bimap(
@@ -243,14 +216,17 @@ class ScriptIntegrationTest {
                     ).map {
                         it.connect()
 
-                        ledFactoryFactory.create(it).makeUnprovisionedDigitalOut(
+                        val led1 = ledFactoryFactory.create(it).makeUnprovisionedDigitalOut(
                             DefaultAttachmentPoints.Pin(1)
-                        ).map {
-                            it.provision().map {
+                        ).fold(
+                            { throw IllegalStateException("") },
+                            {
                                 worked = true
+                                it
                             }
-                        }
+                        )
 
+                        it.add(led1)
                         it.disconnect()
                     }
                     return Either.right(worked)
@@ -276,6 +252,8 @@ class ScriptIntegrationTest {
             },
             { it }
         )
+
+        script.addToInjector(script.getDefaultModules())
 
         // Run the script a first time, this should work fine
         script.runScript(emptyImmutableList()).bimap(

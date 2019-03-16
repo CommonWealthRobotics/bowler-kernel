@@ -16,20 +16,15 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned
 
-import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.ProvisionError
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericServo
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
-class UnprovisionedServo
+data class UnprovisionedServo
 internal constructor(
     override val device: BowlerDevice,
     override val resourceId: ResourceId
-) : UnprovisionedDeviceResource {
+) : UnprovisionedDeviceResource() {
 
-    override fun provision(): Either<ProvisionError, GenericServo> =
-        provisionBlocking(device, resourceId) {
-            GenericServo(device, resourceId)
-        }
+    override fun provision() = GenericServo(device, resourceId)
 }

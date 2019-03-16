@@ -14,15 +14,28 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.protocol
+package com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid
 
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import arrow.core.Option
 
-interface BowlerRPCProtocolBuilder {
+/**
+ * Validates various properties of a [ResourceId].
+ */
+interface ResourceIdValidator {
 
-    fun addPollingRead(resourceId: ResourceId)
+    // TODO: Add AttachmentPoint validation
 
-    fun addRead(resourceId: ResourceId)
+    /**
+     * Validates the resource can be read from.
+     *
+     * @return An error.
+     */
+    fun validateIsReadType(resourceId: ResourceId): Option<String>
 
-    fun addWrite(resourceId: ResourceId)
+    /**
+     * Validates the resource can be written to.
+     *
+     * @return An error.
+     */
+    fun validateIsWriteType(resourceId: ResourceId): Option<String>
 }
