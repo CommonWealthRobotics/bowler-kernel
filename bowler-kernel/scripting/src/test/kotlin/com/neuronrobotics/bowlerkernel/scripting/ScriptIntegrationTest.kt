@@ -26,14 +26,13 @@ import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.hasSize
 import com.neuronrobotics.bowlerkernel.hardware.Script
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
-import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericDigitalOut
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
-import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
 import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultTextScriptFactory
 import com.neuronrobotics.bowlerkernel.scripting.parser.DefaultScriptLanguageParser
-import com.nhaarman.mockitokotlin2.mock
 import org.jlleitschuh.guice.key
 import org.jlleitschuh.guice.module
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -52,48 +51,31 @@ internal class ScriptIntegrationTest {
         val bowlerDeviceFactory: BowlerDeviceFactory,
         val unprovisionedDigitalOutFactory: UnprovisionedDigitalOutFactory.Factory
     ) {
-        val digitalOut: GenericDigitalOut
-
         init {
-            val mockRPC = mock<BowlerRPCProtocol> {}
+            val device = bowlerDeviceFactory.makeBowlerDevice(
+                DeviceId(
+                    DefaultDeviceTypes.Esp32Wroom32,
+                    DefaultConnectionMethods.RawHID(0, 0)
+                ),
+                MockBowlerRPCProtocol()
+            ).getOrHandle {
+                fail {
+                    """
+                    |Got a RegisterError when making the device:
+                    |$it
+                    """.trimMargin()
+                }
+            }
 
-            val device =
-                bowlerDeviceFactory.makeBowlerDevice(SimpleDeviceId("bowler-device-id"), mockRPC)
-                    .getOrHandle {
-                        fail {
-                            """
-                            |Got a RegisterError when making the device:
-                            |$it
-                            """.trimMargin()
-                        }
-                    }
+            device.connect()
 
             val unprovisionedDigitalOut = unprovisionedDigitalOutFactory.create(device)
                 .makeUnprovisionedDigitalOut(DefaultAttachmentPoints.Pin(7))
+                .fold({ fail { "" } }, { it })
 
-            digitalOut = unprovisionedDigitalOut.fold(
-                {
-                    fail {
-                        """
-                        |Got a RegisterError when making the LED:
-                        |$it
-                        """.trimMargin()
-                    }
-                },
-                {
-                    it.provision().fold(
-                        {
-                            fail {
-                                """
-                                |Got a ProvisionError when provisioning the LED:
-                                |$it
-                                """.trimMargin()
-                            }
-                        },
-                        { it }
-                    )
-                }
-            )
+            device.add(unprovisionedDigitalOut)
+
+            device.disconnect()
         }
     }
 
@@ -109,6 +91,7 @@ internal class ScriptIntegrationTest {
             }
         }
 
+        script.addToInjector(script.getDefaultModules())
         script.runScript(emptyImmutableList())
         script.stopAndCleanUp()
     }
@@ -118,16 +101,12 @@ internal class ScriptIntegrationTest {
         val scriptText =
             """
             import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
-            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
+            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
+            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
+            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
-            import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
-            import kotlin.Unit
-            import kotlin.jvm.functions.Function0
-            import kotlin.jvm.functions.Function1
-            import org.jetbrains.annotations.NotNull
+            import com.neuronrobotics.bowlerkernel.scripting.MockBowlerRPCProtocol
 
             import javax.inject.Inject
 
@@ -136,101 +115,26 @@ internal class ScriptIntegrationTest {
                 boolean worked = false
 
                 @Inject
-                Test(
-                        BowlerDeviceFactory bowlerDeviceFactory,
-                        UnprovisionedDigitalOutFactory.Factory ledFactoryFactory
+                Test(BowlerDeviceFactory bowlerDeviceFactory,
+                     UnprovisionedDigitalOutFactory.Factory ledFactoryFactory
                 ) {
                     bowlerDeviceFactory.makeBowlerDevice(
-                            new SimpleDeviceId("device A"),
-                            new BowlerRPCProtocol() {
-                                @Override
-                                void isResourceInRange(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super Boolean, Unit> success) {
-
-                                }
-
-                                @Override
-                                void provisionResource(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super Boolean, Unit> success) {
-
-                                }
-
-                                @Override
-                                void readProtocolVersion(@NotNull Function0<Unit> timeout, @NotNull Function1<? super String, Unit> success) {
-
-                                }
-
-                                @Override
-                                void analogRead(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super Double, Unit> success) {
-
-                                }
-
-                                @Override
-                                void analogWrite(@NotNull ResourceId resourceId, long value, @NotNull Function0<Unit> timeout, @NotNull Function0<Unit> success) {
-
-                                }
-
-                                @Override
-                                void buttonRead(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super Boolean, Unit> success) {
-
-                                }
-
-                                @Override
-                                void digitalRead(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super DigitalState, Unit> success) {
-
-                                }
-
-                                @Override
-                                void digitalWrite(@NotNull ResourceId resourceId, @NotNull DigitalState value, @NotNull Function0<Unit> timeout, @NotNull Function0<Unit> success) {
-
-                                }
-
-                                @Override
-                                void encoderRead(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super Long, Unit> success) {
-
-                                }
-
-                                @Override
-                                void toneWrite(@NotNull ResourceId resourceId, long frequency, @NotNull Function0<Unit> timeout, @NotNull Function0<Unit> success) {
-
-                                }
-
-                                @Override
-                                void toneWrite(@NotNull ResourceId resourceId, long frequency, long duration, @NotNull Function0<Unit> timeout, @NotNull Function0<Unit> success) {
-
-                                }
-
-                                @Override
-                                void serialWrite(@NotNull ResourceId resourceId, @NotNull String message, @NotNull Function0<Unit> timeout, @NotNull Function0<Unit> success) {
-
-                                }
-
-                                @Override
-                                void serialRead(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super String, Unit> success) {
-
-                                }
-
-                                @Override
-                                void servoWrite(@NotNull ResourceId resourceId, double angle, @NotNull Function0<Unit> timeout, @NotNull Function0<Unit> success) {
-
-                                }
-
-                                @Override
-                                void servoRead(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super Double, Unit> success) {
-
-                                }
-
-                                @Override
-                                void ultrasonicRead(@NotNull ResourceId resourceId, @NotNull Function0<Unit> timeout, @NotNull Function1<? super Long, Unit> success) {
-
-                                }
-                            }
+                            new DeviceId(
+                                    new DefaultDeviceTypes.Esp32Wroom32(),
+                                    new DefaultConnectionMethods.RawHID(0, 0)
+                            ),
+                            new MockBowlerRPCProtocol()
                     ).map {
+                        it.connect()
+
                         ledFactoryFactory.create(it).makeUnprovisionedDigitalOut(
                                 new DefaultAttachmentPoints.Pin(1 as byte)
-                        ).map {
-                            it.provision().map {
-                                worked = true
-                            }
+                        ).map { led1 ->
+                            worked = true
+                            it.add(led1)
                         }
+
+                        it.disconnect()
                     }
                 }
             }
@@ -251,6 +155,8 @@ internal class ScriptIntegrationTest {
             },
             { it }
         )
+
+        script.addToInjector(script.getDefaultModules())
 
         // Run the script a first time, this should work fine
         script.runScript(emptyImmutableList()).bimap(
@@ -306,14 +212,12 @@ internal class ScriptIntegrationTest {
             import com.google.common.collect.ImmutableList
             import com.neuronrobotics.bowlerkernel.hardware.Script
             import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
-            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
+            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
+            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
+            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceType
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
-            import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
+            import com.neuronrobotics.bowlerkernel.scripting.MockBowlerRPCProtocol
             import javax.inject.Inject
 
             class MyScript
@@ -326,147 +230,26 @@ internal class ScriptIntegrationTest {
 
                 override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
                     bowlerDeviceFactory.makeBowlerDevice(
-                        SimpleDeviceId("device A"),
-                        object : BowlerRPCProtocol {
-                            override fun isResourceInRange(
-                                resourceId: ResourceId,
-                                timeout: () -> Unit,
-                                success: (Boolean) -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun provisionResource(
-                                resourceId: ResourceId,
-                                timeout: () -> Unit,
-                                success: (Boolean) -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun readProtocolVersion(timeout: () -> Unit, success: (String) -> Unit) {
-                                TODO("not implemented")
-                            }
-
-                            override fun analogRead(
-                                resourceId: ResourceId,
-                                timeout: () -> Unit,
-                                success: (Double) -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun analogWrite(
-                                resourceId: ResourceId,
-                                value: Long,
-                                timeout: () -> Unit,
-                                success: () -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun buttonRead(
-                                resourceId: ResourceId,
-                                timeout: () -> Unit,
-                                success: (Boolean) -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun digitalRead(
-                                resourceId: ResourceId,
-                                timeout: () -> Unit,
-                                success: (DigitalState) -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun digitalWrite(
-                                resourceId: ResourceId,
-                                value: DigitalState,
-                                timeout: () -> Unit,
-                                success: () -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun encoderRead(
-                                resourceId: ResourceId,
-                                timeout: () -> Unit,
-                                success: (Long) -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun toneWrite(
-                                resourceId: ResourceId,
-                                frequency: Long,
-                                timeout: () -> Unit,
-                                success: () -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun toneWrite(
-                                resourceId: ResourceId,
-                                frequency: Long,
-                                duration: Long,
-                                timeout: () -> Unit,
-                                success: () -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun serialWrite(
-                                resourceId: ResourceId,
-                                message: String,
-                                timeout: () -> Unit,
-                                success: () -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun serialRead(
-                                resourceId: ResourceId,
-                                timeout: () -> Unit,
-                                success: (String) -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun servoWrite(
-                                resourceId: ResourceId,
-                                angle: Double,
-                                timeout: () -> Unit,
-                                success: () -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun servoRead(
-                                resourceId: ResourceId,
-                                timeout: () -> Unit,
-                                success: (Double) -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-
-                            override fun ultrasonicRead(
-                                resourceId: ResourceId,
-                                timeout: () -> Unit,
-                                success: (Long) -> Unit
-                            ) {
-                                TODO("not implemented")
-                            }
-                        }
+                        DeviceId(
+                            DefaultDeviceTypes.Esp32Wroom32,
+                            DefaultConnectionMethods.RawHID(0, 0)
+                        ),
+                        MockBowlerRPCProtocol()
                     ).map {
-                        ledFactoryFactory.create(it).makeUnprovisionedDigitalOut(
+                        it.connect()
+
+                        val led1 = ledFactoryFactory.create(it).makeUnprovisionedDigitalOut(
                             DefaultAttachmentPoints.Pin(1)
-                        ).map {
-                            it.provision().map {
+                        ).fold(
+                            { throw IllegalStateException("") },
+                            {
                                 worked = true
+                                it
                             }
-                        }
+                        )
+
+                        it.add(led1)
+                        it.disconnect()
                     }
                     return Either.right(worked)
                 }
@@ -491,6 +274,8 @@ internal class ScriptIntegrationTest {
             },
             { it }
         )
+
+        script.addToInjector(script.getDefaultModules())
 
         // Run the script a first time, this should work fine
         script.runScript(emptyImmutableList()).bimap(

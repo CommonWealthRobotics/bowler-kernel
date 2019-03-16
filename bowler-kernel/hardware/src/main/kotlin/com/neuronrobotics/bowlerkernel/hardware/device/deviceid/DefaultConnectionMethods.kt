@@ -14,17 +14,27 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned
+package com.neuronrobotics.bowlerkernel.hardware.device.deviceid
 
-import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericServo
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import java.net.InetAddress
 
-data class UnprovisionedServo
-internal constructor(
-    override val device: BowlerDevice,
-    override val resourceId: ResourceId
-) : UnprovisionedDeviceResource() {
+/**
+ * The connection methods Bowler supports out-of-the-box.
+ */
+sealed class DefaultConnectionMethods : ConnectionMethod {
 
-    override fun provision() = GenericServo(device, resourceId)
+    /**
+     * An internet address, typically used with UDP.
+     *
+     * @param inetAddress The IP address.
+     */
+    data class InternetAddress(val inetAddress: InetAddress) : DefaultConnectionMethods()
+
+    /**
+     * Raw HID.
+     *
+     * @param vid The vendor id.
+     * @param pid The product id.
+     */
+    data class RawHID(val vid: Int, val pid: Int) : DefaultConnectionMethods()
 }

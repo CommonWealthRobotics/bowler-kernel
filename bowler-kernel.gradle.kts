@@ -68,6 +68,7 @@ buildscript {
     repositories {
         mavenCentral() // Needed for kotlin gradle plugin
         maven(url = "https://plugins.gradle.org/m2/")
+        maven(url = "https://oss.sonatype.org/content/repositories/staging/")
     }
     dependencies {
         // Gives us the KotlinJvmProjectExtension

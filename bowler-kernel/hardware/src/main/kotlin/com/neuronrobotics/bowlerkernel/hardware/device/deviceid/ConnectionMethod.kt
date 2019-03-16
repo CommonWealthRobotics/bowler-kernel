@@ -14,17 +14,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned
+package com.neuronrobotics.bowlerkernel.hardware.device.deviceid
 
-import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericServo
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-
-data class UnprovisionedServo
-internal constructor(
-    override val device: BowlerDevice,
-    override val resourceId: ResourceId
-) : UnprovisionedDeviceResource() {
-
-    override fun provision() = GenericServo(device, resourceId)
-}
+/**
+ * A method of connection from PC to Device.
+ */
+interface ConnectionMethod

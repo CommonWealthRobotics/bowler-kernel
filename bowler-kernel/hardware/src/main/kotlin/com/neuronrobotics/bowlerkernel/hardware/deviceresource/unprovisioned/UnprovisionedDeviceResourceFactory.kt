@@ -17,6 +17,7 @@
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned
 
 import arrow.core.Either
+import arrow.core.left
 import com.google.inject.assistedinject.Assisted
 import com.google.inject.assistedinject.FactoryModuleBuilder
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
@@ -29,7 +30,8 @@ import org.jlleitschuh.guice.module
 import javax.inject.Inject
 
 /**
- * A facade for making any type of device resource.
+ * A facade for making any type of device resource. Requires the [device] to be connected or else
+ * require creation will fail due to RPC timeout.
  */
 @SuppressWarnings("TooManyFunctions")
 class UnprovisionedDeviceResourceFactory
@@ -59,12 +61,10 @@ class UnprovisionedDeviceResourceFactory
                 rightSide(device, resource)
             }
         } else {
-            Either.left(
-                """
-                Could not make an unprovisioned $errorMessageType with resource id
-                $resourceId because it is not in the range of resources for device $device.
-                """.trimIndent()
-            )
+            """
+            Could not make an unprovisioned $errorMessageType with resource id
+            $resourceId because it is not in the range of resources for device $device.
+            """.trimIndent().left()
         }
     }
 
@@ -179,7 +179,8 @@ class UnprovisionedDeviceResourceFactory
         }
 
     companion object {
-        internal fun unprovisionedDeviceResourceFactoryModule() = module {
+
+        fun unprovisionedDeviceResourceFactoryModule() = module {
             install(
                 FactoryModuleBuilder()
                     .implement(

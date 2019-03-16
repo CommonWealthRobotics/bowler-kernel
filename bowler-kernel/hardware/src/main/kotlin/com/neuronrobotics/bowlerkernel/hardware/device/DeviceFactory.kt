@@ -18,7 +18,11 @@ package com.neuronrobotics.bowlerkernel.hardware.device
 
 import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
+import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocolFactory
+import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocolFactory
 import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistry
 import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
 import org.jlleitschuh.guice.module
@@ -29,21 +33,34 @@ import javax.inject.Inject
  */
 class DeviceFactory
 @Inject internal constructor(
-    private val registry: HardwareRegistry
+    private val registry: HardwareRegistry,
+    private val resourceIdValidator: ResourceIdValidator,
+    private val protocolFactory: BowlerRPCProtocolFactory
 ) : BowlerDeviceFactory {
+
+    override fun makeBowlerDevice(deviceId: DeviceId) =
+        registry.registerDevice(deviceId) {
+            BowlerDevice(
+                it,
+                protocolFactory.create(deviceId),
+                resourceIdValidator
+            )
+        }
 
     override fun makeBowlerDevice(
         deviceId: DeviceId,
         bowlerRPCProtocol: BowlerRPCProtocol
     ): Either<RegisterError, BowlerDevice> =
         registry.registerDevice(deviceId) {
-            BowlerDevice(it, bowlerRPCProtocol)
+            BowlerDevice(it, bowlerRPCProtocol, resourceIdValidator)
         }
 
     companion object {
 
-        internal fun deviceFactoryModule() = module {
+        fun deviceFactoryModule() = module {
             bind<BowlerDeviceFactory>().to<DeviceFactory>()
+            bind<ResourceIdValidator>().to<DefaultResourceIdValidator>()
+            bind<BowlerRPCProtocolFactory>().to<SimplePacketComsProtocolFactory>()
         }
     }
 }

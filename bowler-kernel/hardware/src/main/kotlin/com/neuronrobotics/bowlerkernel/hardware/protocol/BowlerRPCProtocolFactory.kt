@@ -14,17 +14,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned
+package com.neuronrobotics.bowlerkernel.hardware.protocol
 
-import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericServo
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 
-data class UnprovisionedServo
-internal constructor(
-    override val device: BowlerDevice,
-    override val resourceId: ResourceId
-) : UnprovisionedDeviceResource() {
+/**
+ * A factory which creates [BowlerRPCProtocol].
+ */
+interface BowlerRPCProtocolFactory {
 
-    override fun provision() = GenericServo(device, resourceId)
+    /**
+     * Creates a new [BowlerRPCProtocol].
+     *
+     * @param deviceId The device id.
+     * @return The new [BowlerRPCProtocol].
+     */
+    fun create(deviceId: DeviceId): BowlerRPCProtocol
 }

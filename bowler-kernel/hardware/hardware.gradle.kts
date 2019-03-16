@@ -13,7 +13,10 @@ object Versions {
 dependencies {
     api(group = "io.arrow-kt", name = "arrow-core", version = arrow_version)
     api(group = "org.kohsuke", name = "github-api", version = "1.95")
+    api(group = "com.neuronrobotics", name = "SimplePacketComsJava", version = "0.8.1")
+    api(group = "com.neuronrobotics", name = "SimplePacketComsJava-HID", version = "0.1.0")
 
+    implementation(group = "io.arrow-kt", name = "arrow-syntax", version = arrow_version)
     implementation(group = "org.octogonapus", name = "kt-guava-core", version = "0.0.5")
     implementation(group = "com.google.inject", name = "guice", version = "4.1.0")
     implementation(
@@ -27,6 +30,6 @@ dependencies {
     testImplementation(
         group = "com.nhaarman.mockitokotlin2",
         name = "mockito-kotlin",
-        version = "2.0.0"
+        version = "2.1.0"
     )
 }

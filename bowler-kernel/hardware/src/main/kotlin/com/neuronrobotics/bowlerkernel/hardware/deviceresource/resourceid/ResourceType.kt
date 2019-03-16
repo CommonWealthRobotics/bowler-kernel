@@ -17,8 +17,22 @@
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid
 
 /**
- * The type of a resource encoded as a [Byte].
+ * The type of a resource.
  */
 interface ResourceType {
+
+    /**
+     * The type of this resource.
+     */
     val type: Byte
+
+    /**
+     * The number of bytes required to send data to this resource.
+     */
+    val sendLength: Byte
+
+    /**
+     * The number of bytes required to read data from this resource.
+     */
+    val receiveLength: Byte
 }

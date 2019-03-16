@@ -20,18 +20,17 @@ import arrow.core.Either
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.Script
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
-import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericDigitalOut
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericServo
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.ProvisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedServoFactory
-import com.nhaarman.mockitokotlin2.mock
 import org.jlleitschuh.guice.key
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.emptyImmutableList
+import org.octogonapus.ktguava.collections.immutableSetOf
 import javax.inject.Inject
 
 internal class HardwareScriptIntegrationTest {
@@ -51,6 +50,7 @@ internal class HardwareScriptIntegrationTest {
             }
         }
 
+        script.addToInjector(script.getDefaultModules())
         script.runScript(emptyImmutableList())
         script.stopAndCleanUp()
     }
@@ -64,23 +64,35 @@ internal class HardwareScriptIntegrationTest {
 
         override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
             val device = bowlerDeviceFactory.makeBowlerDevice(
-                SimpleDeviceId("/dev/ttyACM0"),
-                mock {}
-            ).fold({ throw IllegalStateException(it) }, { it })
+                DeviceId(
+                    DefaultDeviceTypes.Esp32Wroom32,
+                    DefaultConnectionMethods.RawHID(0, 0)
+                ),
+                MockBowlerRPCProtocol()
+            ).fold({ fail { "" } }, { it })
+
+            device.connect()
 
             val ledFactory = digitalOutFactoryFactory.create(device)
-            ledFactory.makeUnprovisionedDigitalOut(
-                DefaultAttachmentPoints.Pin(1)
-            ).provisionOrFail() as GenericDigitalOut
-
-            ledFactory.makeUnprovisionedDigitalOut(
-                DefaultAttachmentPoints.Pin(2)
-            ).provisionOrFail() as GenericDigitalOut
-
             val servoFactory = servoFactoryFactory.create(device)
-            servoFactory.makeUnprovisionedServo(
+
+            val led1 = ledFactory.makeUnprovisionedDigitalOut(
+                DefaultAttachmentPoints.Pin(1)
+            ).fold({ fail { "" } }, { it })
+
+            val led2 = ledFactory.makeUnprovisionedDigitalOut(
+                DefaultAttachmentPoints.Pin(2)
+            ).fold({ fail { "" } }, { it })
+
+            device.add(immutableSetOf(led1, led2))
+
+            val servo1 = servoFactory.makeUnprovisionedServo(
                 DefaultAttachmentPoints.Pin(3)
-            ).provisionOrFail() as GenericServo
+            ).fold({ fail { "" } }, { it })
+
+            device.add(servo1)
+
+            device.disconnect()
 
             return Either.right(null)
         }
@@ -88,10 +100,4 @@ internal class HardwareScriptIntegrationTest {
         override fun stopScript() {
         }
     }
-}
-
-private inline fun <reified A : UnprovisionedDeviceResource> Either<String, A>.provisionOrFail():
-    ProvisionedDeviceResource {
-    return fold({ throw IllegalStateException(it) }, { it }).provision()
-        .fold({ throw IllegalStateException(it) }, { it })
 }
