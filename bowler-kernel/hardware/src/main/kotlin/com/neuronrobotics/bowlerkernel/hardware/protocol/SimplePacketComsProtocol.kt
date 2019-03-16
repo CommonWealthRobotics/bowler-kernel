@@ -44,7 +44,9 @@ import kotlin.math.pow
  * range are available for other packets.
  *
  * @param comms The comms implementation.
- * @param startPacketId The starting range of the packets this class creates.
+ * @param startPacketId The starting id for the packets this class creates.
+ * @param resourceIdValidator The resource id validator used to validate resource ids when adding
+ * them during discovery.
  */
 @SuppressWarnings("TooManyFunctions")
 class SimplePacketComsProtocol(
