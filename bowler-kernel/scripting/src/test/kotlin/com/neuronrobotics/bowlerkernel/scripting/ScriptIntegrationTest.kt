@@ -21,7 +21,9 @@ import arrow.core.getOrHandle
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.Script
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
-import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
 import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultTextScriptFactory
@@ -44,7 +46,10 @@ class ScriptIntegrationTest {
     ) {
         init {
             val device = bowlerDeviceFactory.makeBowlerDevice(
-                SimpleDeviceId("bowler-device-id"),
+                DeviceId(
+                    DefaultDeviceTypes.Esp32Wroom32,
+                    DefaultConnectionMethods.RawHID(0, 0)
+                ),
                 MockBowlerRPCProtocol()
             ).getOrHandle {
                 fail {
@@ -89,7 +94,9 @@ class ScriptIntegrationTest {
         val scriptText =
             """
             import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
-            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
+            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
+            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
+            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
             import com.neuronrobotics.bowlerkernel.scripting.MockBowlerRPCProtocol
@@ -105,17 +112,20 @@ class ScriptIntegrationTest {
                      UnprovisionedDigitalOutFactory.Factory ledFactoryFactory
                 ) {
                     bowlerDeviceFactory.makeBowlerDevice(
-                            new SimpleDeviceId("device A"),
+                            new DeviceId(
+                                    new DefaultDeviceTypes.Esp32Wroom32(),
+                                    new DefaultConnectionMethods.RawHID(0, 0)
+                            ),
                             new MockBowlerRPCProtocol()
                     ).map {
                         it.connect()
 
-                        it.add(ledFactoryFactory.create(it).makeUnprovisionedDigitalOut(
+                        ledFactoryFactory.create(it).makeUnprovisionedDigitalOut(
                                 new DefaultAttachmentPoints.Pin(1 as byte)
-                        ).fold({ }, {
+                        ).map { led1 ->
                             worked = true
-                            it
-                        }))
+                            it.add(led1)
+                        }
 
                         it.disconnect()
                     }
@@ -195,7 +205,9 @@ class ScriptIntegrationTest {
             import com.google.common.collect.ImmutableList
             import com.neuronrobotics.bowlerkernel.hardware.Script
             import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
-            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
+            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
+            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
+            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
             import com.neuronrobotics.bowlerkernel.scripting.MockBowlerRPCProtocol
@@ -211,7 +223,10 @@ class ScriptIntegrationTest {
 
                 override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
                     bowlerDeviceFactory.makeBowlerDevice(
-                        SimpleDeviceId("device A"),
+                        DeviceId(
+                            DefaultDeviceTypes.Esp32Wroom32,
+                            DefaultConnectionMethods.RawHID(0, 0)
+                        ),
                         MockBowlerRPCProtocol()
                     ).map {
                         it.connect()

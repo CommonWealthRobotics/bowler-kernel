@@ -18,7 +18,9 @@ package com.neuronrobotics.bowlerkernel.hardware.device
 
 import arrow.core.Option
 import arrow.core.getOrElse
-import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericAnalogIn
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericDigitalOut
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericSerialConnection
@@ -105,7 +107,10 @@ internal class BowlerDeviceTest {
     }
 
     private val device = BowlerDevice(
-        SimpleDeviceId(""),
+        DeviceId(
+            DefaultDeviceTypes.Esp32Wroom32,
+            DefaultConnectionMethods.RawHID(0, 0)
+        ),
         bowlerRPCProtocol,
         DefaultResourceIdValidator()
     )

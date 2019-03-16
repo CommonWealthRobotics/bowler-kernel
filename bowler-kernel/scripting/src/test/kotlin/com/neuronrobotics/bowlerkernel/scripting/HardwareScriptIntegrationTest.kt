@@ -20,7 +20,9 @@ import arrow.core.Either
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.Script
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
-import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedServoFactory
@@ -62,7 +64,10 @@ internal class HardwareScriptIntegrationTest {
 
         override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
             val device = bowlerDeviceFactory.makeBowlerDevice(
-                SimpleDeviceId("/dev/ttyACM0"),
+                DeviceId(
+                    DefaultDeviceTypes.Esp32Wroom32,
+                    DefaultConnectionMethods.RawHID(0, 0)
+                ),
                 MockBowlerRPCProtocol()
             ).fold({ fail { "" } }, { it })
 

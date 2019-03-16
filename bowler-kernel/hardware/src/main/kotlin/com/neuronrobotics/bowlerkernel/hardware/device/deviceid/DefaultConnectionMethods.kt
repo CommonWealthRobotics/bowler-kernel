@@ -16,12 +16,25 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.device.deviceid
 
-import com.neuronrobotics.bowlerkernel.hardware.device.Device
+import java.net.InetAddress
 
 /**
- * The id of a [Device].
+ * The connection methods Bowler supports out-of-the-box.
  */
-data class DeviceId(
-    val deviceType: DeviceType,
-    val connectionMethod: ConnectionMethod
-)
+sealed class DefaultConnectionMethods : ConnectionMethod {
+
+    /**
+     * An internet address, typically used with UDP.
+     *
+     * @param inetAddress The IP address.
+     */
+    data class InternetAddress(val inetAddress: InetAddress) : DefaultConnectionMethods()
+
+    /**
+     * Raw HID.
+     *
+     * @param vid The vendor id.
+     * @param pid The product id.
+     */
+    data class RawHID(val vid: Int, val pid: Int) : DefaultConnectionMethods()
+}
