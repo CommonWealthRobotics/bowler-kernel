@@ -26,9 +26,9 @@ import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTimeout
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import java.time.Duration
 import kotlin.concurrent.thread
@@ -110,7 +110,7 @@ internal class DefaultScriptTest {
 
         script.bimap(
             {
-                fail<Unit> {
+                fail {
                     """
                     |Script was a left:
                     |$script
@@ -157,7 +157,6 @@ internal class DefaultScriptTest {
             mockScriptLanguageParser
         ).createScriptFromText("qwerty", "")
 
-        val result = script.flatMap { it.runScript(emptyImmutableList()) }
-        assertTrue(result.isLeft())
+        assertTrue(script.isLeft())
     }
 }
