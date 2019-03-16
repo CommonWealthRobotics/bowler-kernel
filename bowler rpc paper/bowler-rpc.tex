@@ -25,15 +25,42 @@
 \section{Overview}
 \subsection{Motivation}
 
-\begin{enumerate}
+\begin{itemize}
     \item We want a \gls{pc} to talk to any \gls{device} which is running some Bowler software. We
     want this software to require minimal to no configuration from the user.
     
     \item We want to support any \gls{resource} attached to the \gls{device} with minimal to no
     configuration from the user.
+\end{itemize}
 
-    \item We require the communications between the \gls{pc} and \gls{device} satisfy hard real-time
-    requirements: \gls{rtt} $\leq$ 5ms, timeout $=$ 100ms.
+\clearpage
+\tableofcontents
+
+\clearpage
+\section{Requirements}
+
+\subsection{Project Goals}
+
+The goals of this project are as follows, in order of importance:
+
+\begin{enumerate}
+    \item Support real-time \gls{pc}-\gls{device} communication with \gls{rtt} $\leq$ 5ms, timeout
+    $\leq$ 100ms. This requirement is the minimum, implementations ideally have a lower \gls{rtt}
+    depending on the physical layer used, e.g. an HID-based implementation should tend to be faster
+    and have less jitter than a UDP-based implementation.
+
+    \item Support packet \glspl{group}. For example, two quadrature encoders on opposite sides of a
+    skid-steer drivetrain must be read from at the exact same time; it is not possible to split
+    these two reads into two packets.
+
+    \item Optional RPC packet ordering. Some RPC packets (typically writes) need strong ordering.
+    Some physical layers (e.g. UDP) do not guarantee packet ordering.
+
+    \item Support dynamic configuration of \glspl{device} and \glspl{resource} and support
+    dynamically resetting any configured state on the \gls{device}.
+
+    \item Support a wide variety of \glspl{device} and \glspl{resource} without requiring
+    \gls{device}-side code modifications.
 \end{enumerate}
 
 \subsection{Network Requirements}
@@ -49,7 +76,7 @@ This protocol makes the following assumptions about the network implementation i
 
 The \gls{pc}-\gls{device} \gls{rpc} is established in the following order
 \begin{enumerate}
-    \item The \gls{pc} connects to the \gls{device} using some \gls{transport-layer} implementation.
+    \item The \gls{pc} connects to the \gls{device} using some physical layer.
     
     \item The \gls{pc} sends \gls{discovery} packets to the \gls{device} to tell the \gls{device} which
     \glspl{resource} are connected to it. The \gls{device} may reject any packet if it deems the
@@ -62,9 +89,6 @@ The \gls{pc}-\gls{device} \gls{rpc} is established in the following order
     allocated or configured during \gls{discovery}. The \gls{device} must then be ready to start the
     \gls{discovery} process again.
 \end{enumerate}
-
-\clearpage
-\tableofcontents
 
 \clearpage
 \section{Discovery}
