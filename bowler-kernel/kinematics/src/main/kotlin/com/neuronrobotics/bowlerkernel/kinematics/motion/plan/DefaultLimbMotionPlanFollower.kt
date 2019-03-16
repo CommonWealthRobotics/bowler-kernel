@@ -33,12 +33,15 @@ class DefaultLimbMotionPlanFollower(
 ) : LimbMotionPlanFollower {
 
     override fun followPlan(plan: LimbMotionPlan) {
-        if (plan.steps.size != 0) {
-            val targets = plan.steps.first().jointAngles.size
-            require(targets == jointAngleControllers.size) {
+        if (plan.steps.isEmpty()) {
+            return
+        }
+
+        plan.steps.forEach {
+            require(it.jointAngles.size == jointAngleControllers.size) {
                 """
                 |Must have an equal number of target joint angles and joint angle controllers.
-                |Number of target joint angles in the first plan step: $targets
+                |Number of target joint angles in the first plan step: $it.jointAngles.size
                 |Number of joint angle controllers: ${jointAngleControllers.size}
                 """.trimMargin()
             }

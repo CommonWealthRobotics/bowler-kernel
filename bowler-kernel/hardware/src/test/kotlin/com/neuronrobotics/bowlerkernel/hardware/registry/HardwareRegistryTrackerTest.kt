@@ -29,7 +29,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.Unp
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.octogonapus.guavautil.collections.emptyImmutableSetMultimap
+import org.octogonapus.ktguava.collections.emptyImmutableSetMultimap
 import kotlin.test.assertEquals
 
 class HardwareRegistryTrackerTest {

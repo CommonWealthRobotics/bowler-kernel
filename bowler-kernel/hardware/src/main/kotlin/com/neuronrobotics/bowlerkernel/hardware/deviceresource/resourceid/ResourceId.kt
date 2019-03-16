@@ -26,16 +26,22 @@ data class ResourceId(
     val resourceType: ResourceType,
     val attachmentPoint: AttachmentPoint
 ) {
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
         other as ResourceId
 
+        if (resourceType != other.resourceType) return false
         if (attachmentPoint != other.attachmentPoint) return false
 
         return true
     }
 
-    override fun hashCode() = attachmentPoint.hashCode()
+    override fun hashCode(): Int {
+        var result = resourceType.hashCode()
+        result = 31 * result + attachmentPoint.hashCode()
+        return result
+    }
 }

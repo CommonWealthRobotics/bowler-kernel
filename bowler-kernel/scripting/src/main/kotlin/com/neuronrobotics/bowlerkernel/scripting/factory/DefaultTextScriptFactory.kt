@@ -18,6 +18,7 @@ package com.neuronrobotics.bowlerkernel.scripting.factory
 
 import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.scripting.DefaultScript
+import com.neuronrobotics.bowlerkernel.scripting.ScriptLanguage
 import com.neuronrobotics.bowlerkernel.scripting.parser.ScriptLanguageParser
 import javax.inject.Inject
 
@@ -40,4 +41,16 @@ class DefaultTextScriptFactory
         scriptLanguageParser.parse(language).map {
             DefaultScript(it, scriptText)
         }
+
+    /**
+     * Creates a [DefaultScript] from text.
+     *
+     * @param language A string representing the script language.
+     * @param scriptText The text content of the script.
+     * @return A [DefaultScript] on success, a [String] on error.
+     */
+    override fun createScriptFromText(
+        language: ScriptLanguage,
+        scriptText: String
+    ) = DefaultScript(language, scriptText)
 }

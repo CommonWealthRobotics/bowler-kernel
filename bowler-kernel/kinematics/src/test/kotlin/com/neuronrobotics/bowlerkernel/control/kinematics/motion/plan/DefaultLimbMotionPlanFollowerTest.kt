@@ -27,8 +27,8 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.octogonapus.guavautil.collections.emptyImmutableList
-import org.octogonapus.guavautil.collections.immutableListOf
+import org.octogonapus.ktguava.collections.emptyImmutableList
+import org.octogonapus.ktguava.collections.immutableListOf
 import kotlin.math.abs
 
 internal class DefaultLimbMotionPlanFollowerTest {
@@ -71,6 +71,20 @@ internal class DefaultLimbMotionPlanFollowerTest {
     fun `test plan length validation with too few target joint angles`() {
         val plan = LimbMotionPlan(
             immutableListOf(
+                LimbMotionPlanStep(emptyImmutableList(), createMotionConstraints(0))
+            )
+        )
+
+        assertThrows<IllegalArgumentException> {
+            follower.followPlan(plan)
+        }
+    }
+
+    @Test
+    fun `test plan length validation with too few target joint angles part way down the list`() {
+        val plan = LimbMotionPlan(
+            immutableListOf(
+                LimbMotionPlanStep(immutableListOf(0.0), createMotionConstraints(0)),
                 LimbMotionPlanStep(emptyImmutableList(), createMotionConstraints(0))
             )
         )

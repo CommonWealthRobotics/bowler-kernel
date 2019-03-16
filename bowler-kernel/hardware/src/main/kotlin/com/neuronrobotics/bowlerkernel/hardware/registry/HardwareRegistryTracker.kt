@@ -26,8 +26,8 @@ import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.DeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
-import org.octogonapus.guavautil.collections.toImmutableList
-import org.octogonapus.guavautil.collections.plus
+import org.octogonapus.ktguava.collections.toImmutableList
+import org.octogonapus.ktguava.collections.plus
 import javax.inject.Inject
 
 /**

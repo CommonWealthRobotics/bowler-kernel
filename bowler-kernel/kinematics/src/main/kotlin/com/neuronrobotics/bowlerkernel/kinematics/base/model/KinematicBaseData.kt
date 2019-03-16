@@ -24,6 +24,6 @@ data class KinematicBaseData(
     val id: SimpleKinematicBaseId,
     val limbs: List<LimbData>,
     val limbTransforms: List<FrameTransformation>,
-    val bodyControllerGistId: String,
+    val bodyControllerPullURL: String,
     val bodyControllerFilename: String
 )

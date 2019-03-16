@@ -1,6 +1,7 @@
 import Bowler_kernel_gradle.Strings.spotlessLicenseHeaderDelimiter
 import Bowler_kernel_gradle.Versions.bowlerKernelVersion
 import Bowler_kernel_gradle.Versions.ktlintVersion
+import com.adarshr.gradle.testlogger.theme.ThemeType
 import com.github.spotbugs.SpotBugsTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
@@ -20,11 +21,12 @@ plugins {
     id("com.jfrog.bintray") version "1.8.3"
     `java-library`
     id("org.jetbrains.dokka") version "0.9.17"
+    id("com.adarshr.test-logger") version "1.6.0"
 }
 
 object Versions {
     const val ktlintVersion = "0.29.0"
-    const val bowlerKernelVersion = "0.0.6"
+    const val bowlerKernelVersion = "0.0.20"
 }
 
 allprojects {
@@ -66,6 +68,7 @@ buildscript {
     repositories {
         mavenCentral() // Needed for kotlin gradle plugin
         maven(url = "https://plugins.gradle.org/m2/")
+        maven(url = "https://oss.sonatype.org/content/repositories/staging/")
     }
     dependencies {
         // Gives us the KotlinJvmProjectExtension
@@ -76,6 +79,7 @@ buildscript {
 allprojects {
     apply {
         plugin("com.diffplug.gradle.spotless")
+        plugin("com.adarshr.test-logger")
     }
 
     repositories {
@@ -97,6 +101,10 @@ allprojects {
             showStandardStreams = true
             exceptionFormat = TestExceptionFormat.FULL
         }
+    }
+
+    testlogger {
+        theme = ThemeType.STANDARD_PARALLEL
     }
 
     spotless {

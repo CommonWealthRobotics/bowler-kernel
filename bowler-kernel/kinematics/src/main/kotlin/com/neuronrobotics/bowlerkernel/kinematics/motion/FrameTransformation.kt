@@ -31,21 +31,54 @@ import kotlin.math.sqrt
 data class FrameTransformation
 private constructor(private val mat: SimpleMatrix) {
 
-    private val data = DoubleArray(mat.numRows() * mat.numCols()) { mat[it] }
+    private val internalData = DoubleArray(mat.numRows() * mat.numCols()) { mat[it] }
+    val data
+        get() = internalData.copyOf()
 
     /**
      * Extracts the translation component.
      *
-     * @return A 3x1 translation matrix.
+     * @return A 3x1 translation vector.
      */
-    fun getTranslation() = mat.extractMatrix(0, 3, 3, 4)
+    fun getTranslation(): SimpleMatrix = mat.extractMatrix(0, 3, 3, 4)
+
+    /**
+     * Extracts the planar translation component.
+     *
+     * @return A 2x1 translation vector.
+     */
+    fun getTranslationPlanar(): SimpleMatrix = mat.extractMatrix(0, 2, 3, 4)
+
+    /**
+     * Extracts the translation component plus the element from the row below it.
+     *
+     * @return A 4x1 translation vector.
+     */
+    fun getTranslationCol(): SimpleMatrix = mat.extractMatrix(0, 4, 3, 4)
 
     /**
      * Extracts the rotation component.
      *
      * @return A 3x3 rotation matrix.
      */
-    fun getRotation() = mat.extractMatrix(0, 3, 0, 3)
+    fun getRotation(): SimpleMatrix = mat.extractMatrix(0, 3, 0, 3)
+
+    /**
+     * Extracts a generic submatrix.
+     *
+     * @param rowStartInclusive The starting row index, inclusive.
+     * @param rowEndExclusive The ending row index, exclusive.
+     * @param colStartInclusive The starting column index, inclusive.
+     * @param colEndExclusive The ending column index, exclusive.
+     * @return A new submatrix.
+     */
+    fun subMatrix(
+        rowStartInclusive: Int,
+        rowEndExclusive: Int,
+        colStartInclusive: Int,
+        colEndExclusive: Int
+    ): SimpleMatrix =
+        mat.extractMatrix(rowStartInclusive, rowEndExclusive, colStartInclusive, colEndExclusive)
 
     operator fun plus(other: FrameTransformation) =
         FrameTransformation(mat + other.mat)
@@ -62,21 +95,17 @@ private constructor(private val mat: SimpleMatrix) {
 
         other as FrameTransformation
 
-        return Arrays.equals(data, other.data)
+        return Arrays.equals(internalData, other.internalData)
     }
 
-    override fun hashCode() = Arrays.hashCode(data)
+    override fun hashCode() = Arrays.hashCode(internalData)
 
     companion object {
 
         /**
-         * Constructs the identity frame transformation.
-         *
-         * @return The identity frame transformation.
+         * The identity frame transformation.
          */
-        fun identity() = FrameTransformation(
-            SimpleMatrix.identity(4)
-        )
+        val identity = FrameTransformation(SimpleMatrix.identity(4))
 
         /**
          * Constructs a frame transformation from a translation.
@@ -170,7 +199,7 @@ private constructor(private val mat: SimpleMatrix) {
                     |{
                     |   "rows": ${value.mat.numRows()},
                     |   "cols": ${value.mat.numCols()},
-                    |   "data": [${value.data.joinToString(",")}]
+                    |   "data": [${value.internalData.joinToString(",")}]
                     |}
                 """.trimMargin()
             }
@@ -195,7 +224,7 @@ private constructor(private val mat: SimpleMatrix) {
 }
 
 /**
- * Creates a 3x3 matrix representing a rotation.
+ * Creates a 3x3 matrix representing a rotation. Computed using ZYX rotation order.
  *
  * @param x The rotation around the x-axis in degrees.
  * @param y The rotation around the y-axis in degrees.

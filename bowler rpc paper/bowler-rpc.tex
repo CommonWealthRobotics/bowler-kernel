@@ -1,0 +1,722 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{bytefield}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{placeins}
+\usepackage[acronym, toc]{glossaries}
+\usepackage{pgf-umlsd}
+
+\makenoidxglossaries
+
+\input{glossary.tex}
+
+\title{
+    The Bowler RPC \\
+    \large A zeroconf protocol for creating PC-microcontroller networks
+}
+\author{Ryan Benasutti \\ Common Wealth Robotics Cooperative}
+\date{March 2019}
+
+\begin{document}
+
+\maketitle
+
+\section{Overview}
+\subsection{Motivation}
+
+\begin{enumerate}
+    \item We want a \gls{pc} to talk to any \gls{device} which is running some Bowler software. We
+    want this software to require minimal to no configuration from the user.
+    
+    \item We want to support any \gls{resource} attached to the \gls{device} with minimal to no
+    configuration from the user.
+
+    \item We require the communications between the \gls{pc} and \gls{device} satisfy hard real-time
+    requirements: \gls{rtt} $\leq$ 5ms, timeout $=$ 100ms.
+\end{enumerate}
+
+\subsection{Configuration Process}
+
+The \gls{pc}-\gls{device} \gls{rpc} is established in the following order
+\begin{enumerate}
+    \item The \gls{pc} connects to the \gls{device} using some \gls{transport-layer} implementation.
+    
+    \item The \gls{pc} sends \gls{discovery} packets to the \gls{device} to tell the \gls{device} which
+    \glspl{resource} are connected to it. The \gls{device} may reject any packet if it deems the
+    \gls{resource} invalid.
+    
+    \item Once all \glspl{resource} have been discovered, the \gls{discovery} process is finished and the
+    \gls{pc} and \gls{device} may use the configured \gls{rpc}.
+
+    \item At any time, the \gls{pc} may tell the \gls{device} to discard everything which was
+    allocated or configured during \gls{discovery}. The \gls{device} must then be ready to start the
+    \gls{discovery} process again.
+\end{enumerate}
+
+\clearpage
+\tableofcontents
+
+\clearpage
+\section{Discovery}
+
+Before the \gls{pc} can communicate with the \gls{device}, it must first configure the \gls{device}
+using the \gls{discovery} process. This section describes that process and the packets involved.
+
+\subsection{Packet Format}
+\subsubsection{General Discovery Packet Format}
+
+Figure~\ref{fig:discovery-time-send-packet-format} shows what the \gls{pc} sends the \gls{device} to
+run \gls{discovery}. Any additional \gls{operation}-specific data is sent in the Payload section.
+The entire packet is 60 bytes. Typically, this protocol is implemented using
+\texttt{SimplePacketComs}, which uses the first 4 bytes of the packet for its header, leaving this
+protocol with 60 bytes.
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}{16}
+        \bitheader{0,7,8,15} \\
+        \bitbox{8}{Operation}
+        \bitbox[lrt]{8}{} \\
+        \wordbox[lr]{1}{Payload} \\
+        \skippedwords \\
+        \wordbox[lrb]{1}{}
+    \end{bytefield}
+    \caption{Discovery-time send packet format.}
+    \label{fig:discovery-time-send-packet-format}
+\end{figure}
+
+\FloatBarrier
+
+\begin{itemize}
+    \item Operation: 1 byte
+    \begin{itemize}
+        \item The Operation field states the \gls{operation} the packet performs.
+    \end{itemize}
+\end{itemize}
+
+\FloatBarrier
+
+Figure~\ref{fig:discovery-time-receive-packet-format} shows what the \gls{device} sends the \gls{pc}
+to complete \gls{discovery}. Any additional operation-specific data is sent in the Payload section.
+The entire packet is 60 bytes. Typically, this protocol is implemented using
+\texttt{SimplePacketComs}, which uses the first 4 bytes of the packet for its header, leaving this
+protocol with 60 bytes.
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}{16}
+        \bitheader{0,7,8,15} \\
+        \bitbox{8}{Status}
+        \bitbox[lrt]{8}{} \\
+        \wordbox[lr]{1}{Payload} \\
+        \skippedwords \\
+        \wordbox[lrb]{1}{}
+    \end{bytefield}
+    \caption{Discovery-time receive packet format.}
+    \label{fig:discovery-time-receive-packet-format}
+\end{figure}
+
+\FloatBarrier
+
+\begin{itemize}
+    \item Status: 1 byte
+    \begin{itemize}
+        \item The Status field encodes the status of the \gls{discovery} operation. The status codes
+        are documented in Table~\ref{tab:status-codes}.
+    \end{itemize}
+\end{itemize}
+
+\FloatBarrier
+\clearpage
+\subsubsection{Discovery Packet}
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}{16}
+        \bitheader{0,7,8,15} \\
+        \bitbox{8}{1}
+        \bitbox{8}{Packet ID} \\
+        \begin{leftwordgroup}{\texttt{ResourceId}}
+            \bitbox{8}{Resource}
+            \bitbox{8}{Attachment} \\
+            \wordbox[lr]{1}{Attachment Data} \\
+            \skippedwords \\
+            \wordbox[lrb]{1}{}
+        \end{leftwordgroup}
+    \end{bytefield}
+    \caption{Discovery send packet.}
+    \label{fig:discovery-send-packet}
+\end{figure}
+
+\FloatBarrier
+
+\begin{itemize}
+    \item Packet ID: 1 byte
+    \begin{itemize}
+        \item The Packet ID field is a new ID for the packet being discovered.
+    \end{itemize}
+
+    \item Resource: 1 byte
+    \begin{itemize}
+        \item The Resource field is the type of the \gls{resource}. It is the \\
+        \texttt{ResourceId.resourceType.type}.
+    \end{itemize}
+
+    \item Attachment: 1 byte
+    \begin{itemize}
+        \item The Attachment field is the type of the attachment point. It is the
+        \texttt{ResourceId.attachmentPoint.type}.
+    \end{itemize}
+
+    \item Attachment Data: 1+ bytes
+    \begin{itemize}
+        \item The Attachment Data field is any data needed to fully describe the Attachment. It is
+        the \texttt{ResourceId.attachmentPoint.data}.
+    \end{itemize}
+\end{itemize}
+
+\FloatBarrier
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}{16}
+        \bitheader{0,7,8,15} \\
+        \bitbox{8}{Status}
+        \bitbox[lrt]{8}{} \\
+        \wordbox[lr]{1}{Reserved} \\
+        \skippedwords \\
+        \wordbox[lrb]{1}{}
+    \end{bytefield}
+    \caption{Discovery receive packet.}
+    \label{fig:discovery-receive-packet}
+\end{figure}
+
+\FloatBarrier
+
+\begin{itemize}
+    \item Status: 1 byte
+    \begin{itemize}
+        \item The Status field encodes the status of the \gls{discovery} operation. The status codes
+        are documented in Table~\ref{tab:status-codes}.
+    \end{itemize}
+\end{itemize}
+
+\FloatBarrier
+\clearpage
+\subsubsection{Group Discovery Packet}
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}{16}
+        \bitheader{0,7,8,15} \\
+        \bitbox{8}{2}
+        \bitbox{8}{Group ID} \\
+        \bitbox{8}{Packet ID}
+        \bitbox{8}{Count} \\
+        \wordbox[lr]{1}{Reserved} \\
+        \skippedwords \\
+        \wordbox[lrb]{1}{}
+    \end{bytefield}
+    \caption{Group discovery send packet.}
+    \label{fig:group-discovery-send-packet}
+\end{figure}
+
+\FloatBarrier
+
+\begin{itemize}
+    \item Group ID: 1 byte
+    \begin{itemize}
+        \item The Group ID field is the ID for the \gls{group} being made. Future \gls{group-member-discovery}
+        packets will need this ID to add \glspl{resource} to the correct \gls{group}.
+    \end{itemize}
+
+    \item Packet ID: 1 byte
+    \begin{itemize}
+        \item The Packet ID field is the ID for the packet the \gls{group} will use. All \glspl{resource}
+        in the \gls{group} get packed into one packet.
+    \end{itemize}
+
+    \item Count: 1 byte
+    \begin{itemize}
+        \item The Count field is the number of \glspl{resource} that will be added to the
+        \gls{group}.
+    \end{itemize}
+\end{itemize}
+
+\FloatBarrier
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}{16}
+        \bitheader{0,7,8,15} \\
+        \bitbox{8}{Status}
+        \bitbox[lrt]{8}{} \\
+        \wordbox[lr]{1}{Reserved} \\
+        \skippedwords \\
+        \wordbox[lrb]{1}{}
+    \end{bytefield}
+    \caption{Group discovery receive packet.}
+    \label{fig:group-discovery-receive-packet}
+\end{figure}
+
+\FloatBarrier
+
+\begin{itemize}
+    \item Status: 1 byte
+    \begin{itemize}
+        \item The Status field encodes the status of the \gls{discovery} operation. The status codes
+        are documented in Table~\ref{tab:status-codes}.
+    \end{itemize}
+\end{itemize}
+
+\FloatBarrier
+\clearpage
+\subsubsection{Group Member Discovery Packet}
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}{16}
+        \bitheader{0,7,8,15} \\
+        \bitbox{8}{3}
+        \bitbox{8}{Group ID} \\
+        \begin{leftwordgroup}{Write Indices}
+            \bitbox{8}{Send Start}
+            \bitbox{8}{Send End}
+        \end{leftwordgroup} \\
+        \begin{leftwordgroup}{Read Indices}
+            \bitbox{8}{Receive Start}
+            \bitbox{8}{Receive End}
+        \end{leftwordgroup} \\
+        \begin{leftwordgroup}{\texttt{ResourceId}}
+            \bitbox{8}{Resource}
+            \bitbox{8}{Attachment} \\
+            \wordbox[lr]{1}{Attachment Data} \\
+            \skippedwords \\
+            \wordbox[lrb]{1}{}
+        \end{leftwordgroup}
+    \end{bytefield}
+    \caption{Group member discovery send packet.}
+    \label{fig:group-member-discovery-send-packet}
+\end{figure}
+
+\FloatBarrier
+
+\begin{itemize}
+    \item Group ID: 1 byte
+    \begin{itemize}
+        \item The Group ID field is the ID for the \gls{group} that this \gls{resource} will be added to.
+    \end{itemize}
+
+    \item Send Start: 1 byte
+    \begin{itemize}
+        \item The Send Start field is the starting byte index in the send Payload for this
+        \gls{resource}'s write data (i.e. from the \gls{pc} perspective).
+    \end{itemize}
+
+    \item Send End: 1 byte
+    \begin{itemize}
+        \item The Send End field is the ending byte index in the send Payload for this \gls{resource}'s
+        write data (i.e. from the \gls{pc} perspective).
+    \end{itemize}
+
+    \item Receive Start: 1 byte
+    \begin{itemize}
+        \item The Receive Start field is the starting byte index in the receive Payload for this
+        \gls{resource}'s read data (i.e. from the \gls{pc} perspective).
+    \end{itemize}
+
+    \item Receive End: 1 byte
+    \begin{itemize}
+        \item The Receive End field is the ending byte index in the receive Payload for this
+        \gls{resource}'s read data (i.e. from the \gls{pc} perspective).
+    \end{itemize}
+
+    \item Resource: 1 byte
+    \begin{itemize}
+        \item The Resource field is the type of the \gls{resource}. It is the \\
+        \texttt{ResourceId.resourceType.type}.
+    \end{itemize}
+
+    \item Attachment: 1 byte
+    \begin{itemize}
+        \item The Attachment field is the type of the attachment point. It is the
+        \texttt{ResourceId.attachmentPoint.type}.
+    \end{itemize}
+
+    \item Attachment Data: 1+ bytes
+    \begin{itemize}
+        \item The Attachment Data field is any data needed to fully describe the Attachment. It is
+        the \texttt{ResourceId.attachmentPoint.data}.
+    \end{itemize}
+\end{itemize}
+
+\FloatBarrier
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}{16}
+        \bitheader{0,7,8,15} \\
+        \bitbox{8}{Status}
+        \bitbox[lrt]{8}{} \\
+        \wordbox[lr]{1}{Reserved} \\
+        \skippedwords \\
+        \wordbox[lrb]{1}{}
+    \end{bytefield}
+    \caption{Group member discovery receive packet.}
+    \label{fig:group-member-discovery-receive-packet}
+\end{figure}
+
+\FloatBarrier
+
+\begin{itemize}
+    \item Status: 1 byte
+    \begin{itemize}
+        \item The Status field encodes the status of the \gls{discovery} operation. The status codes
+        are documented in Table~\ref{tab:status-codes}.
+    \end{itemize}
+\end{itemize}
+
+\FloatBarrier
+\clearpage
+\subsubsection{Discard Discovery Packet}
+
+At any time, the \gls{pc} may tell the \gls{device} to discard everything which was allocated or
+configured during \gls{discovery}. The \gls{device} must then be ready to start the \gls{discovery}
+process again. To initiate this process, the \gls{pc} may send the \gls{device} a discard
+\gls{discovery} packet and continue polling the \gls{device} until it reports that the discard
+process is complete.
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}{16}
+        \bitheader{0,7,8,15} \\
+        \bitbox{8}{4}
+        \bitbox[lrt]{8}{} \\
+        \wordbox[lr]{1}{Reserved} \\
+        \skippedwords \\
+        \wordbox[lrb]{1}{}
+    \end{bytefield}
+    \caption{Discard discovery send packet.}
+    \label{fig:discard-discovery-send-packet}
+\end{figure}
+
+\FloatBarrier
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}{16}
+        \bitheader{0,7,8,15} \\
+        \bitbox{8}{Status}
+        \bitbox[lrt]{8}{} \\
+        \wordbox[lr]{1}{Reserved} \\
+        \skippedwords \\
+        \wordbox[lrb]{1}{}
+    \end{bytefield}
+    \caption{Discard discovery receive packet.}
+    \label{fig:discard-discovery-receive-packet}
+\end{figure}
+
+\FloatBarrier
+
+\begin{itemize}
+    \item Status: 1 byte
+    \begin{itemize}
+        \item The Status field indicates the status of the discard operation. The status codes are
+        documented in Table~\ref{tab:status-codes}.
+    \end{itemize}
+\end{itemize}
+
+\FloatBarrier
+\clearpage
+\subsection{Discovery Process}
+\subsubsection{Discovery}
+
+\begin{figure}[h]
+    \centering
+    \begin{sequencediagram}
+        \newthread{pc}{PC}
+        \newinst[3]{device}{Device}
+
+        \begin{call}{pc}{Send discovery}{device}{Status 1}
+        \end{call}
+    \end{sequencediagram}
+    \caption{Successful discovery.}
+    \label{fig:successful-discovery}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \begin{sequencediagram}
+        \newthread{pc}{PC}
+        \newinst[3]{device}{Device}
+
+        \begin{call}{pc}{Send discovery}{device}{Status 2}
+        \end{call}
+    \end{sequencediagram}
+    \caption{Unsuccessful discovery.}
+    \label{fig:unsuccessful-discovery}
+\end{figure}
+
+\FloatBarrier
+\clearpage
+\subsubsection{Group Discovery}
+
+\begin{figure}[h]
+    \centering
+    \begin{sequencediagram}
+        \newthread{pc}{PC}
+        \newinst[4]{device}{Device}
+
+        \begin{call}{pc}{Send group discovery}{device}{Status 1}
+        \end{call}
+
+        \begin{call}{pc}{Send group member discovery}{device}{Status 1}
+        \end{call}
+
+        \begin{call}{pc}{Send group member discovery}{device}{Status 1}
+        \end{call}
+    \end{sequencediagram}
+    \caption{Successful group discovery.}
+    \label{fig:successful-group-discovery}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \begin{sequencediagram}
+        \newthread{pc}{PC}
+        \newinst[4]{device}{Device}
+
+        \begin{call}{pc}{Send group discovery}{device}{Status 2}
+        \end{call}
+
+        \begin{call}{pc}{Send group member discovery}{device}{Status 7}
+        \end{call}
+    \end{sequencediagram}
+    \caption{Unsuccessful group discovery.}
+    \label{fig:unsuccessful-group-discovery}
+\end{figure}
+
+\FloatBarrier
+\clearpage
+\subsubsection{Discard Discovery}
+
+\begin{figure}[h]
+    \centering
+    \begin{sequencediagram}
+        \newthread{pc}{PC}
+        \newinst[4]{device}{Device}
+
+        \begin{call}{pc}{Send discard discovery}{device}{Status 10}
+        \end{call}
+
+        \begin{call}{pc}{Send discard discovery}{device}{Status 10}
+        \end{call}
+
+        \begin{call}{pc}{Send discard discovery}{device}{Status 11}
+        \end{call}
+
+        \begin{call}{pc}{Send discard discovery}{device}{Status 11}
+        \end{call}
+    \end{sequencediagram}
+    \caption{Discard discovery.}
+    \label{fig:discard-discovery}
+\end{figure}
+
+\FloatBarrier
+\clearpage
+\section{RPC}
+
+After the \gls{discovery} process is complete and all \glspl{resource} have been discovered, the
+\gls{pc} may begin "talking" with the \gls{device}. This section describes the format of the
+configured packets.
+
+\subsection{Packet Format}
+\subsubsection{Non-Group}
+
+Packets for non-\gls{group} \glspl{resource} correspond to a single \gls{resource}. These \glspl{resource}
+do not have any timing constraints.
+
+The non-\gls{group} send packet format consists of the write payload.
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}{16}
+        \bitheader{0,7,8,15} \\
+        \begin{leftwordgroup}{Resource Write}
+            \wordbox[lrt]{1}{Payload} \\
+            \skippedwords \\
+            \wordbox[lrb]{1}{}
+        \end{leftwordgroup}
+    \end{bytefield}
+    \caption{Non-group RPC send packet format.}
+    \label{fig:non-group-rpc-send-packet-format}
+\end{figure}
+
+\FloatBarrier
+
+The non-\gls{group} receive packet format consists of the read payload.
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}{16}
+        \bitheader{0,7,8,15} \\
+        \begin{leftwordgroup}{Resource Read}
+            \wordbox[lrt]{1}{Payload} \\
+            \skippedwords \\
+            \wordbox[lrb]{1}{}
+        \end{leftwordgroup}
+    \end{bytefield}
+    \caption{Non-group RPC receive packet format.}
+    \label{fig:non-group-rpc-receive-packet-format}
+\end{figure}
+
+\FloatBarrier
+\clearpage
+\subsubsection{Group}
+
+Packets for \gls{group} \glspl{resource} correspond to multiple \glspl{resource} whose write and read
+payloads are packed into single packets. These \glspl{resource} typically have timing constraints
+and are therefore put into a \gls{group}.
+
+The \gls{group} send packet format consists of packed \gls{resource} write payloads as specified by
+the Send Start and Send End indices from the \gls{group-member-discovery} packet in
+Figure~\ref{fig:group-member-discovery-send-packet}.
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}[rightcurly=.]{16}
+        \bitheader{0,7,8,15} \\
+        \begin{leftwordgroup}{Resource Write}
+            \begin{rightwordgroup}{Send Start$_i$}
+                \bitbox{8}{Byte 0}
+                \bitbox{8}{Byte 1}
+            \end{rightwordgroup} \\
+            \bitbox[]{6}{}
+            \bitbox[]{4}{$\vdots$}
+            \bitbox[]{6}{} \\
+            [1ex]
+            \begin{rightwordgroup}{Send End$_i$}
+                \bitbox{8}{Byte $S(i) - 1$}
+                \bitbox{8}{Byte $S(i)$}
+            \end{rightwordgroup}
+        \end{leftwordgroup} \\
+        \wordbox[]{1}{$\vdots$} \\
+        [1ex]
+        \begin{leftwordgroup}{Resource Write}
+            \begin{rightwordgroup}{Send Start$_N$}
+                \bitbox{8}{\scriptsize Byte $S_S(i-1) + 1$}
+                \bitbox{8}{\scriptsize Byte $S_S(i-1) + 2$}
+            \end{rightwordgroup} \\
+            \bitbox[]{6}{}
+            \bitbox[]{4}{$\vdots$}
+            \bitbox[]{6}{} \\
+            [1ex]
+            \begin{rightwordgroup}{Send End$_N$}
+                \bitbox{8}{Byte $S_S(i) - 1$}
+                \bitbox{8}{Byte $S_S(i)$}
+            \end{rightwordgroup}
+        \end{leftwordgroup}
+    \end{bytefield}
+    \begin{equation}
+        S_S(n)=\sum_{i=1}^{n}{S(i)}
+    \end{equation}
+    \begin{equation}
+        S(i) = \textrm{Send End}_i - \textrm{Send Start}_i
+    \end{equation}
+    \begin{equation}
+        i \in [1, N], N = \textrm{Count}
+    \end{equation}
+    \caption{Group RPC send packet format.}
+    \label{fig:group-rpc-send-packet-format}
+\end{figure}
+
+\FloatBarrier
+
+The \gls{group} receive packet format consists of packed \gls{resource} read payloads as specified
+by the Receive Start and Receive End indices from the \gls{group-member-discovery} packet in
+Figure~\ref{fig:group-member-discovery-send-packet}.
+
+\begin{figure}[h]
+    \centering
+    \begin{bytefield}[rightcurly=.]{16}
+        \bitheader{0,7,8,15} \\
+        \begin{leftwordgroup}{Resource Read}
+            \begin{rightwordgroup}{Receive Start$_i$}
+                \bitbox{8}{Byte 0}
+                \bitbox{8}{Byte 1}
+            \end{rightwordgroup} \\
+            \bitbox[]{6}{}
+            \bitbox[]{4}{$\vdots$}
+            \bitbox[]{6}{} \\
+            [1ex]
+            \begin{rightwordgroup}{Receive End$_i$}
+                \bitbox{8}{Byte $R(i) - 1$}
+                \bitbox{8}{Byte $R(i)$}
+            \end{rightwordgroup}
+        \end{leftwordgroup} \\
+        \wordbox[]{1}{$\vdots$} \\
+        [1ex]
+        \begin{leftwordgroup}{Resource Read}
+            \begin{rightwordgroup}{Receive Start$_N$}
+                \bitbox{8}{\scriptsize Byte $S_R(i-1) + 1$}
+                \bitbox{8}{\scriptsize Byte $S_R(i-1) + 2$}
+            \end{rightwordgroup} \\
+            \bitbox[]{6}{}
+            \bitbox[]{4}{$\vdots$}
+            \bitbox[]{6}{} \\
+            [1ex]
+            \begin{rightwordgroup}{Receive End$_N$}
+                \bitbox{8}{Byte $S_R(i) - 1$}
+                \bitbox{8}{Byte $S_R(i)$}
+            \end{rightwordgroup}
+        \end{leftwordgroup}
+    \end{bytefield}
+    \begin{equation}
+        S_R(n)=\sum_{i=1}^{n}{R(i)}
+    \end{equation}
+    \begin{equation}
+        R(i) = \textrm{Receive End}_i - \textrm{Receive Start}_i
+    \end{equation}
+    \begin{equation}
+        i \in [1, N], N = \textrm{Count}
+    \end{equation}
+    \caption{Group RPC receive packet format.}
+    \label{fig:group-rpc-receive-packet-format}
+\end{figure}
+
+\FloatBarrier
+\clearpage
+
+\appendix
+\section{Tables}
+
+\FloatBarrier
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{r|l}
+        Status Code & Meaning \\
+        \hline
+        1 & Accepted \\
+        2 & Rejected: Generic \\
+        3 & Rejected: Unknown Resource \\
+        4 & Rejected: Unknown Attachment \\
+        5 & Rejected: Invalid Attachment \\
+        6 & Rejected: Invalid Attachment Data \\
+        7 & Rejected: Invalid Group ID \\
+        8 & Rejected: Group Full \\
+        9 & Rejected: Unknown Operation \\
+        10 & Discard in progress \\
+        11 & Discard complete
+    \end{tabular}
+    \caption{Status codes.}
+    \label{tab:status-codes}
+\end{table}
+
+\FloatBarrier
+\clearpage
+
+\printnoidxglossaries
+
+\end{document}

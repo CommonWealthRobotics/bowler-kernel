@@ -27,6 +27,8 @@ import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistry
 import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistryTracker
 import org.jlleitschuh.guice.key
 import org.jlleitschuh.guice.module
+import org.octogonapus.ktguava.collections.immutableListOf
+import org.octogonapus.ktguava.collections.toImmutableList
 
 /**
  * A script with managed hardware access.
@@ -36,11 +38,13 @@ abstract class Script {
     /**
      * An [Injector] available for the script to use.
      */
-    protected var injector: Injector = KernelHardwareModule.injector.createChildInjector(
-        scriptModule(),
-        DeviceFactory.deviceFactoryModule(),
-        UnprovisionedDeviceResourceFactory.unprovisionedDeviceResourceFactoryModule()
-    )
+    protected var injector: Injector =
+        KernelHardwareModule.injector.createChildInjector(scriptModule())
+
+    /**
+     * The modules which have been added by the user.
+     */
+    private val addedModules = mutableListOf<Module>()
 
     /**
      * Runs the script on the current thread.
@@ -70,6 +74,7 @@ abstract class Script {
      * @param modules The modules to add.
      */
     fun addToInjector(modules: ImmutableList<Module>) {
+        addedModules.addAll(modules)
         injector = injector.createChildInjector(modules)
     }
 
@@ -79,9 +84,26 @@ abstract class Script {
      * @param modules The modules to add.
      */
     @SuppressWarnings("SpreadOperator")
-    fun addToInjector(vararg modules: Module) {
-        injector = injector.createChildInjector(*modules)
-    }
+    fun addToInjector(vararg modules: Module) = addToInjector(immutableListOf(*modules))
+
+    /**
+     * Returns the modules which have been added to this script's [injector].
+     *
+     * @return The modules added to this script's [injector].
+     */
+    fun getModules(): ImmutableList<Module> = addedModules.toImmutableList()
+
+    /**
+     * Returns the modules which bind default instances of various kernel interfaces. This list
+     * does not include required modules, such as the [scriptModule] or [KernelHardwareModule].
+     * You should use this module unless you need to override something specific.
+     *
+     * @return The default kernel modules.
+     */
+    fun getDefaultModules(): ImmutableList<Module> = immutableListOf(
+        DeviceFactory.deviceFactoryModule(),
+        UnprovisionedDeviceResourceFactory.unprovisionedDeviceResourceFactoryModule()
+    )
 
     companion object {
         private fun scriptModule() = module {

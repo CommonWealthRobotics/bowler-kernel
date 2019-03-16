@@ -14,13 +14,28 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.protocol
+package com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid
+
+import arrow.core.Option
 
 /**
- * An error which is caused by a timeout.
- *
- * @param timeoutDuration The duration, in ms, of the timeout.
+ * Validates various properties of a [ResourceId].
  */
-data class TimeoutError(
-    val timeoutDuration: Long = 100
-)
+interface ResourceIdValidator {
+
+    // TODO: Add AttachmentPoint validation
+
+    /**
+     * Validates the resource can be read from.
+     *
+     * @return An error.
+     */
+    fun validateIsReadType(resourceId: ResourceId): Option<String>
+
+    /**
+     * Validates the resource can be written to.
+     *
+     * @return An error.
+     */
+    fun validateIsWriteType(resourceId: ResourceId): Option<String>
+}
