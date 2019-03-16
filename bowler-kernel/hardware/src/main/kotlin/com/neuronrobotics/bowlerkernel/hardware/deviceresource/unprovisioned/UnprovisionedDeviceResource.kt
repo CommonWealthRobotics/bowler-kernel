@@ -22,7 +22,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.Provi
 /**
  * A [DeviceResource] which has been registered but not provisioned.
  */
-interface UnprovisionedDeviceResource : DeviceResource {
+abstract class UnprovisionedDeviceResource : DeviceResource {
 
     /**
      * Provisions this [DeviceResource] by communicating with the parent device to set up any
@@ -31,5 +31,10 @@ interface UnprovisionedDeviceResource : DeviceResource {
      *
      * @return A [ProvisionedDeviceResource]
      */
-    fun provision(): ProvisionedDeviceResource
+    protected abstract fun provision(): ProvisionedDeviceResource
+
+    /**
+     * Runs and returns [provision].
+     */
+    internal fun runProvision() = provision()
 }

@@ -388,23 +388,22 @@ internal class SimplePacketComsProtocolTest {
         val result = disconnectProtocol()
 
         assertAll(
-            listOf(
-                { assertTrue(result.isEmpty()) }
-            ) + device.writesReceived.map {
-                {
-                    val expected = getPayload(4)
-                    assertArrayEquals(
-                        expected,
-                        it,
-                        """
-                    |The sent payload:
-                    |${it.joinToString()}
-                    |should equal the expected payload:
-                    |${expected.joinToString()}
-                    """.trimMargin()
-                    )
+            listOf { assertTrue(result.isEmpty()) } +
+                device.writesReceived.map {
+                    {
+                        val expected = getPayload(4)
+                        assertArrayEquals(
+                            expected,
+                            it,
+                            """
+                            |The sent payload:
+                            |${it.joinToString()}
+                            |should equal the expected payload:
+                            |${expected.joinToString()}
+                            """.trimMargin()
+                        )
+                    }
                 }
-            }
         )
     }
 
@@ -478,7 +477,7 @@ internal class SimplePacketComsProtocolTest {
      * @return The payload.
      */
     private fun getPayload(vararg bytes: Byte): ByteArray =
-        bytes + (1..(SimplePacketComsProtocol.PAYLOAD_SIZE - bytes.size)).map { 0.toByte() }
+        bytes + (1..SimplePacketComsProtocol.PAYLOAD_SIZE - bytes.size).map { 0.toByte() }
 
     companion object {
 

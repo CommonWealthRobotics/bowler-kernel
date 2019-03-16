@@ -24,7 +24,7 @@ data class UnprovisionedEncoder
 internal constructor(
     override val device: BowlerDevice,
     override val resourceId: ResourceId
-) : UnprovisionedDeviceResource {
+) : UnprovisionedDeviceResource() {
 
     override fun provision() = GenericEncoder(device, resourceId)
 }

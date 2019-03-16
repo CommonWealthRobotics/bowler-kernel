@@ -24,7 +24,7 @@ data class UnprovisionedAnalogIn
 internal constructor(
     override val device: BowlerDevice,
     override val resourceId: ResourceId
-) : UnprovisionedDeviceResource {
+) : UnprovisionedDeviceResource() {
 
     override fun provision() = GenericAnalogIn(device, resourceId)
 }

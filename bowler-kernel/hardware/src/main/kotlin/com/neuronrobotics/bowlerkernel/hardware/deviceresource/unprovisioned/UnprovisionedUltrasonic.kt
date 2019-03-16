@@ -24,7 +24,7 @@ data class UnprovisionedUltrasonic
 internal constructor(
     override val device: BowlerDevice,
     override val resourceId: ResourceId
-) : UnprovisionedDeviceResource {
+) : UnprovisionedDeviceResource() {
 
     override fun provision() = GenericUltrasonic(device, resourceId)
 }

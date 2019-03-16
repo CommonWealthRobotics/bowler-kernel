@@ -21,16 +21,14 @@ import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.Script
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericDigitalOut
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.ProvisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedServoFactory
 import org.jlleitschuh.guice.key
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.emptyImmutableList
+import org.octogonapus.ktguava.collections.immutableSetOf
 import javax.inject.Inject
 
 internal class HardwareScriptIntegrationTest {
@@ -50,6 +48,7 @@ internal class HardwareScriptIntegrationTest {
             }
         }
 
+        script.addToInjector(script.getDefaultModules())
         script.runScript(emptyImmutableList())
         script.stopAndCleanUp()
     }
@@ -65,22 +64,23 @@ internal class HardwareScriptIntegrationTest {
             val device = bowlerDeviceFactory.makeBowlerDevice(
                 SimpleDeviceId("/dev/ttyACM0"),
                 MockBowlerRPCProtocol()
-            ).fold({ throw IllegalStateException(it) }, { it })
+            ).fold({ fail { "" } }, { it })
 
             device.connect()
 
             val ledFactory = digitalOutFactoryFactory.create(device)
-            ledFactory.makeUnprovisionedDigitalOut(
-                DefaultAttachmentPoints.Pin(1)
-            ).provisionOrFail() as GenericDigitalOut
+            val servoFactory = servoFactoryFactory.create(device)
 
             val led1 = ledFactory.makeUnprovisionedDigitalOut(
+                DefaultAttachmentPoints.Pin(1)
+            ).fold({ fail { "" } }, { it })
+
+            val led2 = ledFactory.makeUnprovisionedDigitalOut(
                 DefaultAttachmentPoints.Pin(2)
             ).fold({ fail { "" } }, { it })
 
-            device.add(led1)
+            device.add(immutableSetOf(led1, led2))
 
-            val servoFactory = servoFactoryFactory.create(device)
             val servo1 = servoFactory.makeUnprovisionedServo(
                 DefaultAttachmentPoints.Pin(3)
             ).fold({ fail { "" } }, { it })
@@ -95,9 +95,4 @@ internal class HardwareScriptIntegrationTest {
         override fun stopScript() {
         }
     }
-}
-
-private inline fun <reified A : UnprovisionedDeviceResource> Either<String, A>.provisionOrFail():
-    ProvisionedDeviceResource {
-    return fold({ throw IllegalStateException(it) }, { it }).provision()
 }

@@ -17,6 +17,7 @@
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
+import org.junit.jupiter.api.fail
 import java.util.ArrayDeque
 
 internal class MockDevice : AbstractSimpleComsDevice() {
@@ -38,9 +39,14 @@ internal class MockDevice : AbstractSimpleComsDevice() {
         canSendNextRead = true
     }
 
-    override fun writeBytes(id: Int, values: Array<Byte>) = throw NotImplementedError()
+    @SuppressWarnings("ArrayPrimitive")
+    override fun writeBytes(id: Int, values: Array<Byte>) = fail {
+        "SimplePacketComs should not use this method!"
+    }
 
-    override fun readBytes(id: Int) = throw NotImplementedError()
+    override fun readBytes(id: Int) = fail {
+        "SimplePacketComs should not use this method!"
+    }
 
     override fun readBytes(id: Int, values: ByteArray) {
         if (canSendNextRead) {
@@ -52,5 +58,5 @@ internal class MockDevice : AbstractSimpleComsDevice() {
     }
 
     private fun ByteArray.padToLength() =
-        this + (1..(60 - size)).map { 0.toByte() }.toByteArray()
+        this + (1..60 - size).map { 0.toByte() }.toByteArray()
 }

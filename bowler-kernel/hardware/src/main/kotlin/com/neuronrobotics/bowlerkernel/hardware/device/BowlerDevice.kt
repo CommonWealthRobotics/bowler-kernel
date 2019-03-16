@@ -68,7 +68,7 @@ internal constructor(
             |$resource
             """.trimMargin().left()
         } else {
-            return resource.provision().right()
+            return resource.runProvision().right()
         }
     }
 
@@ -108,7 +108,7 @@ internal constructor(
             |${resources.joinToString(separator = "\n")}
             """.trimMargin().left()
         } else {
-            resources.map { it.provision() }.toImmutableSet().right()
+            resources.map { it.runProvision() }.toImmutableSet().right()
         }
     }
 

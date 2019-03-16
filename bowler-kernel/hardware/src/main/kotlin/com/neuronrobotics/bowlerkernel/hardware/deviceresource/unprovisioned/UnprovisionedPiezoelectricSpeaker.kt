@@ -24,7 +24,7 @@ data class UnprovisionedPiezoelectricSpeaker
 internal constructor(
     override val device: BowlerDevice,
     override val resourceId: ResourceId
-) : UnprovisionedDeviceResource {
+) : UnprovisionedDeviceResource() {
 
     override fun provision() = GenericPiezoelectricSpeaker(device, resourceId)
 }

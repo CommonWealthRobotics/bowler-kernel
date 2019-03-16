@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:SuppressWarnings("LargeClass")
+
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
 import arrow.core.Either
@@ -200,6 +202,7 @@ class SimplePacketComsProtocol(
      * @param attachmentData Any data needed to fully describe the attachment.
      * @return [Option.empty] if accepted, the status code if rejected.
      */
+    @SuppressWarnings("LongParameterList")
     private fun sendGroupMemberDiscoveryPacket(
         groupId: Byte,
         sendStart: Byte,

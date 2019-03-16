@@ -26,7 +26,7 @@ internal class DefaultResourceIdValidatorTest {
     private val validator = DefaultResourceIdValidator()
 
     @ParameterizedTest
-    @MethodSource("readResourceSource")
+    @MethodSource("resourceValidationSource")
     fun `test resource types are validated correctly`(
         data: Pair<ResourceId, List<ResourceType>>
     ) {
@@ -51,7 +51,7 @@ internal class DefaultResourceIdValidatorTest {
 
         @Suppress("unused")
         @JvmStatic
-        fun readResourceSource() = listOf(
+        fun resourceValidationSource() = listOf(
             ResourceId(
                 DefaultResourceTypes.DigitalIn,
                 DefaultAttachmentPoints.Pin(1)

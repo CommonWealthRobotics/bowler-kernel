@@ -45,7 +45,7 @@ class DeviceFactory
 
     companion object {
 
-        internal fun deviceFactoryModule() = module {
+        fun deviceFactoryModule() = module {
             bind<BowlerDeviceFactory>().to<DeviceFactory>()
             bind<ResourceIdValidator>().to<DefaultResourceIdValidator>()
         }
