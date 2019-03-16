@@ -14,14 +14,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.device.deviceid
+package com.neuronrobotics.bowlerkernel.hardware.protocol
 
-import com.neuronrobotics.bowlerkernel.hardware.device.Device
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 
 /**
- * The id of a [Device].
+ * A factory which creates [BowlerRPCProtocol].
  */
-data class DeviceId(
-    val deviceType: DeviceType,
-    val connectionMethod: ConnectionMethod
-)
+interface BowlerRPCProtocolFactory {
+
+    /**
+     * Creates a new [BowlerRPCProtocol].
+     *
+     * @param deviceId The device id.
+     * @return The new [BowlerRPCProtocol].
+     */
+    fun create(deviceId: DeviceId): BowlerRPCProtocol
+}

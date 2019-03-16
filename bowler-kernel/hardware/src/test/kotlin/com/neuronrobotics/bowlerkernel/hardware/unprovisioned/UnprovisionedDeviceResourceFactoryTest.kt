@@ -21,7 +21,9 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.hasSize
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
-import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
@@ -40,7 +42,6 @@ class UnprovisionedDeviceResourceFactoryTest {
 
     @Test
     fun `test resource id out of range`() {
-        val deviceName = "A"
         val resourceId = DefaultAttachmentPoints.Pin(0)
 
         val device = mock<BowlerDevice> {
@@ -54,7 +55,12 @@ class UnprovisionedDeviceResourceFactoryTest {
             } doReturn false
         }
 
-        registry.registerDevice(SimpleDeviceId(deviceName)) { device }
+        registry.registerDevice(
+            DeviceId(
+                DefaultDeviceTypes.Esp32Wroom32,
+                DefaultConnectionMethods.RawHID(0, 0)
+            )
+        ) { device }
         val error = UnprovisionedDeviceResourceFactory(registry, device)
             .makeUnprovisionedDigitalOut(resourceId)
 
@@ -172,8 +178,6 @@ class UnprovisionedDeviceResourceFactoryTest {
         resourceId: ResourceId,
         makeResource: UnprovisionedDeviceResourceFactory.() -> Either<RegisterError, UnprovisionedDeviceResource>
     ) {
-        val deviceName = "A"
-
         val device = mock<BowlerDevice> {
             on {
                 isResourceInRange(resourceId)
@@ -181,10 +185,18 @@ class UnprovisionedDeviceResourceFactoryTest {
 
             on {
                 deviceId
-            } doReturn SimpleDeviceId(deviceName)
+            } doReturn DeviceId(
+                DefaultDeviceTypes.Esp32Wroom32,
+                DefaultConnectionMethods.RawHID(0, 0)
+            )
         }
 
-        registry.registerDevice(SimpleDeviceId(deviceName)) { device }
+        registry.registerDevice(
+            DeviceId(
+                DefaultDeviceTypes.Esp32Wroom32,
+                DefaultConnectionMethods.RawHID(0, 0)
+            )
+        ) { device }
 
         val resource = UnprovisionedDeviceResourceFactory(registry, device).makeResource()
 
@@ -197,8 +209,6 @@ class UnprovisionedDeviceResourceFactoryTest {
         resourceId: ResourceId,
         makeResource: UnprovisionedDeviceResourceFactory.() -> Either<RegisterError, UnprovisionedDeviceResource>
     ) {
-        val deviceName = "A"
-
         val device = mock<BowlerDevice> {
             on {
                 isResourceInRange(resourceId)
@@ -206,10 +216,18 @@ class UnprovisionedDeviceResourceFactoryTest {
 
             on {
                 deviceId
-            } doReturn SimpleDeviceId(deviceName)
+            } doReturn DeviceId(
+                DefaultDeviceTypes.Esp32Wroom32,
+                DefaultConnectionMethods.RawHID(0, 0)
+            )
         }
 
-        registry.registerDevice(SimpleDeviceId(deviceName)) { device }
+        registry.registerDevice(
+            DeviceId(
+                DefaultDeviceTypes.Esp32Wroom32,
+                DefaultConnectionMethods.RawHID(0, 0)
+            )
+        ) { device }
 
         val resource = UnprovisionedDeviceResourceFactory(registry, device).makeResource()
 

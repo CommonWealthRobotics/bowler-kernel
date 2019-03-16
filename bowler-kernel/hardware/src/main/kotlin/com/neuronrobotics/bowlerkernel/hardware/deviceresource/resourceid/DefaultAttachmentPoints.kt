@@ -29,17 +29,17 @@ sealed class DefaultAttachmentPoints(
     /**
      * A single pin. The data is the pin number which is converted to an unsigned byte.
      *
-     * @param pinNumber The pin number (converted to an unsigned byte).
+     * @param pinNumber The pin number.
      */
-    data class Pin(val pinNumber: Int) : DefaultAttachmentPoints(
+    data class Pin(val pinNumber: Byte) : DefaultAttachmentPoints(
         1,
-        byteArrayOf(pinNumber.toByte())
+        byteArrayOf(pinNumber)
     )
 
     /**
      * A group of pins. The data is the number of pins followed by the pin numbers.
      *
-     * @param pinNumbers The pin numbers (converted to unsigned bytes).
+     * @param pinNumbers The pin numbers.
      */
     data class PinGroup(val pinNumbers: ByteArray) :
         DefaultAttachmentPoints(
@@ -68,10 +68,10 @@ sealed class DefaultAttachmentPoints(
     /**
      * A USB port on the device. The data is the port number converted to an unsigned byte.
      *
-     * @param portNumber The device-specific port number (converted to an unsigned byte).
+     * @param portNumber The device-specific port number.
      */
-    data class USBPort(val portNumber: Int) :
-        DefaultAttachmentPoints(3, byteArrayOf(portNumber.toByte()))
+    data class USBPort(val portNumber: Byte) :
+        DefaultAttachmentPoints(3, byteArrayOf(portNumber))
 
     /**
      * The lowest used type number.

@@ -16,12 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.device.deviceid
 
-import com.neuronrobotics.bowlerkernel.hardware.device.Device
-
 /**
- * The id of a [Device].
+ * A method of connection from PC to Device.
  */
-data class DeviceId(
-    val deviceType: DeviceType,
-    val connectionMethod: ConnectionMethod
-)
+interface ConnectionMethod

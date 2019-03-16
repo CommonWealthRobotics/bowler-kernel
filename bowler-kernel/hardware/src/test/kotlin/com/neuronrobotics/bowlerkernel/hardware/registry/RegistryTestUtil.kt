@@ -18,8 +18,9 @@ package com.neuronrobotics.bowlerkernel.hardware.registry
 
 import arrow.core.Option
 import com.neuronrobotics.bowlerkernel.hardware.device.Device
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.ProvisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
@@ -59,8 +60,13 @@ internal class MockProvisionedDeviceResource(
     override val resourceId: ResourceId
 ) : ProvisionedDeviceResource
 
-internal fun HardwareRegistry.makeDeviceOrFail(id: String): MockDevice =
-    registerDevice(SimpleDeviceId(id)) {
+internal fun HardwareRegistry.makeDeviceOrFail(): MockDevice =
+    registerDevice(
+        DeviceId(
+            DefaultDeviceTypes.Esp32Wroom32,
+            DefaultConnectionMethods.RawHID(0, 0)
+        )
+    ) {
         MockDevice(it)
     }.fold(
         { fail<MockDevice> { it } },
@@ -69,7 +75,7 @@ internal fun HardwareRegistry.makeDeviceOrFail(id: String): MockDevice =
 
 internal fun HardwareRegistry.makeDeviceResourceOrFail(
     device: Device,
-    attachmentPoint: Int
+    attachmentPoint: Byte
 ): MockUnprovisionedDeviceResource =
     registerDeviceResource(
         device,
