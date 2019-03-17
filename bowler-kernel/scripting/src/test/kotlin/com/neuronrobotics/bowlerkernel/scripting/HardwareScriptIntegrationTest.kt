@@ -65,7 +65,7 @@ internal class HardwareScriptIntegrationTest {
         override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
             val device = bowlerDeviceFactory.makeBowlerDevice(
                 DeviceId(
-                    DefaultDeviceTypes.Esp32Wroom32,
+                    DefaultDeviceTypes.UnknownDevice,
                     DefaultConnectionMethods.RawHID(0, 0)
                 ),
                 MockBowlerRPCProtocol()

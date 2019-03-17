@@ -57,7 +57,7 @@ class UnprovisionedDeviceResourceFactoryTest {
 
         registry.registerDevice(
             DeviceId(
-                DefaultDeviceTypes.Esp32Wroom32,
+                DefaultDeviceTypes.UnknownDevice,
                 DefaultConnectionMethods.RawHID(0, 0)
             )
         ) { device }
@@ -186,14 +186,14 @@ class UnprovisionedDeviceResourceFactoryTest {
             on {
                 deviceId
             } doReturn DeviceId(
-                DefaultDeviceTypes.Esp32Wroom32,
+                DefaultDeviceTypes.UnknownDevice,
                 DefaultConnectionMethods.RawHID(0, 0)
             )
         }
 
         registry.registerDevice(
             DeviceId(
-                DefaultDeviceTypes.Esp32Wroom32,
+                DefaultDeviceTypes.UnknownDevice,
                 DefaultConnectionMethods.RawHID(0, 0)
             )
         ) { device }
@@ -217,14 +217,14 @@ class UnprovisionedDeviceResourceFactoryTest {
             on {
                 deviceId
             } doReturn DeviceId(
-                DefaultDeviceTypes.Esp32Wroom32,
+                DefaultDeviceTypes.UnknownDevice,
                 DefaultConnectionMethods.RawHID(0, 0)
             )
         }
 
         registry.registerDevice(
             DeviceId(
-                DefaultDeviceTypes.Esp32Wroom32,
+                DefaultDeviceTypes.UnknownDevice,
                 DefaultConnectionMethods.RawHID(0, 0)
             )
         ) { device }

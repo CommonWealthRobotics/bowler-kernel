@@ -108,7 +108,7 @@ internal class BowlerDeviceTest {
 
     private val device = BowlerDevice(
         DeviceId(
-            DefaultDeviceTypes.Esp32Wroom32,
+            DefaultDeviceTypes.UnknownDevice,
             DefaultConnectionMethods.RawHID(0, 0)
         ),
         bowlerRPCProtocol,

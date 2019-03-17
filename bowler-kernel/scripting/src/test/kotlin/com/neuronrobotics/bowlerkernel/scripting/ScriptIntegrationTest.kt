@@ -54,7 +54,7 @@ internal class ScriptIntegrationTest {
         init {
             val device = bowlerDeviceFactory.makeBowlerDevice(
                 DeviceId(
-                    DefaultDeviceTypes.Esp32Wroom32,
+                    DefaultDeviceTypes.UnknownDevice,
                     DefaultConnectionMethods.RawHID(0, 0)
                 ),
                 MockBowlerRPCProtocol()
@@ -120,7 +120,7 @@ internal class ScriptIntegrationTest {
                 ) {
                     bowlerDeviceFactory.makeBowlerDevice(
                             new DeviceId(
-                                    new DefaultDeviceTypes.Esp32Wroom32(),
+                                    new DefaultDeviceTypes.UnknownDevice(),
                                     new DefaultConnectionMethods.RawHID(0, 0)
                             ),
                             new MockBowlerRPCProtocol()
@@ -231,7 +231,7 @@ internal class ScriptIntegrationTest {
                 override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
                     bowlerDeviceFactory.makeBowlerDevice(
                         DeviceId(
-                            DefaultDeviceTypes.Esp32Wroom32,
+                            DefaultDeviceTypes.UnknownDevice,
                             DefaultConnectionMethods.RawHID(0, 0)
                         ),
                         MockBowlerRPCProtocol()

@@ -46,7 +46,7 @@ class BaseHardwareRegistryTest {
 
         val secondRegisterError = registry.registerDevice(
             DeviceId(
-                DefaultDeviceTypes.Esp32Wroom32,
+                DefaultDeviceTypes.UnknownDevice,
                 DefaultConnectionMethods.RawHID(0, 0)
             )
         ) {
@@ -84,7 +84,7 @@ class BaseHardwareRegistryTest {
 
         val device = registry.registerDevice(
             DeviceId(
-                DefaultDeviceTypes.Esp32Wroom32,
+                DefaultDeviceTypes.UnknownDevice,
                 DefaultConnectionMethods.RawHID(0, 0)
             )
         ) {
@@ -163,7 +163,7 @@ class BaseHardwareRegistryTest {
             registry.registerDeviceResource(
                 MockDevice(
                     DeviceId(
-                        DefaultDeviceTypes.Esp32Wroom32,
+                        DefaultDeviceTypes.UnknownDevice,
                         DefaultConnectionMethods.RawHID(0, 0)
                     )
                 ),
@@ -203,7 +203,7 @@ class BaseHardwareRegistryTest {
             MockUnprovisionedDeviceResource(
                 MockDevice(
                     DeviceId(
-                        DefaultDeviceTypes.Esp32Wroom32,
+                        DefaultDeviceTypes.UnknownDevice,
                         DefaultConnectionMethods.RawHID(0, 0)
                     )
                 ),

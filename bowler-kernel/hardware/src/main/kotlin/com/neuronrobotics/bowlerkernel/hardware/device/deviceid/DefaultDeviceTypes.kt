@@ -26,9 +26,7 @@ sealed class DefaultDeviceTypes(
     override val name: String
 ) : DeviceType {
 
-    object Esp32Wroom32 : DefaultDeviceTypes(
-        "ESP32-WROOM-32"
-    ) {
+    object Esp32wroom32 : DefaultDeviceTypes("ESP32-WROOM-32") {
         private val digitalInPins = listOf(
             4, 14, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33, 34, 35, 36, 39
         ).map { it.toByte() }
@@ -62,5 +60,9 @@ sealed class DefaultDeviceTypes(
                     elem in analogOutPWMPins || elem in analogOutDACPins)
             }
         }
+    }
+
+    object UnknownDevice : DefaultDeviceTypes("Unknown Device") {
+        override fun isResourceInRange(resourceId: ResourceId) = true
     }
 }

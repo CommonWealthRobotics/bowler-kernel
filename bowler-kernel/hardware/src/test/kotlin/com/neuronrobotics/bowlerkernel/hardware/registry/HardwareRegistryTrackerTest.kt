@@ -51,7 +51,7 @@ class HardwareRegistryTrackerTest {
                     registry.sessionRegisteredDevices.map { it.deviceId },
                     listOf(
                         DeviceId(
-                            DefaultDeviceTypes.Esp32Wroom32,
+                            DefaultDeviceTypes.UnknownDevice,
                             DefaultConnectionMethods.RawHID(0, 0)
                         )
                     )
@@ -65,7 +65,7 @@ class HardwareRegistryTrackerTest {
         baseRegistry.makeDeviceOrFail()
         registry.registerDevice(
             DeviceId(
-                DefaultDeviceTypes.Esp32Wroom32,
+                DefaultDeviceTypes.UnknownDevice,
                 DefaultConnectionMethods.RawHID(0, 0)
             )
         ) { mock<MockDevice> {} }
@@ -99,7 +99,7 @@ class HardwareRegistryTrackerTest {
         registry.unregisterDevice(
             MockDevice(
                 DeviceId(
-                    DefaultDeviceTypes.Esp32Wroom32,
+                    DefaultDeviceTypes.UnknownDevice,
                     DefaultConnectionMethods.RawHID(0, 0)
                 )
             )
@@ -131,7 +131,7 @@ class HardwareRegistryTrackerTest {
                     }.toMap(),
                     mapOf(
                         DeviceId(
-                            DefaultDeviceTypes.Esp32Wroom32,
+                            DefaultDeviceTypes.UnknownDevice,
                             DefaultConnectionMethods.RawHID(0, 0)
                         ) to ResourceId(
                             DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(0)
@@ -147,7 +147,7 @@ class HardwareRegistryTrackerTest {
         registry.registerDeviceResource(
             MockDevice(
                 DeviceId(
-                    DefaultDeviceTypes.Esp32Wroom32,
+                    DefaultDeviceTypes.UnknownDevice,
                     DefaultConnectionMethods.RawHID(0, 0)
                 )
             ),

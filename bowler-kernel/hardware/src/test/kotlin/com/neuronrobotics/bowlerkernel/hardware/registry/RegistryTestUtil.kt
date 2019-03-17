@@ -63,7 +63,7 @@ internal class MockProvisionedDeviceResource(
 internal fun HardwareRegistry.makeDeviceOrFail(): MockDevice =
     registerDevice(
         DeviceId(
-            DefaultDeviceTypes.Esp32Wroom32,
+            DefaultDeviceTypes.UnknownDevice,
             DefaultConnectionMethods.RawHID(0, 0)
         )
     ) {
