@@ -36,6 +36,15 @@
     requirements: \gls{rtt} $\leq$ 5ms, timeout $=$ 100ms.
 \end{enumerate}
 
+\subsection{Network Requirements}
+
+This protocol makes the following assumptions about the network implementation it runs on top of:
+\begin{itemize}
+    \item Data corruption is handled. Corrupt packets can be corrected or dropped.
+
+    \item No packet can be duplicated in the network.
+\end{itemize}
+
 \subsection{Configuration Process}
 
 The \gls{pc}-\gls{device} \gls{rpc} is established in the following order
