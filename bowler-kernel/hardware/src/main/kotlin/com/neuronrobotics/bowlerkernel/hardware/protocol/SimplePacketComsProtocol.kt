@@ -31,6 +31,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.Digit
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceIdValidator
 import com.neuronrobotics.bowlerkernel.internal.logging.LoggerUtilities
+import com.neuronrobotics.bowlerkernel.internal.logging.LoggerUtilities.Companion.joinWithIndent
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
 import edu.wpi.SimplePacketComs.BytePacketType
 import org.octogonapus.ktguava.collections.toImmutableList
@@ -259,6 +260,15 @@ class SimplePacketComsProtocol(
         isPolling: Boolean,
         configureTimeoutBehavior: (BytePacketType) -> Unit
     ): Either<String, Unit> {
+        LOGGER.fine {
+            """
+            |Adding group:
+            |resourceIds:
+            |${resourceIds.joinWithIndent("\t")}
+            |isPolling: $isPolling
+            """.trimMargin()
+        }
+
         val groupId = getNextGroupId()
         val packetId = getNextPacketId()
         val count = resourceIds.size
@@ -368,6 +378,14 @@ class SimplePacketComsProtocol(
         isPolling: Boolean = false,
         configureTimeoutBehavior: (BytePacketType) -> Unit
     ): Either<String, Unit> {
+        LOGGER.fine {
+            """
+            |Adding resource:
+            |resourceId: $resourceId
+            |isPolling: $isPolling
+            """.trimMargin()
+        }
+
         val packetId = getNextPacketId()
 
         val status = sendDiscoveryPacket(
