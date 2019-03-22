@@ -663,7 +663,7 @@ class SimplePacketComsProtocol(
 
     override fun addPollingRead(resourceId: ResourceId) =
         resourceIdValidator.validateIsReadType(resourceId).flatMap {
-            addResource(resourceId, true) {}
+            addResource(resourceId, true) { it.oneShotMode() }
         }
 
     override fun addPollingReadGroup(resourceIds: ImmutableSet<ResourceId>): Either<String, Unit> {
@@ -677,7 +677,7 @@ class SimplePacketComsProtocol(
             """.trimMargin().left()
         } else {
             addGroup(resourceIds, true) {
-                comms.addTimeout(it.idOfCommand) {}
+                comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
             }
         }
     }
