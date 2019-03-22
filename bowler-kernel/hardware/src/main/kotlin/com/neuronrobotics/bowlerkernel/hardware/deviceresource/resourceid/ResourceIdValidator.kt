@@ -16,26 +16,34 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid
 
-import arrow.core.Option
+import arrow.core.Either
 
 /**
  * Validates various properties of a [ResourceId].
  */
 interface ResourceIdValidator {
 
-    // TODO: Add AttachmentPoint validation
+    /**
+     * Validates the attachment point is on the device.
+     *
+     * @param attachmentPoint The attachment point.
+     * @return An error.
+     */
+    fun valdiateAttachmentPoint(attachmentPoint: AttachmentPoint): Either<String, Unit>
 
     /**
      * Validates the resource can be read from.
      *
+     * @param resourceId The resource.
      * @return An error.
      */
-    fun validateIsReadType(resourceId: ResourceId): Option<String>
+    fun validateIsReadType(resourceId: ResourceId): Either<String, Unit>
 
     /**
      * Validates the resource can be written to.
      *
+     * @param resourceId The resource.
      * @return An error.
      */
-    fun validateIsWriteType(resourceId: ResourceId): Option<String>
+    fun validateIsWriteType(resourceId: ResourceId): Either<String, Unit>
 }

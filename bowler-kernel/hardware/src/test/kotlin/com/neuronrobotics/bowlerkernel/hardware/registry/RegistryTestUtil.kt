@@ -16,7 +16,8 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.registry
 
-import arrow.core.Option
+import arrow.core.Either
+import arrow.core.right
 import com.neuronrobotics.bowlerkernel.hardware.device.Device
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
@@ -34,14 +35,14 @@ internal data class MockDevice(
     var connectWasCalled = false
     var disconnectWasCalled = false
 
-    override fun connect(): Option<String> {
+    override fun connect(): Either<String, Unit> {
         connectWasCalled = true
-        return Option.empty()
+        return Unit.right()
     }
 
-    override fun disconnect(): Option<String> {
+    override fun disconnect(): Either<String, Unit> {
         disconnectWasCalled = true
-        return Option.empty()
+        return Unit.right()
     }
 
     override fun isResourceInRange(resourceId: ResourceId) = true

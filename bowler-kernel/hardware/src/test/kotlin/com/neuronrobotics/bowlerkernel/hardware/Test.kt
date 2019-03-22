@@ -56,7 +56,7 @@ internal class Test {
             resourceIdValidator = DefaultResourceIdValidator()
         )
 
-        rpc.connect().map {
+        rpc.connect().mapLeft {
             fail { it }
         }
 
@@ -71,7 +71,7 @@ internal class Test {
         val ledGroup = immutableSetOf(led1, led2)
         rpc.addWriteGroup(ledGroup)
 
-        for (i in 0 until 2) {
+        repeat(2) {
             rpc.digitalWrite(
                 immutableListOf(
                     led1 to DigitalState.HIGH,

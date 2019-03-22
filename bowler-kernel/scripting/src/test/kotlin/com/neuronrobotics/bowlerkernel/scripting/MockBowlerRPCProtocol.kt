@@ -16,7 +16,8 @@
  */
 package com.neuronrobotics.bowlerkernel.scripting
 
-import arrow.core.Option
+import arrow.core.Either
+import arrow.core.right
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
@@ -32,83 +33,38 @@ class MockBowlerRPCProtocol : BowlerRPCProtocol {
 
     private var isConnected = false
 
-    override fun connect(): Option<String> {
+    override fun connect(): Either<String, Unit> {
         isConnected = true
-        return Option.empty()
+        return Unit.right()
     }
 
-    override fun disconnect(): Option<String> {
+    override fun disconnect(): Either<String, Unit> {
         isConnected = false
-        return Option.empty()
+        return Unit.right()
     }
 
-    override fun addPollingRead(resourceId: ResourceId): Option<String> {
-        if (isConnected) {
-            Thread.sleep(5)
-            return Option.empty()
-        } else {
-            fail { "The RPC is not connected!" }
-        }
-    }
+    override fun addPollingRead(resourceId: ResourceId) = runMockDiscovery()
 
-    override fun addPollingReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
-        if (isConnected) {
-            Thread.sleep(5)
-            return Option.empty()
-        } else {
-            fail { "The RPC is not connected!" }
-        }
-    }
+    override fun addPollingReadGroup(resourceIds: ImmutableSet<ResourceId>) = runMockDiscovery()
 
-    override fun addRead(resourceId: ResourceId): Option<String> {
-        if (isConnected) {
-            Thread.sleep(5)
-            return Option.empty()
-        } else {
-            fail { "The RPC is not connected!" }
-        }
-    }
+    override fun addRead(resourceId: ResourceId) = runMockDiscovery()
 
-    override fun addReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
-        if (isConnected) {
-            Thread.sleep(5)
-            return Option.empty()
-        } else {
-            fail { "The RPC is not connected!" }
-        }
-    }
+    override fun addReadGroup(resourceIds: ImmutableSet<ResourceId>) = runMockDiscovery()
 
-    override fun addWrite(resourceId: ResourceId): Option<String> {
-        if (isConnected) {
-            Thread.sleep(5)
-            return Option.empty()
-        } else {
-            fail { "The RPC is not connected!" }
-        }
-    }
+    override fun addWrite(resourceId: ResourceId) = runMockDiscovery()
 
-    override fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>): Option<String> {
-        if (isConnected) {
-            Thread.sleep(5)
-            return Option.empty()
-        } else {
-            fail { "The RPC is not connected!" }
-        }
-    }
+    override fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>) = runMockDiscovery()
 
-    override fun isResourceInRange(resourceId: ResourceId): Boolean {
-        if (isConnected) {
-            Thread.sleep(5)
-            return true
-        } else {
-            fail { "The RPC is not connected!" }
-        }
-    }
+    override fun isResourceInRange(resourceId: ResourceId) = waitAndReturn { true }
 
-    override fun readProtocolVersion(): String {
+    override fun readProtocolVersion() = waitAndReturn { "" }
+
+    private fun runMockDiscovery() = waitAndReturn { Unit.right() }
+
+    private fun <T> waitAndReturn(toReturn: () -> T): T {
         if (isConnected) {
             Thread.sleep(5)
-            return ""
+            return toReturn()
         } else {
             fail { "The RPC is not connected!" }
         }

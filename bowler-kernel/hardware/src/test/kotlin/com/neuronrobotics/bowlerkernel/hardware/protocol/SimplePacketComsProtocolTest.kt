@@ -16,7 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
-import arrow.core.Option
+import arrow.core.Either
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.isEmpty
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
@@ -72,14 +72,14 @@ internal class SimplePacketComsProtocolTest {
         protocolTest(protocol, device) {
             operation {
                 val result = it.addRead(lineSensor1)
-                assertTrue(result.isEmpty())
+                assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
                     getPayload(1, 2, 3, 1, 32)
                 )
             } deviceResponds {
                 immutableListOf(
-                    getPayload(1)
+                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
                 )
             }
         }
@@ -102,12 +102,31 @@ internal class SimplePacketComsProtocolTest {
     }
 
     @Test
+    fun `test addRead failure`() {
+        // Discover a read group
+        protocolTest(protocol, device) {
+            operation {
+                val result = it.addRead(lineSensor1)
+                assertTrue(result.isLeft())
+            } pcSends {
+                immutableListOf(
+                    getPayload(1, 2, 3, 1, 32)
+                )
+            } deviceResponds {
+                immutableListOf(
+                    getPayload(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC)
+                )
+            }
+        }
+    }
+
+    @Test
     fun `test addReadGroup`() {
         // Discover a read group
         protocolTest(protocol, device) {
             operation {
                 val result = it.addReadGroup(immutableSetOf(lineSensor1, lineSensor2))
-                assertTrue(result.isEmpty())
+                assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
                     getPayload(2, 1, 2, 2),
@@ -116,9 +135,9 @@ internal class SimplePacketComsProtocolTest {
                 )
             } deviceResponds {
                 immutableListOf(
-                    getPayload(1),
-                    getPayload(1),
-                    getPayload(1)
+                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED),
+                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED),
+                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
                 )
             }
         }
@@ -186,19 +205,37 @@ internal class SimplePacketComsProtocolTest {
     }
 
     @Test
+    fun `test addReadGroup failure`() {
+        protocolTest(protocol, device) {
+            operation {
+                val result = it.addReadGroup(immutableSetOf(lineSensor1, lineSensor2))
+                assertTrue(result.isLeft())
+            } pcSends {
+                immutableListOf(
+                    getPayload(2, 1, 2, 2)
+                )
+            } deviceResponds {
+                immutableListOf(
+                    getPayload(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC)
+                )
+            }
+        }
+    }
+
+    @Test
     fun `test addWrite`() {
         // Discover a write group
         protocolTest(protocol, device) {
             operation {
                 val result = it.addWrite(led1)
-                assertTrue(result.isEmpty())
+                assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
                     getPayload(1, 2, 2, 1, 32)
                 )
             } deviceResponds {
                 immutableListOf(
-                    getPayload(1)
+                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
                 )
             }
         }
@@ -220,10 +257,29 @@ internal class SimplePacketComsProtocolTest {
     }
 
     @Test
+    fun `test addWrite failure`() {
+        protocolTest(protocol, device) {
+            operation {
+                val result = it.addWrite(led1)
+                assertTrue(result.isLeft())
+            } pcSends {
+                immutableListOf(
+                    getPayload(1, 2, 2, 1, 32)
+                )
+            } deviceResponds {
+                immutableListOf(
+                    getPayload(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC)
+                )
+            }
+        }
+    }
+
+    @Test
     fun `test addWriteGroup`() {
         protocolTest(protocol, device) {
             operation {
-                it.addWriteGroup(immutableSetOf(led1, led2))
+                val result = it.addWriteGroup(immutableSetOf(led1, led2))
+                assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
                     getPayload(2, 1, 2, 2),
@@ -232,9 +288,9 @@ internal class SimplePacketComsProtocolTest {
                 )
             } deviceResponds {
                 immutableListOf(
-                    getPayload(1),
-                    getPayload(1),
-                    getPayload(1)
+                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED),
+                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED),
+                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
                 )
             }
         }
@@ -317,6 +373,24 @@ internal class SimplePacketComsProtocolTest {
     }
 
     @Test
+    fun `test addWriteGroup failure`() {
+        protocolTest(protocol, device) {
+            operation {
+                val result = it.addWriteGroup(immutableSetOf(led1, led2))
+                assertTrue(result.isLeft())
+            } pcSends {
+                immutableListOf(
+                    getPayload(2, 1, 2, 2)
+                )
+            } deviceResponds {
+                immutableListOf(
+                    getPayload(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC)
+                )
+            }
+        }
+    }
+
+    @Test
     fun `test resource types are validated in add operations`() {
         assertAll(
             { assertOperationFailedAndNoInteractionsWithDevice { protocol.addRead(led1) } },
@@ -388,7 +462,7 @@ internal class SimplePacketComsProtocolTest {
         val result = disconnectProtocol()
 
         assertAll(
-            listOf { assertTrue(result.isEmpty()) } +
+            listOf { assertTrue(result.isRight()) } +
                 device.writesReceived.map {
                     {
                         val expected = getPayload(4)
@@ -417,7 +491,7 @@ internal class SimplePacketComsProtocolTest {
 
         val result = disconnectProtocol()
 
-        assertTrue(result.nonEmpty())
+        assertTrue(result.isLeft())
     }
 
     @Test
@@ -428,7 +502,7 @@ internal class SimplePacketComsProtocolTest {
 
         val result = disconnectProtocol()
 
-        assertTrue(result.nonEmpty())
+        assertTrue(result.isLeft())
     }
 
     /**
@@ -436,7 +510,7 @@ internal class SimplePacketComsProtocolTest {
      */
     private fun connectProtocol() {
         val connection = protocol.connect()
-        assertTrue(connection.isEmpty())
+        assertTrue(connection.isRight())
     }
 
     /**
@@ -451,13 +525,15 @@ internal class SimplePacketComsProtocolTest {
      *
      * @param operation The operation to perform.
      */
-    private fun assertOperationFailedAndNoInteractionsWithDevice(operation: () -> Option<String>) {
+    private fun assertOperationFailedAndNoInteractionsWithDevice(
+        operation: () -> Either<String, Unit>
+    ) {
         connectProtocol()
 
         val result = operation()
 
         assertAll(
-            { assertTrue(result.nonEmpty()) },
+            { assertTrue(result.isLeft()) },
             { assertNoInteractionsWithDevice() }
         )
     }

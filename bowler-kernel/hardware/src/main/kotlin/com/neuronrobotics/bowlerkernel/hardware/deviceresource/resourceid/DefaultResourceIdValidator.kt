@@ -16,11 +16,17 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid
 
-import arrow.core.Option
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 
 class DefaultResourceIdValidator : ResourceIdValidator {
 
-    override fun validateIsReadType(resourceId: ResourceId): Option<String> {
+    override fun valdiateAttachmentPoint(attachmentPoint: AttachmentPoint): Either<String, Unit> {
+        TODO("not implemented")
+    }
+
+    override fun validateIsReadType(resourceId: ResourceId): Either<String, Unit> {
         return if (resourceId.resourceType is DefaultResourceTypes) {
             when (resourceId.resourceType) {
                 is DefaultResourceTypes.AnalogIn,
@@ -29,27 +35,24 @@ class DefaultResourceIdValidator : ResourceIdValidator {
                 is DefaultResourceTypes.Servo,
                 is DefaultResourceTypes.Encoder,
                 is DefaultResourceTypes.Button,
-                is DefaultResourceTypes.Ultrasonic -> Option.empty()
+                is DefaultResourceTypes.Ultrasonic -> Unit.right()
 
-                else -> Option.just(
+                else ->
                     """
                     |This resource is not a read type:
                     |$this
-                    """.trimMargin()
-                )
+                    """.trimMargin().left()
             }
         } else {
             // Can't validate what we don't own
-            Option.just(
-                """
-                |Unknown resource:
-                |$this
-                """.trimMargin()
-            )
+            """
+            |Unknown resource:
+            |$this
+            """.trimMargin().left()
         }
     }
 
-    override fun validateIsWriteType(resourceId: ResourceId): Option<String> {
+    override fun validateIsWriteType(resourceId: ResourceId): Either<String, Unit> {
         return if (resourceId.resourceType is DefaultResourceTypes) {
             when (resourceId.resourceType) {
                 is DefaultResourceTypes.AnalogOut,
@@ -57,23 +60,20 @@ class DefaultResourceIdValidator : ResourceIdValidator {
                 is DefaultResourceTypes.SerialConnection,
                 is DefaultResourceTypes.Servo,
                 is DefaultResourceTypes.Stepper,
-                is DefaultResourceTypes.PiezoelectricSpeaker -> Option.empty()
+                is DefaultResourceTypes.PiezoelectricSpeaker -> Unit.right()
 
-                else -> Option.just(
+                else ->
                     """
                     |This resource is not a write type:
                     |$this
-                    """.trimMargin()
-                )
+                    """.trimMargin().left()
             }
         } else {
             // Can't validate what we don't own
-            Option.just(
-                """
-                |Unknown resource:
-                |$this
-                """.trimMargin()
-            )
+            """
+            |Unknown resource:
+            |$this
+            """.trimMargin().left()
         }
     }
 }

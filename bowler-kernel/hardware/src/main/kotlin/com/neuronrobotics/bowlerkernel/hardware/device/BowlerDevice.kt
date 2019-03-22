@@ -17,7 +17,6 @@
 package com.neuronrobotics.bowlerkernel.hardware.device
 
 import arrow.core.Either
-import arrow.core.Option
 import arrow.core.flatMap
 import arrow.core.left
 import arrow.core.right
@@ -54,12 +53,12 @@ internal constructor(
     fun add(resource: UnprovisionedDeviceResource): Either<String, ProvisionedDeviceResource> {
         val id = resource.resourceId
 
-        val readError = resourceIdValidator.validateIsReadType(id).toSwappedEither().flatMap {
-            bowlerRPCProtocol.addRead(id).toSwappedEither()
+        val readError = resourceIdValidator.validateIsReadType(id).flatMap {
+            bowlerRPCProtocol.addRead(id)
         }
 
-        val writeError = resourceIdValidator.validateIsWriteType(id).toSwappedEither().flatMap {
-            bowlerRPCProtocol.addWrite(id).toSwappedEither()
+        val writeError = resourceIdValidator.validateIsWriteType(id).flatMap {
+            bowlerRPCProtocol.addWrite(id)
         }
 
         return if (readError.isLeft() && writeError.isLeft()) {
@@ -82,7 +81,7 @@ internal constructor(
         }
 
         val allReadResources = readResources.fold(true) { acc, elem ->
-            acc && elem.isEmpty()
+            acc && elem.isRight()
         }
 
         if (allReadResources) {
@@ -94,7 +93,7 @@ internal constructor(
         }
 
         val allWriteResources = writeResources.fold(true) { acc, elem ->
-            acc && elem.isEmpty()
+            acc && elem.isRight()
         }
 
         if (allWriteResources) {
@@ -111,8 +110,6 @@ internal constructor(
             resources.map { it.runProvision() }.toImmutableSet().right()
         }
     }
-
-    private fun <T> Option<T>.toSwappedEither(): Either<T, Unit> = toEither { Unit }.swap()
 
     override fun toString() = """BowlerDevice(deviceId=$deviceId)"""
 }

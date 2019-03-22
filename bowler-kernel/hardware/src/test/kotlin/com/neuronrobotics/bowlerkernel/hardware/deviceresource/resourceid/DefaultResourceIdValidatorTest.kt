@@ -35,11 +35,11 @@ internal class DefaultResourceIdValidatorTest {
         }
 
         if (data.second.contains(ResourceType.Write)) {
-            assertTrue(validator.validateIsWriteType(data.first).isEmpty())
+            assertTrue(validator.validateIsWriteType(data.first).isRight())
         }
 
         if (data.second.contains(ResourceType.Read)) {
-            assertTrue(validator.validateIsReadType(data.first).isEmpty())
+            assertTrue(validator.validateIsReadType(data.first).isRight())
         }
     }
 

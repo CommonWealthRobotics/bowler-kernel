@@ -16,8 +16,9 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.device
 
-import arrow.core.Option
 import arrow.core.getOrElse
+import arrow.core.left
+import arrow.core.right
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
@@ -80,30 +81,30 @@ internal class BowlerDeviceTest {
     private val unknownId2 = ResourceId(unknownResourceType, DefaultAttachmentPoints.Pin(2))
 
     private val bowlerRPCProtocol = mock<BowlerRPCProtocol> {
-        on { addWrite(led1Id) } doReturn Option.empty()
-        on { addRead(led1Id) } doReturn Option.just("")
-        on { addPollingRead(led1Id) } doReturn Option.just("")
+        on { addWrite(led1Id) } doReturn Unit.right()
+        on { addRead(led1Id) } doReturn "".left()
+        on { addPollingRead(led1Id) } doReturn "".left()
 
-        on { addWriteGroup(immutableSetOf(led1Id, led2Id)) } doReturn Option.empty()
-        on { addReadGroup(immutableSetOf(led1Id, led2Id)) } doReturn Option.just("")
-        on { addPollingReadGroup(immutableSetOf(led1Id, led2Id)) } doReturn Option.just("")
+        on { addWriteGroup(immutableSetOf(led1Id, led2Id)) } doReturn Unit.right()
+        on { addReadGroup(immutableSetOf(led1Id, led2Id)) } doReturn "".left()
+        on { addPollingReadGroup(immutableSetOf(led1Id, led2Id)) } doReturn "".left()
 
-        on { addWrite(line1Id) } doReturn Option.just("")
-        on { addRead(line1Id) } doReturn Option.empty()
-        on { addPollingRead(line1Id) } doReturn Option.empty()
+        on { addWrite(line1Id) } doReturn "".left()
+        on { addRead(line1Id) } doReturn Unit.right()
+        on { addPollingRead(line1Id) } doReturn Unit.right()
 
-        on { addWriteGroup(immutableSetOf(line1Id, line2Id)) } doReturn Option.just("")
-        on { addReadGroup(immutableSetOf(line1Id, line2Id)) } doReturn Option.empty()
-        on { addPollingReadGroup(immutableSetOf(line1Id, line2Id)) } doReturn Option.empty()
+        on { addWriteGroup(immutableSetOf(line1Id, line2Id)) } doReturn "".left()
+        on { addReadGroup(immutableSetOf(line1Id, line2Id)) } doReturn Unit.right()
+        on { addPollingReadGroup(immutableSetOf(line1Id, line2Id)) } doReturn Unit.right()
 
-        on { addWrite(serial1Id) } doReturn Option.empty()
-        on { addRead(serial1Id) } doReturn Option.empty()
-        on { addPollingRead(serial1Id) } doReturn Option.empty()
+        on { addWrite(serial1Id) } doReturn Unit.right()
+        on { addRead(serial1Id) } doReturn Unit.right()
+        on { addPollingRead(serial1Id) } doReturn Unit.right()
 
         // Unknown resources can't be validated, so we must let them be added
-        on { addWrite(unknownId1) } doReturn Option.empty()
-        on { addRead(unknownId1) } doReturn Option.empty()
-        on { addPollingRead(unknownId1) } doReturn Option.empty()
+        on { addWrite(unknownId1) } doReturn Unit.right()
+        on { addRead(unknownId1) } doReturn Unit.right()
+        on { addPollingRead(unknownId1) } doReturn Unit.right()
     }
 
     private val device = BowlerDevice(

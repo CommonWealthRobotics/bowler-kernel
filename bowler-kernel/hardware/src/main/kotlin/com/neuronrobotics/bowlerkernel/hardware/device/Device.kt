@@ -16,7 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.device
 
-import arrow.core.Option
+import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
@@ -33,14 +33,14 @@ interface Device {
      *
      * @return An error if there is a connection problem.
      */
-    fun connect(): Option<String>
+    fun connect(): Either<String, Unit>
 
     /**
      * Closes the persistent connection to the device. Does nothing if there is no connection open.
      *
      * @return An error if there is a disconnect problem.
      */
-    fun disconnect(): Option<String>
+    fun disconnect(): Either<String, Unit>
 
     /**
      * Returns whether the [resourceId] is in the valid range of resources for this device.

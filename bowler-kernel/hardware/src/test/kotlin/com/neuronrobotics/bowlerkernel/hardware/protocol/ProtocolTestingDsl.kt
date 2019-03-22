@@ -21,6 +21,7 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.isEmpty
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.fail
 
 @DslMarker
 internal annotation class ProtocolTestDsl
@@ -80,7 +81,7 @@ internal class ProtocolScenario(
      */
     fun runTest() {
         val connection = protocol.connect()
-        assertTrue(connection.isEmpty())
+        assertTrue(connection.isRight())
 
         assertThat(
             "There should be no reads to start.",
@@ -94,24 +95,34 @@ internal class ProtocolScenario(
             isEmpty
         )
 
-        receivePayloads!!.forEach {
+        receivePayloads!!.reverse().forEach {
             device.readsToSend.push(it)
         }
 
         operation!!(protocol)
 
         sendPayloads!!.map {
-            val write = device.writesReceived.removeFirst()
-            assertArrayEquals(
-                it,
-                write,
-                """
-                |The sent payload:
-                |${write.joinToString()}
-                |should equal the expected payload:
-                |${it.joinToString()}
-                """.trimMargin()
-            )
+            if (device.writesReceived.isEmpty()) {
+                fail {
+                    """
+                    |Expected a sent payload:
+                    |${it.joinToString()}
+                    |but got nothing.
+                    """.trimMargin()
+                }
+            } else {
+                val write = device.writesReceived.removeFirst()
+                assertArrayEquals(
+                    it,
+                    write,
+                    """
+                    |The sent payload:
+                    |${write.joinToString()}
+                    |should equal the expected payload:
+                    |${it.joinToString()}
+                    """.trimMargin()
+                )
+            }
         }
 
         assertThat(

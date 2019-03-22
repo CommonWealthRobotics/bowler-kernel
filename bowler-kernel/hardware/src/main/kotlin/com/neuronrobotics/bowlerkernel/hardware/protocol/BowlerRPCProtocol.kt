@@ -16,7 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
-import arrow.core.Option
+import arrow.core.Either
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
@@ -36,21 +36,21 @@ interface BowlerRPCProtocol {
      *
      * @return An error if there is a connection problem.
      */
-    fun connect(): Option<String>
+    fun connect(): Either<String, Unit>
 
     /**
      * Closes the persistent connection to the device. Does nothing if there is no connection open.
      *
      * @return An error if there is a disconnect problem.
      */
-    fun disconnect(): Option<String>
+    fun disconnect(): Either<String, Unit>
 
     /**
      * Adds a read resource which is constantly polled.
      *
      * @return An error if there is a problem.
      */
-    fun addPollingRead(resourceId: ResourceId): Option<String>
+    fun addPollingRead(resourceId: ResourceId): Either<String, Unit>
 
     /**
      * Adds a group of read resources which is constantly polled. All resources in the group are
@@ -59,14 +59,14 @@ interface BowlerRPCProtocol {
      *
      * @return An error if there is a problem.
      */
-    fun addPollingReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String>
+    fun addPollingReadGroup(resourceIds: ImmutableSet<ResourceId>): Either<String, Unit>
 
     /**
      * Adds a read resource.
      *
      * @return An error if there is a problem.
      */
-    fun addRead(resourceId: ResourceId): Option<String>
+    fun addRead(resourceId: ResourceId): Either<String, Unit>
 
     /**
      * Adds a group of read resources. All resources in the group are read from at the same time.
@@ -74,14 +74,14 @@ interface BowlerRPCProtocol {
      *
      * @return An error if there is a problem.
      */
-    fun addReadGroup(resourceIds: ImmutableSet<ResourceId>): Option<String>
+    fun addReadGroup(resourceIds: ImmutableSet<ResourceId>): Either<String, Unit>
 
     /**
      * Adds a write resource.
      *
      * @return An error if there is a problem.
      */
-    fun addWrite(resourceId: ResourceId): Option<String>
+    fun addWrite(resourceId: ResourceId): Either<String, Unit>
 
     /**
      * Adds a group of write resources. All resources in the group are written to at the same
@@ -89,7 +89,7 @@ interface BowlerRPCProtocol {
      *
      * @return An error if there is a problem.
      */
-    fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>): Option<String>
+    fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>): Either<String, Unit>
 
     /**
      * Queries whether the [resourceId] is in the valid range of resources for this device.

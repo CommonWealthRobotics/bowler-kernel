@@ -21,9 +21,9 @@ package com.neuronrobotics.bowlerkernel.hardware.protocol
 import arrow.core.Either
 import arrow.core.Option
 import arrow.core.Try
+import arrow.core.flatMap
 import arrow.core.getOrHandle
 import arrow.core.left
-import arrow.core.or
 import arrow.core.right
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
@@ -246,9 +246,9 @@ class SimplePacketComsProtocol(
      */
     private fun addGroup(
         resourceIds: ImmutableSet<ResourceId>,
-        isPolling: Boolean = false,
+        isPolling: Boolean,
         configureTimeoutBehavior: (BytePacketType) -> Unit
-    ): Option<String> {
+    ): Either<String, Unit> {
         val groupId = getNextGroupId()
         val packetId = getNextPacketId()
         val count = resourceIds.size
@@ -318,12 +318,10 @@ class SimplePacketComsProtocol(
                 }.filter { it.nonEmpty() }
 
                 if (failedResources.isNotEmpty()) {
-                    Option.just(
-                        """
+                    """
                         |Failed resource statuses:
                         |${failedResources.joinToString()}
-                        """.trimMargin()
-                    )
+                        """.trimMargin().left()
                 } else {
                     comms.addPollingPacket(packet)
 
@@ -338,11 +336,11 @@ class SimplePacketComsProtocol(
                         packet.pollingMode()
                     }
 
-                    Option.empty()
+                    Unit.right()
                 }
             },
             {
-                Option.just("Got status: $it")
+                "Got status: $it".left()
             }
         )
     }
@@ -359,7 +357,7 @@ class SimplePacketComsProtocol(
         resourceId: ResourceId,
         isPolling: Boolean = false,
         configureTimeoutBehavior: (BytePacketType) -> Unit
-    ): Option<String> {
+    ): Either<String, Unit> {
         val packetId = getNextPacketId()
 
         val status = sendDiscoveryPacket(
@@ -398,10 +396,10 @@ class SimplePacketComsProtocol(
                     packet.pollingMode()
                 }
 
-                Option.empty()
+                Unit.right()
             },
             {
-                Option.just("Got status: $it")
+                "Got status: $it".left()
             }
         )
     }
@@ -639,12 +637,12 @@ class SimplePacketComsProtocol(
         callAndWait(packetId)
     }
 
-    override fun connect() = Try {
+    override fun connect(): Either<String, Unit> = Try {
         comms.connect()
         isConnected = true
-    }.toEither { it.localizedMessage }.swap().toOption()
+    }.toEither { it.localizedMessage }
 
-    override fun disconnect(): Option<String> {
+    override fun disconnect(): Either<String, Unit> {
         var status = sendDiscardDiscoveryPacket()
 
         // Wait for the discard operation to complete
@@ -657,57 +655,96 @@ class SimplePacketComsProtocol(
         isConnected = false
 
         return if (status == STATUS_DISCARD_COMPLETE) {
-            Option.empty()
+            Unit.right()
         } else {
-            Option.just("Got status code while trying to disconnect: $status")
+            "Got status code while trying to disconnect: $status".left()
         }
     }
 
     override fun addPollingRead(resourceId: ResourceId) =
-        resourceIdValidator.validateIsReadType(resourceId).toEither {
+        resourceIdValidator.validateIsReadType(resourceId).flatMap {
             addResource(resourceId, true) {}
-        }.toOption()
+        }
 
-    override fun addPollingReadGroup(resourceIds: ImmutableSet<ResourceId>) =
-        resourceIds.fold(Option.empty<String>()) { acc, elem ->
-            acc.or(resourceIdValidator.validateIsReadType(elem))
-        }.toEither {
+    override fun addPollingReadGroup(resourceIds: ImmutableSet<ResourceId>): Either<String, Unit> {
+        val invalidResources =
+            validateResources(resourceIds, ResourceIdValidator::validateIsReadType)
+
+        return if (invalidResources.isNotEmpty()) {
+            """
+            |Found invalid resources when trying to add a polling read group:
+            |${invalidResources.joinToString("\n")}
+            """.trimMargin().left()
+        } else {
             addGroup(resourceIds, true) {
-                comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
+                comms.addTimeout(it.idOfCommand) {}
             }
-        }.toOption()
+        }
+    }
 
     override fun addRead(resourceId: ResourceId) =
-        resourceIdValidator.validateIsReadType(resourceId).toEither {
+        resourceIdValidator.validateIsReadType(resourceId).flatMap {
             addResource(resourceId) {
                 comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
             }
-        }.toOption()
+        }
 
-    override fun addReadGroup(resourceIds: ImmutableSet<ResourceId>) =
-        resourceIds.fold(Option.empty<String>()) { acc, elem ->
-            acc.or(resourceIdValidator.validateIsReadType(elem))
-        }.toEither {
-            addGroup(resourceIds) {
+    override fun addReadGroup(resourceIds: ImmutableSet<ResourceId>): Either<String, Unit> {
+        val invalidResources =
+            validateResources(resourceIds, ResourceIdValidator::validateIsReadType)
+
+        return if (invalidResources.isNotEmpty()) {
+            """
+            |Found invalid resources when trying to add a read group:
+            |${invalidResources.joinToString("\n")}
+            """.trimMargin().left()
+        } else {
+            addGroup(resourceIds, false) {
                 comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
             }
-        }.toOption()
+        }
+    }
 
     override fun addWrite(resourceId: ResourceId) =
-        resourceIdValidator.validateIsWriteType(resourceId).toEither {
+        resourceIdValidator.validateIsWriteType(resourceId).flatMap {
             addResource(resourceId) {
                 comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
             }
-        }.toOption()
+        }
 
-    override fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>) =
-        resourceIds.fold(Option.empty<String>()) { acc, elem ->
-            acc.or(resourceIdValidator.validateIsWriteType(elem))
-        }.toEither {
-            addGroup(resourceIds) {
+    override fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>): Either<String, Unit> {
+        val invalidResources =
+            validateResources(resourceIds, ResourceIdValidator::validateIsWriteType)
+
+        return if (invalidResources.isNotEmpty()) {
+            """
+            |Found invalid resources when trying to add a write group:
+            |${invalidResources.joinToString("\n")}
+            """.trimMargin().left()
+        } else {
+            addGroup(resourceIds, false) {
                 comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
             }
-        }.toOption()
+        }
+    }
+
+    /**
+     * Validates that all the resources are of a specific type.
+     *
+     * @param resourceIds The resources to validate.
+     * @param validator The validation method.
+     * @return The result of validation for invalid resources.
+     */
+    private fun validateResources(
+        resourceIds: ImmutableSet<ResourceId>,
+        validator: ResourceIdValidator.(ResourceId) -> Either<String, Unit>
+    ): List<Either<String, Unit>> {
+        return resourceIds.map {
+            resourceIdValidator.validator(it)
+        }.filter {
+            it.isLeft()
+        }
+    }
 
     override fun isResourceInRange(resourceId: ResourceId): Boolean = true
 
@@ -715,7 +752,8 @@ class SimplePacketComsProtocol(
         TODO("not implemented")
     }
 
-    internal fun parseAnalogReadPayload(payload: ByteArray, start: Int, end: Int): Double {
+    @Suppress("UNUSED_PARAMETER")
+    private fun parseAnalogReadPayload(payload: ByteArray, start: Int, end: Int): Double {
         val buffer = ByteBuffer.allocate(2)
         buffer.put(payload[start])
         buffer.put(payload[start + 1])
@@ -729,7 +767,7 @@ class SimplePacketComsProtocol(
     override fun analogRead(resourceIds: ImmutableList<ResourceId>) =
         handleGroupRead(resourceIds, this::parseAnalogReadPayload)
 
-    internal fun makeAnalogWritePayload(value: Short): ByteArray {
+    private fun makeAnalogWritePayload(value: Short): ByteArray {
         val buffer = ByteBuffer.allocate(2)
         buffer.putShort(value)
         return buffer.array()
@@ -741,7 +779,8 @@ class SimplePacketComsProtocol(
     override fun analogWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Short>>) =
         handleGroupWrite(resourcesAndValues, this::makeAnalogWritePayload)
 
-    internal fun parseButtonReadPayload(payload: ByteArray, start: Int, end: Int): Boolean =
+    @Suppress("UNUSED_PARAMETER")
+    private fun parseButtonReadPayload(payload: ByteArray, start: Int, end: Int): Boolean =
         payload[start] == 0.toByte()
 
     override fun buttonRead(resourceId: ResourceId) =
@@ -750,7 +789,8 @@ class SimplePacketComsProtocol(
     override fun buttonRead(resourceIds: ImmutableList<ResourceId>) =
         handleGroupRead(resourceIds, this::parseButtonReadPayload)
 
-    internal fun parseDigitalReadPayload(payload: ByteArray, start: Int, end: Int): DigitalState {
+    @Suppress("UNUSED_PARAMETER")
+    private fun parseDigitalReadPayload(payload: ByteArray, start: Int, end: Int): DigitalState {
         return if (payload[start] == 0.toByte()) {
             DigitalState.LOW
         } else {
@@ -764,7 +804,7 @@ class SimplePacketComsProtocol(
     override fun digitalRead(resourceIds: ImmutableList<ResourceId>) =
         handleGroupRead(resourceIds, this::parseDigitalReadPayload)
 
-    internal fun makeDigitalWritePayload(value: DigitalState): ByteArray {
+    private fun makeDigitalWritePayload(value: DigitalState): ByteArray {
         val buffer = ByteBuffer.allocate(1)
         buffer.put(value.byte)
         return buffer.array()
@@ -776,7 +816,8 @@ class SimplePacketComsProtocol(
     override fun digitalWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, DigitalState>>) =
         handleGroupWrite(resourcesAndValues, this::makeDigitalWritePayload)
 
-    internal fun parseEncoderReadPayload(payload: ByteArray, start: Int, end: Int): Long {
+    @Suppress("UNUSED_PARAMETER")
+    private fun parseEncoderReadPayload(payload: ByteArray, start: Int, end: Int): Long {
         TODO()
     }
 
@@ -786,7 +827,8 @@ class SimplePacketComsProtocol(
     override fun encoderRead(resourceIds: ImmutableList<ResourceId>) =
         handleGroupRead(resourceIds, this::parseEncoderReadPayload)
 
-    internal fun makeToneWritePayload(frequencyAndDuration: Pair<Int, Long>): ByteArray {
+    @Suppress("UNUSED_PARAMETER")
+    private fun makeToneWritePayload(frequencyAndDuration: Pair<Int, Long>): ByteArray {
         TODO()
     }
 
@@ -796,21 +838,24 @@ class SimplePacketComsProtocol(
     override fun toneWrite(resourceId: ResourceId, frequency: Int, duration: Long) =
         handleWrite(resourceId, frequency to duration, this::makeToneWritePayload)
 
-    internal fun makeSerialWritePayload(message: String): ByteArray {
+    @Suppress("UNUSED_PARAMETER")
+    private fun makeSerialWritePayload(message: String): ByteArray {
         TODO()
     }
 
     override fun serialWrite(resourceId: ResourceId, message: String) =
         handleWrite(resourceId, message, this::makeSerialWritePayload)
 
-    internal fun parseSerialReadPayload(payload: ByteArray, start: Int, end: Int): String {
+    @Suppress("UNUSED_PARAMETER")
+    private fun parseSerialReadPayload(payload: ByteArray, start: Int, end: Int): String {
         TODO()
     }
 
     override fun serialRead(resourceId: ResourceId) =
         handleRead(resourceId, this::parseSerialReadPayload)
 
-    internal fun makeServoWritePayload(angle: Double): ByteArray {
+    @Suppress("UNUSED_PARAMETER")
+    private fun makeServoWritePayload(angle: Double): ByteArray {
         TODO()
     }
 
@@ -820,7 +865,8 @@ class SimplePacketComsProtocol(
     override fun servoWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Double>>) =
         handleGroupWrite(resourcesAndValues, this::makeServoWritePayload)
 
-    internal fun parseServoReadPayload(payload: ByteArray, start: Int, end: Int): Double {
+    @Suppress("UNUSED_PARAMETER")
+    private fun parseServoReadPayload(payload: ByteArray, start: Int, end: Int): Double {
         TODO()
     }
 
@@ -830,7 +876,8 @@ class SimplePacketComsProtocol(
     override fun servoRead(resourceIds: ImmutableList<ResourceId>) =
         handleGroupRead(resourceIds, this::parseServoReadPayload)
 
-    internal fun parseUltrasonicReadPayload(payload: ByteArray, start: Int, end: Int): Long {
+    @Suppress("UNUSED_PARAMETER")
+    private fun parseUltrasonicReadPayload(payload: ByteArray, start: Int, end: Int): Long {
         TODO()
     }
 

@@ -16,7 +16,8 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.registry
 
-import arrow.core.Option
+import arrow.core.Either
+import arrow.core.right
 import com.neuronrobotics.bowlerkernel.hardware.device.Device
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
@@ -73,9 +74,9 @@ class BaseHardwareRegistryTest {
             override val deviceId: DeviceId
         ) : Device {
 
-            override fun connect(): Option<String> = Option.empty()
+            override fun connect(): Either<String, Unit> = Unit.right()
 
-            override fun disconnect(): Option<String> {
+            override fun disconnect(): Either<String, Unit> {
                 throw IllegalStateException("Oops!")
             }
 
