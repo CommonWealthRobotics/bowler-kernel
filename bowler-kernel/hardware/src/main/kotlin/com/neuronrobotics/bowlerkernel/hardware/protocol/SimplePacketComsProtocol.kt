@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceIdValidator
+import com.neuronrobotics.bowlerkernel.internal.logging.LoggerUtilities
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
 import edu.wpi.SimplePacketComs.BytePacketType
 import org.octogonapus.ktguava.collections.toImmutableList
@@ -126,17 +127,26 @@ class SimplePacketComsProtocol(
     ): Either<Byte, ByteArray> {
         validateConnection()
 
+        val payloadWithHeader = byteArrayOf(operation) + payload
+
+        LOGGER.fine {
+            """
+            |Sent discovery message:
+            |${payload.joinToString()}
+            """.trimMargin()
+        }
+
         discoveryLatch = CountDownLatch(1)
-        comms.writeBytes(DISCOVERY_PACKET_ID, byteArrayOf(operation) + payload)
+        comms.writeBytes(DISCOVERY_PACKET_ID, payloadWithHeader)
         discoveryPacket.oneShotMode()
         discoveryLatch.await()
 
-        println(
+        LOGGER.fine {
             """
             |Discovery response:
             |${discoveryData.joinToString()}
             """.trimMargin()
-        )
+        }
 
         val status = discoveryData[0]
         return if (status == STATUS_ACCEPTED) {
@@ -936,6 +946,9 @@ class SimplePacketComsProtocol(
         const val STATUS_REJECTED_UNKNOWN_OPERATION = 9.toByte()
         const val STATUS_DISCARD_IN_PROGRESS = 10.toByte()
         const val STATUS_DISCARD_COMPLETE = 11.toByte()
+
+        private val LOGGER =
+            LoggerUtilities.getLogger(SimplePacketComsProtocol::class.java.simpleName)
 
         /**
          * Computes whether the [testNumber] is outside the range of a unsigned byte.
