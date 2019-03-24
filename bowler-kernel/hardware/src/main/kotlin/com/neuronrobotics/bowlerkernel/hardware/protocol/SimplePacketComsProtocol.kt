@@ -496,7 +496,7 @@ class SimplePacketComsProtocol(
     private fun <T> validateGroupSendResources(
         resourcesAndValues: ImmutableList<Pair<ResourceId, T>>
     ): Int {
-        val groupId = groupedResourceToGroupId[resourcesAndValues.first().first]!!
+        val groupId = getValidatedGroupId(resourcesAndValues.first().first)
 
         require(resourcesAndValues.size == groupIdToCount[groupId])
         require(resourcesAndValues.all { groupedResourceToGroupId[it.first] == groupId })
@@ -517,13 +517,28 @@ class SimplePacketComsProtocol(
      * @return The group id.
      */
     private fun validateGroupReceiveResources(resourceIds: ImmutableList<ResourceId>): Int {
-        val groupId = groupedResourceToGroupId[resourceIds.first()]!!
+        val groupId = getValidatedGroupId(resourceIds.first())
 
         require(resourceIds.size == groupIdToCount[groupId])
         require(resourceIds.all { groupedResourceToGroupId[it] == groupId })
         require(resourceIds.toSet() == groupIdToMembers[groupId])
 
         return groupId
+    }
+
+    /**
+     * Maps the [resourceId] to its group id with validation.
+     *
+     * @param resourceId The resource id.
+     * @return The group id.
+     */
+    private fun getValidatedGroupId(resourceId: ResourceId): Int {
+        return groupedResourceToGroupId[resourceId] ?: throw IllegalArgumentException(
+            """
+            |The resource id was not discovered:
+            |$resourceId
+            """.trimMargin()
+        )
     }
 
     /**
@@ -584,8 +599,7 @@ class SimplePacketComsProtocol(
         resourceId: ResourceId,
         parseReceivePayload: (ByteArray, Int, Int) -> T
     ): T {
-        val packetId = nonGroupedResourceIdToPacketId[resourceId]!!
-
+        val packetId = getValidatedPacketId(resourceId)
         idToSendData[packetId] = ByteArray(PAYLOAD_SIZE) { 0 }
         callAndWait(packetId)
 
@@ -638,9 +652,24 @@ class SimplePacketComsProtocol(
         value: T,
         makeSendPayload: (T) -> ByteArray
     ) {
-        val packetId = nonGroupedResourceIdToPacketId[resourceId]!!
+        val packetId = getValidatedPacketId(resourceId)
         idToSendData[packetId] = makeSendPayload(value)
         callAndWait(packetId)
+    }
+
+    /**
+     * Maps the [resourceId] to its packet id with validation.
+     *
+     * @param resourceId The resource id.
+     * @return The packet id.
+     */
+    private fun getValidatedPacketId(resourceId: ResourceId): Int {
+        return nonGroupedResourceIdToPacketId[resourceId] ?: throw IllegalArgumentException(
+            """
+            |The resource id was not discovered:
+            |$resourceId
+            """.trimMargin()
+        )
     }
 
     /**

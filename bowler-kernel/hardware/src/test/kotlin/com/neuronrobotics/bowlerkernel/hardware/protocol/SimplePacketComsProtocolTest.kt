@@ -19,23 +19,20 @@ package com.neuronrobotics.bowlerkernel.hardware.protocol
 import arrow.core.Either
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.isEmpty
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import org.octogonapus.ktguava.collections.emptyImmutableList
-import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableSetOf
+import kotlin.random.Random
 
 internal class SimplePacketComsProtocolTest {
 
@@ -46,378 +43,12 @@ internal class SimplePacketComsProtocolTest {
         resourceIdValidator = DefaultResourceIdValidator()
     )
 
-    private val led1 = ResourceId(
-        DefaultResourceTypes.DigitalOut,
-        DefaultAttachmentPoints.Pin(32)
-    )
-
-    private val led2 = ResourceId(
-        DefaultResourceTypes.DigitalOut,
-        DefaultAttachmentPoints.Pin(33)
-    )
-
-    private val lineSensor1 = ResourceId(
-        DefaultResourceTypes.AnalogIn,
-        DefaultAttachmentPoints.Pin(32)
-    )
-
-    private val lineSensor2 = ResourceId(
-        DefaultResourceTypes.AnalogIn,
-        DefaultAttachmentPoints.Pin(33)
-    )
-
-    @Test
-    fun `test addRead`() {
-        // Discover a read group
-        protocolTest(protocol, device) {
-            operation {
-                val result = it.addRead(lineSensor1)
-                assertTrue(result.isRight())
-            } pcSends {
-                immutableListOf(
-                    getPayload(1, 2, 3, 1, 32)
-                )
-            } deviceResponds {
-                immutableListOf(
-                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
-                )
-            }
-        }
-
-        // Do a read
-        protocolTest(protocol, device) {
-            operation {
-                val result = it.analogRead(lineSensor1)
-                assertEquals(1.0, result)
-            } pcSends {
-                immutableListOf(
-                    getPayload()
-                )
-            } deviceResponds {
-                immutableListOf(
-                    getPayload(0, 1)
-                )
-            }
-        }
-    }
-
-    @Test
-    fun `test addRead failure`() {
-        // Discover a read group
-        protocolTest(protocol, device) {
-            operation {
-                val result = it.addRead(lineSensor1)
-                assertTrue(result.isLeft())
-            } pcSends {
-                immutableListOf(
-                    getPayload(1, 2, 3, 1, 32)
-                )
-            } deviceResponds {
-                immutableListOf(
-                    getPayload(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC)
-                )
-            }
-        }
-    }
-
-    @Test
-    fun `test addReadGroup`() {
-        // Discover a read group
-        protocolTest(protocol, device) {
-            operation {
-                val result = it.addReadGroup(immutableSetOf(lineSensor1, lineSensor2))
-                assertTrue(result.isRight())
-            } pcSends {
-                immutableListOf(
-                    getPayload(2, 1, 2, 2),
-                    getPayload(3, 1, 0, 0, 0, 2, 3, 1, 32),
-                    getPayload(3, 1, 0, 0, 2, 4, 3, 1, 33)
-                )
-            } deviceResponds {
-                immutableListOf(
-                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED),
-                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED),
-                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
-                )
-            }
-        }
-
-        // Do a read
-        protocolTest(protocol, device) {
-            operation {
-                val result = it.analogRead(immutableListOf(lineSensor1, lineSensor2))
-                assertIterableEquals(listOf(1.0, 2.0), result)
-            } pcSends {
-                immutableListOf(
-                    getPayload()
-                )
-            } deviceResponds {
-                immutableListOf(
-                    getPayload(0, 1, 0, 2)
-                )
-            }
-        }
-
-        // Do a read supplying the resource id's in the opposite order
-        protocolTest(protocol, device) {
-            operation {
-                val result = it.analogRead(immutableListOf(lineSensor2, lineSensor1))
-
-                // Should get the results back in the order the resource id's were given
-                assertIterableEquals(listOf(2.0, 1.0), result)
-            } pcSends {
-                immutableListOf(
-                    getPayload()
-                )
-            } deviceResponds {
-                // The same payload should be sent regardless of resource id order
-                immutableListOf(
-                    getPayload(0, 1, 0, 2)
-                )
-            }
-        }
-
-        protocolTest(protocol, device) {
-            operation {
-                // Test a write with too few members
-                assertThrows<IllegalArgumentException> {
-                    protocol.analogRead(immutableListOf(lineSensor1))
-                }
-            } pcSends {
-                emptyImmutableList()
-            } deviceResponds {
-                emptyImmutableList()
-            }
-        }
-
-        protocolTest(protocol, device) {
-            operation {
-                // Test a write with missing members
-                assertThrows<IllegalArgumentException> {
-                    protocol.analogRead(immutableListOf(lineSensor1, lineSensor1))
-                }
-            } pcSends {
-                emptyImmutableList()
-            } deviceResponds {
-                emptyImmutableList()
-            }
-        }
-    }
-
-    @Test
-    fun `test addReadGroup failure`() {
-        protocolTest(protocol, device) {
-            operation {
-                val result = it.addReadGroup(immutableSetOf(lineSensor1, lineSensor2))
-                assertTrue(result.isLeft())
-            } pcSends {
-                immutableListOf(
-                    getPayload(2, 1, 2, 2)
-                )
-            } deviceResponds {
-                immutableListOf(
-                    getPayload(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC)
-                )
-            }
-        }
-    }
-
-    @Test
-    fun `test addWrite`() {
-        // Discover a write group
-        protocolTest(protocol, device) {
-            operation {
-                val result = it.addWrite(led1)
-                assertTrue(result.isRight())
-            } pcSends {
-                immutableListOf(
-                    getPayload(1, 2, 2, 1, 32)
-                )
-            } deviceResponds {
-                immutableListOf(
-                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
-                )
-            }
-        }
-
-        // Do a write
-        protocolTest(protocol, device) {
-            operation {
-                it.digitalWrite(led1, DigitalState.HIGH)
-            } pcSends {
-                immutableListOf(
-                    getPayload(1)
-                )
-            } deviceResponds {
-                immutableListOf(
-                    getPayload()
-                )
-            }
-        }
-    }
-
-    @Test
-    fun `test addWrite failure`() {
-        protocolTest(protocol, device) {
-            operation {
-                val result = it.addWrite(led1)
-                assertTrue(result.isLeft())
-            } pcSends {
-                immutableListOf(
-                    getPayload(1, 2, 2, 1, 32)
-                )
-            } deviceResponds {
-                immutableListOf(
-                    getPayload(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC)
-                )
-            }
-        }
-    }
-
-    @Test
-    fun `test addWriteGroup`() {
-        protocolTest(protocol, device) {
-            operation {
-                val result = it.addWriteGroup(immutableSetOf(led1, led2))
-                assertTrue(result.isRight())
-            } pcSends {
-                immutableListOf(
-                    getPayload(2, 1, 2, 2),
-                    getPayload(3, 1, 0, 1, 0, 0, 2, 1, 32),
-                    getPayload(3, 1, 1, 2, 0, 0, 2, 1, 33)
-                )
-            } deviceResponds {
-                immutableListOf(
-                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED),
-                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED),
-                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
-                )
-            }
-        }
-
-        // Do a write
-        protocolTest(protocol, device) {
-            operation {
-                it.digitalWrite(
-                    immutableListOf(
-                        led1 to DigitalState.HIGH,
-                        led2 to DigitalState.LOW
-                    )
-                )
-            } pcSends {
-                immutableListOf(
-                    getPayload(1, 0)
-                )
-            } deviceResponds {
-                immutableListOf(
-                    getPayload()
-                )
-            }
-        }
-
-        // Do a write supplying the resource id's in the opposite order
-        protocolTest(protocol, device) {
-            operation {
-                it.digitalWrite(
-                    immutableListOf(
-                        led2 to DigitalState.LOW,
-                        led1 to DigitalState.HIGH
-                    )
-                )
-            } pcSends {
-                immutableListOf(
-                    getPayload(1, 0)
-                )
-            } deviceResponds {
-                // The same payload should be sent regardless of resource id order
-                immutableListOf(
-                    getPayload()
-                )
-            }
-        }
-
-        protocolTest(protocol, device) {
-            operation {
-                // Test a write with too few members
-                assertThrows<IllegalArgumentException> {
-                    protocol.digitalWrite(
-                        immutableListOf(
-                            led1 to DigitalState.HIGH
-                        )
-                    )
-                }
-            } pcSends {
-                emptyImmutableList()
-            } deviceResponds {
-                emptyImmutableList()
-            }
-        }
-
-        protocolTest(protocol, device) {
-            operation {
-                // Test a write with missing members
-                assertThrows<IllegalArgumentException> {
-                    protocol.digitalWrite(
-                        immutableListOf(
-                            led1 to DigitalState.HIGH,
-                            led1 to DigitalState.LOW
-                        )
-                    )
-                }
-            } pcSends {
-                emptyImmutableList()
-            } deviceResponds {
-                emptyImmutableList()
-            }
-        }
-    }
-
-    @Test
-    fun `test addWriteGroup failure`() {
-        protocolTest(protocol, device) {
-            operation {
-                val result = it.addWriteGroup(immutableSetOf(led1, led2))
-                assertTrue(result.isLeft())
-            } pcSends {
-                immutableListOf(
-                    getPayload(2, 1, 2, 2)
-                )
-            } deviceResponds {
-                immutableListOf(
-                    getPayload(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC)
-                )
-            }
-        }
-    }
-
-    @Test
-    fun `test resource types are validated in add operations`() {
-        assertAll(
-            { assertOperationFailedAndNoInteractionsWithDevice { protocol.addRead(led1) } },
-            { assertOperationFailedAndNoInteractionsWithDevice { protocol.addPollingRead(led1) } },
-            {
-                assertOperationFailedAndNoInteractionsWithDevice {
-                    protocol.addPollingReadGroup(
-                        immutableSetOf(led1, led2)
-                    )
-                }
-            },
-            {
-                assertOperationFailedAndNoInteractionsWithDevice {
-                    protocol.addReadGroup(
-                        immutableSetOf(led1, led2)
-                    )
-                }
-            },
-            { assertOperationFailedAndNoInteractionsWithDevice { protocol.addWrite(lineSensor1) } },
-            {
-                assertOperationFailedAndNoInteractionsWithDevice {
-                    protocol.addWriteGroup(
-                        immutableSetOf(lineSensor1, lineSensor2)
-                    )
-                }
-            }
-        )
+    @ParameterizedTest
+    @MethodSource("resourceTypesAreValidatedSource")
+    fun `test resource types are validated in add operations`(
+        operation: SimplePacketComsProtocol.() -> Either<String, Unit>
+    ) {
+        assertOperationFailedAndNoInteractionsWithDevice { protocol.operation() }
     }
 
     @ParameterizedTest
@@ -545,17 +176,17 @@ internal class SimplePacketComsProtocolTest {
         assertThat(device.writesReceived, isEmpty)
     }
 
-    /**
-     * Creates a mock payload. The payload starts with the given [bytes] and is padded with
-     * zeroes to a length of [SimplePacketComsProtocol.PAYLOAD_SIZE].
-     *
-     * @param bytes The first bytes in the payload.
-     * @return The payload.
-     */
-    private fun getPayload(vararg bytes: Byte): ByteArray =
-        bytes + (1..SimplePacketComsProtocol.PAYLOAD_SIZE - bytes.size).map { 0.toByte() }
-
     companion object {
+
+        private fun getWritable() = ResourceId(
+            DefaultResourceTypes.DigitalOut,
+            DefaultAttachmentPoints.Pin(Random.nextInt().toByte())
+        )
+
+        private fun getReadable() = ResourceId(
+            DefaultResourceTypes.AnalogIn,
+            DefaultAttachmentPoints.Pin(Random.nextInt().toByte())
+        )
 
         @Suppress("unused")
         @JvmStatic
@@ -564,5 +195,17 @@ internal class SimplePacketComsProtocolTest {
             255 to false,
             256 to true
         )
+
+        @Suppress("unused")
+        @JvmStatic
+        fun resourceTypesAreValidatedSource() =
+            listOf<SimplePacketComsProtocol.() -> Either<String, Unit>>(
+                { addRead(getWritable()) },
+                { addPollingRead(getWritable()) },
+                { addPollingReadGroup(immutableSetOf(getWritable(), getWritable())) },
+                { addReadGroup(immutableSetOf(getWritable(), getWritable())) },
+                { addWrite(getReadable()) },
+                { addWriteGroup(immutableSetOf(getReadable(), getReadable())) }
+            )
     }
 }
