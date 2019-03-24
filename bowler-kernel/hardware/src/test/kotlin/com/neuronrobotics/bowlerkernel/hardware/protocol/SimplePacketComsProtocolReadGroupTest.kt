@@ -20,7 +20,6 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -28,6 +27,9 @@ import org.junit.jupiter.api.assertThrows
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableSetOf
+import org.octogonapus.ktguava.collections.plus
+import org.octogonapus.ktguava.collections.toImmutableList
+import org.octogonapus.ktguava.collections.toImmutableSet
 
 internal class SimplePacketComsProtocolReadGroupTest {
 
@@ -38,15 +40,16 @@ internal class SimplePacketComsProtocolReadGroupTest {
         resourceIdValidator = DefaultResourceIdValidator()
     )
 
-    private val lineSensor1 = ResourceId(
-        DefaultResourceTypes.AnalogIn,
-        DefaultAttachmentPoints.Pin(32)
-    )
+    private val lineSensor1 = makeReadable(32)
 
-    private val lineSensor2 = ResourceId(
-        DefaultResourceTypes.AnalogIn,
-        DefaultAttachmentPoints.Pin(33)
-    )
+    private val lineSensor2 = makeReadable(33)
+
+    private fun makeReadable(pinNumber: Byte): ResourceId {
+        return ResourceId(
+            DefaultResourceTypes.AnalogIn,
+            DefaultAttachmentPoints.Pin(pinNumber)
+        )
+    }
 
     @Test
     fun `test adding a read group`() {
@@ -168,12 +171,134 @@ internal class SimplePacketComsProtocolReadGroupTest {
         }
     }
 
+    @Test
+    fun `test addReadGroup last group member failure`() {
+        protocolTest(protocol, device) {
+            operation {
+                val result = it.addReadGroup(immutableSetOf(lineSensor1, lineSensor2))
+                assertTrue(result.isLeft())
+            } pcSends {
+                immutableListOf(
+                    getPayload(2, 1, 2, 2),
+                    getPayload(3, 1, 0, 0, 0, 2, 3, 1, 32),
+                    getPayload(3, 1, 0, 0, 2, 4, 3, 1, 33)
+                )
+            } deviceResponds {
+                immutableListOf(
+                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED),
+                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED),
+                    getPayload(SimplePacketComsProtocol.STATUS_REJECTED_GROUP_FULL)
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `test addReadGroup two group member failure`() {
+        protocolTest(protocol, device) {
+            operation {
+                val result = it.addReadGroup(immutableSetOf(lineSensor1, lineSensor2))
+                assertTrue(result.isLeft())
+            } pcSends {
+                immutableListOf(
+                    getPayload(2, 1, 2, 2),
+                    getPayload(3, 1, 0, 0, 0, 2, 3, 1, 32),
+                    // The receive start is 0 and the receive end is 2 (instead of 2 and 4,
+                    // respectively) because the first group member was rejected so the payload
+                    // send and receive indices were not incremented.
+                    getPayload(3, 1, 0, 0, 0, 2, 3, 1, 33)
+                )
+            } deviceResponds {
+                immutableListOf(
+                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED),
+                    getPayload(SimplePacketComsProtocol.STATUS_REJECTED_INVALID_GROUP_ID),
+                    getPayload(SimplePacketComsProtocol.STATUS_REJECTED_INVALID_GROUP_ID)
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `test adding more read group members than a payload can fit`() {
+        val numGroupMembers = 31.toByte()
+        val groupMembers = (1..numGroupMembers).map { makeReadable(it.toByte()) }.toImmutableSet()
+
+        var receiveStart = 0.toByte()
+        var receiveEnd = 2.toByte()
+        fun makePayload(memberNumber: Byte): ByteArray {
+            val payload = getPayload(
+                3,
+                1,
+                0,
+                0,
+                receiveStart,
+                receiveEnd,
+                3,
+                1,
+                memberNumber
+            )
+
+            receiveStart = (receiveStart + 2).toByte()
+            receiveEnd = (receiveEnd + 2).toByte()
+
+            return payload
+        }
+
+        val sendPayloads = (1 until numGroupMembers).map { makePayload(it.toByte()) }
+        val receivePayloads = (1..numGroupMembers).map {
+            getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
+        }.toImmutableList()
+
+        protocolTest(protocol, device) {
+            operation {
+                assertThrows<IllegalStateException> {
+                    protocol.addReadGroup(groupMembers)
+                }
+            } pcSends {
+                immutableListOf(getPayload(2, 1, 2, numGroupMembers)) + sendPayloads
+            } deviceResponds {
+                receivePayloads
+            }
+        }
+    }
+
+    @Test
+    fun `test adding too many read groups`() {
+        fun discoverGroupWithId(groupId: Byte) {
+            // Different but deterministic pin number
+            val pinNumber = (groupId + 1).toByte()
+
+            protocolTest(protocol, device) {
+                operation {
+                    val result = it.addReadGroup(immutableSetOf(makeReadable(pinNumber)))
+                    assertTrue(result.isRight())
+                } pcSends {
+                    immutableListOf(
+                        getPayload(2, groupId, (groupId + 1).toByte(), 1),
+                        getPayload(3, groupId, 0, 0, 0, 2, 3, 1, pinNumber)
+                    )
+                } deviceResponds {
+                    immutableListOf(
+                        getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED),
+                        getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                    )
+                }
+            }
+        }
+
+        assertThrows<IllegalStateException> {
+            (1..300).map {
+                discoverGroupWithId(it.toByte())
+            }
+        }
+    }
+
     private fun setupReadGroup() {
         // Discover a read group
         protocolTest(protocol, device) {
             operation {
                 val result = it.addReadGroup(immutableSetOf(lineSensor1, lineSensor2))
-                Assertions.assertTrue(result.isRight())
+                assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
                     getPayload(2, 1, 2, 2),

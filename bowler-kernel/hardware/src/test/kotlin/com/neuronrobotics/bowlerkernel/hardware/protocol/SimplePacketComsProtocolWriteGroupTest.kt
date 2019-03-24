@@ -187,6 +187,53 @@ internal class SimplePacketComsProtocolWriteGroupTest {
         }
     }
 
+    @Test
+    fun `test addWriteGroup last group member failure`() {
+        protocolTest(protocol, device) {
+            operation {
+                val result = it.addWriteGroup(immutableSetOf(led1, led2))
+                assertTrue(result.isLeft())
+            } pcSends {
+                immutableListOf(
+                    getPayload(2, 1, 2, 2),
+                    getPayload(3, 1, 0, 1, 0, 0, 2, 1, 32),
+                    getPayload(3, 1, 1, 2, 0, 0, 2, 1, 33)
+                )
+            } deviceResponds {
+                immutableListOf(
+                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED),
+                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED),
+                    getPayload(SimplePacketComsProtocol.STATUS_REJECTED_GROUP_FULL)
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `test addWriteGroup two group member failure`() {
+        protocolTest(protocol, device) {
+            operation {
+                val result = it.addWriteGroup(immutableSetOf(led1, led2))
+                assertTrue(result.isLeft())
+            } pcSends {
+                immutableListOf(
+                    getPayload(2, 1, 2, 2),
+                    getPayload(3, 1, 0, 1, 0, 0, 2, 1, 32),
+                    // The send start is 0 and the send end is 1 (instead of 1 and 2,
+                    // respectively) because the first group member was rejected so the payload
+                    // send and receive indices were not incremented.
+                    getPayload(3, 1, 0, 1, 0, 0, 2, 1, 33)
+                )
+            } deviceResponds {
+                immutableListOf(
+                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED),
+                    getPayload(SimplePacketComsProtocol.STATUS_REJECTED_GROUP_FULL),
+                    getPayload(SimplePacketComsProtocol.STATUS_REJECTED_GROUP_FULL)
+                )
+            }
+        }
+    }
+
     private fun setupWriteGroup() {
         protocolTest(protocol, device) {
             operation {

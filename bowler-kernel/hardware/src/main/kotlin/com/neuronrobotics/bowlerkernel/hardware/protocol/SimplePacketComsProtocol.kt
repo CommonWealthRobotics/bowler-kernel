@@ -132,7 +132,7 @@ class SimplePacketComsProtocol(
 
         LOGGER.fine {
             """
-            |Sent discovery message:
+            |Sent discovery payload:
             |${payload.joinToString()}
             """.trimMargin()
         }
@@ -299,7 +299,24 @@ class SimplePacketComsProtocol(
                         isGreaterThanUnsignedByte(currentReceiveIndex + receiveLength)
                     ) {
                         throw IllegalStateException(
-                            "Cannot handle payload indices greater than a byte."
+                            """
+                            |Cannot handle payload indices greater than a byte.
+                            |Send index: $currentSendIndex
+                            |Receive index: $currentReceiveIndex
+                            """.trimMargin()
+                        )
+                    }
+
+                    if (currentSendIndex + sendLength > PAYLOAD_SIZE ||
+                        currentReceiveIndex + receiveLength > PAYLOAD_SIZE
+                    ) {
+                        throw IllegalStateException(
+                            """
+                            |Cannot handle payload indices greater than the payload size.
+                            |Payload size: $PAYLOAD_SIZE
+                            |Send index: $currentSendIndex
+                            |Receive index: $currentReceiveIndex
+                            """.trimMargin()
                         )
                     }
 
@@ -332,7 +349,10 @@ class SimplePacketComsProtocol(
                             Option.empty<String>()
                         },
                         {
-                            Option.just("Got status: $it")
+                            Option.just(
+                                "Got status $it when sending group member discovery packet for " +
+                                    "resource id: $resourceId"
+                            )
                         }
                     )
                 }.filter { it.nonEmpty() }
@@ -340,7 +360,7 @@ class SimplePacketComsProtocol(
                 if (failedResources.isNotEmpty()) {
                     """
                         |Failed resource statuses:
-                        |${failedResources.joinToString()}
+                        |${failedResources.joinWithIndent("\t")}
                         """.trimMargin().left()
                 } else {
                     comms.addPollingPacket(packet)
@@ -360,7 +380,7 @@ class SimplePacketComsProtocol(
                 }
             },
             {
-                "Got status: $it".left()
+                "Got status $it when sending group discovery packet".left()
             }
         )
     }
@@ -427,7 +447,7 @@ class SimplePacketComsProtocol(
                 Unit.right()
             },
             {
-                "Got status: $it".left()
+                "Got status $it when sending discovery packet".left()
             }
         )
     }
