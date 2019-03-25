@@ -16,16 +16,14 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned
 
-import com.neuronrobotics.bowlerkernel.hardware.device.Device
+import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
 class GenericAnalogIn
 internal constructor(
-    override val device: Device,
+    override val device: BowlerDevice,
     override val resourceId: ResourceId
 ) : AnalogIn {
 
-    override fun read(): Double {
-        TODO("not implemented")
-    }
+    override fun read() = device.bowlerRPCProtocol.analogRead(resourceId)
 }

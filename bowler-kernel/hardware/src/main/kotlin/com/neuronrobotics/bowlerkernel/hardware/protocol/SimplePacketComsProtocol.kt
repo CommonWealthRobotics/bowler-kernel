@@ -53,7 +53,7 @@ import kotlin.math.pow
 @SuppressWarnings("TooManyFunctions")
 class SimplePacketComsProtocol(
     private val comms: AbstractSimpleComsDevice,
-    private val startPacketId: Int = DISCOVERY_PACKET_ID + 1,
+    private val startPacketId: Int = DEFAULT_START_PACKET_ID,
     private val resourceIdValidator: ResourceIdValidator
 ) : BowlerRPCProtocol {
 
@@ -954,6 +954,17 @@ class SimplePacketComsProtocol(
         handleGroupRead(resourceIds, this::parseServoReadPayload)
 
     @Suppress("UNUSED_PARAMETER")
+    private fun makeStepperWritePayload(stepsAndSpeed: Pair<Int, Int>): ByteArray {
+        TODO()
+    }
+
+    override fun stepperWrite(resourceId: ResourceId, steps: Int, speed: Int) =
+        handleWrite(resourceId, steps to speed, this::makeStepperWritePayload)
+
+    override fun stepperWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Pair<Int, Int>>>) =
+        handleGroupWrite(resourcesAndValues, this::makeStepperWritePayload)
+
+    @Suppress("UNUSED_PARAMETER")
     private fun parseUltrasonicReadPayload(payload: ByteArray, start: Int, end: Int): Long {
         TODO()
     }
@@ -980,6 +991,11 @@ class SimplePacketComsProtocol(
          * The id of the discovery packet.
          */
         const val DISCOVERY_PACKET_ID = 1
+
+        /**
+         * The default starting packet id.
+         */
+        const val DEFAULT_START_PACKET_ID = DISCOVERY_PACKET_ID + 1
 
         /**
          * The size of a payload in bytes.

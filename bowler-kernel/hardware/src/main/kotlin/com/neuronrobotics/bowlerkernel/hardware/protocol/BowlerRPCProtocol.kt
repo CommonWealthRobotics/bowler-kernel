@@ -265,6 +265,22 @@ interface BowlerRPCProtocol {
     fun servoRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Double>
 
     /**
+     * Performs a stepper write.
+     *
+     * @param resourceId The id of a resource on this device.
+     * @param steps The number of steps to travel.
+     * @param speed The speed to rotate at.
+     */
+    fun stepperWrite(resourceId: ResourceId, steps: Int, speed: Int)
+
+    /**
+     * Performs a stepper write.
+     *
+     * @param resourcesAndValues The resources paired with their values.
+     */
+    fun stepperWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Pair<Int, Int>>>)
+
+    /**
      * Performs an ultrasonic read.
      *
      * @param resourceId The id of a resource on this device.

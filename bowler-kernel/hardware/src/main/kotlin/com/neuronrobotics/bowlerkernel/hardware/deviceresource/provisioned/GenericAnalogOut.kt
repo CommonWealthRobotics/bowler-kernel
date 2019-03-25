@@ -16,16 +16,15 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned
 
-import com.neuronrobotics.bowlerkernel.hardware.device.Device
+import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
 class GenericAnalogOut
 internal constructor(
-    override val device: Device,
+    override val device: BowlerDevice,
     override val resourceId: ResourceId
 ) : AnalogOut {
 
-    override fun write(state: Double) {
-        TODO("not implemented")
-    }
+    override fun write(state: Double) =
+        device.bowlerRPCProtocol.analogWrite(resourceId, state.toShort())
 }

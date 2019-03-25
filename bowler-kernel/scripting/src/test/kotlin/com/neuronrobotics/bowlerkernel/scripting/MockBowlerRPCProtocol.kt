@@ -150,6 +150,14 @@ class MockBowlerRPCProtocol : BowlerRPCProtocol {
         TODO("not implemented")
     }
 
+    override fun stepperWrite(resourceId: ResourceId, steps: Int, speed: Int) {
+        TODO("not implemented")
+    }
+
+    override fun stepperWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Pair<Int, Int>>>) {
+        TODO("not implemented")
+    }
+
     override fun ultrasonicRead(resourceId: ResourceId): Long {
         TODO("not implemented")
     }

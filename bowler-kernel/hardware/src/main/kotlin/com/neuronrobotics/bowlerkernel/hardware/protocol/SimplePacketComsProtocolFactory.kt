@@ -34,32 +34,8 @@ class SimplePacketComsProtocolFactory
     private val resourceIdValidator: ResourceIdValidator
 ) : BowlerRPCProtocolFactory {
 
-    override fun create(deviceId: DeviceId): BowlerRPCProtocol {
-        val connectionMethod = deviceId.connectionMethod
-
-        return if (connectionMethod is DefaultConnectionMethods) {
-            when (connectionMethod) {
-                is DefaultConnectionMethods.InternetAddress ->
-                    SimplePacketComsProtocol(
-                        comms = UDPSimplePacketComs(connectionMethod.inetAddress),
-                        resourceIdValidator = resourceIdValidator
-                    )
-
-                is DefaultConnectionMethods.RawHID ->
-                    SimplePacketComsProtocol(
-                        comms = HIDSimplePacketComs(connectionMethod.vid, connectionMethod.pid),
-                        resourceIdValidator = resourceIdValidator
-                    )
-            }
-        } else {
-            throw UnsupportedOperationException(
-                """
-                |Cannot construct a SimplePacketComsProtocol from deviceId:
-                |$deviceId
-                """.trimMargin()
-            )
-        }
-    }
+    override fun create(deviceId: DeviceId) =
+        create(deviceId, SimplePacketComsProtocol.DEFAULT_START_PACKET_ID)
 
     /**
      * Creates a new [SimplePacketComsProtocol].

@@ -25,7 +25,6 @@ internal constructor(
     override val resourceId: ResourceId
 ) : DigitalOut {
 
-    override fun write(state: DigitalState) {
-        TODO("not implemented")
-    }
+    override fun write(state: DigitalState) =
+        device.bowlerRPCProtocol.digitalWrite(resourceId, state)
 }

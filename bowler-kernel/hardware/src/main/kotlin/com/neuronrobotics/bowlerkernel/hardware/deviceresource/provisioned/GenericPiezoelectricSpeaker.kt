@@ -16,20 +16,18 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned
 
-import com.neuronrobotics.bowlerkernel.hardware.device.Device
+import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
 class GenericPiezoelectricSpeaker
 internal constructor(
-    override val device: Device,
+    override val device: BowlerDevice,
     override val resourceId: ResourceId
 ) : PiezoelectricSpeaker {
 
-    override fun playTone(frequency: Long) {
-        TODO("not implemented")
-    }
+    override fun playTone(frequency: Long) =
+        device.bowlerRPCProtocol.toneWrite(resourceId, frequency.toInt())
 
-    override fun playTone(frequency: Long, duration: Long) {
-        TODO("not implemented")
-    }
+    override fun playTone(frequency: Long, duration: Long) =
+        device.bowlerRPCProtocol.toneWrite(resourceId, frequency.toInt(), duration)
 }
