@@ -25,6 +25,7 @@ internal class MockDevice : AbstractSimpleComsDevice() {
     val writesReceived = ArrayDeque<ByteArray>()
     val readsToSend = ArrayDeque<ByteArray>()
     var canSendNextRead = false
+    var pollingPayload: ByteArray? = null
 
     override fun write(message: ByteArray?, length: Int, howLongToWaitBeforeTimeout: Int) = 0
 
@@ -51,8 +52,22 @@ internal class MockDevice : AbstractSimpleComsDevice() {
     override fun readBytes(id: Int, values: ByteArray) {
         if (canSendNextRead) {
             canSendNextRead = false
-            readsToSend.removeFirst().forEachIndexed { index, byte ->
-                values[index] = byte
+            if (readsToSend.isEmpty()) {
+                pollingPayload?.let {
+                    it.forEachIndexed { index, byte ->
+                        values[index] = byte
+                    }
+                }
+            } else {
+                readsToSend.removeFirst().forEachIndexed { index, byte ->
+                    values[index] = byte
+                }
+            }
+        } else {
+            pollingPayload?.let {
+                it.forEachIndexed { index, byte ->
+                    values[index] = byte
+                }
             }
         }
     }

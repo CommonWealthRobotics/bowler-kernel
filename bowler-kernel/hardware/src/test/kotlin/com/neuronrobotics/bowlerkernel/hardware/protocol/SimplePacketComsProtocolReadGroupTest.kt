@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
+import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
@@ -57,6 +58,13 @@ internal class SimplePacketComsProtocolReadGroupTest {
     }
 
     @Test
+    fun `test adding a polling read group`() {
+        device.pollingPayload = getPayload()
+        setupPollingReadGroup()
+        Thread.sleep(100)
+    }
+
+    @Test
     fun `test reading from a read group`() {
         setupReadGroup()
 
@@ -73,6 +81,28 @@ internal class SimplePacketComsProtocolReadGroupTest {
                 immutableListOf(
                     getPayload(0, 1, 0, 2)
                 )
+            }
+        }
+    }
+
+    @Test
+    fun `test reading from a polling read group`() {
+        device.pollingPayload = getPayload(0, 1, 0, 2)
+        setupPollingReadGroup()
+
+        Thread.sleep(100)
+
+        // Do a read
+        protocolTest(protocol, device) {
+            operation {
+                val result = it.analogRead(immutableListOf(lineSensor1, lineSensor2))
+                assertIterableEquals(listOf(1.0, 2.0), result)
+            } pcSends {
+                immutableListOf(
+                    getPayload()
+                )
+            } deviceResponds {
+                immutableListOf()
             }
         }
     }
@@ -264,6 +294,7 @@ internal class SimplePacketComsProtocolReadGroupTest {
 
     @Test
     fun `test adding too many read groups`() {
+        // TODO: Intermittent problems
         fun discoverGroupWithId(groupId: Byte) {
             // Different but deterministic pin number
             val pinNumber = (groupId + 1).toByte()
@@ -293,11 +324,16 @@ internal class SimplePacketComsProtocolReadGroupTest {
         }
     }
 
-    private fun setupReadGroup() {
-        // Discover a read group
+    private fun setupReadGroup() =
+        setupReadGroupImpl { addReadGroup(immutableSetOf(lineSensor1, lineSensor2)) }
+
+    private fun setupPollingReadGroup() =
+        setupReadGroupImpl { addPollingReadGroup(immutableSetOf(lineSensor1, lineSensor2)) }
+
+    private fun setupReadGroupImpl(operation: SimplePacketComsProtocol.() -> Either<String, Unit>) {
         protocolTest(protocol, device) {
             operation {
-                val result = it.addReadGroup(immutableSetOf(lineSensor1, lineSensor2))
+                val result = it.operation()
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(

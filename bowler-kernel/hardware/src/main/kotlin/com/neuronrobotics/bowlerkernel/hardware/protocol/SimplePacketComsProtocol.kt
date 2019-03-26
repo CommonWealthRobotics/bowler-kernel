@@ -741,7 +741,9 @@ class SimplePacketComsProtocol(
 
     override fun addPollingRead(resourceId: ResourceId) =
         resourceIdValidator.validateIsReadType(resourceId.resourceType).flatMap {
-            addResource(resourceId, true) { it.oneShotMode() }
+            addResource(resourceId, true) {
+                comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
+            }
         }
 
     override fun addPollingReadGroup(resourceIds: ImmutableSet<ResourceId>): Either<String, Unit> {

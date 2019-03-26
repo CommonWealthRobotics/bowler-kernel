@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
+import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
@@ -47,10 +48,16 @@ internal class SimplePacketComsProtocolReadTest {
     }
 
     @Test
+    fun `test adding a polling read`() {
+        device.pollingPayload = getPayload()
+        setupPollingRead()
+        Thread.sleep(100)
+    }
+
+    @Test
     fun `test reading`() {
         setupRead()
 
-        // Do a read
         protocolTest(protocol, device) {
             operation {
                 val result = it.analogRead(lineSensor)
@@ -63,6 +70,27 @@ internal class SimplePacketComsProtocolReadTest {
                 immutableListOf(
                     getPayload(0, 1)
                 )
+            }
+        }
+    }
+
+    @Test
+    fun `test reading with polling`() {
+        device.pollingPayload = getPayload(0, 1)
+        setupPollingRead()
+
+        Thread.sleep(100)
+
+        protocolTest(protocol, device) {
+            operation {
+                val result = it.analogRead(lineSensor)
+                assertEquals(1.0, result)
+            } pcSends {
+                immutableListOf(
+                    getPayload()
+                )
+            } deviceResponds {
+                immutableListOf()
             }
         }
     }
@@ -102,11 +130,14 @@ internal class SimplePacketComsProtocolReadTest {
         }
     }
 
-    private fun setupRead() {
-        // Discover a read group
+    private fun setupRead() = setupReadImpl { addRead(lineSensor) }
+
+    private fun setupPollingRead() = setupReadImpl { addPollingRead(lineSensor) }
+
+    private fun setupReadImpl(operation: SimplePacketComsProtocol.() -> Either<String, Unit>) {
         protocolTest(protocol, device) {
             operation {
-                val result = it.addRead(lineSensor)
+                val result = it.operation()
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(

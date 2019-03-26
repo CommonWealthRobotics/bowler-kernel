@@ -41,24 +41,6 @@ internal class SimplePacketComsProtocolWriteTest {
         DefaultAttachmentPoints.Pin(32)
     )
 
-    private fun setupWrite() {
-        // Discover a write group
-        protocolTest(protocol, device) {
-            operation {
-                val result = it.addWrite(led)
-                assertTrue(result.isRight())
-            } pcSends {
-                immutableListOf(
-                    getPayload(1, 2, 2, 1, 32)
-                )
-            } deviceResponds {
-                immutableListOf(
-                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
-                )
-            }
-        }
-    }
-
     @Test
     fun `test writing`() {
         setupWrite()
@@ -108,6 +90,24 @@ internal class SimplePacketComsProtocolWriteTest {
             } deviceResponds {
                 immutableListOf(
                     getPayload(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC)
+                )
+            }
+        }
+    }
+
+    private fun setupWrite() {
+        // Discover a write group
+        protocolTest(protocol, device) {
+            operation {
+                val result = it.addWrite(led)
+                assertTrue(result.isRight())
+            } pcSends {
+                immutableListOf(
+                    getPayload(1, 2, 2, 1, 32)
+                )
+            } deviceResponds {
+                immutableListOf(
+                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
                 )
             }
         }
