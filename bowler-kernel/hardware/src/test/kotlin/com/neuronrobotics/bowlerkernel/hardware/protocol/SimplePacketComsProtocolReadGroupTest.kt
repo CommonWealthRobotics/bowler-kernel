@@ -294,7 +294,6 @@ internal class SimplePacketComsProtocolReadGroupTest {
 
     @Test
     fun `test adding too many read groups`() {
-        // TODO: Intermittent problems
         fun discoverGroupWithId(groupId: Byte) {
             // Different but deterministic pin number
             val pinNumber = (groupId + 1).toByte()

@@ -10,11 +10,16 @@ object Versions {
     const val arrow_version = "0.8.1"
 }
 
+repositories {
+    maven("https://oss.sonatype.org/content/repositories/staging/")
+}
+
 dependencies {
     api(group = "io.arrow-kt", name = "arrow-core", version = arrow_version)
     api(group = "org.kohsuke", name = "github-api", version = "1.95")
-    api(group = "com.neuronrobotics", name = "SimplePacketComsJava", version = "0.8.1")
-    api(group = "com.neuronrobotics", name = "SimplePacketComsJava-HID", version = "0.1.0")
+    api(group = "com.neuronrobotics", name = "SimplePacketComsJava", version = "0.9.2")
+    api(group = "com.neuronrobotics", name = "SimplePacketComsJava-HID", version = "0.9.3")
+    api("org.hid4java:hid4java:0.5.0")
 
     implementation(project(":bowler-kernel:logging"))
     implementation(group = "io.arrow-kt", name = "arrow-syntax", version = arrow_version)
