@@ -34,16 +34,16 @@ interface ResourceIdValidator {
     /**
      * Validates the resource can be read from.
      *
-     * @param resourceId The resource.
+     * @param resourceType The resource.
      * @return An error.
      */
-    fun validateIsReadType(resourceId: ResourceId): Either<String, Unit>
+    fun validateIsReadType(resourceType: ResourceType): Either<String, Unit>
 
     /**
      * Validates the resource can be written to.
      *
-     * @param resourceId The resource.
+     * @param resourceType The resource.
      * @return An error.
      */
-    fun validateIsWriteType(resourceId: ResourceId): Either<String, Unit>
+    fun validateIsWriteType(resourceType: ResourceType): Either<String, Unit>
 }

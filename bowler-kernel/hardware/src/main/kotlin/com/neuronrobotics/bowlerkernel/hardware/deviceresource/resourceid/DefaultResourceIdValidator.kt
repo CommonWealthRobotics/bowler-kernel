@@ -26,9 +26,9 @@ class DefaultResourceIdValidator : ResourceIdValidator {
         TODO("not implemented")
     }
 
-    override fun validateIsReadType(resourceId: ResourceId): Either<String, Unit> {
-        return if (resourceId.resourceType is DefaultResourceTypes) {
-            when (resourceId.resourceType) {
+    override fun validateIsReadType(resourceType: ResourceType): Either<String, Unit> {
+        return if (resourceType is DefaultResourceTypes) {
+            when (resourceType) {
                 is DefaultResourceTypes.AnalogIn,
                 is DefaultResourceTypes.DigitalIn,
                 is DefaultResourceTypes.SerialConnection,
@@ -52,9 +52,9 @@ class DefaultResourceIdValidator : ResourceIdValidator {
         }
     }
 
-    override fun validateIsWriteType(resourceId: ResourceId): Either<String, Unit> {
-        return if (resourceId.resourceType is DefaultResourceTypes) {
-            when (resourceId.resourceType) {
+    override fun validateIsWriteType(resourceType: ResourceType): Either<String, Unit> {
+        return if (resourceType is DefaultResourceTypes) {
+            when (resourceType) {
                 is DefaultResourceTypes.AnalogOut,
                 is DefaultResourceTypes.DigitalOut,
                 is DefaultResourceTypes.SerialConnection,

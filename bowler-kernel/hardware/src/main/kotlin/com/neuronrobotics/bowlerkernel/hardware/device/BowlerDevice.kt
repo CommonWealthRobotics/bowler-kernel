@@ -53,11 +53,11 @@ internal constructor(
     fun add(resource: UnprovisionedDeviceResource): Either<String, ProvisionedDeviceResource> {
         val id = resource.resourceId
 
-        val readError = resourceIdValidator.validateIsReadType(id).flatMap {
+        val readError = resourceIdValidator.validateIsReadType(id.resourceType).flatMap {
             bowlerRPCProtocol.addRead(id)
         }
 
-        val writeError = resourceIdValidator.validateIsWriteType(id).flatMap {
+        val writeError = resourceIdValidator.validateIsWriteType(id.resourceType).flatMap {
             bowlerRPCProtocol.addWrite(id)
         }
 
@@ -77,7 +77,7 @@ internal constructor(
         val resourceIds = resources.map { it.resourceId }.toImmutableSet()
 
         val readResources = resources.map {
-            resourceIdValidator.validateIsReadType(it.resourceId)
+            resourceIdValidator.validateIsReadType(it.resourceId.resourceType)
         }
 
         val allReadResources = readResources.fold(true) { acc, elem ->
@@ -89,7 +89,7 @@ internal constructor(
         }
 
         val writeResources = resources.map {
-            resourceIdValidator.validateIsWriteType(it.resourceId)
+            resourceIdValidator.validateIsWriteType(it.resourceId.resourceType)
         }
 
         val allWriteResources = writeResources.fold(true) { acc, elem ->

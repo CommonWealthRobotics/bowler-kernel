@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceIdValidator
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceType
 import com.neuronrobotics.bowlerkernel.internal.logging.LoggerUtilities
 import com.neuronrobotics.bowlerkernel.internal.logging.LoggerUtilities.Companion.joinWithIndent
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
@@ -739,7 +740,7 @@ class SimplePacketComsProtocol(
     }
 
     override fun addPollingRead(resourceId: ResourceId) =
-        resourceIdValidator.validateIsReadType(resourceId).flatMap {
+        resourceIdValidator.validateIsReadType(resourceId.resourceType).flatMap {
             addResource(resourceId, true) { it.oneShotMode() }
         }
 
@@ -760,7 +761,7 @@ class SimplePacketComsProtocol(
     }
 
     override fun addRead(resourceId: ResourceId) =
-        resourceIdValidator.validateIsReadType(resourceId).flatMap {
+        resourceIdValidator.validateIsReadType(resourceId.resourceType).flatMap {
             addResource(resourceId) {
                 comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
             }
@@ -783,7 +784,7 @@ class SimplePacketComsProtocol(
     }
 
     override fun addWrite(resourceId: ResourceId) =
-        resourceIdValidator.validateIsWriteType(resourceId).flatMap {
+        resourceIdValidator.validateIsWriteType(resourceId.resourceType).flatMap {
             addResource(resourceId) {
                 comms.addTimeout(it.idOfCommand) { it.oneShotMode() }
             }
@@ -814,10 +815,10 @@ class SimplePacketComsProtocol(
      */
     private fun validateResources(
         resourceIds: ImmutableSet<ResourceId>,
-        validator: ResourceIdValidator.(ResourceId) -> Either<String, Unit>
+        validator: ResourceIdValidator.(ResourceType) -> Either<String, Unit>
     ): List<Either<String, Unit>> {
         return resourceIds.map {
-            resourceIdValidator.validator(it)
+            resourceIdValidator.validator(it.resourceType)
         }.filter {
             it.isLeft()
         }
