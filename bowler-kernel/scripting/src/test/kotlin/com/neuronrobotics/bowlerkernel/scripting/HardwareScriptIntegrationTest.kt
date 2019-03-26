@@ -50,7 +50,7 @@ internal class HardwareScriptIntegrationTest {
             }
         }
 
-        script.addToInjector(script.getDefaultModules())
+        script.addToInjector(Script.getDefaultModules())
         script.runScript(emptyImmutableList())
         script.stopAndCleanUp()
     }

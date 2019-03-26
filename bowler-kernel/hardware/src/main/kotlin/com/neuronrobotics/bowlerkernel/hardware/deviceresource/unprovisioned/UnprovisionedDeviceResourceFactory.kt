@@ -34,7 +34,7 @@ import javax.inject.Inject
  * require creation will fail due to RPC timeout.
  */
 @SuppressWarnings("TooManyFunctions")
-class UnprovisionedDeviceResourceFactory
+internal class UnprovisionedDeviceResourceFactory
 @Inject internal constructor(
     private val registry: HardwareRegistry,
     @Assisted private val device: BowlerDevice

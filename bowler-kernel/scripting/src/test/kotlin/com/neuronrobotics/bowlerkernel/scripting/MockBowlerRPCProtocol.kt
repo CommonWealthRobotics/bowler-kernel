@@ -29,6 +29,7 @@ import org.junit.jupiter.api.fail
  * A mock implementation of the [BowlerRPCProtocol] which just checks for simple management of
  * connection state.
  */
+@SuppressWarnings("NotImplementedDeclaration")
 class MockBowlerRPCProtocol : BowlerRPCProtocol {
 
     private var isConnected = false

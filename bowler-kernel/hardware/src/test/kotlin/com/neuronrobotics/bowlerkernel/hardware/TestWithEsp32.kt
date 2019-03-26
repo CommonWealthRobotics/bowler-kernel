@@ -30,7 +30,7 @@ import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableSetOf
 import java.net.InetAddress
 
-internal class Test {
+internal class TestWithEsp32 {
 
     @Test
     @Disabled

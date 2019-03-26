@@ -38,8 +38,7 @@ abstract class Script {
     /**
      * An [Injector] available for the script to use.
      */
-    protected var injector: Injector =
-        KernelHardwareModule.injector.createChildInjector(scriptModule())
+    protected var injector = makeScriptInjector()
 
     /**
      * The modules which have been added by the user.
@@ -93,19 +92,24 @@ abstract class Script {
      */
     fun getModules(): ImmutableList<Module> = addedModules.toImmutableList()
 
-    /**
-     * Returns the modules which bind default instances of various kernel interfaces. This list
-     * does not include required modules, such as the [scriptModule] or [KernelHardwareModule].
-     * You should use this module unless you need to override something specific.
-     *
-     * @return The default kernel modules.
-     */
-    fun getDefaultModules(): ImmutableList<Module> = immutableListOf(
-        DeviceFactory.deviceFactoryModule(),
-        UnprovisionedDeviceResourceFactory.unprovisionedDeviceResourceFactoryModule()
-    )
-
     companion object {
+
+        /**
+         * Creates the base injector all scripts start with.
+         */
+        fun makeScriptInjector(): Injector =
+            KernelHardwareModule.injector.createChildInjector(scriptModule())
+
+        /**
+         * Returns the modules which bind default instances of various kernel interfaces. This list
+         * does not include required modules, such as the [scriptModule] or [KernelHardwareModule].
+         * You should use this module unless you need to override something specific.
+         */
+        fun getDefaultModules(): ImmutableList<Module> = immutableListOf(
+            DeviceFactory.deviceFactoryModule(),
+            UnprovisionedDeviceResourceFactory.unprovisionedDeviceResourceFactoryModule()
+        )
+
         private fun scriptModule() = module {
             bind<HardwareRegistryTracker>().`in`(Singleton::class.java)
             bind<HardwareRegistry>().to<HardwareRegistryTracker>().`in`(Singleton::class.java)

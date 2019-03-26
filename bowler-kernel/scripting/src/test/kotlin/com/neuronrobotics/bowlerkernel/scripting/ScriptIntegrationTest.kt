@@ -31,7 +31,7 @@ import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTyp
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
-import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultTextScriptFactory
+import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultScriptFactory
 import com.neuronrobotics.bowlerkernel.scripting.parser.DefaultScriptLanguageParser
 import org.jlleitschuh.guice.key
 import org.jlleitschuh.guice.module
@@ -91,7 +91,7 @@ internal class ScriptIntegrationTest {
             }
         }
 
-        script.addToInjector(script.getDefaultModules())
+        script.addToInjector(Script.getDefaultModules())
         script.runScript(emptyImmutableList())
         script.stopAndCleanUp()
     }
@@ -142,7 +142,7 @@ internal class ScriptIntegrationTest {
             return injector.getInstance(Test).worked
             """.trimIndent()
 
-        val script = DefaultTextScriptFactory(
+        val script = DefaultScriptFactory(
             DefaultScriptLanguageParser()
         ).createScriptFromText("groovy", scriptText).fold(
             {
@@ -156,7 +156,7 @@ internal class ScriptIntegrationTest {
             { it }
         )
 
-        script.addToInjector(script.getDefaultModules())
+        script.addToInjector(Script.getDefaultModules())
 
         // Run the script a first time, this should work fine
         script.runScript(emptyImmutableList()).bimap(
@@ -261,7 +261,7 @@ internal class ScriptIntegrationTest {
             MyScript::class
             """.trimIndent()
 
-        val script = DefaultTextScriptFactory(
+        val script = DefaultScriptFactory(
             DefaultScriptLanguageParser()
         ).createScriptFromText("kotlin", scriptText).fold(
             {
@@ -275,7 +275,7 @@ internal class ScriptIntegrationTest {
             { it }
         )
 
-        script.addToInjector(script.getDefaultModules())
+        script.addToInjector(Script.getDefaultModules())
 
         // Run the script a first time, this should work fine
         script.runScript(emptyImmutableList()).bimap(
@@ -343,7 +343,7 @@ internal class ScriptIntegrationTest {
             TestScript::class
         """.trimIndent()
 
-        val script = DefaultTextScriptFactory(
+        val script = DefaultScriptFactory(
             DefaultScriptLanguageParser()
         ).createScriptFromText("kotlin", scriptText).fold(
             {
@@ -407,7 +407,7 @@ internal class ScriptIntegrationTest {
             TestScript::class
         """.trimIndent()
 
-        val script = DefaultTextScriptFactory(
+        val script = DefaultScriptFactory(
             DefaultScriptLanguageParser()
         ).createScriptFromText("kotlin", scriptText).fold(
             {

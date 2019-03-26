@@ -19,7 +19,7 @@ package com.neuronrobotics.bowlerkernel.scripting
 import arrow.core.flatMap
 import arrow.core.left
 import arrow.core.right
-import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultTextScriptFactory
+import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultScriptFactory
 import com.neuronrobotics.bowlerkernel.scripting.parser.ScriptLanguageParser
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
@@ -44,7 +44,7 @@ internal class DefaultScriptTest {
             on { parse(language) } doReturn ScriptLanguage.Groovy.right()
         }
 
-        val script = DefaultTextScriptFactory(
+        val script = DefaultScriptFactory(
             mockScriptLanguageParser
         ).createScriptFromText(language, scriptContent)
 
@@ -64,7 +64,7 @@ internal class DefaultScriptTest {
             on { parse(language) } doReturn "".left()
         }
 
-        val script = DefaultTextScriptFactory(
+        val script = DefaultScriptFactory(
             mockScriptLanguageParser
         ).createScriptFromText(language, scriptContent)
 
@@ -81,7 +81,7 @@ internal class DefaultScriptTest {
             on { parse(language) } doReturn ScriptLanguage.Groovy.right()
         }
 
-        val script = DefaultTextScriptFactory(
+        val script = DefaultScriptFactory(
             mockScriptLanguageParser
         ).createScriptFromText(language, scriptContent)
 
@@ -104,7 +104,7 @@ internal class DefaultScriptTest {
             on { parse(language) } doReturn ScriptLanguage.Groovy.right()
         }
 
-        val script = DefaultTextScriptFactory(
+        val script = DefaultScriptFactory(
             mockScriptLanguageParser
         ).createScriptFromText(language, scriptContent)
 
@@ -136,7 +136,7 @@ internal class DefaultScriptTest {
             on { parse(language) } doReturn ScriptLanguage.Kotlin.right()
         }
 
-        val script = DefaultTextScriptFactory(
+        val script = DefaultScriptFactory(
             mockScriptLanguageParser
         ).createScriptFromText(language, scriptContent)
 
@@ -153,7 +153,7 @@ internal class DefaultScriptTest {
             on { parse("qwerty") } doReturn "".left()
         }
 
-        val script = DefaultTextScriptFactory(
+        val script = DefaultScriptFactory(
             mockScriptLanguageParser
         ).createScriptFromText("qwerty", "")
 
