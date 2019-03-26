@@ -668,14 +668,42 @@ class SimplePacketComsProtocol(
      * @param value The value to write.
      * @param makeSendPayload Makes a send payload from a value.
      */
-    private fun <T> handleWrite(
+    private fun <S> handleWrite(
         resourceId: ResourceId,
-        value: T,
-        makeSendPayload: (T) -> ByteArray
+        value: S,
+        makeSendPayload: (S) -> ByteArray
     ) {
         val packetId = getValidatedPacketId(resourceId)
         idToSendData[packetId] = makeSendPayload(value)
         callAndWait(packetId)
+    }
+
+    /**
+     * Performs a full RPC write call:
+     * 1. Get packet id
+     * 2. Write to [idToSendData]
+     * 3. Call [callAndWait]
+     * 4. Call [parseReceivePayload] and return the result
+     *
+     * @param resourceId The resource id.
+     * @param value The value to write.
+     * @param makeSendPayload Makes a send payload from a value.
+     * @param parseReceivePayload Parses the receive payload into a value.
+     * @return The value.
+     */
+    private fun <S, R> handleWrite(
+        resourceId: ResourceId,
+        value: S,
+        makeSendPayload: (S) -> ByteArray,
+        parseReceivePayload: (ByteArray, Int, Int) -> R
+    ): R {
+        val packetId = getValidatedPacketId(resourceId)
+        idToSendData[packetId] = makeSendPayload(value)
+        callAndWait(packetId)
+
+        return idToReceiveData[packetId]!!.let {
+            parseReceivePayload(it, 0, it.size)
+        }
     }
 
     /**
