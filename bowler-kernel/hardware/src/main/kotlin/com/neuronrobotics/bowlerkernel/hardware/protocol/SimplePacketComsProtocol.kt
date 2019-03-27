@@ -52,7 +52,7 @@ import kotlin.math.pow
  * them during discovery.
  */
 @SuppressWarnings("TooManyFunctions")
-class SimplePacketComsProtocol(
+open class SimplePacketComsProtocol(
     private val comms: AbstractSimpleComsDevice,
     private val startPacketId: Int = DEFAULT_START_PACKET_ID,
     private val resourceIdValidator: ResourceIdValidator
@@ -616,7 +616,7 @@ class SimplePacketComsProtocol(
      * @param parseReceivePayload Parses the receive payload into a value.
      * @return The value.
      */
-    private fun <T> handleRead(
+    protected fun <T> handleRead(
         resourceId: ResourceId,
         parseReceivePayload: (ByteArray, Int, Int) -> T
     ): T {
@@ -641,7 +641,7 @@ class SimplePacketComsProtocol(
      * @param parseReceivePayload Parses a member's section of the group receive payload.
      * @return The values in the same order as [resourceIds].
      */
-    private fun <T> handleGroupRead(
+    protected fun <T> handleGroupRead(
         resourceIds: ImmutableList<ResourceId>,
         parseReceivePayload: (ByteArray, Int, Int) -> T
     ): ImmutableList<T> {
@@ -668,7 +668,7 @@ class SimplePacketComsProtocol(
      * @param value The value to write.
      * @param makeSendPayload Makes a send payload from a value.
      */
-    private fun <S> handleWrite(
+    protected fun <S> handleWrite(
         resourceId: ResourceId,
         value: S,
         makeSendPayload: (S) -> ByteArray
@@ -691,7 +691,7 @@ class SimplePacketComsProtocol(
      * @param parseReceivePayload Parses the receive payload into a value.
      * @return The value.
      */
-    private fun <S, R> handleWrite(
+    protected fun <S, R> handleWrite(
         resourceId: ResourceId,
         value: S,
         makeSendPayload: (S) -> ByteArray,
@@ -728,7 +728,7 @@ class SimplePacketComsProtocol(
      * 3. Call [makeGroupSendPayload] with [makeSendPayload] and write the result to [idToSendData]
      * 4. Call [callAndWait]
      */
-    private fun <T> handleGroupWrite(
+    protected fun <T> handleGroupWrite(
         resourcesAndValues: ImmutableList<Pair<ResourceId, T>>,
         makeSendPayload: (T) -> ByteArray
     ) {
@@ -861,7 +861,7 @@ class SimplePacketComsProtocol(
     }
 
     @Suppress("UNUSED_PARAMETER")
-    private fun parseAnalogReadPayload(payload: ByteArray, start: Int, end: Int): Double {
+    protected fun parseAnalogReadPayload(payload: ByteArray, start: Int, end: Int): Double {
         val buffer = ByteBuffer.allocate(2)
         buffer.put(payload[start])
         buffer.put(payload[start + 1])
@@ -875,7 +875,7 @@ class SimplePacketComsProtocol(
     override fun analogRead(resourceIds: ImmutableList<ResourceId>) =
         handleGroupRead(resourceIds, this::parseAnalogReadPayload)
 
-    private fun makeAnalogWritePayload(value: Short): ByteArray {
+    protected fun makeAnalogWritePayload(value: Short): ByteArray {
         val buffer = ByteBuffer.allocate(2)
         buffer.putShort(value)
         return buffer.array()
@@ -888,7 +888,7 @@ class SimplePacketComsProtocol(
         handleGroupWrite(resourcesAndValues, this::makeAnalogWritePayload)
 
     @Suppress("UNUSED_PARAMETER")
-    private fun parseButtonReadPayload(payload: ByteArray, start: Int, end: Int): Boolean =
+    protected fun parseButtonReadPayload(payload: ByteArray, start: Int, end: Int): Boolean =
         payload[start] == 0.toByte()
 
     override fun buttonRead(resourceId: ResourceId) =
@@ -898,7 +898,7 @@ class SimplePacketComsProtocol(
         handleGroupRead(resourceIds, this::parseButtonReadPayload)
 
     @Suppress("UNUSED_PARAMETER")
-    private fun parseDigitalReadPayload(payload: ByteArray, start: Int, end: Int): DigitalState {
+    protected fun parseDigitalReadPayload(payload: ByteArray, start: Int, end: Int): DigitalState {
         return if (payload[start] == 0.toByte()) {
             DigitalState.LOW
         } else {
@@ -912,7 +912,7 @@ class SimplePacketComsProtocol(
     override fun digitalRead(resourceIds: ImmutableList<ResourceId>) =
         handleGroupRead(resourceIds, this::parseDigitalReadPayload)
 
-    private fun makeDigitalWritePayload(value: DigitalState): ByteArray {
+    protected fun makeDigitalWritePayload(value: DigitalState): ByteArray {
         val buffer = ByteBuffer.allocate(1)
         buffer.put(value.byte)
         return buffer.array()
@@ -925,7 +925,7 @@ class SimplePacketComsProtocol(
         handleGroupWrite(resourcesAndValues, this::makeDigitalWritePayload)
 
     @Suppress("UNUSED_PARAMETER")
-    private fun parseEncoderReadPayload(payload: ByteArray, start: Int, end: Int): Long {
+    protected fun parseEncoderReadPayload(payload: ByteArray, start: Int, end: Int): Long {
         TODO()
     }
 
@@ -936,7 +936,7 @@ class SimplePacketComsProtocol(
         handleGroupRead(resourceIds, this::parseEncoderReadPayload)
 
     @Suppress("UNUSED_PARAMETER")
-    private fun makeToneWritePayload(frequencyAndDuration: Pair<Int, Long>): ByteArray {
+    protected fun makeToneWritePayload(frequencyAndDuration: Pair<Int, Long>): ByteArray {
         TODO()
     }
 
@@ -947,7 +947,7 @@ class SimplePacketComsProtocol(
         handleWrite(resourceId, frequency to duration, this::makeToneWritePayload)
 
     @Suppress("UNUSED_PARAMETER")
-    private fun makeSerialWritePayload(message: String): ByteArray {
+    protected fun makeSerialWritePayload(message: String): ByteArray {
         TODO()
     }
 
@@ -955,7 +955,7 @@ class SimplePacketComsProtocol(
         handleWrite(resourceId, message, this::makeSerialWritePayload)
 
     @Suppress("UNUSED_PARAMETER")
-    private fun parseSerialReadPayload(payload: ByteArray, start: Int, end: Int): String {
+    protected fun parseSerialReadPayload(payload: ByteArray, start: Int, end: Int): String {
         TODO()
     }
 
@@ -963,7 +963,7 @@ class SimplePacketComsProtocol(
         handleRead(resourceId, this::parseSerialReadPayload)
 
     @Suppress("UNUSED_PARAMETER")
-    private fun makeServoWritePayload(angle: Double): ByteArray {
+    protected fun makeServoWritePayload(angle: Double): ByteArray {
         TODO()
     }
 
@@ -974,7 +974,7 @@ class SimplePacketComsProtocol(
         handleGroupWrite(resourcesAndValues, this::makeServoWritePayload)
 
     @Suppress("UNUSED_PARAMETER")
-    private fun parseServoReadPayload(payload: ByteArray, start: Int, end: Int): Double {
+    protected fun parseServoReadPayload(payload: ByteArray, start: Int, end: Int): Double {
         TODO()
     }
 
@@ -985,7 +985,7 @@ class SimplePacketComsProtocol(
         handleGroupRead(resourceIds, this::parseServoReadPayload)
 
     @Suppress("UNUSED_PARAMETER")
-    private fun makeStepperWritePayload(stepsAndSpeed: Pair<Int, Int>): ByteArray {
+    protected fun makeStepperWritePayload(stepsAndSpeed: Pair<Int, Int>): ByteArray {
         TODO()
     }
 
@@ -996,7 +996,7 @@ class SimplePacketComsProtocol(
         handleGroupWrite(resourcesAndValues, this::makeStepperWritePayload)
 
     @Suppress("UNUSED_PARAMETER")
-    private fun parseUltrasonicReadPayload(payload: ByteArray, start: Int, end: Int): Long {
+    protected fun parseUltrasonicReadPayload(payload: ByteArray, start: Int, end: Int): Long {
         TODO()
     }
 
@@ -1041,10 +1041,10 @@ class SimplePacketComsProtocol(
         /**
          * The operation ID's.
          */
-        private const val OPERATION_DISCOVERY_ID = 1.toByte()
-        private const val OPERATION_GROUP_DISCOVERY_ID = 2.toByte()
-        private const val OPERATION_GROUP_MEMBER_DISCOVERY_ID = 3.toByte()
-        private const val OPERATION_DISCARD_DISCOVERY_ID = 4.toByte()
+        const val OPERATION_DISCOVERY_ID = 1.toByte()
+        const val OPERATION_GROUP_DISCOVERY_ID = 2.toByte()
+        const val OPERATION_GROUP_MEMBER_DISCOVERY_ID = 3.toByte()
+        const val OPERATION_DISCARD_DISCOVERY_ID = 4.toByte()
 
         /**
          * The status codes.
