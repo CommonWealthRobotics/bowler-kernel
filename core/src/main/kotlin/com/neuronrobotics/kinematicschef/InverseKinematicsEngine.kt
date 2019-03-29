@@ -48,12 +48,17 @@ import org.ejml.simple.SimpleMatrix
 import org.jlleitschuh.guice.key
 import org.jlleitschuh.guice.module
 import org.octogonapus.ktguava.collections.immutableListOf
+import java.lang.Math.signum
 import java.lang.Math.toDegrees
 import javax.inject.Inject
 import kotlin.math.PI
 import kotlin.math.absoluteValue
+import kotlin.math.acos
+import kotlin.math.atan
 import kotlin.math.atan2
+import kotlin.math.cos
 import kotlin.math.pow
+import kotlin.math.sin
 import kotlin.math.sqrt
 
 /**
@@ -124,47 +129,47 @@ class InverseKinematicsEngine
                 )
 
             val wristA = dhParams.forwardKinematics(
-                arrayOf(
+                doubleArrayOf(
                     theta1,
                     theta23s[0][0],
                     theta23s[0][1],
                     theta456ElbowUp[0][0],
                     theta456ElbowUp[0][1],
                     theta456ElbowUp[0][2]
-                ).toDoubleArray()
+                )
             ).getTranslation()
 
             val wristB = dhParams.forwardKinematics(
-                arrayOf(
+                doubleArrayOf(
                     theta1,
                     theta23s[0][0],
                     theta23s[0][1],
                     theta456ElbowUp[1][0],
                     theta456ElbowUp[1][1],
                     theta456ElbowUp[1][2]
-                ).toDoubleArray()
+                )
             ).getTranslation()
 
             val wristC = dhParams.forwardKinematics(
-                arrayOf(
+                doubleArrayOf(
                     theta1,
                     theta23s[1][0],
                     theta23s[1][1],
                     theta456ElbowDown[0][0],
                     theta456ElbowDown[0][1],
                     theta456ElbowDown[0][2]
-                ).toDoubleArray()
+                )
             ).getTranslation()
 
             val wristD = dhParams.forwardKinematics(
-                arrayOf(
+                doubleArrayOf(
                     theta1,
                     theta23s[1][0],
                     theta23s[1][1],
                     theta456ElbowDown[1][0],
                     theta456ElbowDown[1][1],
                     theta456ElbowDown[1][2]
-                ).toDoubleArray()
+                )
             ).getTranslation()
 
             when {
@@ -263,13 +268,13 @@ internal fun ImmutableList<DhParam>.computeDOffset(theta1: Double): SimpleMatrix
         DhParam(this[0].d, 0, this[0].r, this[0].alpha),
         DhParam(this[1].d, 0, this[1].r, this[1].alpha),
         DhParam(this[2].d, 0, 0, this[2].alpha)
-    ).forwardKinematics(arrayOf(theta1, 0.0, 0.0).toDoubleArray()).cols(3, 4).rows(0, 2)
+    ).forwardKinematics(doubleArrayOf(theta1, 0.0, 0.0)).cols(3, 4).rows(0, 2)
 
     val vectorB = immutableListOf(
         DhParam(this[0].d, 0, this[0].r, this[0].alpha),
         DhParam(this[1].d, 0, this[1].r, this[1].alpha),
         DhParam(this[2].d, 0, 1, this[2].alpha)
-    ).forwardKinematics(arrayOf(theta1, 0.0, 0.0).toDoubleArray()).cols(3, 4).rows(0, 2)
+    ).forwardKinematics(doubleArrayOf(theta1, 0.0, 0.0)).cols(3, 4).rows(0, 2)
 
     return Try {
         vectorB.project(vectorA)
@@ -290,21 +295,21 @@ internal fun ImmutableList<DhParam>.computeTheta1(
         }
 
         return immutableListOf(
-            Math.atan2(wristCenter[1], wristCenter[0]),
-            PI + Math.atan2(wristCenter[1], wristCenter[0])
+            atan2(wristCenter[1], wristCenter[0]),
+            PI + atan2(wristCenter[1], wristCenter[0])
         )
     }
 
     // left and right arm solutions, see spong pg. 90
-    val phi = Math.atan2(wristCenter[1], wristCenter[0])
-    val leftArmSolution = phi - Math.atan2(
+    val phi = atan2(wristCenter[1], wristCenter[0])
+    val leftArmSolution = phi - atan2(
         dOffset.length(),
-        Math.sqrt(wristCenter[1].pow(2) + wristCenter[0].pow(2) - dOffset.length().pow(2))
+        sqrt(wristCenter[1].pow(2) + wristCenter[0].pow(2) - dOffset.length().pow(2))
     )
 
-    val rightArmSolution = phi + Math.atan2(
+    val rightArmSolution = phi + atan2(
         -dOffset.length(),
-        -Math.sqrt(wristCenter[1].pow(2) + wristCenter[0].pow(2) - dOffset.length().pow(2))
+        -sqrt(wristCenter[1].pow(2) + wristCenter[0].pow(2) - dOffset.length().pow(2))
     )
 
     return immutableListOf(
@@ -330,43 +335,42 @@ internal fun ImmutableList<DhParam>.computeTheta23(
     theta1: Double
 ): ImmutableList<ImmutableList<Double>> {
     // vectors between joints
-    val originTo2 =
-        this.subList(0, 1).forwardKinematics(arrayOf(0.0).toDoubleArray()).getTranslation()
-    val joint2To3 = (this.subList(0, 2).forwardKinematics(arrayOf(0.0, 0.0).toDoubleArray()) -
-        this.subList(0, 1).forwardKinematics(arrayOf(0.0).toDoubleArray())).getTranslation()
-    val joint3ToWristCenter =
-        (this.subList(0, 4).forwardKinematics(arrayOf(0.0, 0.0, 0.0, 0.0).toDoubleArray()) -
-            this.subList(0, 2).forwardKinematics(
-                arrayOf(
-                    0.0,
-                    0.0
-                ).toDoubleArray()
-            )).getTranslation()
-    val joint3To4 = (this.subList(0, 3).forwardKinematics(arrayOf(0.0, 0.0, 0.0).toDoubleArray()) -
-        this.subList(0, 2).forwardKinematics(arrayOf(0.0, 0.0).toDoubleArray())).getTranslation()
+    val originTo2 = subList(0, 1).forwardKinematics(doubleArrayOf(0.0)).getTranslation()
+
+    val joint2To3 = (subList(0, 2).forwardKinematics(doubleArrayOf(0.0, 0.0))
+        - subList(0, 1).forwardKinematics(doubleArrayOf(0.0))).getTranslation()
+
+    val joint3ToWristCenter = (subList(0, 4).forwardKinematics(
+        doubleArrayOf(0.0, 0.0, 0.0, 0.0)
+    ) - subList(0, 2).forwardKinematics(doubleArrayOf(0.0, 0.0))).getTranslation()
+
+    val joint3To4 = (subList(0, 3).forwardKinematics(
+        doubleArrayOf(0.0, 0.0, 0.0)
+    ) - subList(0, 2).forwardKinematics(doubleArrayOf(0.0, 0.0))).getTranslation()
 
     val theta1Rotation = SimpleMatrix(3, 3).also {
-        it[0, 0] = Math.cos(-theta1)
-        it[0, 1] = -Math.sin(-theta1)
-        it[1, 0] = Math.sin(-theta1)
-        it[1, 1] = Math.cos(-theta1)
+        it[0, 0] = cos(-theta1)
+        it[0, 1] = -sin(-theta1)
+        it[1, 0] = sin(-theta1)
+        it[1, 1] = cos(-theta1)
         it[2, 2] = 1.0
     }
 
     val rotatedWristCenter = theta1Rotation.mult(wristCenter)
 
-    val dOffset = this.computeDOffset(0.0)
-    val offsetOrigin = SimpleMatrix(3, 1)
-    offsetOrigin[0] = dOffset[0]
-    offsetOrigin[1] = dOffset[1]
-    offsetOrigin[2] = 0.0
+    val dOffset = computeDOffset(0.0)
+    val offsetOrigin = SimpleMatrix(3, 1).also {
+        it[0] = dOffset[0]
+        it[1] = dOffset[1]
+        it[2] = 0.0
+    }
 
     val offsetNormal = when {
         offsetOrigin.length() < 0.001 -> SimpleMatrix(3, 3).also {
-            it[0, 0] = Math.cos(-PI / 2)
-            it[0, 1] = -Math.sin(-PI / 2)
-            it[1, 0] = Math.sin(-PI / 2)
-            it[1, 1] = Math.cos(-PI / 2)
+            it[0, 0] = cos(-PI / 2)
+            it[0, 1] = -sin(-PI / 2)
+            it[1, 0] = sin(-PI / 2)
+            it[1, 1] = cos(-PI / 2)
             it[2, 2] = 1.0
         }.mult(SimpleMatrix(3, 1).also { it[0] = 1.0 })
 
@@ -374,11 +378,15 @@ internal fun ImmutableList<DhParam>.computeTheta23(
     }
 
     val projectedOriginTo2 = originTo2.projectOntoPlane(offsetOrigin, offsetNormal) - offsetOrigin
-    val projectedWristCenter = rotatedWristCenter
-        .projectOntoPlane(offsetOrigin, offsetNormal) - offsetOrigin - projectedOriginTo2
 
-    val projected3ToCenter =
-        joint3ToWristCenter.projectOntoPlane(offsetOrigin, offsetNormal) - offsetOrigin
+    val projectedWristCenter = rotatedWristCenter.projectOntoPlane(
+        offsetOrigin, offsetNormal
+    ) - offsetOrigin - projectedOriginTo2
+
+    val projected3ToCenter = joint3ToWristCenter.projectOntoPlane(
+        offsetOrigin, offsetNormal
+    ) - offsetOrigin
+
     val projected3To4 = joint3To4.projectOntoPlane(offsetOrigin, offsetNormal) - offsetOrigin
     val projected2To3 = joint2To3.projectOntoPlane(offsetOrigin, offsetNormal) - offsetOrigin
 
@@ -386,30 +394,30 @@ internal fun ImmutableList<DhParam>.computeTheta23(
         val vectorA = immutableListOf(
             DhParam(this[0].d, 0.0, this[0].r, this[0].alpha),
             DhParam(1.0, 0.0, 0.0, 0.0)
-        ).forwardKinematics(arrayOf(0.0, 0.0, 0.0).toDoubleArray()).getTranslation()
+        ).forwardKinematics(doubleArrayOf(0.0, 0.0, 0.0)).getTranslation()
 
         val vectorB = immutableListOf(
             DhParam(this[0].d, 0.0, this[0].r, this[0].alpha)
-        ).forwardKinematics(arrayOf(0.0, 0.0, 0.0).toDoubleArray()).getTranslation()
+        ).forwardKinematics(doubleArrayOf(0.0, 0.0, 0.0)).getTranslation()
 
         val vectorC = vectorA - vectorB
-        Math.signum(if (vectorC[0] == 0.0) 1.0 else vectorC[0]) *
-            Math.signum(if (vectorC[1] == 0.0) 1.0 else vectorC[1]) * -1.0
+        signum(if (vectorC[0] == 0.0) 1.0 else vectorC[0]) *
+            signum(if (vectorC[1] == 0.0) 1.0 else vectorC[1]) * -1.0
     }
 
     val vectorA = immutableListOf(
         DhParam(this[0].d, 0.0, this[0].r, this[0].alpha),
         DhParam(this[1].d, 0.0, this[1].r, this[1].alpha),
         DhParam(1.0, 0.0, 0.0, 0.0)
-    ).forwardKinematics(arrayOf(0.0, 0.0, 0.0).toDoubleArray()).getTranslation()
+    ).forwardKinematics(doubleArrayOf(0.0, 0.0, 0.0)).getTranslation()
 
     val vectorB = immutableListOf(
         DhParam(this[0].d, 0.0, this[0].r, this[0].alpha),
         DhParam(this[1].d, 0.0, this[0].r, this[1].alpha)
-    ).forwardKinematics(arrayOf(0.0, 0.0, 0.0).toDoubleArray()).getTranslation()
+    ).forwardKinematics(doubleArrayOf(0.0, 0.0, 0.0)).getTranslation()
 
     val vectorC = vectorA - vectorB
-    val signTheta3 = Math.signum(if (vectorC[1] == 0.0) 1.0 else vectorC[1])
+    val signTheta3 = signum(if (vectorC[1] == 0.0) 1.0 else vectorC[1])
 
     val signTheta3Offset = run {
         val projection34To3Center = projected3To4.project(projected3ToCenter)
@@ -426,25 +434,24 @@ internal fun ImmutableList<DhParam>.computeTheta23(
         }
     }
 
-    val theta3Offset = Math.acos(
+    val theta3Offset = acos(
         projected3To4.divide(projected3To4.length()).dot(
             projected3ToCenter.divide(projected3ToCenter.length())
         )
     ) * signTheta3Offset
 
-    val r = Math.sqrt(projectedWristCenter[0].pow(2) + projectedWristCenter[1].pow(2))
+    val r = sqrt(projectedWristCenter[0].pow(2) + projectedWristCenter[1].pow(2))
     val s = projectedWristCenter[2]
-    val bigD = (
-        r.pow(2) + s.pow(2) -
-            projected2To3.length().pow(2) - projected3ToCenter.length().pow(2)
-        ) / (2 * projected2To3.length() * projected3ToCenter.length())
+    val bigD = (r.pow(2) + s.pow(2) - projected2To3.length().pow(2)
+        - projected3ToCenter.length().pow(2)) /
+        (2 * projected2To3.length() * projected3ToCenter.length())
 
     val thetas3 = immutableListOf(
-        Math.atan2(sqrt(1 - bigD.pow(2)), bigD),
-        Math.atan2(-sqrt(1 - bigD.pow(2)), bigD)
+        atan2(sqrt(1 - bigD.pow(2)), bigD),
+        atan2(-sqrt(1 - bigD.pow(2)), bigD)
     )
 
-    val phi = Math.acos(
+    val phi = acos(
         (projected3ToCenter.length().pow(2) + projectedWristCenter.length().pow(2) -
             projected2To3.length().pow(2)) / (2 * projected3ToCenter.length() *
             projectedWristCenter.length())
@@ -457,10 +464,10 @@ internal fun ImmutableList<DhParam>.computeTheta23(
     }
 
     val rot = SimpleMatrix(2, 2).also {
-        it[0, 0] = Math.cos(phi)
-        it[0, 1] = -Math.sin(phi)
-        it[1, 0] = Math.sin(phi)
-        it[1, 1] = Math.cos(phi)
+        it[0, 0] = cos(phi)
+        it[0, 1] = -sin(phi)
+        it[1, 0] = sin(phi)
+        it[1, 1] = cos(phi)
     }
 
     val elbowDown = SimpleMatrix(3, 1).also {
@@ -468,8 +475,6 @@ internal fun ImmutableList<DhParam>.computeTheta23(
         it[0] = v2[0]
         it[2] = v2[1]
     }
-
-    val projected23ElbowDown = projectedWristCenter + elbowDown
 
     rot[0, 1] *= -1.0
     rot[1, 0] *= -1.0
@@ -479,24 +484,27 @@ internal fun ImmutableList<DhParam>.computeTheta23(
         it[0] = v2[0]
         it[2] = v2[1]
     }
-    val projected23ElbowUp = projectedWristCenter + elbowUp
 
-    val theta2ElbowUp = Math.signum(projected23ElbowUp[2]) *
-        Math.acos(SimpleMatrix(2, 1).also { it[0] = 1.0; it[1] = 0.0 }
-            .dot(projected23ElbowUp.divide(projected23ElbowUp.length())))
+    fun computePossibleTheta2(elbow: SimpleMatrix): Double {
+        val projectedElbow = projectedWristCenter + elbow
+        return signum(projectedElbow[2]) * acos(
+            SimpleMatrix(2, 1)
+                .also { it[0] = 1.0; it[1] = 0.0 }
+                .dot(projectedElbow.divide(projectedElbow.length()))
+        )
+    }
 
-    val theta2ElbowDown = Math.signum(projected23ElbowDown[2]) *
-        Math.acos(SimpleMatrix(2, 1).also { it[0] = 1.0; it[1] = 0.0 }
-            .dot(projected23ElbowDown.divide(projected23ElbowDown.length())))
+    val theta2ElbowUp = computePossibleTheta2(elbowUp)
+    val theta2ElbowDown = computePossibleTheta2(elbowDown)
 
     /*val thetas2 = immutableListOf(
-            Math.atan2(s, r) - Math.atan2(
-                    projected3ToCenter.length()*Math.sin(thetas3[0]),
-                    projected2To3.length() + projected3ToCenter.length() * Math.cos(thetas3[0])
+            atan2(s, r) - atan2(
+                    projected3ToCenter.length()*sin(thetas3[0]),
+                    projected2To3.length() + projected3ToCenter.length() * cos(thetas3[0])
             ),
-            Math.atan2(s, r) - Math.atan2(
-                    projected3ToCenter.length()*Math.sin(thetas3[1]),
-                    projected2To3.length() + projected3ToCenter.length() * Math.cos(thetas3[1])
+            atan2(s, r) - atan2(
+                    projected3ToCenter.length()*sin(thetas3[1]),
+                    projected2To3.length() + projected3ToCenter.length() * cos(thetas3[1])
             )
     )*/
 
@@ -520,9 +528,9 @@ internal fun ImmutableList<DhParam>.computeTheta456(
     theta3: Double
 ): ImmutableList<ImmutableList<Double>> {
 
-    val wristOrigin =
-        this.subList(0, 3).forwardKinematics(arrayOf(theta1, theta2, theta3).toDoubleArray())
-            .getTranslation()
+    val wristOrigin = subList(0, 3)
+        .forwardKinematics(doubleArrayOf(theta1, theta2, theta3))
+        .getTranslation()
 
     val zUnit = SimpleMatrix(3, 1).also { it[2] = 1.0 }
 
@@ -532,7 +540,7 @@ internal fun ImmutableList<DhParam>.computeTheta456(
     // val wristOriginToCenter = originRot.mult(originToCenter)
     val wristCenterToTarget = originRot.mult(target.getTranslation() - wristCenter)
 
-    val r = Math.sqrt(wristCenterToTarget[0].pow(2) + wristCenterToTarget[1].pow(2))
+    val r = sqrt(wristCenterToTarget[0].pow(2) + wristCenterToTarget[1].pow(2))
     val s = wristCenterToTarget[2]
 
     // if singularity condition, theta4 is free, set to 0
@@ -547,8 +555,8 @@ internal fun ImmutableList<DhParam>.computeTheta456(
     }
 
     val theta5 = immutableListOf(
-        if (r.absoluteValue > 0.001) Math.atan(s / r) - PI / 2 else 0.0,
-        if (r.absoluteValue > 0.001) PI / 2 - Math.atan(s / r) else 0.0
+        if (r.absoluteValue > 0.001) atan(s / r) - PI / 2 else 0.0,
+        if (r.absoluteValue > 0.001) PI / 2 - atan(s / r) else 0.0
     )
 
     val targetDirVector = target.mult(SimpleMatrix(4, 1).also {
@@ -566,18 +574,18 @@ internal fun ImmutableList<DhParam>.computeTheta456(
             this[0], this[1], this[2], this[3], this[4], this[5],
             DhParam(0.0, 0.0, 1.0, 0.0)
         ).forwardKinematics(
-            arrayOf(
+            doubleArrayOf(
                 theta1, theta2, theta3, theta4[0], theta5[0], 0.0, 0.0
-            ).toDoubleArray()
+            )
         ).cols(3, 4).rows(0, 4) - target.cols(3, 4).rows(0, 4),
 
         immutableListOf(
             this[0], this[1], this[2], this[3], this[4], this[5],
             DhParam(0.0, 0.0, 1.0, 0.0)
         ).forwardKinematics(
-            arrayOf(
+            doubleArrayOf(
                 theta1, theta2, theta3, theta4[1], theta5[1], 0.0, 0.0
-            ).toDoubleArray()
+            )
         ).cols(3, 4).rows(0, 4) - target.cols(3, 4).rows(0, 4)
     )
 
