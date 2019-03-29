@@ -52,8 +52,7 @@ class InverseKinematicsEngineThetaTest {
                     0.0,
                     0.0
                 ).toDoubleArray()
-            )
-                .cols(3, 4).rows(0, 3)
+            ).cols(3, 4).rows(0, 3)
             assert(cmmParams.computeTheta1(wristCenter)[0] - it * 0.01 < 0.001)
         }
     }
@@ -68,8 +67,7 @@ class InverseKinematicsEngineThetaTest {
                     0.0,
                     0.0
                 ).toDoubleArray()
-            )
-                .cols(3, 4).rows(0, 3)
+            ).cols(3, 4).rows(0, 3)
             assert(hephaestusParams.computeTheta1(wristCenter)[0] - it * 0.01 < 0.001)
         }
     }
@@ -86,8 +84,7 @@ class InverseKinematicsEngineThetaTest {
                     0.0,
                     0.0
                 ).toDoubleArray()
-            )
-                .cols(3, 4).rows(0, 3)
+            ).cols(3, 4).rows(0, 3)
             assert(pumaParams.computeTheta1(wristCenter)[0] - it * 0.01 < 0.001)
         }
     }
@@ -177,8 +174,7 @@ class InverseKinematicsEngineThetaTest {
                     -PI / 4 - 0.52933 + 1.38545,
                     0.0
                 ).toDoubleArray()
-            )
-            .cols(3, 4).rows(0, 3)
+            ).cols(3, 4).rows(0, 3)
         val theta1 = cmmParams.computeTheta1(wristCenter)[0]
         val thetas23 = cmmParams.computeTheta23(wristCenter, theta1)
         val thetas456ElbowUp =
@@ -220,8 +216,7 @@ class InverseKinematicsEngineThetaTest {
                     PI / 4 + 0.81979,
                     0.0
                 ).toDoubleArray()
-            )
-                .cols(3, 4).rows(0, 3)
+            ).cols(3, 4).rows(0, 3)
         val theta1 = hephaestusParams.computeTheta1(wristCenter)[0]
         val thetas23 = hephaestusParams.computeTheta23(wristCenter, 0.0)
 

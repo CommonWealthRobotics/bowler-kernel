@@ -20,6 +20,7 @@ package com.neuronrobotics.kinematicschef.util
 
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import org.ejml.simple.SimpleMatrix
+import kotlin.math.acos
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -231,4 +232,13 @@ fun SimpleMatrix.getRotationBetween(other: SimpleMatrix): SimpleMatrix {
     }
 
     return SimpleMatrix.identity(3) + vx + vx.mult(vx).elementMult(1.0 / (1.0 + cos))
+}
+
+/**
+ * Calculates the angle between the two vectors.
+ */
+fun SimpleMatrix.angleBetweenVector(other: SimpleMatrix): Double {
+    require(isVector)
+    require(other.isVector)
+    return acos(dot(other) / (length() * other.length()))
 }

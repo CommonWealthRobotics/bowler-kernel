@@ -31,6 +31,7 @@ import com.neuronrobotics.kinematicschef.dhparam.RevoluteJoint
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
+import com.neuronrobotics.kinematicschef.util.angleBetweenVector
 import com.neuronrobotics.kinematicschef.util.cross
 import com.neuronrobotics.kinematicschef.util.elementMult
 import com.neuronrobotics.kinematicschef.util.getRotationBetween
@@ -585,25 +586,16 @@ internal fun ImmutableList<DhParam>.computeTheta456(
         targetDirVector.cross(currentDirVectors[1])
     )
 
+    fun computePossibleTheta6(currentDirVector: SimpleMatrix) =
+        if ((targetDirNormal - cross[0]).length() < 0.001) 1.0 else -1.0 *
+            if ((targetDirVector - currentDirVector).length() < 0.001)
+                0.0
+            else
+                targetDirVector.angleBetweenVector(currentDirVector)
+
     val theta6 = immutableListOf(
-        (if ((targetDirNormal - cross[0]).length() < 0.001) {
-            1.0
-        } else {
-            -1.0
-        }) * if ((targetDirVector - currentDirVectors[0]).length() < 0.001) {
-            0.0
-        } else {
-            Math.acos(targetDirVector.dot(currentDirVectors[0]))
-        },
-        (if ((targetDirNormal - cross[1]).length() < 0.001) {
-            1.0
-        } else {
-            -1.0
-        }) * if ((targetDirVector - currentDirVectors[1]).length() < 0.001) {
-            0.0
-        } else {
-            Math.acos(targetDirVector.dot(currentDirVectors[1]))
-        }
+        computePossibleTheta6(currentDirVectors[0]),
+        computePossibleTheta6(currentDirVectors[1])
     )
 
     return immutableListOf(
