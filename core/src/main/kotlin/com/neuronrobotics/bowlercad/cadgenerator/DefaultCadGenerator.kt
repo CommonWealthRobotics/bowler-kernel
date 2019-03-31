@@ -44,7 +44,7 @@ import kotlin.concurrent.thread
 class DefaultCadGenerator(
     private val bodyThickness: Double = 5.0,
     private val cuboidThickness: Double = 5.0,
-    private val lengthForParamZero: Double = 0.0
+    private val lengthForParamZero: Double = 0.1
 ) : CadGenerator {
 
     private val updateCadThreads = mutableListOf<Thread>()
@@ -88,7 +88,7 @@ class DefaultCadGenerator(
                         )
 
                         try {
-                            Thread.sleep(16)
+                            Thread.sleep(20)
                         } catch (ex: InterruptedException) {
                             Thread.currentThread().interrupt()
                         }
