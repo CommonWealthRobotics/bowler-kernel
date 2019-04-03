@@ -79,12 +79,17 @@ class DefaultCadGenerator(
                 thread(name = "Update Limb CAD (${limb.id})", isDaemon = true) {
                     val linkTransforms =
                         limb.links.map { it.dhParam.frameTransformation }.toImmutableList()
+                    val limbAngleBuffer = MutableList(limb.jointAngleControllers.size) {
+                        FrameTransformation.identity
+                    }
 
                     while (!Thread.currentThread().isInterrupted) {
                         updateLimb(
                             limbCad,
                             linkTransforms,
-                            limb.jointAngleControllers.map { it.getCurrentAngle() }
+                            limb.jointAngleControllers.map(limbAngleBuffer) {
+                                FrameTransformation.fromRotation(0, 0, it.getCurrentAngle())
+                            }
                         )
 
                         try {
@@ -108,19 +113,18 @@ class DefaultCadGenerator(
     companion object {
 
         /**
-         * Updates the CAD for a limb with new thetas. Writes directly to the [CSG.manipulator].
+         * Updates the CAD for a limb with new frameTransforms. Writes directly to the
+         * [CSG.manipulator].
          *
          * @param cad The limb CAD.
          * @param linkTransforms A [FrameTransformation] for each link's [DhParam].
-         * @param thetas The new thetas.
+         * @param frameTransforms The new link frame transforms.
          */
         internal fun updateLimb(
             cad: ImmutableSet<ImmutableSet<CSG>>,
             linkTransforms: List<FrameTransformation>,
-            thetas: List<Double>
+            frameTransforms: List<FrameTransformation>
         ) {
-            val rotations = thetas.map { FrameTransformation.fromRotation(0, 0, it) }
-
             val dhTransformList = mutableListOf<FrameTransformation>()
             var transform = FrameTransformation.identity
             for (i in 0 until linkTransforms.size) {
@@ -129,7 +133,7 @@ class DefaultCadGenerator(
                 else
                     linkTransforms[i - 1]
 
-                transform *= dhTransform * rotations[i]
+                transform *= dhTransform * frameTransforms[i]
                 dhTransformList.add(transform)
             }
 
@@ -154,5 +158,24 @@ class DefaultCadGenerator(
             transformed(
                 dhParams.toFrameTransformation().toTransform().apply { if (inverse) invert() }
             )
+
+        /**
+         * Returns a list containing the results of applying the given [transform] function
+         * to each element in the original collection.
+         *
+         * @param target The list to write the mapped values to.
+         * @param transform The mapping function.
+         * @return The mapped list.
+         */
+        private inline fun <T, R> Iterable<T>.map(
+            target: MutableList<R>,
+            transform: (T) -> R
+        ): List<R> {
+            forEachIndexed { index, element ->
+                target[index] = transform(element)
+            }
+
+            return target
+        }
     }
 }

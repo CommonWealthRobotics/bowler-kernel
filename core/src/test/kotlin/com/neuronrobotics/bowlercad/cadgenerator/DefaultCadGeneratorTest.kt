@@ -24,6 +24,7 @@ import com.natpryce.hamkrest.hasSize
 import com.neuronrobotics.bowlercad.cmmInputArmDhParams
 import com.neuronrobotics.bowlercad.createMockKinematicBase
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
+import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import eu.mihosoft.vrl.v3d.CSG
 import javafx.scene.paint.Color
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -102,7 +103,7 @@ internal class DefaultCadGeneratorTest {
         DefaultCadGenerator.updateLimb(
             result,
             base.limbs.first().links.map { it.dhParam.frameTransformation },
-            listOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+            List(6) { FrameTransformation.identity }
         )
 
         result = transformLimbCSGsByManipulators(result)
