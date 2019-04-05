@@ -43,7 +43,7 @@ internal class TestWithEsp32 {
     private class TestScript
     @Inject constructor(
         private val deviceFactory: BowlerDeviceFactory,
-        private val digitalOutFactoryFactory: UnprovisionedDigitalOutFactory.Factory
+        private val resourceFactory: UnprovisionedDigitalOutFactory
     ) : Script() {
         override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
             val device = deviceFactory.makeBowlerDevice(
@@ -57,13 +57,13 @@ internal class TestWithEsp32 {
                 )
             ).fold({ throw IllegalStateException(it) }, { it })
 
-            val digitalOutFactory = digitalOutFactoryFactory.create(device)
-
-            val led1 = digitalOutFactory.makeUnprovisionedDigitalOut(
+            val led1 = resourceFactory.makeUnprovisionedDigitalOut(
+                device,
                 DefaultAttachmentPoints.Pin(32)
             ).fold({ throw IllegalStateException(it) }, { it })
 
-            val led2 = digitalOutFactory.makeUnprovisionedDigitalOut(
+            val led2 = resourceFactory.makeUnprovisionedDigitalOut(
+                device,
                 DefaultAttachmentPoints.Pin(33)
             ).fold({ throw IllegalStateException(it) }, { it })
 

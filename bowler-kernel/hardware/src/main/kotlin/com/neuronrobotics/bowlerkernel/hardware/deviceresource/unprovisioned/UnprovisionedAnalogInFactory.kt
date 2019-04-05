@@ -26,20 +26,12 @@ interface UnprovisionedAnalogInFactory {
     /**
      * Makes an [UnprovisionedAnalogIn] attached to a device.
      *
+     * @param device The device this analog in is attached to.
      * @param attachmentPoint The attachment point.
      * @return An [UnprovisionedAnalogIn] on success, a [RegisterError] on failure.
      */
     fun makeUnprovisionedAnalogIn(
+        device: BowlerDevice,
         attachmentPoint: AttachmentPoint
     ): Either<RegisterError, UnprovisionedAnalogIn>
-
-    interface Factory {
-
-        /**
-         * Factory for assisted injection.
-         *
-         * @param device The device this analog in is attached to.
-         */
-        fun create(device: BowlerDevice): UnprovisionedAnalogInFactory
-    }
 }

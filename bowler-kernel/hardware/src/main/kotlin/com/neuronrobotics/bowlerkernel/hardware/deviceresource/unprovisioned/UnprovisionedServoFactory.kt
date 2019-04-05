@@ -26,20 +26,12 @@ interface UnprovisionedServoFactory {
     /**
      * Makes an [UnprovisionedServo] attached to a device.
      *
+     * @param device The device this servo is attached to.
      * @param attachmentPoint The attachment point.
      * @return An [UnprovisionedServo] on success, a [RegisterError] on failure.
      */
     fun makeUnprovisionedServo(
+        device: BowlerDevice,
         attachmentPoint: AttachmentPoint
     ): Either<RegisterError, UnprovisionedServo>
-
-    interface Factory {
-
-        /**
-         * Factory for assisted injection.
-         *
-         * @param device The device this servo is attached to.
-         */
-        fun create(device: BowlerDevice): UnprovisionedServoFactory
-    }
 }

@@ -26,20 +26,12 @@ interface UnprovisionedPiezoelectricSpeakerFactory {
     /**
      * Makes an [UnprovisionedPiezoelectricSpeaker] attached to a device.
      *
+     * @param device The device this piezoelectric speaker is attached to.
      * @param attachmentPoint The attachment point.
      * @return An [UnprovisionedPiezoelectricSpeaker] on success, a [RegisterError] on failure.
      */
     fun makeUnprovisionedPiezoelectricSpeaker(
+        device: BowlerDevice,
         attachmentPoint: AttachmentPoint
     ): Either<RegisterError, UnprovisionedPiezoelectricSpeaker>
-
-    interface Factory {
-
-        /**
-         * Factory for assisted injection.
-         *
-         * @param device The device this piezoelectric speaker is attached to.
-         */
-        fun create(device: BowlerDevice): UnprovisionedPiezoelectricSpeakerFactory
-    }
 }

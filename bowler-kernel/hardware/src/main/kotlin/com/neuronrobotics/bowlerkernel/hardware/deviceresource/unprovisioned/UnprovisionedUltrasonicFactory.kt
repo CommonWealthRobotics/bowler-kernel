@@ -26,20 +26,12 @@ interface UnprovisionedUltrasonicFactory {
     /**
      * Makes an [UnprovisionedUltrasonic] attached to a device.
      *
+     * @param device The device this ultrasonic is attached to.
      * @param attachmentPoint The attachment point.
      * @return An [UnprovisionedUltrasonic] on success, a [RegisterError] on failure.
      */
     fun makeUnprovisionedUltrasonic(
+        device: BowlerDevice,
         attachmentPoint: AttachmentPoint
     ): Either<RegisterError, UnprovisionedUltrasonic>
-
-    interface Factory {
-
-        /**
-         * Factory for assisted injection.
-         *
-         * @param device The device this ultrasonic is attached to.
-         */
-        fun create(device: BowlerDevice): UnprovisionedUltrasonicFactory
-    }
 }

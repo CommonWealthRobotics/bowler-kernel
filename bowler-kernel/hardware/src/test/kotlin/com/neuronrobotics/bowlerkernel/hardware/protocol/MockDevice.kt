@@ -53,10 +53,8 @@ internal class MockDevice : AbstractSimpleComsDevice() {
         if (canSendNextRead) {
             canSendNextRead = false
             if (readsToSend.isEmpty()) {
-                pollingPayload?.let {
-                    it.forEachIndexed { index, byte ->
-                        values[index] = byte
-                    }
+                pollingPayload?.forEachIndexed { index, byte ->
+                    values[index] = byte
                 }
             } else {
                 readsToSend.removeFirst().forEachIndexed { index, byte ->
@@ -64,10 +62,8 @@ internal class MockDevice : AbstractSimpleComsDevice() {
                 }
             }
         } else {
-            pollingPayload?.let {
-                it.forEachIndexed { index, byte ->
-                    values[index] = byte
-                }
+            pollingPayload?.forEachIndexed { index, byte ->
+                values[index] = byte
             }
         }
     }

@@ -61,8 +61,8 @@ class UnprovisionedDeviceResourceFactoryTest {
                 DefaultConnectionMethods.RawHID(0, 0)
             )
         ) { device }
-        val error = UnprovisionedDeviceResourceFactory(registry, device)
-            .makeUnprovisionedDigitalOut(resourceId)
+        val error = UnprovisionedDeviceResourceFactory(registry)
+            .makeUnprovisionedDigitalOut(device, resourceId)
 
         assertTrue(error.isLeft())
     }
@@ -72,7 +72,7 @@ class UnprovisionedDeviceResourceFactoryTest {
         DefaultAttachmentPoints.Pin(1).let {
             testRegistry(
                 ResourceId(DefaultResourceTypes.AnalogIn, it)
-            ) { makeUnprovisionedAnalogIn(it) }
+            ) { device -> makeUnprovisionedAnalogIn(device, it) }
         }
     }
 
@@ -81,7 +81,7 @@ class UnprovisionedDeviceResourceFactoryTest {
         DefaultAttachmentPoints.Pin(1).let {
             testRegistry(
                 ResourceId(DefaultResourceTypes.AnalogOut, it)
-            ) { makeUnprovisionedAnalogOut(it) }
+            ) { device -> makeUnprovisionedAnalogOut(device, it) }
         }
     }
 
@@ -90,7 +90,7 @@ class UnprovisionedDeviceResourceFactoryTest {
         DefaultAttachmentPoints.Pin(1).let {
             testRegistry(
                 ResourceId(DefaultResourceTypes.Button, it)
-            ) { makeUnprovisionedButton(it) }
+            ) { device -> makeUnprovisionedButton(device, it) }
         }
     }
 
@@ -99,7 +99,7 @@ class UnprovisionedDeviceResourceFactoryTest {
         DefaultAttachmentPoints.Pin(1).let {
             testRegistry(
                 ResourceId(DefaultResourceTypes.DigitalIn, it)
-            ) { makeUnprovisionedDigitalIn(it) }
+            ) { device -> makeUnprovisionedDigitalIn(device, it) }
         }
     }
 
@@ -108,7 +108,7 @@ class UnprovisionedDeviceResourceFactoryTest {
         DefaultAttachmentPoints.Pin(1).let {
             testRegistry(
                 ResourceId(DefaultResourceTypes.DigitalOut, it)
-            ) { makeUnprovisionedDigitalOut(it) }
+            ) { device -> makeUnprovisionedDigitalOut(device, it) }
         }
     }
 
@@ -117,7 +117,7 @@ class UnprovisionedDeviceResourceFactoryTest {
         DefaultAttachmentPoints.PinGroup(byteArrayOf(1, 2)).let {
             testRegistry(
                 ResourceId(DefaultResourceTypes.Encoder, it)
-            ) { makeUnprovisionedEncoder(it) }
+            ) { device -> makeUnprovisionedEncoder(device, it) }
         }
     }
 
@@ -126,7 +126,7 @@ class UnprovisionedDeviceResourceFactoryTest {
         DefaultAttachmentPoints.Pin(1).let {
             testRegistry(
                 ResourceId(DefaultResourceTypes.PiezoelectricSpeaker, it)
-            ) { makeUnprovisionedPiezoelectricSpeaker(it) }
+            ) { device -> makeUnprovisionedPiezoelectricSpeaker(device, it) }
         }
     }
 
@@ -135,7 +135,7 @@ class UnprovisionedDeviceResourceFactoryTest {
         DefaultAttachmentPoints.PinGroup(byteArrayOf(1, 2)).let {
             testRegistry(
                 ResourceId(DefaultResourceTypes.SerialConnection, it)
-            ) { makeUnprovisionedSerialConnection(it) }
+            ) { device -> makeUnprovisionedSerialConnection(device, it) }
         }
     }
 
@@ -144,7 +144,7 @@ class UnprovisionedDeviceResourceFactoryTest {
         DefaultAttachmentPoints.Pin(1).let {
             testRegistry(
                 ResourceId(DefaultResourceTypes.Servo, it)
-            ) { makeUnprovisionedServo(it) }
+            ) { device -> makeUnprovisionedServo(device, it) }
         }
     }
 
@@ -153,7 +153,7 @@ class UnprovisionedDeviceResourceFactoryTest {
         DefaultAttachmentPoints.PinGroup(byteArrayOf(1, 2, 3, 4)).let {
             testRegistry(
                 ResourceId(DefaultResourceTypes.Stepper, it)
-            ) { makeUnprovisionedStepper(it) }
+            ) { device -> makeUnprovisionedStepper(device, it) }
         }
     }
 
@@ -162,13 +162,14 @@ class UnprovisionedDeviceResourceFactoryTest {
         DefaultAttachmentPoints.PinGroup(byteArrayOf(1, 2)).let {
             testRegistry(
                 ResourceId(DefaultResourceTypes.Ultrasonic, it)
-            ) { makeUnprovisionedUltrasonic(it) }
+            ) { device -> makeUnprovisionedUltrasonic(device, it) }
         }
     }
 
     private fun testRegistry(
         resourceId: ResourceId,
-        makeResource: UnprovisionedDeviceResourceFactory.() -> Either<RegisterError, UnprovisionedDeviceResource>
+        makeResource: UnprovisionedDeviceResourceFactory.(BowlerDevice) ->
+        Either<RegisterError, UnprovisionedDeviceResource>
     ) {
         testSuccess(resourceId, makeResource)
         testFailure(resourceId, makeResource)
@@ -176,7 +177,8 @@ class UnprovisionedDeviceResourceFactoryTest {
 
     private fun testSuccess(
         resourceId: ResourceId,
-        makeResource: UnprovisionedDeviceResourceFactory.() -> Either<RegisterError, UnprovisionedDeviceResource>
+        makeResource: UnprovisionedDeviceResourceFactory.(BowlerDevice) ->
+        Either<RegisterError, UnprovisionedDeviceResource>
     ) {
         val device = mock<BowlerDevice> {
             on {
@@ -198,7 +200,7 @@ class UnprovisionedDeviceResourceFactoryTest {
             )
         ) { device }
 
-        val resource = UnprovisionedDeviceResourceFactory(registry, device).makeResource()
+        val resource = UnprovisionedDeviceResourceFactory(registry).makeResource(device)
 
         assertTrue(resource.isRight())
         assertThat(registry.registeredDevices, hasSize(equalTo(1)))
@@ -207,7 +209,8 @@ class UnprovisionedDeviceResourceFactoryTest {
 
     private fun testFailure(
         resourceId: ResourceId,
-        makeResource: UnprovisionedDeviceResourceFactory.() -> Either<RegisterError, UnprovisionedDeviceResource>
+        makeResource: UnprovisionedDeviceResourceFactory.(BowlerDevice) ->
+        Either<RegisterError, UnprovisionedDeviceResource>
     ) {
         val device = mock<BowlerDevice> {
             on {
@@ -229,7 +232,7 @@ class UnprovisionedDeviceResourceFactoryTest {
             )
         ) { device }
 
-        val resource = UnprovisionedDeviceResourceFactory(registry, device).makeResource()
+        val resource = UnprovisionedDeviceResourceFactory(registry).makeResource(device)
 
         assertTrue(resource.isLeft())
         assertThat(registry.registeredDevices, hasSize(equalTo(1)))

@@ -26,20 +26,12 @@ interface UnprovisionedButtonFactory {
     /**
      * Makes an [UnprovisionedButton] attached to a device.
      *
+     * @param device The device this button is attached to.
      * @param attachmentPoint The attachment point.
      * @return An [UnprovisionedButton] on success, a [RegisterError] on failure.
      */
     fun makeUnprovisionedButton(
+        device: BowlerDevice,
         attachmentPoint: AttachmentPoint
     ): Either<RegisterError, UnprovisionedButton>
-
-    interface Factory {
-
-        /**
-         * Factory for assisted injection.
-         *
-         * @param device The device this button is attached to.
-         */
-        fun create(device: BowlerDevice): UnprovisionedButtonFactory
-    }
 }

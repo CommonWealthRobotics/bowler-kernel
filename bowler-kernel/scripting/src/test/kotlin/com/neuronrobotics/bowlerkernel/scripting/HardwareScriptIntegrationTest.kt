@@ -24,8 +24,7 @@ import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectio
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedServoFactory
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResourceFactory
 import org.jlleitschuh.guice.key
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -58,8 +57,7 @@ internal class HardwareScriptIntegrationTest {
     private class TestHardware
     @Inject constructor(
         private val bowlerDeviceFactory: BowlerDeviceFactory,
-        private val digitalOutFactoryFactory: UnprovisionedDigitalOutFactory.Factory,
-        private val servoFactoryFactory: UnprovisionedServoFactory.Factory
+        private val resourceFactory: UnprovisionedDeviceResourceFactory
     ) : Script() {
 
         override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
@@ -73,20 +71,20 @@ internal class HardwareScriptIntegrationTest {
 
             device.connect()
 
-            val ledFactory = digitalOutFactoryFactory.create(device)
-            val servoFactory = servoFactoryFactory.create(device)
-
-            val led1 = ledFactory.makeUnprovisionedDigitalOut(
+            val led1 = resourceFactory.makeUnprovisionedDigitalOut(
+                device,
                 DefaultAttachmentPoints.Pin(1)
             ).fold({ fail { "" } }, { it })
 
-            val led2 = ledFactory.makeUnprovisionedDigitalOut(
+            val led2 = resourceFactory.makeUnprovisionedDigitalOut(
+                device,
                 DefaultAttachmentPoints.Pin(2)
             ).fold({ fail { "" } }, { it })
 
             device.add(immutableSetOf(led1, led2))
 
-            val servo1 = servoFactory.makeUnprovisionedServo(
+            val servo1 = resourceFactory.makeUnprovisionedServo(
+                device,
                 DefaultAttachmentPoints.Pin(3)
             ).fold({ fail { "" } }, { it })
 

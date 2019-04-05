@@ -30,7 +30,7 @@ import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectio
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResourceFactory
 import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultScriptFactory
 import com.neuronrobotics.bowlerkernel.scripting.parser.DefaultScriptLanguageParser
 import org.jlleitschuh.guice.key
@@ -49,7 +49,7 @@ internal class ScriptIntegrationTest {
     private data class TestClass
     @Inject constructor(
         val bowlerDeviceFactory: BowlerDeviceFactory,
-        val unprovisionedDigitalOutFactory: UnprovisionedDigitalOutFactory.Factory
+        val resourceFactory: UnprovisionedDeviceResourceFactory
     ) {
         init {
             val device = bowlerDeviceFactory.makeBowlerDevice(
@@ -69,9 +69,10 @@ internal class ScriptIntegrationTest {
 
             device.connect()
 
-            val unprovisionedDigitalOut = unprovisionedDigitalOutFactory.create(device)
-                .makeUnprovisionedDigitalOut(DefaultAttachmentPoints.Pin(7))
-                .fold({ fail { "" } }, { it })
+            val unprovisionedDigitalOut = resourceFactory.makeUnprovisionedDigitalOut(
+                device,
+                DefaultAttachmentPoints.Pin(7)
+            ).fold({ fail { "" } }, { it })
 
             device.add(unprovisionedDigitalOut)
 
@@ -116,7 +117,7 @@ internal class ScriptIntegrationTest {
 
                 @Inject
                 Test(BowlerDeviceFactory bowlerDeviceFactory,
-                     UnprovisionedDigitalOutFactory.Factory ledFactoryFactory
+                     UnprovisionedDigitalOutFactory resourceFactory
                 ) {
                     bowlerDeviceFactory.makeBowlerDevice(
                             new DeviceId(
@@ -127,7 +128,8 @@ internal class ScriptIntegrationTest {
                     ).map {
                         it.connect()
 
-                        ledFactoryFactory.create(it).makeUnprovisionedDigitalOut(
+                        resourceFactory.makeUnprovisionedDigitalOut(
+                                it,
                                 new DefaultAttachmentPoints.Pin(1 as byte)
                         ).map { led1 ->
                             worked = true
@@ -216,14 +218,14 @@ internal class ScriptIntegrationTest {
             import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
             import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
+            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResourceFactory
             import com.neuronrobotics.bowlerkernel.scripting.MockBowlerRPCProtocol
             import javax.inject.Inject
 
             class MyScript
             @Inject constructor(
                 val bowlerDeviceFactory: BowlerDeviceFactory,
-                val ledFactoryFactory: UnprovisionedDigitalOutFactory.Factory
+                val resourceFactory: UnprovisionedDeviceResourceFactory
             ) : Script() {
 
                 var worked = false
@@ -238,7 +240,8 @@ internal class ScriptIntegrationTest {
                     ).map {
                         it.connect()
 
-                        val led1 = ledFactoryFactory.create(it).makeUnprovisionedDigitalOut(
+                        val led1 = resourceFactory.makeUnprovisionedDigitalOut(
+                            it,
                             DefaultAttachmentPoints.Pin(1)
                         ).fold(
                             { throw IllegalStateException("") },
@@ -325,7 +328,8 @@ internal class ScriptIntegrationTest {
 
     @Test
     fun `test injector adds existing modules`() {
-        val scriptText = """
+        val scriptText =
+            """
             import arrow.core.Either
             import arrow.core.right
             import com.google.common.collect.ImmutableList
@@ -341,7 +345,7 @@ internal class ScriptIntegrationTest {
             }
 
             TestScript::class
-        """.trimIndent()
+            """.trimIndent()
 
         val script = DefaultScriptFactory(
             DefaultScriptLanguageParser()
@@ -385,7 +389,8 @@ internal class ScriptIntegrationTest {
 
     @Test
     fun `test stopAndCleanUp is called`() {
-        val scriptText = """
+        val scriptText =
+            """
             import arrow.core.Either
             import arrow.core.right
             import com.google.common.collect.ImmutableList
@@ -405,7 +410,7 @@ internal class ScriptIntegrationTest {
             }
 
             TestScript::class
-        """.trimIndent()
+            """.trimIndent()
 
         val script = DefaultScriptFactory(
             DefaultScriptLanguageParser()
