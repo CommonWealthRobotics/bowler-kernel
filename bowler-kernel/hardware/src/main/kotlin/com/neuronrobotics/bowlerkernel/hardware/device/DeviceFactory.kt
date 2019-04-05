@@ -38,7 +38,7 @@ class DeviceFactory
     private val protocolFactory: BowlerRPCProtocolFactory
 ) : BowlerDeviceFactory {
 
-    override fun makeBowlerDevice(deviceId: DeviceId) =
+    override fun makeBowlerDevice(deviceId: DeviceId): Either<RegisterError, BowlerDevice> =
         registry.registerDevice(deviceId) {
             BowlerDevice(
                 it,

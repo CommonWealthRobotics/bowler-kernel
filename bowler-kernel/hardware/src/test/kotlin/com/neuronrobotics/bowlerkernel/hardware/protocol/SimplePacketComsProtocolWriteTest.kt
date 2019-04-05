@@ -96,7 +96,6 @@ internal class SimplePacketComsProtocolWriteTest {
     }
 
     private fun setupWrite() {
-        // Discover a write group
         protocolTest(protocol, device) {
             operation {
                 val result = it.addWrite(led)
