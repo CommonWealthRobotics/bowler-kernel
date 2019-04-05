@@ -16,10 +16,6 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid
 
-import com.google.common.collect.ImmutableList
-import org.octogonapus.ktguava.collections.emptyImmutableList
-import org.octogonapus.ktguava.collections.immutableListOf
-
 /**
  * The attachment points Bowler supports out-of-the-box. Uses a continuous range of bytes from
  * [getLowestTypeNumber] through [getHighestTypeNumber]. Any numbers outside that range are
@@ -27,16 +23,55 @@ import org.octogonapus.ktguava.collections.immutableListOf
  */
 sealed class DefaultAttachmentPoints(
     override val type: Byte,
-    override val data: ImmutableList<Byte> = emptyImmutableList()
+    override val data: ByteArray = byteArrayOf()
 ) : AttachmentPoint {
 
-    data class Pin(val pinNumber: Byte) : DefaultAttachmentPoints(1, immutableListOf(pinNumber))
+    /**
+     * A single pin. The data is the pin number which is converted to an unsigned byte.
+     *
+     * @param pinNumber The pin number.
+     */
+    data class Pin(val pinNumber: Byte) : DefaultAttachmentPoints(
+        1,
+        byteArrayOf(pinNumber)
+    )
 
-    data class PinGroup(val pinNumbers: ImmutableList<Byte>) :
-        DefaultAttachmentPoints(2, pinNumbers)
+    /**
+     * A group of pins. The data is the number of pins followed by the pin numbers.
+     *
+     * @param pinNumbers The pin numbers.
+     */
+    data class PinGroup(val pinNumbers: ByteArray) :
+        DefaultAttachmentPoints(
+            2,
+            byteArrayOf(pinNumbers.size.toByte()) + pinNumbers
+        ) {
 
+        init {
+            require(pinNumbers.size < 58)
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as PinGroup
+
+            if (!pinNumbers.contentEquals(other.pinNumbers)) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int = pinNumbers.contentHashCode()
+    }
+
+    /**
+     * A USB port on the device. The data is the port number converted to an unsigned byte.
+     *
+     * @param portNumber The device-specific port number.
+     */
     data class USBPort(val portNumber: Byte) :
-        DefaultAttachmentPoints(3, immutableListOf(portNumber))
+        DefaultAttachmentPoints(3, byteArrayOf(portNumber))
 
     /**
      * The lowest used type number.

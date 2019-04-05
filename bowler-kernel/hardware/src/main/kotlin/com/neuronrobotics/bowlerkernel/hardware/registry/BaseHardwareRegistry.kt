@@ -19,6 +19,7 @@ package com.neuronrobotics.bowlerkernel.hardware.registry
 import arrow.core.Either
 import arrow.core.Option
 import arrow.core.Try
+import arrow.core.left
 import arrow.core.right
 import com.google.common.collect.MultimapBuilder
 import com.google.common.collect.SetMultimap
@@ -56,18 +57,20 @@ internal constructor() : HardwareRegistry {
         deviceId: DeviceId,
         makeDevice: (DeviceId) -> T
     ): Either<RegisterError, T> {
-        if (internalRegisteredDeviceIds.contains(deviceId)) {
-            return Either.left(
+        return when {
+            internalRegisteredDeviceIds.contains(deviceId) ->
                 """
-                Cannot register device $deviceId because the device is already registered.
-                """.trimIndent()
-            )
-        }
+                |Cannot register device $deviceId because the device is already registered.
+                """.trimMargin().left()
 
-        internalRegisteredDeviceIds.add(deviceId)
-        return makeDevice(deviceId).also {
-            internalRegisteredDevices.add(it)
-        }.right()
+            else -> {
+                internalRegisteredDeviceIds.add(deviceId)
+
+                makeDevice(deviceId).also {
+                    internalRegisteredDevices.add(it)
+                }.right()
+            }
+        }
     }
 
     override fun <D : Device, T : UnprovisionedDeviceResource> registerDeviceResource(
@@ -75,82 +78,99 @@ internal constructor() : HardwareRegistry {
         resourceId: ResourceId,
         makeResource: (D, ResourceId) -> T
     ): Either<RegisterError, T> {
-        if (!internalRegisteredDeviceIds.contains(device.deviceId)) {
-            return Either.left(
+        return when {
+            !internalRegisteredDeviceIds.contains(device.deviceId) ->
                 """
-                Cannot register resource $resourceId on device ${device.deviceId} because device
-                ${device.deviceId} is not registered.
-                """.trimIndent()
-            )
-        } else if (internalRegisteredDeviceResourceIds.containsEntry(device.deviceId, resourceId)) {
-            return Either.left(
-                """
-                Cannot register resource $resourceId on device ${device.deviceId} because the
-                resource is already registered.
-                """.trimIndent()
-            )
-        }
+                |Cannot register resource $resourceId on device ${device.deviceId} because device
+                |${device.deviceId} is not registered.
+                """.trimMargin().left()
 
-        internalRegisteredDeviceResourceIds.put(device.deviceId, resourceId)
-        return makeResource(device, resourceId).also {
-            internalRegisteredDeviceResources.put(device, it)
-        }.right()
+            internalRegisteredDeviceResourceIds.containsEntry(
+                device.deviceId,
+                resourceId
+            ) ->
+                """
+                |Cannot register resource $resourceId on device ${device.deviceId} because the
+                |resource is already registered.
+                """.trimMargin().left()
+
+            internalRegisteredDeviceResourceIds.values().any {
+                it.attachmentPoint == resourceId.attachmentPoint
+            } ->
+                """
+                |Cannot register resource $resourceId on device ${device.deviceId} because there
+                |is already a resource on the same attachment point.
+                """.trimMargin().left()
+
+            else -> {
+                internalRegisteredDeviceResourceIds.put(device.deviceId, resourceId)
+
+                makeResource(device, resourceId).also {
+                    internalRegisteredDeviceResources.put(device, it)
+                }.right()
+            }
+        }
     }
 
     override fun unregisterDevice(device: Device): Option<UnregisterError> {
-        if (!internalRegisteredDeviceIds.contains(device.deviceId)) {
-            return Option.just(
+        return when {
+            !internalRegisteredDeviceIds.contains(device.deviceId) -> Option.just(
                 """
-                Cannot unregister device ${device.deviceId} because the device is not registered.
-                """.trimIndent()
+                |Cannot unregister device ${device.deviceId} because the device is not registered.
+                """.trimMargin()
             )
-        } else if (internalRegisteredDeviceResourceIds[device.deviceId].isNotEmpty()) {
-            return Option.just(
+
+            internalRegisteredDeviceResourceIds[device.deviceId].isNotEmpty() -> Option.just(
                 """
-                Cannot unregister device ${device.deviceId} because there are registered
-                resources attached to it.
-                """.trimIndent()
+                |Cannot unregister device ${device.deviceId} because there are registered
+                |resources attached to it.
+                """.trimMargin()
+            )
+
+            else -> Try {
+                device.disconnect()
+            }.toEither().fold(
+                {
+                    Option.just(it.message ?: "")
+                },
+                {
+                    internalRegisteredDeviceIds.remove(device.deviceId)
+                    internalRegisteredDevices.remove(device)
+                    Option.empty()
+                }
             )
         }
-
-        return Try {
-            device.disconnect()
-        }.toEither().fold(
-            {
-                Option.just(it.message ?: "")
-            },
-            {
-                internalRegisteredDeviceIds.remove(device.deviceId)
-                internalRegisteredDevices.remove(device)
-                Option.empty()
-            }
-        )
     }
 
     override fun unregisterDeviceResource(resource: DeviceResource): Option<UnregisterError> {
-        if (!internalRegisteredDeviceIds.contains(resource.device.deviceId)) {
-            return Option.just(
+        return when {
+            !internalRegisteredDeviceIds.contains(resource.device.deviceId) -> Option.just(
                 """
-                Cannot unregister resource ${resource.resourceId} on device
-                ${resource.device.deviceId} because device ${resource.device.deviceId} is not
-                registered.
-                """.trimIndent()
+                |Cannot unregister resource ${resource.resourceId} on device
+                |${resource.device.deviceId} because device ${resource.device.deviceId} is not
+                |registered.
+                """.trimMargin()
             )
-        } else if (!internalRegisteredDeviceResourceIds.containsEntry(
+
+            !internalRegisteredDeviceResourceIds.containsEntry(
                 resource.device.deviceId,
                 resource.resourceId
-            )
-        ) {
-            return Option.just(
+            ) -> Option.just(
                 """
-                Cannot unregister resource ${resource.resourceId} on device
-                ${resource.device.deviceId} because the resource is not registered on that device.
-                """.trimIndent()
+                |Cannot unregister resource ${resource.resourceId} on device
+                |${resource.device.deviceId} because the resource is not registered on that device.
+                """.trimMargin()
             )
-        }
 
-        internalRegisteredDeviceResourceIds.remove(resource.device.deviceId, resource.resourceId)
-        internalRegisteredDeviceResources.remove(resource.device, resource)
-        return Option.empty()
+            else -> {
+                internalRegisteredDeviceResourceIds.remove(
+                    resource.device.deviceId,
+                    resource.resourceId
+                )
+
+                internalRegisteredDeviceResources.remove(resource.device, resource)
+                Option.empty()
+            }
+        }
     }
 }

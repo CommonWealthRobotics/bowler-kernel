@@ -16,19 +16,15 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned
 
-import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.ProvisionError
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericPiezoelectricSpeaker
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
-class UnprovisionedPiezoelectricSpeaker
+data class UnprovisionedPiezoelectricSpeaker
 internal constructor(
     override val device: BowlerDevice,
     override val resourceId: ResourceId
-) : UnprovisionedDeviceResource {
+) : UnprovisionedDeviceResource() {
 
-    override fun provision(): Either<ProvisionError, GenericPiezoelectricSpeaker> {
-        TODO("not implemented")
-    }
+    override fun provision() = GenericPiezoelectricSpeaker(device, resourceId)
 }

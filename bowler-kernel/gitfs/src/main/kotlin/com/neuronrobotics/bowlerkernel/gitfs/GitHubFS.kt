@@ -52,6 +52,14 @@ class GitHubFS(
         gitUrl: String,
         branch: String
     ): Try<File> {
+        LOGGER.fine {
+            """
+            |Cloning repository:
+            |gitUrl: $gitUrl
+            |branch: $branch
+            """.trimMargin()
+        }
+
         return if (isValidHttpGitURL(gitUrl)) {
             val directory = gitUrlToDirectory(gitUrl)
             if (directory.mkdirs()) {
@@ -166,6 +174,13 @@ class GitHubFS(
     private fun forkRepo(
         githubRepo: GitHubRepo
     ): Try<GHObject> {
+        LOGGER.fine {
+            """
+            |Forking repository:
+            |$githubRepo
+            """.trimMargin()
+        }
+
         return Try {
             when (githubRepo) {
                 is GitHubRepo.Repository -> {

@@ -26,20 +26,12 @@ interface UnprovisionedStepperFactory {
     /**
      * Makes an [UnprovisionedStepper] attached to a device.
      *
+     * @param device The device this stepper is attached to.
      * @param attachmentPoint The attachment point.
      * @return An [UnprovisionedStepper] on success, a [RegisterError] on failure.
      */
     fun makeUnprovisionedStepper(
+        device: BowlerDevice,
         attachmentPoint: AttachmentPoint
     ): Either<RegisterError, UnprovisionedStepper>
-
-    interface Factory {
-
-        /**
-         * Factory for assisted injection.
-         *
-         * @param device The device this stepper is attached to.
-         */
-        fun create(device: BowlerDevice): UnprovisionedStepperFactory
-    }
 }

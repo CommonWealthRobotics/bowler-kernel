@@ -16,8 +16,23 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.device.deviceid
 
-data class SimpleDeviceId(
-    val id: String
-) : DeviceId {
-    override fun toString() = id
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+
+/**
+ * The type of a device.
+ */
+interface DeviceType {
+
+    /**
+     * A simple name for the model of this device, i.e. `Arduino Zero`, `Raspberry Pi 3 B+`, etc.
+     */
+    val name: String
+
+    /**
+     * Returns whether the [resourceId] is in the valid range of resources for this device.
+     *
+     * @param resourceId The id of a resource on this device.
+     * @return Whether the resource id is in the valid range of resources for this device.
+     */
+    fun isResourceInRange(resourceId: ResourceId): Boolean
 }

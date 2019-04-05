@@ -14,13 +14,27 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.protocol
+package com.neuronrobotics.bowlerkernel.hardware.device.deviceid
+
+import java.net.InetAddress
 
 /**
- * An error which is caused by a timeout.
- *
- * @param timeoutDuration The duration, in ms, of the timeout.
+ * The connection methods Bowler supports out-of-the-box.
  */
-data class TimeoutError(
-    val timeoutDuration: Long = 100
-)
+sealed class DefaultConnectionMethods : ConnectionMethod {
+
+    /**
+     * An internet address, typically used with UDP.
+     *
+     * @param inetAddress The IP address.
+     */
+    data class InternetAddress(val inetAddress: InetAddress) : DefaultConnectionMethods()
+
+    /**
+     * Raw HID.
+     *
+     * @param vid The vendor id.
+     * @param pid The product id.
+     */
+    data class RawHID(val vid: Int, val pid: Int) : DefaultConnectionMethods()
+}

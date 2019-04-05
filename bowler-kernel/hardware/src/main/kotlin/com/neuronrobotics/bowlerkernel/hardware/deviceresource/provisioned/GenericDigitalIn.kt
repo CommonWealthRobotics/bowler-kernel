@@ -16,16 +16,14 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned
 
-import com.neuronrobotics.bowlerkernel.hardware.device.Device
+import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
 class GenericDigitalIn
 internal constructor(
-    override val device: Device,
+    override val device: BowlerDevice,
     override val resourceId: ResourceId
 ) : DigitalIn {
 
-    override fun read(): DigitalState {
-        TODO("not implemented")
-    }
+    override fun read() = device.bowlerRPCProtocol.digitalRead(resourceId)
 }

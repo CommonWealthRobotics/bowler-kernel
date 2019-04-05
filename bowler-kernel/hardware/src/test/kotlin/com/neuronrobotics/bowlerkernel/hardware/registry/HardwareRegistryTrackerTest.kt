@@ -20,8 +20,9 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.hasSize
 import com.neuronrobotics.bowlerkernel.hardware.device.Device
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
@@ -39,7 +40,7 @@ class HardwareRegistryTrackerTest {
 
     @Test
     fun `successfully register a device`() {
-        registry.makeDeviceOrFail("A")
+        registry.makeDeviceOrFail()
 
         assertAll(
             {
@@ -48,8 +49,11 @@ class HardwareRegistryTrackerTest {
             {
                 assertEquals(
                     registry.sessionRegisteredDevices.map { it.deviceId },
-                    listOf<DeviceId>(
-                        SimpleDeviceId("A")
+                    listOf(
+                        DeviceId(
+                            DefaultDeviceTypes.UnknownDevice,
+                            DefaultConnectionMethods.RawHID(0, 0)
+                        )
                     )
                 )
             }
@@ -58,9 +62,12 @@ class HardwareRegistryTrackerTest {
 
     @Test
     fun `fail to register a device`() {
-        baseRegistry.makeDeviceOrFail("A")
+        baseRegistry.makeDeviceOrFail()
         registry.registerDevice(
-            SimpleDeviceId("A")
+            DeviceId(
+                DefaultDeviceTypes.UnknownDevice,
+                DefaultConnectionMethods.RawHID(0, 0)
+            )
         ) { mock<MockDevice> {} }
 
         assertAll(
@@ -75,7 +82,7 @@ class HardwareRegistryTrackerTest {
 
     @Test
     fun `successfully unregister a device`() {
-        registry.unregisterDevice(registry.makeDeviceOrFail("A"))
+        registry.unregisterDevice(registry.makeDeviceOrFail())
 
         assertAll(
             {
@@ -91,7 +98,10 @@ class HardwareRegistryTrackerTest {
     fun `fail to unregister a device`() {
         registry.unregisterDevice(
             MockDevice(
-                SimpleDeviceId("A")
+                DeviceId(
+                    DefaultDeviceTypes.UnknownDevice,
+                    DefaultConnectionMethods.RawHID(0, 0)
+                )
             )
         )
 
@@ -107,7 +117,7 @@ class HardwareRegistryTrackerTest {
 
     @Test
     fun `successfully register a device resource`() {
-        val device = registry.makeDeviceOrFail("A")
+        val device = registry.makeDeviceOrFail()
         registry.makeDeviceResourceOrFail(device, 0)
 
         assertAll(
@@ -119,9 +129,10 @@ class HardwareRegistryTrackerTest {
                     registry.sessionRegisteredDeviceResources.entries().map {
                         it.key.deviceId to it.value.resourceId
                     }.toMap(),
-                    mapOf<DeviceId, ResourceId>(
-                        SimpleDeviceId(
-                            "A"
+                    mapOf(
+                        DeviceId(
+                            DefaultDeviceTypes.UnknownDevice,
+                            DefaultConnectionMethods.RawHID(0, 0)
                         ) to ResourceId(
                             DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(0)
                         )
@@ -134,7 +145,12 @@ class HardwareRegistryTrackerTest {
     @Test
     fun `fail to register a device resource`() {
         registry.registerDeviceResource(
-            MockDevice(SimpleDeviceId("A")),
+            MockDevice(
+                DeviceId(
+                    DefaultDeviceTypes.UnknownDevice,
+                    DefaultConnectionMethods.RawHID(0, 0)
+                )
+            ),
             ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1))
         ) { _, _ -> mock<UnprovisionedDeviceResource> {} }
 
@@ -150,7 +166,7 @@ class HardwareRegistryTrackerTest {
 
     @Test
     fun `successfully unregister a device resource`() {
-        val device = registry.makeDeviceOrFail("A")
+        val device = registry.makeDeviceOrFail()
         registry.unregisterDeviceResource(registry.makeDeviceResourceOrFail(device, 0))
 
         assertAll(
@@ -168,7 +184,7 @@ class HardwareRegistryTrackerTest {
 
     @Test
     fun `fail to unregister a device resource`() {
-        val device = registry.makeDeviceOrFail("A")
+        val device = registry.makeDeviceOrFail()
         registry.unregisterDeviceResource(
             MockUnprovisionedDeviceResource(
                 device,
@@ -188,7 +204,7 @@ class HardwareRegistryTrackerTest {
 
     @Test
     fun `unregister all devices and resources`() {
-        val device = registry.makeDeviceOrFail("A")
+        val device = registry.makeDeviceOrFail()
         registry.makeDeviceResourceOrFail(device, 0)
 
         val unregisterErrors = registry.unregisterAllHardware()
@@ -202,7 +218,7 @@ class HardwareRegistryTrackerTest {
 
     @Test
     fun `unregister all devices and resources with errors`() {
-        val device = registry.makeDeviceOrFail("A")
+        val device = registry.makeDeviceOrFail()
         val resource = registry.makeDeviceResourceOrFail(device, 0)
 
         baseRegistry.unregisterDeviceResource(resource)

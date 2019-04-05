@@ -27,3 +27,4 @@ lib/
 conf/
 .attach_pid*
 *.hprof
+.~lock*

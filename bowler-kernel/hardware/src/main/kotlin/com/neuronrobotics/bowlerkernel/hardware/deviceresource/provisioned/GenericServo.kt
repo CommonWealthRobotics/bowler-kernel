@@ -16,20 +16,16 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned
 
-import com.neuronrobotics.bowlerkernel.hardware.device.Device
+import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
 class GenericServo
 internal constructor(
-    override val device: Device,
+    override val device: BowlerDevice,
     override val resourceId: ResourceId
 ) : Servo {
 
-    override fun write(angle: Double) {
-        TODO("not implemented")
-    }
+    override fun write(angle: Double) = device.bowlerRPCProtocol.servoWrite(resourceId, angle)
 
-    override fun read(): Double {
-        TODO("not implemented")
-    }
+    override fun read() = device.bowlerRPCProtocol.servoRead(resourceId)
 }

@@ -16,13 +16,12 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.device.deviceid
 
+import com.neuronrobotics.bowlerkernel.hardware.device.Device
+
 /**
  * The id of a [Device].
  */
-interface DeviceId {
-
-    /**
-     * The value of this device id as a string.
-     */
-    override fun toString(): String
-}
+data class DeviceId(
+    val deviceType: DeviceType,
+    val connectionMethod: ConnectionMethod
+)

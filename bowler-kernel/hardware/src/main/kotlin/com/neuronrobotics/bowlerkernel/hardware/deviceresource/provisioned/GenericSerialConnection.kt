@@ -16,20 +16,16 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned
 
-import com.neuronrobotics.bowlerkernel.hardware.device.Device
+import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
 class GenericSerialConnection
 internal constructor(
-    override val device: Device,
+    override val device: BowlerDevice,
     override val resourceId: ResourceId
 ) : SerialConnection {
 
-    override fun write(data: String) {
-        TODO("not implemented")
-    }
+    override fun write(data: String) = device.bowlerRPCProtocol.serialWrite(resourceId, data)
 
-    override fun read(): String {
-        TODO("not implemented")
-    }
+    override fun read() = device.bowlerRPCProtocol.serialRead(resourceId)
 }

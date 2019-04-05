@@ -20,18 +20,16 @@ import arrow.core.Either
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.Script
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
-import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericDigitalOut
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericServo
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.ProvisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedServoFactory
-import com.nhaarman.mockitokotlin2.mock
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResourceFactory
 import org.jlleitschuh.guice.key
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.emptyImmutableList
+import org.octogonapus.ktguava.collections.immutableSetOf
 import javax.inject.Inject
 
 internal class HardwareScriptIntegrationTest {
@@ -51,6 +49,7 @@ internal class HardwareScriptIntegrationTest {
             }
         }
 
+        script.addToInjector(Script.getDefaultModules())
         script.runScript(emptyImmutableList())
         script.stopAndCleanUp()
     }
@@ -58,29 +57,40 @@ internal class HardwareScriptIntegrationTest {
     private class TestHardware
     @Inject constructor(
         private val bowlerDeviceFactory: BowlerDeviceFactory,
-        private val digitalOutFactoryFactory: UnprovisionedDigitalOutFactory.Factory,
-        private val servoFactoryFactory: UnprovisionedServoFactory.Factory
+        private val resourceFactory: UnprovisionedDeviceResourceFactory
     ) : Script() {
 
         override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
             val device = bowlerDeviceFactory.makeBowlerDevice(
-                SimpleDeviceId("/dev/ttyACM0"),
-                mock {}
-            ).fold({ throw IllegalStateException(it) }, { it })
+                DeviceId(
+                    DefaultDeviceTypes.UnknownDevice,
+                    DefaultConnectionMethods.RawHID(0, 0)
+                ),
+                MockBowlerRPCProtocol()
+            ).fold({ fail { "" } }, { it })
 
-            val ledFactory = digitalOutFactoryFactory.create(device)
-            ledFactory.makeUnprovisionedDigitalOut(
+            device.connect()
+
+            val led1 = resourceFactory.makeUnprovisionedDigitalOut(
+                device,
                 DefaultAttachmentPoints.Pin(1)
-            ).provisionOrFail() as GenericDigitalOut
+            ).fold({ fail { "" } }, { it })
 
-            ledFactory.makeUnprovisionedDigitalOut(
+            val led2 = resourceFactory.makeUnprovisionedDigitalOut(
+                device,
                 DefaultAttachmentPoints.Pin(2)
-            ).provisionOrFail() as GenericDigitalOut
+            ).fold({ fail { "" } }, { it })
 
-            val servoFactory = servoFactoryFactory.create(device)
-            servoFactory.makeUnprovisionedServo(
+            device.add(immutableSetOf(led1, led2))
+
+            val servo1 = resourceFactory.makeUnprovisionedServo(
+                device,
                 DefaultAttachmentPoints.Pin(3)
-            ).provisionOrFail() as GenericServo
+            ).fold({ fail { "" } }, { it })
+
+            device.add(servo1)
+
+            device.disconnect()
 
             return Either.right(null)
         }
@@ -88,10 +98,4 @@ internal class HardwareScriptIntegrationTest {
         override fun stopScript() {
         }
     }
-}
-
-private inline fun <reified A : UnprovisionedDeviceResource> Either<String, A>.provisionOrFail():
-    ProvisionedDeviceResource {
-    return fold({ throw IllegalStateException(it) }, { it }).provision()
-        .fold({ throw IllegalStateException(it) }, { it })
 }

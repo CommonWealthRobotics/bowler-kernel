@@ -22,6 +22,6 @@ dependencies {
     testImplementation(
         group = "com.nhaarman.mockitokotlin2",
         name = "mockito-kotlin",
-        version = "2.0.0"
+        version = "2.1.0"
     )
 }

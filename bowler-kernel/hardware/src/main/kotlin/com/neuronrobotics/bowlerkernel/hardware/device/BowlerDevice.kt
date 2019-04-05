@@ -16,9 +16,18 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.device
 
+import arrow.core.Either
+import arrow.core.flatMap
+import arrow.core.left
+import arrow.core.right
+import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.ProvisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceIdValidator
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
+import org.octogonapus.ktguava.collections.toImmutableSet
 
 /**
  * A Bowler device is a serial device which runs the Bowler RPC protocol.
@@ -28,21 +37,79 @@ import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
 class BowlerDevice
 internal constructor(
     override val deviceId: DeviceId,
-    val bowlerRPCProtocol: BowlerRPCProtocol
+    // We want to let users use the RPC directly
+    @Suppress("MemberVisibilityCanBePrivate")
+    val bowlerRPCProtocol: BowlerRPCProtocol,
+    private val resourceIdValidator: ResourceIdValidator
 ) : Device {
 
-    override fun connect() {
-        // TODO: Implement this properly
+    override fun connect() = bowlerRPCProtocol.connect()
+
+    override fun disconnect() = bowlerRPCProtocol.disconnect()
+
+    override fun isResourceInRange(resourceId: ResourceId) =
+        bowlerRPCProtocol.isResourceInRange(resourceId)
+
+    fun add(resource: UnprovisionedDeviceResource): Either<String, ProvisionedDeviceResource> {
+        val id = resource.resourceId
+
+        val readError = resourceIdValidator.validateIsReadType(id.resourceType).flatMap {
+            bowlerRPCProtocol.addRead(id)
+        }
+
+        val writeError = resourceIdValidator.validateIsWriteType(id.resourceType).flatMap {
+            bowlerRPCProtocol.addWrite(id)
+        }
+
+        return if (readError.isLeft() && writeError.isLeft()) {
+            """
+            |Could not add resource because it neither a read type nor a write type:
+            |$resource
+            """.trimMargin().left()
+        } else {
+            return resource.runProvision().right()
+        }
     }
 
-    override fun disconnect() {
-        // TODO: Implement this properly
+    fun <T : UnprovisionedDeviceResource> add(
+        resources: ImmutableSet<T>
+    ): Either<String, ImmutableSet<ProvisionedDeviceResource>> {
+        val resourceIds = resources.map { it.resourceId }.toImmutableSet()
+
+        val readResources = resources.map {
+            resourceIdValidator.validateIsReadType(it.resourceId.resourceType)
+        }
+
+        val allReadResources = readResources.fold(true) { acc, elem ->
+            acc && elem.isRight()
+        }
+
+        if (allReadResources) {
+            bowlerRPCProtocol.addReadGroup(resourceIds)
+        }
+
+        val writeResources = resources.map {
+            resourceIdValidator.validateIsWriteType(it.resourceId.resourceType)
+        }
+
+        val allWriteResources = writeResources.fold(true) { acc, elem ->
+            acc && elem.isRight()
+        }
+
+        if (allWriteResources) {
+            bowlerRPCProtocol.addWriteGroup(resourceIds)
+        }
+
+        return if (!allReadResources && !allWriteResources) {
+            """
+            |Could not add resources because they are neither all read types nor all write
+            |types:
+            |${resources.joinToString(separator = "\n")}
+            """.trimMargin().left()
+        } else {
+            resources.map { it.runProvision() }.toImmutableSet().right()
+        }
     }
 
-    override fun isResourceInRange(resourceId: ResourceId): Boolean {
-        // TODO: Implement this properly
-        return true
-    }
-
-    override fun toString() = """`$deviceId`"""
+    override fun toString() = """BowlerDevice(deviceId=$deviceId)"""
 }

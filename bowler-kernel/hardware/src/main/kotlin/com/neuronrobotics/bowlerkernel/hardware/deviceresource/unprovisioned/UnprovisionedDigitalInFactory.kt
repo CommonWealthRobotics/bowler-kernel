@@ -26,20 +26,12 @@ interface UnprovisionedDigitalInFactory {
     /**
      * Makes an [UnprovisionedDigitalIn] attached to a device.
      *
+     * @param device The device this digital in is attached to.
      * @param attachmentPoint The attachment point.
      * @return An [UnprovisionedDigitalIn] on success, a [RegisterError] on failure.
      */
     fun makeUnprovisionedDigitalIn(
+        device: BowlerDevice,
         attachmentPoint: AttachmentPoint
     ): Either<RegisterError, UnprovisionedDigitalIn>
-
-    interface Factory {
-
-        /**
-         * Factory for assisted injection.
-         *
-         * @param device The device this digital in is attached to.
-         */
-        fun create(device: BowlerDevice): UnprovisionedDigitalInFactory
-    }
 }

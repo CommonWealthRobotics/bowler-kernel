@@ -26,20 +26,12 @@ interface UnprovisionedDigitalOutFactory {
     /**
      * Makes an [UnprovisionedDigitalOut] attached to a device.
      *
+     * @param device The device this digital out is attached to.
      * @param attachmentPoint The attachment point.
      * @return An [UnprovisionedDigitalOut] on success, a [RegisterError] on failure.
      */
     fun makeUnprovisionedDigitalOut(
+        device: BowlerDevice,
         attachmentPoint: AttachmentPoint
     ): Either<RegisterError, UnprovisionedDigitalOut>
-
-    interface Factory {
-
-        /**
-         * Factory for assisted injection.
-         *
-         * @param device The device this digital out is attached to.
-         */
-        fun create(device: BowlerDevice): UnprovisionedDigitalOutFactory
-    }
 }

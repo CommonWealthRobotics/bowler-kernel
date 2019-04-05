@@ -26,7 +26,7 @@ plugins {
 
 object Versions {
     const val ktlintVersion = "0.29.0"
-    const val bowlerKernelVersion = "0.0.20"
+    const val bowlerKernelVersion = "0.0.21"
 }
 
 allprojects {
@@ -68,6 +68,7 @@ buildscript {
     repositories {
         mavenCentral() // Needed for kotlin gradle plugin
         maven(url = "https://plugins.gradle.org/m2/")
+        maven(url = "https://oss.sonatype.org/content/repositories/staging/")
     }
     dependencies {
         // Gives us the KotlinJvmProjectExtension
@@ -85,6 +86,7 @@ allprojects {
         jcenter()
         mavenCentral()
         maven(url = "https://dl.bintray.com/octogonapus/maven-artifacts")
+        maven(url = "https://oss.sonatype.org/content/repositories/staging/")
     }
 
     // Configures the Jacoco tool version to be the same for all projects that have it applied.

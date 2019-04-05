@@ -22,7 +22,7 @@ import com.neuronrobotics.bowlerkernel.scripting.ScriptLanguage
 import com.neuronrobotics.bowlerkernel.scripting.parser.ScriptLanguageParser
 import javax.inject.Inject
 
-class DefaultTextScriptFactory
+class DefaultScriptFactory
 @Inject internal constructor(
     private val scriptLanguageParser: ScriptLanguageParser
 ) : TextScriptFactory {

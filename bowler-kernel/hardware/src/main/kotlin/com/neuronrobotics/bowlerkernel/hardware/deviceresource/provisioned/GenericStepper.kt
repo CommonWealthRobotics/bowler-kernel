@@ -16,16 +16,15 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned
 
-import com.neuronrobotics.bowlerkernel.hardware.device.Device
+import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
 class GenericStepper
 internal constructor(
-    override val device: Device,
+    override val device: BowlerDevice,
     override val resourceId: ResourceId
 ) : Stepper {
 
-    override fun step(steps: Int, speed: Int) {
-        TODO("not implemented")
-    }
+    override fun step(steps: Int, speed: Int) =
+        device.bowlerRPCProtocol.stepperWrite(resourceId, steps, speed)
 }

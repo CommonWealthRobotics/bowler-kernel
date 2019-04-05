@@ -16,10 +16,12 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.registry
 
+import arrow.core.Either
 import arrow.core.right
 import com.neuronrobotics.bowlerkernel.hardware.device.Device
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.ProvisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
@@ -33,12 +35,14 @@ internal data class MockDevice(
     var connectWasCalled = false
     var disconnectWasCalled = false
 
-    override fun connect() {
+    override fun connect(): Either<String, Unit> {
         connectWasCalled = true
+        return Unit.right()
     }
 
-    override fun disconnect() {
+    override fun disconnect(): Either<String, Unit> {
         disconnectWasCalled = true
+        return Unit.right()
     }
 
     override fun isResourceInRange(resourceId: ResourceId) = true
@@ -47,12 +51,9 @@ internal data class MockDevice(
 internal data class MockUnprovisionedDeviceResource(
     override val device: Device,
     override val resourceId: ResourceId
-) : UnprovisionedDeviceResource {
-    override fun provision() =
-        MockProvisionedDeviceResource(
-            device,
-            resourceId
-        ).right()
+) : UnprovisionedDeviceResource() {
+
+    override fun provision() = MockProvisionedDeviceResource(device, resourceId)
 }
 
 internal class MockProvisionedDeviceResource(
@@ -60,8 +61,13 @@ internal class MockProvisionedDeviceResource(
     override val resourceId: ResourceId
 ) : ProvisionedDeviceResource
 
-internal fun HardwareRegistry.makeDeviceOrFail(id: String): MockDevice =
-    registerDevice(SimpleDeviceId(id)) {
+internal fun HardwareRegistry.makeDeviceOrFail(): MockDevice =
+    registerDevice(
+        DeviceId(
+            DefaultDeviceTypes.UnknownDevice,
+            DefaultConnectionMethods.RawHID(0, 0)
+        )
+    ) {
         MockDevice(it)
     }.fold(
         { fail<MockDevice> { it } },

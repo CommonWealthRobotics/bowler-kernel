@@ -26,20 +26,12 @@ interface UnprovisionedSerialConnectionFactory {
     /**
      * Makes an [UnprovisionedSerialConnection] attached to a device.
      *
+     * @param device The device this serial connection is attached to.
      * @param attachmentPoint The attachment point.
      * @return An [UnprovisionedSerialConnection] on success, a [RegisterError] on failure.
      */
     fun makeUnprovisionedSerialConnection(
+        device: BowlerDevice,
         attachmentPoint: AttachmentPoint
     ): Either<RegisterError, UnprovisionedSerialConnection>
-
-    interface Factory {
-
-        /**
-         * Factory for assisted injection.
-         *
-         * @param device The device this serial connection is attached to.
-         */
-        fun create(device: BowlerDevice): UnprovisionedSerialConnectionFactory
-    }
 }

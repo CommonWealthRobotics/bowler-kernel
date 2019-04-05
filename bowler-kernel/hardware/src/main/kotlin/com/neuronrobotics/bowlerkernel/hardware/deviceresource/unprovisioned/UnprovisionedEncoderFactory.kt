@@ -26,20 +26,12 @@ interface UnprovisionedEncoderFactory {
     /**
      * Makes an [UnprovisionedEncoder] attached to a device.
      *
+     * @param device The device this encoder is attached to.
      * @param attachmentPoint The attachment point.
      * @return An [UnprovisionedEncoder] on success, a [RegisterError] on failure.
      */
     fun makeUnprovisionedEncoder(
+        device: BowlerDevice,
         attachmentPoint: AttachmentPoint
     ): Either<RegisterError, UnprovisionedEncoder>
-
-    interface Factory {
-
-        /**
-         * Factory for assisted injection.
-         *
-         * @param device The device this encoder is attached to.
-         */
-        fun create(device: BowlerDevice): UnprovisionedEncoderFactory
-    }
 }

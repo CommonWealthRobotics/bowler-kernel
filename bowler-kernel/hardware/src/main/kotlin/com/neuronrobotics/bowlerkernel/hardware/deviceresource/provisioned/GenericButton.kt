@@ -16,16 +16,14 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned
 
-import com.neuronrobotics.bowlerkernel.hardware.device.Device
+import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
 class GenericButton
 internal constructor(
-    override val device: Device,
+    override val device: BowlerDevice,
     override val resourceId: ResourceId
 ) : Button {
 
-    override fun isPressed(): Boolean {
-        TODO("not implemented")
-    }
+    override fun isPressed(): Boolean = device.bowlerRPCProtocol.buttonRead(resourceId)
 }

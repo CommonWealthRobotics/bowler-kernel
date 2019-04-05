@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.device
 
+import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
@@ -27,16 +28,19 @@ interface Device {
     val deviceId: DeviceId
 
     /**
-     * Open a persistent connection to the device. If the connection is already open, throw an
-     * exception. If the connection could not be opened, throw an exception.
+     * Opens a persistent connection to the device. An error is returned if the connection is
+     * already open or could not be opened.
+     *
+     * @return An error if there is a connection problem.
      */
-    fun connect()
+    fun connect(): Either<String, Unit>
 
     /**
-     * Close the persistent connection to the device. If there is no connection open, throw an
-     * exception. If the connection could not be closed, throw an exception.
+     * Closes the persistent connection to the device. Does nothing if there is no connection open.
+     *
+     * @return An error if there is a disconnect problem.
      */
-    fun disconnect()
+    fun disconnect(): Either<String, Unit>
 
     /**
      * Returns whether the [resourceId] is in the valid range of resources for this device.

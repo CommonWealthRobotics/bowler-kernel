@@ -16,9 +16,12 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.registry
 
+import arrow.core.Either
+import arrow.core.right
 import com.neuronrobotics.bowlerkernel.hardware.device.Device
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.SimpleDeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
@@ -35,16 +38,17 @@ class BaseHardwareRegistryTest {
 
     @Test
     fun `register unregistered device`() {
-        registry.makeDeviceOrFail("A")
+        registry.makeDeviceOrFail()
     }
 
     @Test
     fun `register device twice`() {
-        registry.makeDeviceOrFail("A")
+        registry.makeDeviceOrFail()
 
         val secondRegisterError = registry.registerDevice(
-            SimpleDeviceId(
-                "A"
+            DeviceId(
+                DefaultDeviceTypes.UnknownDevice,
+                DefaultConnectionMethods.RawHID(0, 0)
             )
         ) {
             mock<Device> {}
@@ -55,7 +59,7 @@ class BaseHardwareRegistryTest {
 
     @Test
     fun `unregister registered device`() {
-        val device = registry.makeDeviceOrFail("A")
+        val device = registry.makeDeviceOrFail()
         val unregisterError = registry.unregisterDevice(device)
 
         assertAll(
@@ -70,17 +74,21 @@ class BaseHardwareRegistryTest {
             override val deviceId: DeviceId
         ) : Device {
 
-            override fun connect() {
-            }
+            override fun connect(): Either<String, Unit> = Unit.right()
 
-            override fun disconnect() {
+            override fun disconnect(): Either<String, Unit> {
                 throw IllegalStateException("Oops!")
             }
 
             override fun isResourceInRange(resourceId: ResourceId) = true
         }
 
-        val device = registry.registerDevice(SimpleDeviceId("A")) {
+        val device = registry.registerDevice(
+            DeviceId(
+                DefaultDeviceTypes.UnknownDevice,
+                DefaultConnectionMethods.RawHID(0, 0)
+            )
+        ) {
             ThrowingMockDevice(it)
         }.fold(
             { fail<ThrowingMockDevice> { it } },
@@ -94,7 +102,7 @@ class BaseHardwareRegistryTest {
 
     @Test
     fun `unregister device twice`() {
-        val device = registry.makeDeviceOrFail("A")
+        val device = registry.makeDeviceOrFail()
 
         val unregisterError = registry.unregisterDevice(device)
         val secondUnregisterError = registry.unregisterDevice(device)
@@ -105,7 +113,7 @@ class BaseHardwareRegistryTest {
 
     @Test
     fun `unregister device with resources`() {
-        val device = registry.makeDeviceOrFail("A")
+        val device = registry.makeDeviceOrFail()
         registry.makeDeviceResourceOrFail(device, 0)
 
         val unregisterError = registry.unregisterDevice(device)
@@ -115,7 +123,7 @@ class BaseHardwareRegistryTest {
 
     @Test
     fun `register device resource`() {
-        val device = registry.makeDeviceOrFail("A")
+        val device = registry.makeDeviceOrFail()
 
         val registerError =
             registry.registerDeviceResource(
@@ -133,7 +141,7 @@ class BaseHardwareRegistryTest {
 
     @Test
     fun `register device resource twice`() {
-        val device = registry.makeDeviceOrFail("A")
+        val device = registry.makeDeviceOrFail()
         registry.makeDeviceResourceOrFail(device, 0)
 
         val secondRegisterError =
@@ -154,7 +162,12 @@ class BaseHardwareRegistryTest {
     fun `register device resource without registering device first`() {
         val registerError =
             registry.registerDeviceResource(
-                MockDevice(SimpleDeviceId("A")),
+                MockDevice(
+                    DeviceId(
+                        DefaultDeviceTypes.UnknownDevice,
+                        DefaultConnectionMethods.RawHID(0, 0)
+                    )
+                ),
                 ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1))
             ) { _, _ ->
                 mock<UnprovisionedDeviceResource> {}
@@ -165,7 +178,7 @@ class BaseHardwareRegistryTest {
 
     @Test
     fun `unregister device resource`() {
-        val device = registry.makeDeviceOrFail("A")
+        val device = registry.makeDeviceOrFail()
         val resource = registry.makeDeviceResourceOrFail(device, 0)
 
         val unregisterError = registry.unregisterDeviceResource(resource)
@@ -175,7 +188,7 @@ class BaseHardwareRegistryTest {
 
     @Test
     fun `unregister device resource twice`() {
-        val device = registry.makeDeviceOrFail("A")
+        val device = registry.makeDeviceOrFail()
         val resource = registry.makeDeviceResourceOrFail(device, 0)
 
         val unregisterError = registry.unregisterDeviceResource(resource)
@@ -189,7 +202,12 @@ class BaseHardwareRegistryTest {
     fun `unregister device resource without registering device resource first`() {
         val unregisterError = registry.unregisterDeviceResource(
             MockUnprovisionedDeviceResource(
-                MockDevice(SimpleDeviceId("A")),
+                MockDevice(
+                    DeviceId(
+                        DefaultDeviceTypes.UnknownDevice,
+                        DefaultConnectionMethods.RawHID(0, 0)
+                    )
+                ),
                 ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1))
             )
         )
@@ -199,7 +217,7 @@ class BaseHardwareRegistryTest {
 
     @Test
     fun `register two device resources on same attachment points with different types`() {
-        val device = registry.makeDeviceOrFail("A")
+        val device = registry.makeDeviceOrFail()
 
         val digitalOut = registry.registerDeviceResource(
             device,
@@ -222,8 +240,8 @@ class BaseHardwareRegistryTest {
         }
 
         assertAll(
-            { assertTrue(digitalOut.isRight()) },
-            { assertTrue(servo.isLeft()) }
+            { assertTrue(digitalOut.isRight(), "digitalOut.isRight()") },
+            { assertTrue(servo.isLeft(), "servo.isLeft()") }
         )
     }
 }
