@@ -48,5 +48,7 @@ inline fun <reified T> GitScriptFactory.getInstanceFromGit(
     args: ImmutableList<Any?> = emptyImmutableList()
 ) =
     createScriptFromGit(pullUrl, filename).flatMap { script ->
-        script.runScript(args).map { it as T }
+        script.startScript(args).map { it as T }.also {
+            script.stopAndCleanUp()
+        }
     }

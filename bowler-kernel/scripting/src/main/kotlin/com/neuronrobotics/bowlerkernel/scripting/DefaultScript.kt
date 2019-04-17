@@ -147,7 +147,7 @@ internal constructor(
                         // Add all of this script's extra modules to the script to run
                         instance.addToInjector(this@DefaultScript.getModules())
                         kotlinScript = instance
-                        instance.runScript(args)
+                        instance.startScript(args)
                     } else {
                         instance.right()
                     }

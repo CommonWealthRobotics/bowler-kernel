@@ -16,14 +16,19 @@
  */
 package com.neuronrobotics.bowlerkernel.scripting
 
+import arrow.core.Either
 import arrow.core.flatMap
 import arrow.core.left
 import arrow.core.right
+import com.google.common.base.Stopwatch
+import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.hardware.Script
 import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultScriptFactory
 import com.neuronrobotics.bowlerkernel.scripting.parser.ScriptLanguageParser
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTimeout
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -31,6 +36,7 @@ import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import java.time.Duration
+import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
 internal class DefaultScriptTest {
@@ -48,7 +54,7 @@ internal class DefaultScriptTest {
             mockScriptLanguageParser
         ).createScriptFromText(language, scriptContent)
 
-        val result = script.flatMap { it.runScript(emptyImmutableList()) }
+        val result = script.flatMap { it.startScript(emptyImmutableList()) }
         assertAll(
             { assertTrue(result.isRight()) },
             { assertEquals("Hello, World!", result.fold({ null }, { it as? String })) }
@@ -68,7 +74,7 @@ internal class DefaultScriptTest {
             mockScriptLanguageParser
         ).createScriptFromText(language, scriptContent)
 
-        val result = script.flatMap { it.runScript(emptyImmutableList()) }
+        val result = script.flatMap { it.startScript(emptyImmutableList()) }
         assertTrue(result.isLeft())
     }
 
@@ -85,7 +91,7 @@ internal class DefaultScriptTest {
             mockScriptLanguageParser
         ).createScriptFromText(language, scriptContent)
 
-        val result = script.flatMap { it.runScript(emptyImmutableList()) }
+        val result = script.flatMap { it.startScript(emptyImmutableList()) }
         assertTrue(result.isLeft())
     }
 
@@ -119,12 +125,40 @@ internal class DefaultScriptTest {
             },
             {
                 assertTimeout(Duration.ofSeconds(2)) {
-                    thread { it.runScript(emptyImmutableList()) }
+                    thread { it.startScript(emptyImmutableList()) }
                     Thread.sleep(1000)
                     it.stopAndCleanUp()
                 }
             }
         )
+    }
+
+    @Test
+    fun `test stopping a script which has child threads`() {
+        val script = object : Script() {
+            override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
+                repeat(2) {
+                    addThread(thread {
+                        Thread.sleep(10000)
+                    })
+                }
+
+                return Unit.right()
+            }
+
+            override fun stopScript() {
+            }
+        }
+
+        script.startScript(emptyImmutableList())
+
+        Thread.sleep(500)
+        assertTrue(script.isRunning)
+
+        val stopwatch = Stopwatch.createStarted()
+        script.stopAndCleanUp(timeout = 1000)
+        assertEquals(2, stopwatch.stop().elapsed(TimeUnit.SECONDS))
+        assertFalse(script.isRunning)
     }
 
     @Test
@@ -140,7 +174,7 @@ internal class DefaultScriptTest {
             mockScriptLanguageParser
         ).createScriptFromText(language, scriptContent)
 
-        val result = script.flatMap { it.runScript(emptyImmutableList()) }
+        val result = script.flatMap { it.startScript(emptyImmutableList()) }
         assertAll(
             { assertTrue(result.isRight()) },
             { assertEquals("Hello, World!", result.fold({ null }, { it as? String })) }

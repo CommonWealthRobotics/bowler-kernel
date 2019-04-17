@@ -108,7 +108,7 @@ internal class TestWithEsp32 {
             Script.getDefaultModules()
         ).getInstance<TestScript>()
 
-        val result = script.runScript(emptyImmutableList())
+        val result = script.startScript(emptyImmutableList())
         println(result)
     }
 }
