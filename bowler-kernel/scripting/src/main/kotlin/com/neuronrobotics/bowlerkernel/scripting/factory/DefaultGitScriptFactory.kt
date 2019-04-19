@@ -20,6 +20,8 @@ import arrow.core.Either
 import arrow.core.flatMap
 import com.google.inject.assistedinject.Assisted
 import com.neuronrobotics.bowlerkernel.gitfs.GitFS
+import com.neuronrobotics.bowlerkernel.gitfs.GitFile
+import com.neuronrobotics.bowlerkernel.hardware.Script
 import com.neuronrobotics.bowlerkernel.scripting.DefaultScript
 import com.neuronrobotics.bowlerkernel.scripting.parser.ScriptLanguageParser
 import javax.inject.Inject
@@ -33,16 +35,12 @@ class DefaultGitScriptFactory
     /**
      * Creates a [DefaultScript] from a gist.
      *
-     * @param gitUrl The gist id.
-     * @param filename The file name in the gist.
+     * @param gitFile The Git file.
      * @return A [DefaultScript] on success, a [String] on error.
      */
-    override fun createScriptFromGit(
-        gitUrl: String,
-        filename: String
-    ): Either<String, DefaultScript> =
-        gitFS.cloneRepoAndGetFiles(gitUrl).map {
-            val file = it.first { it.name == filename }
+    override fun createScriptFromGit(gitFile: GitFile): Either<String, Script> =
+        gitFS.cloneRepoAndGetFiles(gitFile.gitUrl).map {
+            val file = it.first { it.name == gitFile.filename }
             val language = scriptLanguageParser.parse(file.extension)
             language.map {
                 DefaultScript(it, file.readText())

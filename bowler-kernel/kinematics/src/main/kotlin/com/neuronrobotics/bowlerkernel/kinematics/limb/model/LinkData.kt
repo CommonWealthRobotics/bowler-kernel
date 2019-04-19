@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.limb.model
 
+import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 import com.neuronrobotics.bowlerkernel.kinematics.Limits
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
 
@@ -23,8 +24,6 @@ data class LinkData(
     val type: LinkType,
     val dhParamData: DhParamData,
     val jointLimits: Limits,
-    val jointAngleControllerPullURL: String,
-    val jointAngleControllerFilename: String,
-    val inertialStateEstimatorPullURL: String,
-    val inertialStateEstimatorFilename: String
+    val jointAngleController: GitFile,
+    val inertialStateEstimator: GitFile
 )

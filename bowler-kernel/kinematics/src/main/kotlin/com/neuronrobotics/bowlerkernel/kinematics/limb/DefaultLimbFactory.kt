@@ -42,8 +42,7 @@ class DefaultLimbFactory
     override fun createLimb(limbData: LimbData): Either<LimbCreationError, Limb> {
         val links = limbData.links.map {
             val estimator = scriptFactory.getInstanceFromGit<InertialStateEstimator>(
-                it.inertialStateEstimatorPullURL,
-                it.inertialStateEstimatorFilename
+                it.inertialStateEstimator
             ).fold({ return it.left() }, { it })
 
             linkFactory.createLink(
@@ -55,37 +54,31 @@ class DefaultLimbFactory
         }.toImmutableList()
 
         val fkSolver = scriptFactory.getInstanceFromGit<ForwardKinematicsSolver>(
-            limbData.forwardKinematicsSolverPullURL,
-            limbData.forwardKinematicsSolverFilename
+            limbData.forwardKinematicsSolver
         ).fold({ return it.left() }, { it })
 
         val ikSolver = scriptFactory.getInstanceFromGit<InverseKinematicsSolver>(
-            limbData.inverseKinematicsSolverPullURL,
-            limbData.inverseKinematicsSolverFilename
+            limbData.inverseKinematicsSolver
         ).fold({ return it.left() }, { it })
 
         val limbMotionPlanGenerator = scriptFactory.getInstanceFromGit<LimbMotionPlanGenerator>(
-            limbData.limbMotionPlanGeneratorPullURL,
-            limbData.limbMotionPlanGeneratorFilename
+            limbData.limbMotionPlanGenerator
         ).fold({ return it.left() }, { it })
 
         val limbMotionPlanFollower = scriptFactory.getInstanceFromGit<LimbMotionPlanFollower>(
-            limbData.limbMotionPlanFollowerPullURL,
-            limbData.limbMotionPlanFollowerFilename
+            limbData.limbMotionPlanFollower
         ).fold({ return it.left() }, { it })
 
         val jointAngleControllers = limbData.links.map {
             scriptFactory.getInstanceFromGit<JointAngleController>(
-                it.jointAngleControllerPullURL,
-                it.jointAngleControllerFilename
+                it.jointAngleController
             )
         }.map {
             it.fold({ return it.left() }, { it })
         }.toImmutableList()
 
         val inertialStateEstimator = scriptFactory.getInstanceFromGit<InertialStateEstimator>(
-            limbData.inertialStateEstimatorPullURL,
-            limbData.inertialStateEstimatorFilename
+            limbData.inertialStateEstimator
         ).fold({ return it.left() }, { it })
 
         return DefaultLimb(

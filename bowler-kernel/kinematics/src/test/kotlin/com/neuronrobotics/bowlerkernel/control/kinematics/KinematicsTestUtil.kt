@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.control.kinematics
 
+import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 import com.neuronrobotics.bowlerkernel.kinematics.Limits
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseData
@@ -43,10 +44,8 @@ fun createMockLinkData(
     type,
     dhParamData,
     jointLimits,
-    jointAngleControllerGistId,
-    jointAngleControllerFilename,
-    inertialStateEstimatorGistId,
-    inertialStateEstimatorFilename
+    GitFile(jointAngleControllerGistId, jointAngleControllerFilename),
+    GitFile(inertialStateEstimatorGistId, inertialStateEstimatorFilename)
 )
 
 @SuppressWarnings("LongParameterList")
@@ -66,16 +65,11 @@ fun createMockLimbData(
 ) = LimbData(
     id,
     links,
-    forwardKinematicsSolverGistId,
-    forwardKinematicsSolverFilename,
-    inverseKinematicsSolverGistId,
-    inverseKinematicsSolverFilename,
-    limbMotionPlanGeneratorGistId,
-    limbMotionPlanGeneratorFilename,
-    limbMotionPlanFollowerGistId,
-    limbMotionPlanFollowerFilename,
-    inertialStateEstimatorGistId,
-    inertialStateEstimatorFilename
+    GitFile(forwardKinematicsSolverGistId, forwardKinematicsSolverFilename),
+    GitFile(inverseKinematicsSolverGistId, inverseKinematicsSolverFilename),
+    GitFile(limbMotionPlanGeneratorGistId, limbMotionPlanGeneratorFilename),
+    GitFile(limbMotionPlanFollowerGistId, limbMotionPlanFollowerFilename),
+    GitFile(inertialStateEstimatorGistId, inertialStateEstimatorFilename)
 )
 
 @SuppressWarnings("LongParameterList")
@@ -85,4 +79,9 @@ fun createMockKinematicBaseData(
     limbTransforms: List<FrameTransformation> = immutableListOf(FrameTransformation.identity),
     bodyControllerGistId: String = "bcGistId",
     bodyControllerFilename: String = "bcFilename"
-) = KinematicBaseData(id, limbs, limbTransforms, bodyControllerGistId, bodyControllerFilename)
+) = KinematicBaseData(
+    id,
+    limbs,
+    limbTransforms,
+    GitFile(bodyControllerGistId, bodyControllerFilename)
+)

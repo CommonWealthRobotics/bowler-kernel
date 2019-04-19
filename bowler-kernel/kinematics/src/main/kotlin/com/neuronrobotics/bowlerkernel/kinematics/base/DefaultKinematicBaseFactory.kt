@@ -46,8 +46,7 @@ class DefaultKinematicBaseFactory
             .toImmutableMap()
 
         val bodyController = scriptFactory.getInstanceFromGit<BodyController>(
-            kinematicBaseData.bodyControllerPullURL,
-            kinematicBaseData.bodyControllerFilename
+            kinematicBaseData.bodyController
         ).fold({ return it.left() }, { it })
 
         return DefaultKinematicBase(

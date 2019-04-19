@@ -16,19 +16,15 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.limb.model
 
+import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
 
 data class LimbData(
     val id: SimpleLimbId,
     val links: List<LinkData>,
-    val forwardKinematicsSolverPullURL: String,
-    val forwardKinematicsSolverFilename: String,
-    val inverseKinematicsSolverPullURL: String,
-    val inverseKinematicsSolverFilename: String,
-    val limbMotionPlanGeneratorPullURL: String,
-    val limbMotionPlanGeneratorFilename: String,
-    val limbMotionPlanFollowerPullURL: String,
-    val limbMotionPlanFollowerFilename: String,
-    val inertialStateEstimatorPullURL: String,
-    val inertialStateEstimatorFilename: String
+    val forwardKinematicsSolver: GitFile,
+    val inverseKinematicsSolver: GitFile,
+    val limbMotionPlanGenerator: GitFile,
+    val limbMotionPlanFollower: GitFile,
+    val inertialStateEstimator: GitFile
 )
