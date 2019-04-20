@@ -13,14 +13,14 @@ import java.util.Properties
 plugins {
     jacoco
     pmd
-    id("com.diffplug.gradle.spotless") version "3.16.0"
-    id("org.jlleitschuh.gradle.ktlint") version "6.2.1"
-    id("com.github.spotbugs") version "1.6.4"
+    id("com.diffplug.gradle.spotless") version "3.22.0"
+    id("org.jlleitschuh.gradle.ktlint") version "7.3.0"
+    id("com.github.spotbugs") version "1.7.1"
     id("io.gitlab.arturbosch.detekt") version "1.0.0-RC12"
     `maven-publish`
     id("com.jfrog.bintray") version "1.8.3"
     `java-library`
-    id("org.jetbrains.dokka") version "0.9.17"
+    id("org.jetbrains.dokka") version "0.9.18"
     id("com.adarshr.test-logger") version "1.6.0"
 }
 
@@ -93,7 +93,7 @@ allprojects {
     pluginManager.withPlugin("jacoco") {
         // If this project has the plugin applied, configure the tool version.
         jacoco {
-            toolVersion = "0.8.0"
+            toolVersion = "0.8.3"
         }
     }
 
@@ -244,7 +244,7 @@ configure(javaProjects) {
     }
 
     spotbugs {
-        toolVersion = "3.1.3"
+        toolVersion = "4.0.0-beta1"
         excludeFilter = file("${rootProject.rootDir}/config/spotbugs/spotbugs-excludeFilter.xml")
     }
 
