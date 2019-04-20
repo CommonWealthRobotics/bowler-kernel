@@ -17,12 +17,11 @@
 package com.neuronrobotics.bowlerkernel.kinematics.base.model
 
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 
 data class KinematicBaseData(
-    val id: SimpleKinematicBaseId,
+    val id: String,
     val limbs: List<LimbData>,
     val limbTransforms: List<FrameTransformation>,
     val bodyController: GitFile
