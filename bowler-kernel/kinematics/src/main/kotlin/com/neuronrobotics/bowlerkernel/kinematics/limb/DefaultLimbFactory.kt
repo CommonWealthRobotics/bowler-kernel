@@ -20,6 +20,7 @@ import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.JointAngleController
+import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkFactory
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.ForwardKinematicsSolver
@@ -82,7 +83,7 @@ class DefaultLimbFactory
         ).fold({ return it.left() }, { it })
 
         return DefaultLimb(
-            limbData.id,
+            SimpleLimbId(limbData.id),
             links,
             fkSolver,
             ikSolver,

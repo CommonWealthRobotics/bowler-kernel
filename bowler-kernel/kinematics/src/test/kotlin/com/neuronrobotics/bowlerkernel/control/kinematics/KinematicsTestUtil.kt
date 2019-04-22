@@ -63,7 +63,7 @@ fun createMockLimbData(
     inertialStateEstimatorGistId: String = "iseGistId",
     inertialStateEstimatorFilename: String = "iseFilename"
 ) = LimbData(
-    id,
+    id.id,
     links,
     GitFile(forwardKinematicsSolverGistId, forwardKinematicsSolverFilename),
     GitFile(inverseKinematicsSolverGistId, inverseKinematicsSolverFilename),
@@ -80,7 +80,7 @@ fun createMockKinematicBaseData(
     bodyControllerGistId: String = "bcGistId",
     bodyControllerFilename: String = "bcFilename"
 ) = KinematicBaseData(
-    id,
+    id.id,
     limbs,
     limbTransforms,
     GitFile(bodyControllerGistId, bodyControllerFilename)
