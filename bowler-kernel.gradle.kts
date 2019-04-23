@@ -1,11 +1,11 @@
 import Bowler_kernel_gradle.Strings.spotlessLicenseHeaderDelimiter
 import Bowler_kernel_gradle.Versions.bowlerKernelVersion
+import Bowler_kernel_gradle.Versions.junitJupiterVersion
 import Bowler_kernel_gradle.Versions.ktlintVersion
 import com.adarshr.gradle.testlogger.theme.ThemeType
 import com.github.spotbugs.SpotBugsTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
-import org.gradle.util.GFileUtils
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.nio.file.Paths
 import java.util.Properties
@@ -27,6 +27,7 @@ plugins {
 object Versions {
     const val ktlintVersion = "0.29.0"
     const val bowlerKernelVersion = "0.0.23"
+    const val junitJupiterVersion = "5.2.0"
 }
 
 allprojects {
@@ -131,6 +132,12 @@ allprojects {
     }
 }
 
+fun DependencyHandler.junitJupiter(name: String) =
+    create(group = "org.junit.jupiter", name = name, version = junitJupiterVersion)
+
+fun DependencyHandler.testFx(name: String, version: String = "4.0.+") =
+    create(group = "org.testfx", name = name, version = version)
+
 configure(javaProjects) {
     apply {
         plugin("java")
@@ -141,24 +148,18 @@ configure(javaProjects) {
     }
 
     dependencies {
-        fun junitJupiter(name: String, version: String = "5.2.0") =
-            create(group = "org.junit.jupiter", name = name, version = version)
+        testCompile(junitJupiter("junit-jupiter-api"))
+        testCompile(junitJupiter("junit-jupiter-engine"))
+        testCompile(junitJupiter("junit-jupiter-params"))
+        testCompile(testFx(name = "testfx-core", version = "4.0.7-alpha"))
+        testCompile(testFx(name = "testfx-junit5", version = "4.0.6-alpha"))
 
-        fun testFx(name: String, version: String = "4.0.+") =
-            create(group = "org.testfx", name = name, version = version)
-
-        "testCompile"(junitJupiter(name = "junit-jupiter-api"))
-        "testCompile"(junitJupiter(name = "junit-jupiter-engine"))
-        "testCompile"(junitJupiter(name = "junit-jupiter-params"))
-        "testCompile"(testFx(name = "testfx-core", version = "4.0.7-alpha"))
-        "testCompile"(testFx(name = "testfx-junit5", version = "4.0.6-alpha"))
-
-        "testRuntime"(
+        testRuntime(
             group = "org.junit.platform",
             name = "junit-platform-launcher",
             version = "1.0.0"
         )
-        "testRuntime"(testFx(name = "openjfx-monocle", version = "8u76-b04"))
+        testRuntime(testFx(name = "openjfx-monocle", version = "8u76-b04"))
     }
 
     tasks.withType<JavaCompile> {
@@ -281,16 +282,13 @@ configure(kotlinProjects) {
 
     dependencies {
         // Weird syntax, see: https://github.com/gradle/kotlin-dsl/issues/894
-        "compile"(kotlin("stdlib-jdk8", kotlinVersion))
-        "compile"(kotlin("reflect", kotlinVersion))
-        "compile"(
+        compile(kotlin("stdlib-jdk8", kotlinVersion))
+        compile(kotlin("reflect", kotlinVersion))
+        compile(
             group = "org.jetbrains.kotlinx",
             name = "kotlinx-coroutines-core",
             version = "1.0.0"
         )
-
-        "testCompile"(kotlin("test", kotlinVersion))
-        "testCompile"(kotlin("test-junit", kotlinVersion))
     }
 
     tasks.withType<KotlinCompile> {
@@ -341,10 +339,7 @@ configure(kotlinProjects) {
 
     detekt {
         toolVersion = "1.0.0-RC12"
-        input = files(
-            "src/main/kotlin",
-            "src/test/kotlin"
-        )
+        input = files("src/main/kotlin", "src/test/kotlin")
         parallel = true
         config = files("${rootProject.rootDir}/config/detekt/config.yml")
     }
@@ -442,23 +437,6 @@ tasks.dokka {
 tasks.wrapper {
     gradleVersion = "5.0"
     distributionType = Wrapper.DistributionType.ALL
-
-    doLast {
-        /*
-         * Copy the properties file into the buildSrc project.
-         * Related issues:
-         *
-         * https://youtrack.jetbrains.com/issue/KT-14895
-         * https://youtrack.jetbrains.com/issue/IDEA-169717
-         * https://youtrack.jetbrains.com/issue/IDEA-153336
-         */
-        val buildSrcWrapperDir = File(rootDir, "buildSrc/gradle/wrapper")
-        GFileUtils.mkdirs(buildSrcWrapperDir)
-        copy {
-            from(propertiesFile)
-            into(buildSrcWrapperDir)
-        }
-    }
 }
 
 /**

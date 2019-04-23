@@ -23,15 +23,16 @@ import com.neuronrobotics.bowlerkernel.hardware.device.Device
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.DeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
 import com.nhaarman.mockitokotlin2.mock
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.emptyImmutableSetMultimap
-import kotlin.test.assertEquals
 
 class HardwareRegistryTrackerTest {
 
@@ -159,7 +160,10 @@ class HardwareRegistryTrackerTest {
                 assertThat(registry.sessionRegisteredDeviceResources.entries(), hasSize(equalTo(0)))
             },
             {
-                assertEquals(registry.sessionRegisteredDeviceResources, emptyImmutableSetMultimap())
+                assertEquals(
+                    registry.sessionRegisteredDeviceResources,
+                    emptyImmutableSetMultimap<Device, DeviceResource>()
+                )
             }
         )
     }
@@ -176,7 +180,7 @@ class HardwareRegistryTrackerTest {
             {
                 assertEquals(
                     registry.sessionRegisteredDeviceResources,
-                    emptyImmutableSetMultimap()
+                    emptyImmutableSetMultimap<Device, DeviceResource>()
                 )
             }
         )
@@ -197,7 +201,10 @@ class HardwareRegistryTrackerTest {
                 assertThat(registry.sessionRegisteredDeviceResources.entries(), hasSize(equalTo(0)))
             },
             {
-                assertEquals(registry.sessionRegisteredDeviceResources, emptyImmutableSetMultimap())
+                assertEquals(
+                    registry.sessionRegisteredDeviceResources,
+                    emptyImmutableSetMultimap<Device, DeviceResource>()
+                )
             }
         )
     }
