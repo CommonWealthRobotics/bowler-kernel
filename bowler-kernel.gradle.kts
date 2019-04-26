@@ -13,7 +13,6 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.nio.file.Paths
-import java.util.Properties
 
 plugins {
     jacoco
@@ -355,24 +354,17 @@ configure(kotlinProjects) {
 }
 
 configure(javaProjects + kotlinProjects) {
-    @Suppress("UnstableApiUsage")
-    val createPropertiesTask = tasks.register("createProperties") {
-        dependsOn("processResources")
-        doLast {
-            val propFileDir = Paths.get(buildDir.path, "resources", "main").toFile().apply {
-                mkdirs()
-            }
-
-            val propFile = Paths.get(propFileDir.path, "version.properties").toFile()
-
-            val prop = Properties()
-            prop["version"] = version as String
-            prop.store(propFile.outputStream(), null)
+    val writePropertiesTask = tasks.create("writeProperties", WriteProperties::class) {
+        val propFileDir = Paths.get(buildDir.path, "resources", "main").toFile().apply {
+            mkdirs()
         }
+
+        outputFile = Paths.get(propFileDir.path, "version.properties").toFile()
+        property("version", version as String)
     }
 
     tasks.named("classes") {
-        dependsOn(createPropertiesTask)
+        dependsOn(writePropertiesTask)
     }
 }
 
