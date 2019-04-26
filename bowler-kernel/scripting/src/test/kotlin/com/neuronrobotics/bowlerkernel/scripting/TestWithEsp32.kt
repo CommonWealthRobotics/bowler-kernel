@@ -45,6 +45,7 @@ internal class TestWithEsp32 {
         private val deviceFactory: BowlerDeviceFactory,
         private val resourceFactory: UnprovisionedDigitalOutFactory
     ) : Script() {
+        @Suppress("UNCHECKED_CAST")
         override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
             val device = deviceFactory.makeBowlerDevice(
                 DeviceId(
