@@ -26,9 +26,9 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.getOrFail
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
@@ -88,12 +88,7 @@ class BaseHardwareRegistryTest {
                 DefaultDeviceTypes.UnknownDevice,
                 DefaultConnectionMethods.RawHID(0, 0)
             )
-        ) {
-            ThrowingMockDevice(it)
-        }.fold(
-            { fail<ThrowingMockDevice> { it } },
-            { it }
-        )
+        ) { ThrowingMockDevice(it) }.getOrFail()
 
         val unregisterError = registry.unregisterDevice(device)
 
@@ -128,13 +123,9 @@ class BaseHardwareRegistryTest {
         val registerError =
             registry.registerDeviceResource(
                 device,
-                ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1))
-            ) { device, resource ->
-                MockUnprovisionedDeviceResource(
-                    device,
-                    resource
-                )
-            }
+                ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1)),
+                MockUnprovisionedDeviceResource.create
+            )
 
         assertTrue(registerError.isRight())
     }
@@ -147,13 +138,9 @@ class BaseHardwareRegistryTest {
         val secondRegisterError =
             registry.registerDeviceResource(
                 device,
-                ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(0))
-            ) { device, resource ->
-                MockUnprovisionedDeviceResource(
-                    device,
-                    resource
-                )
-            }
+                ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(0)),
+                MockUnprovisionedDeviceResource.create
+            )
 
         assertTrue(secondRegisterError.isLeft())
     }
@@ -224,20 +211,18 @@ class BaseHardwareRegistryTest {
             ResourceId(
                 DefaultResourceTypes.DigitalOut,
                 DefaultAttachmentPoints.Pin(0)
-            )
-        ) { device, resource ->
-            MockUnprovisionedDeviceResource(device, resource)
-        }
+            ),
+            MockUnprovisionedDeviceResource.create
+        )
 
         val servo = registry.registerDeviceResource(
             device,
             ResourceId(
                 DefaultResourceTypes.Servo,
                 DefaultAttachmentPoints.Pin(0)
-            )
-        ) { device, resource ->
-            MockUnprovisionedDeviceResource(device, resource)
-        }
+            ),
+            MockUnprovisionedDeviceResource.create
+        )
 
         assertAll(
             { assertTrue(digitalOut.isRight(), "digitalOut.isRight()") },
