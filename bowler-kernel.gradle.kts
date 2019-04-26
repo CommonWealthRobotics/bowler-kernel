@@ -291,7 +291,6 @@ configure(kotlinProjects) {
     }
 
     dependencies {
-        // Weird syntax, see: https://github.com/gradle/kotlin-dsl/issues/894
         implementation(kotlin("stdlib-jdk8", kotlinVersion))
         implementation(kotlin("reflect", kotlinVersion))
         implementation(
