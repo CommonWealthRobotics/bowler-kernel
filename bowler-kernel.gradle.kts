@@ -46,7 +46,7 @@ object Strings {
 }
 
 val bowlerKernelProject = project(":bowler-kernel")
-val bowlerKernelConfigProject = project(":bowler-kernel:config")
+val bowlerKernelSettingsProject = project(":bowler-kernel:config")
 val bowlerKernelGitFSProject = project(":bowler-kernel:gitfs")
 val bowlerKernelHardwareProject = project(":bowler-kernel:hardware")
 val bowlerKernelKinematicsProject = project(":bowler-kernel:kinematics")
@@ -57,7 +57,7 @@ val bowlerKernelVitaminsProject = project(":bowler-kernel:vitamins")
 
 val kotlinProjects = setOf(
     bowlerKernelProject,
-    bowlerKernelConfigProject,
+    bowlerKernelSettingsProject,
     bowlerKernelGitFSProject,
     bowlerKernelHardwareProject,
     bowlerKernelKinematicsProject,
