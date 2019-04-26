@@ -18,6 +18,7 @@ package com.neuronrobotics.bowlerkernel.kinematics.motion
 
 import com.beust.klaxon.Converter
 import com.beust.klaxon.JsonValue
+import com.google.common.math.DoubleMath
 import org.ejml.simple.SimpleMatrix
 import java.util.Arrays
 import kotlin.math.cos
@@ -99,6 +100,24 @@ private constructor(private val mat: SimpleMatrix) {
     }
 
     override fun hashCode() = Arrays.hashCode(internalData)
+
+    /**
+     * Computes whether this [FrameTransformation] is approximate equal to the [other]
+     * [FrameTransformation] within the [tolerance].
+     *
+     * @param other The other [FrameTransformation].
+     * @param tolerance The per-element tolerance.
+     * @return True if this is equal to [other].
+     */
+    fun approxEquals(other: FrameTransformation, tolerance: Double): Boolean {
+        internalData.forEachIndexed { index, elem ->
+            if (!DoubleMath.fuzzyEquals(elem, other.internalData[index], tolerance)) {
+                return false
+            }
+        }
+
+        return true
+    }
 
     companion object {
 
