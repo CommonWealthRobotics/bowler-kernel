@@ -44,6 +44,11 @@ interface Vitamin {
     val height: Double
 
     /**
+     * The weight of this Vitamin.
+     */
+    val weight: Double
+
+    /**
      * The center of mass.
      */
     val centerOfMass: CenterOfMass
