@@ -8,12 +8,14 @@ buildCache {
 rootProject.name = "bowler-kernel"
 
 include(":bowler-kernel")
+include(":bowler-kernel:config")
 include(":bowler-kernel:gitfs")
 include(":bowler-kernel:hardware")
 include(":bowler-kernel:kinematics")
 include(":bowler-kernel:logging")
 include(":bowler-kernel:scripting")
-include(":bowler-kernel:config")
+include(":bowler-kernel:util")
+include(":bowler-kernel:vitamins")
 
 /**
  * This configures the gradle build so we can use non-standard build file names.
