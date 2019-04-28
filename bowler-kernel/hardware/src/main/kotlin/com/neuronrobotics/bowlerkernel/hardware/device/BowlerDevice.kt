@@ -50,6 +50,11 @@ internal constructor(
     override fun isResourceInRange(resourceId: ResourceId) =
         bowlerRPCProtocol.isResourceInRange(resourceId)
 
+    /**
+     * Adds the [resource] as a read and/or a write resource to the [bowlerRPCProtocol].
+     *
+     * @return The provisioned resource, or an error.
+     */
     fun add(resource: UnprovisionedDeviceResource): Either<String, ProvisionedDeviceResource> {
         val id = resource.resourceId
 
@@ -80,6 +85,11 @@ internal constructor(
         }
     }
 
+    /**
+     * Adds the [resources] as a read and/or a write group to the [bowlerRPCProtocol].
+     *
+     * @return The provisioned resources, or an error.
+     */
     fun <T : UnprovisionedDeviceResource> add(
         resources: ImmutableSet<T>
     ): Either<String, ImmutableSet<ProvisionedDeviceResource>> {
