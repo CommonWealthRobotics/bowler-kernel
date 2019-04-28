@@ -37,8 +37,6 @@ import org.octogonapus.ktguava.collections.toImmutableSet
 class BowlerDevice
 internal constructor(
     override val deviceId: DeviceId,
-    // We want to let users use the RPC directly
-    @Suppress("MemberVisibilityCanBePrivate")
     val bowlerRPCProtocol: BowlerRPCProtocol,
     private val resourceIdValidator: ResourceIdValidator
 ) : Device {
