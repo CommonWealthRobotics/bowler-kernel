@@ -54,20 +54,29 @@ internal constructor(
         val id = resource.resourceId
 
         val readError = resourceIdValidator.validateIsReadType(id.resourceType).flatMap {
-            bowlerRPCProtocol.addRead(id)
+            bowlerRPCProtocol.addRead(id).also {
+                when (it) {
+                    is Either.Left -> return it
+                }
+            }
         }
 
         val writeError = resourceIdValidator.validateIsWriteType(id.resourceType).flatMap {
-            bowlerRPCProtocol.addWrite(id)
+            bowlerRPCProtocol.addWrite(id).also {
+                when (it) {
+                    is Either.Left -> return it
+                }
+            }
         }
 
-        return if (readError.isLeft() && writeError.isLeft()) {
-            """
-            |Could not add resource because it neither a read type nor a write type:
-            |$resource
-            """.trimMargin().left()
-        } else {
-            return resource.runProvision().right()
+        return when {
+            readError is Either.Left && writeError is Either.Left ->
+                """
+                |Could not add resource because it neither a read type nor a write type:
+                |$resource
+                """.trimMargin().left()
+
+            else -> resource.runProvision().right()
         }
     }
 
@@ -76,28 +85,32 @@ internal constructor(
     ): Either<String, ImmutableSet<ProvisionedDeviceResource>> {
         val resourceIds = resources.map { it.resourceId }.toImmutableSet()
 
-        val readResources = resources.map {
+        val allReadResources = resources.map {
             resourceIdValidator.validateIsReadType(it.resourceId.resourceType)
-        }
-
-        val allReadResources = readResources.fold(true) { acc, elem ->
+        }.fold(true) { acc, elem ->
             acc && elem.isRight()
         }
 
         if (allReadResources) {
-            bowlerRPCProtocol.addReadGroup(resourceIds)
+            bowlerRPCProtocol.addReadGroup(resourceIds).also {
+                when (it) {
+                    is Either.Left -> return it
+                }
+            }
         }
 
-        val writeResources = resources.map {
+        val allWriteResources = resources.map {
             resourceIdValidator.validateIsWriteType(it.resourceId.resourceType)
-        }
-
-        val allWriteResources = writeResources.fold(true) { acc, elem ->
+        }.fold(true) { acc, elem ->
             acc && elem.isRight()
         }
 
         if (allWriteResources) {
-            bowlerRPCProtocol.addWriteGroup(resourceIds)
+            bowlerRPCProtocol.addWriteGroup(resourceIds).also {
+                when (it) {
+                    is Either.Left -> return it
+                }
+            }
         }
 
         return if (!allReadResources && !allWriteResources) {

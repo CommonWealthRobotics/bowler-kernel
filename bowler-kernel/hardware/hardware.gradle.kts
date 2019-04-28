@@ -1,41 +1,62 @@
-import Hardware_gradle.Versions.arrow_version
-
 plugins {
     `java-library`
+    kotlin("kapt")
 }
 
 description = "Controlled access to hardware resources."
 
-object Versions {
-    const val arrow_version = "0.8.1"
-}
-
-repositories {
-    maven("https://oss.sonatype.org/content/repositories/staging/")
-}
+fun DependencyHandler.arrow(name: String) =
+    create(group = "io.arrow-kt", name = name, version = property("arrow.version") as String)
 
 dependencies {
-    api(group = "io.arrow-kt", name = "arrow-core", version = arrow_version)
-    api(group = "org.kohsuke", name = "github-api", version = "1.95")
+    api(
+        group = "org.kohsuke",
+        name = "github-api",
+        version = property("github-api.version") as String
+    )
     api(group = "com.neuronrobotics", name = "SimplePacketComsJava", version = "0.9.2")
     api(group = "com.neuronrobotics", name = "SimplePacketComsJava-HID", version = "0.9.3")
     api("org.hid4java:hid4java:0.5.0")
 
     implementation(project(":bowler-kernel:logging"))
-    implementation(group = "io.arrow-kt", name = "arrow-syntax", version = arrow_version)
-    implementation(group = "org.octogonapus", name = "kt-guava-core", version = "0.0.5")
-    implementation(group = "com.google.inject", name = "guice", version = "4.1.0")
+
+    implementation(arrow("arrow-core-data"))
+    implementation(arrow("arrow-core-extensions"))
+    implementation(arrow("arrow-syntax"))
+    implementation(arrow("arrow-typeclasses"))
+    implementation(arrow("arrow-extras-data"))
+    implementation(arrow("arrow-extras-extensions"))
+    kapt(arrow("arrow-meta"))
+
+    implementation(
+        group = "org.octogonapus",
+        name = "kt-guava-core",
+        version = property("kt-guava-core.version") as String
+    )
+    implementation(
+        group = "com.google.inject",
+        name = "guice",
+        version = property("guice.version") as String
+    )
     implementation(
         group = "com.google.inject.extensions",
         name = "guice-assistedinject",
         version = "4.1.0"
     )
-    implementation(group = "org.jlleitschuh.guice", name = "kotlin-guiced-core", version = "0.0.5")
+    implementation(
+        group = "org.jlleitschuh.guice",
+        name = "kotlin-guiced-core",
+        version = property("kotlin-guiced-core.version") as String
+    )
 
-    testImplementation(group = "com.natpryce", name = "hamkrest", version = "1.4.2.2")
+    testImplementation(
+        group = "com.natpryce",
+        name = "hamkrest",
+        version = property("hamkrest.version") as String
+    )
     testImplementation(
         group = "com.nhaarman.mockitokotlin2",
         name = "mockito-kotlin",
-        version = "2.1.0"
+        version = property("mockito-kotlin.version") as String
     )
 }

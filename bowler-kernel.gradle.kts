@@ -1,12 +1,3 @@
-import Bowler_kernel_gradle.Strings.spotlessLicenseHeaderDelimiter
-import Bowler_kernel_gradle.Versions.bowlerKernelVersion
-import Bowler_kernel_gradle.Versions.checkstyleToolVersion
-import Bowler_kernel_gradle.Versions.detektToolVersion
-import Bowler_kernel_gradle.Versions.jacocoToolVersion
-import Bowler_kernel_gradle.Versions.junitJupiterVersion
-import Bowler_kernel_gradle.Versions.ktlintVersion
-import Bowler_kernel_gradle.Versions.pmdToolVersion
-import Bowler_kernel_gradle.Versions.spotbugsToolVersion
 import com.adarshr.gradle.testlogger.theme.ThemeType
 import com.github.spotbugs.SpotBugsTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
@@ -29,20 +20,16 @@ plugins {
     checkstyle
 }
 
-object Versions {
-    const val bowlerKernelVersion = "0.0.23"
-    const val ktlintVersion = "0.29.0"
-    const val junitJupiterVersion = "5.2.0"
-    const val jacocoToolVersion = "0.8.3"
-    const val checkstyleToolVersion = "8.1"
-    const val spotbugsToolVersion = "4.0.0-beta1"
-    const val pmdToolVersion = "6.3.0"
-    const val detektToolVersion = "1.0.0-RC12"
-}
+val bowlerKernelVersion = "0.0.23"
+val ktlintVersion = "0.29.0"
+val junitJupiterVersion = "5.2.0"
+val jacocoToolVersion = "0.8.3"
+val checkstyleToolVersion = "8.1"
+val spotbugsToolVersion = "4.0.0-beta1"
+val pmdToolVersion = "6.3.0"
+val detektToolVersion = "1.0.0-RC12"
 
-object Strings {
-    const val spotlessLicenseHeaderDelimiter = "(@|package|import)"
-}
+val spotlessLicenseHeaderDelimiter = "(@|package|import)"
 
 val bowlerKernelProject = project(":bowler-kernel")
 val bowlerKernelGitFSProject = project(":bowler-kernel:gitfs")
@@ -79,6 +66,7 @@ buildscript {
         maven("https://plugins.gradle.org/m2/")
         maven("https://oss.sonatype.org/content/repositories/staging/")
     }
+
     dependencies {
         // Gives us the KotlinJvmProjectExtension
         classpath(kotlin("gradle-plugin", property("kotlin.version") as String))
