@@ -55,7 +55,9 @@ internal constructor(
      *
      * @return The provisioned resource, or an error.
      */
-    fun add(resource: UnprovisionedDeviceResource): Either<String, ProvisionedDeviceResource> {
+    fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
+        resource: T
+    ): Either<String, R> {
         val id = resource.resourceId
 
         val readError = resourceIdValidator.validateIsReadType(id.resourceType).flatMap {
@@ -81,7 +83,7 @@ internal constructor(
                 |$resource
                 """.trimMargin().left()
 
-            else -> resource.runProvision().right()
+            else -> resource.provision().right()
         }
     }
 
@@ -90,9 +92,9 @@ internal constructor(
      *
      * @return The provisioned resources, or an error.
      */
-    fun <T : UnprovisionedDeviceResource> add(
+    fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
         resources: ImmutableSet<T>
-    ): Either<String, ImmutableSet<ProvisionedDeviceResource>> {
+    ): Either<String, ImmutableSet<R>> {
         val resourceIds = resources.map { it.resourceId }.toImmutableSet()
 
         val allReadResources = resources.map {
@@ -130,7 +132,7 @@ internal constructor(
             |${resources.joinToString(separator = "\n")}
             """.trimMargin().left()
         } else {
-            resources.map { it.runProvision() }.toImmutableSet().right()
+            resources.map { it.provision() }.toImmutableSet().right()
         }
     }
 

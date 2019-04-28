@@ -16,15 +16,11 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.device
 
-import arrow.core.getOrElse
 import arrow.core.left
 import arrow.core.right
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericAnalogIn
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericDigitalOut
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericSerialConnection
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
@@ -43,8 +39,6 @@ import com.nhaarman.mockitokotlin2.verify
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.immutableSetOf
 import org.octogonapus.ktguava.collections.toImmutableSet
 
@@ -135,10 +129,7 @@ internal class BowlerDeviceTest {
         verify(bowlerRPCProtocol).addWrite(led1Id)
         verify(bowlerRPCProtocol, never()).addRead(led1Id)
 
-        assertAll(
-            { assertTrue(result.isRight()) },
-            { assertTrue(result.getOrElse { fail { "" } } is GenericDigitalOut) }
-        )
+        assertTrue(result.isRight())
     }
 
     @Test
@@ -148,10 +139,7 @@ internal class BowlerDeviceTest {
         verify(bowlerRPCProtocol, never()).addWrite(line1Id)
         verify(bowlerRPCProtocol).addRead(line1Id)
 
-        assertAll(
-            { assertTrue(result.isRight()) },
-            { assertTrue(result.getOrElse { fail { "" } } is GenericAnalogIn) }
-        )
+        assertTrue(result.isRight())
     }
 
     @Test
@@ -161,10 +149,7 @@ internal class BowlerDeviceTest {
         verify(bowlerRPCProtocol).addWrite(serial1Id)
         verify(bowlerRPCProtocol).addRead(serial1Id)
 
-        assertAll(
-            { assertTrue(result.isRight()) },
-            { assertTrue(result.getOrElse { fail { "" } } is GenericSerialConnection) }
-        )
+        assertTrue(result.isRight())
     }
 
     @Test

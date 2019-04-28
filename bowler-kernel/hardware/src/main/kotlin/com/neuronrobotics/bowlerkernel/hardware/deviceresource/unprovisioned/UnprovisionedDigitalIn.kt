@@ -24,7 +24,7 @@ data class UnprovisionedDigitalIn
 internal constructor(
     override val device: BowlerDevice,
     override val resourceId: ResourceId
-) : UnprovisionedDeviceResource() {
+) : UnprovisionedDeviceResource<GenericDigitalIn> {
 
     override fun provision() = GenericDigitalIn(device, resourceId)
 }

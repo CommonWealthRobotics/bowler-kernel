@@ -24,7 +24,7 @@ data class UnprovisionedSerialConnection
 internal constructor(
     override val device: BowlerDevice,
     override val resourceId: ResourceId
-) : UnprovisionedDeviceResource() {
+) : UnprovisionedDeviceResource<GenericSerialConnection> {
 
     override fun provision() = GenericSerialConnection(device, resourceId)
 }
