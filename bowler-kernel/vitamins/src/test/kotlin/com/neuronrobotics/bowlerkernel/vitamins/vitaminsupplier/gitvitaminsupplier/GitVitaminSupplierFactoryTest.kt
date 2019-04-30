@@ -108,7 +108,7 @@ internal class GitVitaminSupplierFactoryTest {
                               "partNumber": "abcd",
                               "price": 3.5
                             }
-                            """.trimIndent()
+                        """.trimIndent()
                     )
                 }
             )
@@ -122,8 +122,6 @@ internal class GitVitaminSupplierFactoryTest {
             { assertEquals(mapOf(firstVitamin to "abcd"), result.partNumbers) },
             { assertEquals(mapOf(firstVitamin to 3.5), result.prices) }
         )
-
-        tempDir.listFiles().forEach { it.deleteRecursively() }
     }
 
     @Test
@@ -159,8 +157,6 @@ internal class GitVitaminSupplierFactoryTest {
         assertThrows<IllegalStateException> {
             GitVitaminSupplierFactory(mockGitFS).createVitaminSupplier(supplierFile)
         }
-
-        tempDir.listFiles().forEach { it.deleteRecursively() }
     }
 
     @Test
@@ -205,7 +201,5 @@ internal class GitVitaminSupplierFactoryTest {
         assertThrows<IllegalStateException> {
             GitVitaminSupplierFactory(mockGitFS).createVitaminSupplier(supplierFile)
         }
-
-        tempDir.listFiles().forEach { it.deleteRecursively() }
     }
 }

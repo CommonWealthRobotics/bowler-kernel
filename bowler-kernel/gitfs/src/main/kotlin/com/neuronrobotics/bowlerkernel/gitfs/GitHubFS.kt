@@ -66,7 +66,7 @@ class GitHubFS(
                 // If true, the directories were created which means a new repository is
                 // being cloned
                 Try {
-                    val git = Git.cloneRepository()
+                    Git.cloneRepository()
                         .setURI(gitUrl)
                         .setBranch(branch)
                         .setDirectory(directory)
@@ -77,16 +77,16 @@ class GitHubFS(
                             )
                         )
                         .call()
-
-                    git.submoduleInit().call()
-                    git.submoduleUpdate().call()
-                    git.close()
-                }.map {
-                    directory
-                }
+                        .use {
+                            it.submoduleInit().call()
+                            it.submoduleUpdate().call()
+                        }
+                }.map { directory }
             } else {
                 // If false, the repository is already cloned, so pull instead
-                Try { Git.open(directory).apply { pull().call() }.close() }.map { directory }
+                Try {
+                    Git.open(directory).use { it.pull().call() }
+                }.map { directory }
             }
         } else {
             Try.raise(

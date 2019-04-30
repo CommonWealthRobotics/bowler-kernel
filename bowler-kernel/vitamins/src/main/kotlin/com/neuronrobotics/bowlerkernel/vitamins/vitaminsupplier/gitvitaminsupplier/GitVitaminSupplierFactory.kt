@@ -51,13 +51,14 @@ class GitVitaminSupplierFactory(
 
             val vitaminsFile = allFiles.first { it.name == vitaminSupplierFile.filename }
 
-            val gitVitamins =
-                klaxon.parse<GitVitaminSupplierData>(vitaminsFile) ?: throw IllegalStateException(
+            val gitVitamins = FileReader(vitaminsFile).use { reader ->
+                klaxon.parse<GitVitaminSupplierData>(reader) ?: throw IllegalStateException(
                     """
                     |Could not parse GitVitaminSupplierData from file:
                     |$vitaminsFile
                     """.trimMargin()
                 )
+            }
 
             // Search independent of the repo's actual position on disk by only looking for a
             // matching suffix
