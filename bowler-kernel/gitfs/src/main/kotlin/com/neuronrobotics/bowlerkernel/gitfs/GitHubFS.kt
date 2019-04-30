@@ -86,11 +86,7 @@ class GitHubFS(
                 }
             } else {
                 // If false, the repository is already cloned, so pull instead
-                Try {
-                    Git.open(directory).pull().call()
-                }.map {
-                    directory
-                }
+                Try { Git.open(directory).apply { pull().call() }.close() }.map { directory }
             }
         } else {
             Try.raise(
