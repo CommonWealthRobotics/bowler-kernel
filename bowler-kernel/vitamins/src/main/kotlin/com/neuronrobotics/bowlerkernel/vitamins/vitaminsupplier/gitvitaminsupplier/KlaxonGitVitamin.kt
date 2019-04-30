@@ -14,52 +14,33 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins
+package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier
 
-import com.neuronrobotics.bowlerkernel.util.Limits
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 
 /**
- * A generic DC motor.
- *
- * Good things to put in [Vitamin.specs]:
- *  - Peak power RPM
- *  - Peak efficiency RPM
- *  - Mounting holes (Vitamin for the screws and a bolt circle diameter)
+ * A [Vitamin] in Git that Klaxon can parse into.
  */
-interface DCMotor : Vitamin {
+interface KlaxonGitVitamin {
 
     /**
-     * The operating voltage limits.
+     * The type of this vitamin, used by Klaxon to handle polymorphism. MUST be annotated with
+     * Klaxon's TypeFor.
      */
-    val voltage: Limits
+    val type: String
 
     /**
-     * The output shaft diameter.
+     * The vitamin.
      */
-    val outputShaftDiameter: Double
+    val vitamin: Vitamin
 
     /**
-     * The free speed.
+     * The part number.
      */
-    val freeSpeed: Double
+    val partNumber: String
 
     /**
-     * The free current.
+     * The price for one unit.
      */
-    val freeCurrent: Double
-
-    /**
-     * The stall torque.
-     */
-    val stallTorque: Double
-
-    /**
-     * The stall current.
-     */
-    val stallCurrent: Double
-
-    /**
-     * The maximum power output.
-     */
-    val power: Double
+    val price: Double
 }

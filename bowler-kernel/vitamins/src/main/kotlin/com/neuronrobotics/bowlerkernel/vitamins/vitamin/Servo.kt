@@ -14,43 +14,28 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 /**
- * A generic stepper motor.
+ * A hobby servo motor.
  *
  * Good things to put in [Vitamin.specs]:
- *  - Mounting holes (Vitamin for the screws and hole positions)
+ *  - Any supported feedback
  */
-interface StepperMotor : Vitamin {
+interface Servo : Vitamin {
 
     /**
-     * The shaft diameter.
-     */
-    val shaftDiameter: Double
-
-    /**
-     * The NEMA size.
-     */
-    val nemaSize: Int
-
-    /**
-     * The nominal voltage.
+     * The operating voltage.
      */
     val voltage: Double
 
     /**
-     * The holding torque.
+     * The stall torque.
      */
-    val holdingTorque: Double
+    val stallTorque: Double
 
     /**
-     * The rated current.
+     * The operating speed.
      */
-    val current: Double
-
-    /**
-     * The degrees per step.
-     */
-    val stepAngle: Double
+    val speed: Double
 }

@@ -14,28 +14,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
-/**
- * A hobby servo motor.
- *
- * Good things to put in [Vitamin.specs]:
- *  - Any supported feedback
- */
-interface Servo : Vitamin {
-
-    /**
-     * The operating voltage.
-     */
-    val voltage: Double
-
-    /**
-     * The stall torque.
-     */
-    val stallTorque: Double
-
-    /**
-     * The operating speed.
-     */
-    val speed: Double
-}
+data class CenterOfMass(
+    val x: Double,
+    val y: Double,
+    val z: Double
+)

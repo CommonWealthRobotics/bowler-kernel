@@ -14,23 +14,22 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
+import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 
-data class DefaultStepperMotor(
-    override val shaftDiameter: Double,
-    override val nemaSize: Int,
+data class DefaultServo(
     override val voltage: Double,
-    override val holdingTorque: Double,
-    override val current: Double,
-    override val stepAngle: Double,
+    override val stallTorque: Double,
+    override val speed: Double,
     override val width: Double,
     override val length: Double,
     override val height: Double,
     override val weight: Double,
     override val centerOfMass: CenterOfMass,
+    @ConvertImmutableMap
     override val specs: ImmutableMap<String, Any>,
     override val cadGenerator: GitFile
-) : StepperMotor
+) : Servo

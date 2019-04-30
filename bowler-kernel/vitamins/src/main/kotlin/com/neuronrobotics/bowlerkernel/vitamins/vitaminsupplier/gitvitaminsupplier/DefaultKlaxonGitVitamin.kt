@@ -14,10 +14,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins
+package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier
 
-data class CenterOfMass(
-    val x: Double,
-    val y: Double,
-    val z: Double
-)
+import com.beust.klaxon.TypeFor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
+
+data class DefaultKlaxonGitVitamin(
+    @TypeFor(field = "vitamin", adapter = KlaxonVitaminAdapter::class)
+    override val type: String,
+    override val vitamin: Vitamin,
+    override val partNumber: String,
+    override val price: Double
+) : KlaxonGitVitamin

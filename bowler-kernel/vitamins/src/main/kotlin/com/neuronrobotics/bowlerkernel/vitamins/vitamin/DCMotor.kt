@@ -14,35 +14,52 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin
+
+import com.neuronrobotics.bowlerkernel.util.Limits
 
 /**
- * A generic battery.
+ * A generic DC motor.
  *
  * Good things to put in [Vitamin.specs]:
- *  - Number of cells
- *  - Connector type
- *  - Chemistry
+ *  - Peak power RPM
+ *  - Peak efficiency RPM
+ *  - Mounting holes (Vitamin for the screws and a bolt circle diameter)
  */
-interface Battery : Vitamin {
+interface DCMotor : Vitamin {
 
     /**
-     * The nominal voltage.
+     * The operating voltage limits.
      */
-    val voltage: Double
+    val voltage: Limits
 
     /**
-     * The maximum continuous current draw.
+     * The output shaft diameter.
      */
-    val current: Double
+    val outputShaftDiameter: Double
 
     /**
-     * The maximum continuous discharge rate.
+     * The free speed.
      */
-    val dischargeRate: Double
+    val freeSpeed: Double
 
     /**
-     * The capacity.
+     * The free current.
      */
-    val capacity: Double
+    val freeCurrent: Double
+
+    /**
+     * The stall torque.
+     */
+    val stallTorque: Double
+
+    /**
+     * The stall current.
+     */
+    val stallCurrent: Double
+
+    /**
+     * The maximum power output.
+     */
+    val power: Double
 }

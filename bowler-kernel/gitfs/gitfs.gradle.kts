@@ -18,6 +18,11 @@ dependencies {
     implementation(project(":bowler-kernel:logging"))
     implementation(arrow("arrow-core-data"))
     implementation(
+        group = "com.google.guava",
+        name = "guava",
+        version = property("guava.version") as String
+    )
+    implementation(
         group = "org.octogonapus",
         name = "kt-guava-core",
         version = property("kt-guava-core.version") as String

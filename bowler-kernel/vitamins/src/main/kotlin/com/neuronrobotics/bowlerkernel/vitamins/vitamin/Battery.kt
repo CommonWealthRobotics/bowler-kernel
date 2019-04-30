@@ -14,18 +14,35 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
-import com.google.common.collect.ImmutableMap
-import com.neuronrobotics.bowlerkernel.gitfs.GitFile
+/**
+ * A generic battery.
+ *
+ * Good things to put in [Vitamin.specs]:
+ *  - Number of cells
+ *  - Connector type
+ *  - Chemistry
+ */
+interface Battery : Vitamin {
 
-data class DefaultBallBearing(
-    override val bore: Double,
-    override val width: Double,
-    override val length: Double,
-    override val height: Double,
-    override val weight: Double,
-    override val centerOfMass: CenterOfMass,
-    override val specs: ImmutableMap<String, Any>,
-    override val cadGenerator: GitFile
-) : BallBearing
+    /**
+     * The nominal voltage.
+     */
+    val voltage: Double
+
+    /**
+     * The maximum continuous current draw.
+     */
+    val current: Double
+
+    /**
+     * The maximum continuous discharge rate.
+     */
+    val dischargeRate: Double
+
+    /**
+     * The capacity.
+     */
+    val capacity: Double
+}
