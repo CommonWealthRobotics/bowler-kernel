@@ -14,23 +14,23 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
-import com.google.common.collect.ImmutableMap
-import com.neuronrobotics.bowlerkernel.gitfs.GitFile
+/**
+ * A generic ball bearing. [Vitamin.width] should be the width (between the two flat faces of the
+ * bearing). For rotational bearings, [Vitamin.height] and [Vitamin.length] should be equal to each
+ * other and to the outer diameter. For linear bearings, [Vitamin.height] should be equal to the
+ * outer diameter and [Vitamin.length] should be equal to either the outer diameter or the
+ * outer housing dimension.
+ *
+ * Good things to put in [Vitamin.specs]:
+ *  - Construction type
+ *  - Lubrication
+ */
+interface BallBearing : Vitamin {
 
-data class DefaultStepperMotor(
-    override val shaftDiameter: Double,
-    override val nemaSize: Int,
-    override val voltage: Double,
-    override val holdingTorque: Double,
-    override val current: Double,
-    override val stepAngle: Double,
-    override val width: Double,
-    override val length: Double,
-    override val height: Double,
-    override val weight: Double,
-    override val centerOfMass: CenterOfMass,
-    override val specs: ImmutableMap<String, Any>,
-    override val cadGenerator: GitFile
-) : StepperMotor
+    /**
+     * The bore diameter (where the shaft goes).
+     */
+    val bore: Double
+}

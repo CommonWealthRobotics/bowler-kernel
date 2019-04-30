@@ -14,10 +14,21 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
-data class CenterOfMass(
-    val x: Double,
-    val y: Double,
-    val z: Double
-)
+import com.google.common.collect.ImmutableMap
+import com.neuronrobotics.bowlerkernel.gitfs.GitFile
+
+data class DefaultBattery(
+    override val voltage: Double,
+    override val current: Double,
+    override val dischargeRate: Double,
+    override val capacity: Double,
+    override val width: Double,
+    override val length: Double,
+    override val height: Double,
+    override val weight: Double,
+    override val centerOfMass: CenterOfMass,
+    override val specs: ImmutableMap<String, Any>,
+    override val cadGenerator: GitFile
+) : Battery

@@ -14,20 +14,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.util.Limits
 
-data class DefaultDCMotor(
-    override val voltage: Limits,
-    override val outputShaftDiameter: Double,
-    override val freeSpeed: Double,
-    override val freeCurrent: Double,
+data class DefaultServo(
+    override val voltage: Double,
     override val stallTorque: Double,
-    override val stallCurrent: Double,
-    override val power: Double,
+    override val speed: Double,
     override val width: Double,
     override val length: Double,
     override val height: Double,
@@ -35,4 +30,4 @@ data class DefaultDCMotor(
     override val centerOfMass: CenterOfMass,
     override val specs: ImmutableMap<String, Any>,
     override val cadGenerator: GitFile
-) : DCMotor
+) : Servo

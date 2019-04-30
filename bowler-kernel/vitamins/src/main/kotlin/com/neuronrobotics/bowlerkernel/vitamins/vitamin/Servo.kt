@@ -14,39 +14,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins
-
-import com.neuronrobotics.bowlerkernel.util.Limits
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 /**
- * A generic DC motor.
+ * A hobby servo motor.
  *
  * Good things to put in [Vitamin.specs]:
- *  - Peak power RPM
- *  - Peak efficiency RPM
- *  - Mounting holes (Vitamin for the screws and a bolt circle diameter)
+ *  - Any supported feedback
  */
-interface DCMotor : Vitamin {
+interface Servo : Vitamin {
 
     /**
-     * The operating voltage limits.
+     * The operating voltage.
      */
-    val voltage: Limits
-
-    /**
-     * The output shaft diameter.
-     */
-    val outputShaftDiameter: Double
-
-    /**
-     * The free speed.
-     */
-    val freeSpeed: Double
-
-    /**
-     * The free current.
-     */
-    val freeCurrent: Double
+    val voltage: Double
 
     /**
      * The stall torque.
@@ -54,12 +35,7 @@ interface DCMotor : Vitamin {
     val stallTorque: Double
 
     /**
-     * The stall current.
+     * The operating speed.
      */
-    val stallCurrent: Double
-
-    /**
-     * The maximum power output.
-     */
-    val power: Double
+    val speed: Double
 }
