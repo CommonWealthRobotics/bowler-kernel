@@ -17,7 +17,8 @@
 package com.neuronrobotics.bowlerkernel.gitfs
 
 import arrow.core.Try
-import arrow.core.recoverWith
+import arrow.core.Try.Companion.raiseError
+import arrow.core.handleErrorWith
 import com.google.common.base.Throwables
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.internal.logging.LoggerUtilities
@@ -89,7 +90,7 @@ class GitHubFS(
                 }.map { directory }
             }
         } else {
-            Try.raise(
+            raiseError(
                 IllegalArgumentException(
                     """
                     |Invalid git URL:
@@ -131,7 +132,7 @@ class GitHubFS(
             gitHub.myself.listGists().firstOrNull {
                 it.gitPullUrl == gitUrl
             } != null
-        }.recoverWith {
+        }.handleErrorWith {
             Try {
                 gitHub.myself.listRepositories().first { repo ->
                     repo.gitTransportUrl == gitUrl
