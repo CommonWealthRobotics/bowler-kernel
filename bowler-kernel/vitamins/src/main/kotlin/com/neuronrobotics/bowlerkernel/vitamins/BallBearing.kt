@@ -14,16 +14,23 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics.limb.model
+package com.neuronrobotics.bowlerkernel.vitamins
 
-import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
-import com.neuronrobotics.bowlerkernel.util.Limits
+/**
+ * A generic ball bearing. [Vitamin.width] should be the width (between the two flat faces of the
+ * bearing). For rotational bearings, [Vitamin.height] and [Vitamin.length] should be equal to each
+ * other and to the outer diameter. For linear bearings, [Vitamin.height] should be equal to the
+ * outer diameter and [Vitamin.length] should be equal to either the outer diameter or the
+ * outer housing dimension.
+ *
+ * Good things to put in [Vitamin.specs]:
+ *  - Construction type
+ *  - Lubrication
+ */
+interface BallBearing : Vitamin {
 
-data class LinkData(
-    val type: LinkType,
-    val dhParamData: DhParamData,
-    val jointLimits: Limits,
-    val jointAngleController: GitFile,
-    val inertialStateEstimator: GitFile
-)
+    /**
+     * The bore diameter (where the shaft goes).
+     */
+    val bore: Double
+}

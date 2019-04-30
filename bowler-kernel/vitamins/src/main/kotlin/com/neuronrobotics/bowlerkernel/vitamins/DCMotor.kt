@@ -14,35 +14,52 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics.limb.link
+package com.neuronrobotics.bowlerkernel.vitamins
 
-import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
-import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialStateEstimator
 import com.neuronrobotics.bowlerkernel.util.Limits
 
 /**
- * A link which can form the chain of a [Limb].
+ * A generic DC motor.
+ *
+ * Good things to put in [Vitamin.specs]:
+ *  - Peak power RPM
+ *  - Peak efficiency RPM
+ *  - Mounting holes (Vitamin for the screws and a bolt circle diameter)
  */
-interface Link {
+interface DCMotor : Vitamin {
 
     /**
-     * The type of this link.
+     * The operating voltage limits.
      */
-    val type: LinkType
+    val voltage: Limits
 
     /**
-     * The DH description of this link.
+     * The output shaft diameter.
      */
-    val dhParam: DhParam
+    val outputShaftDiameter: Double
 
     /**
-     * The movement limits of this link. This can represent angle for a rotary link or length for
-     * a prismatic link.
+     * The free speed.
      */
-    val jointLimits: Limits
+    val freeSpeed: Double
 
     /**
-     * The [InertialStateEstimator].
+     * The free current.
      */
-    val inertialStateEstimator: InertialStateEstimator
+    val freeCurrent: Double
+
+    /**
+     * The stall torque.
+     */
+    val stallTorque: Double
+
+    /**
+     * The stall current.
+     */
+    val stallCurrent: Double
+
+    /**
+     * The maximum power output.
+     */
+    val power: Double
 }

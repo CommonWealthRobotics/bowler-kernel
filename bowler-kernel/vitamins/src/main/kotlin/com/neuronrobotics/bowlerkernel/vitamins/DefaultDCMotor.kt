@@ -14,16 +14,25 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics.limb.model
+package com.neuronrobotics.bowlerkernel.vitamins
 
+import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
 import com.neuronrobotics.bowlerkernel.util.Limits
 
-data class LinkData(
-    val type: LinkType,
-    val dhParamData: DhParamData,
-    val jointLimits: Limits,
-    val jointAngleController: GitFile,
-    val inertialStateEstimator: GitFile
-)
+data class DefaultDCMotor(
+    override val voltage: Limits,
+    override val outputShaftDiameter: Double,
+    override val freeSpeed: Double,
+    override val freeCurrent: Double,
+    override val stallTorque: Double,
+    override val stallCurrent: Double,
+    override val power: Double,
+    override val width: Double,
+    override val length: Double,
+    override val height: Double,
+    override val weight: Double,
+    override val centerOfMass: CenterOfMass,
+    override val specs: ImmutableMap<String, Any>,
+    override val cadGenerator: GitFile
+) : DCMotor
