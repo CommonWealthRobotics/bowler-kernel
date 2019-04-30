@@ -18,6 +18,11 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier
 
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 
+/**
+ * A factory for vitamin suppliers.
+ *
+ * @param T The type of vitamin supplier this factory creates.
+ */
 interface VitaminSupplierFactory<out T : VitaminSupplier> {
 
     /**
