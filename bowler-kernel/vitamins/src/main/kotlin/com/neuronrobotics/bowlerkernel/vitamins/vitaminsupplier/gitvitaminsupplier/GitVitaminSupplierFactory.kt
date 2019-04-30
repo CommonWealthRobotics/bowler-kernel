@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier
+package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier
 
 import arrow.core.extensions.`try`.monadThrow.bindingCatch
 import arrow.core.getOrElse
@@ -23,62 +23,43 @@ import com.beust.klaxon.JsonObject
 import com.beust.klaxon.JsonValue
 import com.beust.klaxon.Klaxon
 import com.google.common.collect.ImmutableMap
-import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.gitfs.GitFS
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.gitfs.GitHubFS
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
-import org.kohsuke.github.GitHub
+import com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.VitaminSupplierFactory
 import org.octogonapus.ktguava.collections.toImmutableMap
 import org.octogonapus.ktguava.collections.toImmutableSet
 import java.io.FileReader
 import kotlin.reflect.KClass
 
-fun main() {
-    GitVitaminSupplier(
-        GitHubFS(
-            GitHub.connectAnonymously(),
-            "" to ""
-        ),
-        GitFile(
-            "https://github.com/Octogonapus/test-gitvitamins.git",
-            "testVitamins.json"
-        ),
-        DefaultKlaxonVitamin::class
-    )
-}
-
 @Target(AnnotationTarget.FIELD)
 annotation class ConvertImmutableMap
 
-class GitVitaminSupplier(
+class GitVitaminSupplierFactory(
     private val gitFS: GitFS,
-    private val vitaminsGitFile: GitFile,
-    private val vitaminType: KClass<out KlaxonVitamin>
-) : VitaminSupplier {
+    private val vitaminType: KClass<out KlaxonGitVitamin> = DefaultKlaxonGitVitamin::class
+) : VitaminSupplierFactory<GitVitaminSupplier> {
 
     private val klaxon = Klaxon()
 
-    override val name: String
-    override val allVitamins: ImmutableSet<Vitamin>
+    private val immutableMapConverter = object : Converter {
+        override fun canConvert(cls: Class<*>) = cls == ImmutableMap::class.java
+
+        override fun fromJson(jv: JsonValue) =
+            klaxon.parseFromJsonObject<Map<*, *>>(jv.obj!!)!!.toImmutableMap()
+
+        override fun toJson(value: Any) =
+            klaxon.toJsonString(value as Map<*, *>)
+    }
 
     init {
-        val immutableMapConverter = object : Converter {
-            override fun canConvert(cls: Class<*>) = cls == ImmutableMap::class.java
-
-            override fun fromJson(jv: JsonValue) =
-                (klaxon.parseFromJsonObject<Map<*, *>>(jv.obj!!)!!).toImmutableMap()
-
-            override fun toJson(value: Any) =
-                klaxon.toJsonString(value as Map<*, *>)
-        }
-
         klaxon.fieldConverter(ConvertImmutableMap::class, immutableMapConverter)
+    }
 
+    override fun createVitaminSupplier(vitaminSupplierFile: GitFile): GitVitaminSupplier {
         val allVitaminsFromGit = bindingCatch {
-            val (allFiles) = gitFS.cloneRepoAndGetFiles(vitaminsGitFile.gitUrl)
+            val (allFiles) = gitFS.cloneRepoAndGetFiles(vitaminSupplierFile.gitUrl)
 
-            val vitaminsFile = allFiles.first { it.name == vitaminsGitFile.filename }
+            val vitaminsFile = allFiles.first { it.name == vitaminSupplierFile.filename }
 
             val gitVitamins =
                 klaxon.parse<GitVitaminSupplierData>(vitaminsFile) ?: throw IllegalStateException(
@@ -99,9 +80,9 @@ class GitVitaminSupplier(
                 // type parameters
                 val jsonObject = klaxon.parser(vitaminType).parse(FileReader(it)) as JsonObject
                 val parsedObject = klaxon.fromJsonObject(jsonObject, vitaminType.java, vitaminType)
-                (parsedObject as KlaxonVitamin?)?.vitamin ?: throw IllegalStateException(
+                parsedObject as KlaxonGitVitamin? ?: throw IllegalStateException(
                     """
-                    |Could not parse DefaultKlaxonVitamin from file:
+                    |Could not parse DefaultKlaxonGitVitamin from file:
                     |$it
                     """.trimMargin()
                 )
@@ -112,21 +93,17 @@ class GitVitaminSupplier(
             throw IllegalStateException(
                 """
                 |Unable to load vitamins from git file:
-                |$vitaminsGitFile
+                |$vitaminSupplierFile
                 """.trimMargin(),
                 it
             )
         }
 
-        name = nameFromGit
-        allVitamins = vitaminsFromGit.toImmutableSet()
-    }
-
-    override fun partNumberFor(vitamin: Vitamin): String {
-        TODO("not implemented")
-    }
-
-    override fun priceFor(vitamin: Vitamin, count: Int): Double {
-        TODO("not implemented")
+        return GitVitaminSupplier(
+            nameFromGit,
+            vitaminsFromGit.map { it.vitamin }.toImmutableSet(),
+            vitaminsFromGit.map { it.vitamin to it.partNumber }.toImmutableMap(),
+            vitaminsFromGit.map { it.vitamin to it.price }.toImmutableMap()
+        )
     }
 }

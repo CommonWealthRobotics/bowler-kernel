@@ -22,7 +22,7 @@ plugins {
 
 val bowlerKernelVersion = "0.0.23"
 val ktlintVersion = "0.29.0"
-val junitJupiterVersion = "5.2.0"
+val junitJupiterVersion = "5.4.0"
 val jacocoToolVersion = "0.8.3"
 val checkstyleToolVersion = "8.1"
 val spotbugsToolVersion = "4.0.0-beta1"
@@ -148,9 +148,7 @@ configure(javaProjects) {
     }
 
     dependencies {
-        testCompile(junitJupiter("junit-jupiter-api"))
-        testCompile(junitJupiter("junit-jupiter-engine"))
-        testCompile(junitJupiter("junit-jupiter-params"))
+        testCompile(junitJupiter("junit-jupiter"))
 
         testRuntime(
             group = "org.junit.platform",

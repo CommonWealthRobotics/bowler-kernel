@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier
+package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier
 
 import com.beust.klaxon.TypeAdapter
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBallBearing
@@ -26,7 +26,7 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 import kotlin.reflect.KClass
 
 /**
- * Adapts [Vitamin] and [DefaultKlaxonVitamin] so Klaxon can handle polymorphism.
+ * Adapts [Vitamin] and [DefaultKlaxonGitVitamin] so Klaxon can handle polymorphism.
  */
 class KlaxonVitaminAdapter : TypeAdapter<Vitamin> {
 

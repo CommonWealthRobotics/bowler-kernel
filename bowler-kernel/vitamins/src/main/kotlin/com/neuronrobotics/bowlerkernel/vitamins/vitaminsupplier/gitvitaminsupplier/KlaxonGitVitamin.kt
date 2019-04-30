@@ -14,19 +14,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier
+package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier
 
-import com.beust.klaxon.TypeFor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 
 /**
- * A [Vitamin] that Klaxon can parse into.
+ * A [Vitamin] in Git that Klaxon can parse into.
  */
-interface KlaxonVitamin {
+interface KlaxonGitVitamin {
 
     /**
      * The type of this vitamin, used by Klaxon to handle polymorphism. MUST be annotated with
-     * [TypeFor].
+     * Klaxon's TypeFor.
      */
     val type: String
 
@@ -34,10 +33,14 @@ interface KlaxonVitamin {
      * The vitamin.
      */
     val vitamin: Vitamin
-}
 
-data class DefaultKlaxonVitamin(
-    @TypeFor(field = "vitamin", adapter = KlaxonVitaminAdapter::class)
-    override val type: String,
-    override val vitamin: Vitamin
-) : KlaxonVitamin
+    /**
+     * The part number.
+     */
+    val partNumber: String
+
+    /**
+     * The price for one unit.
+     */
+    val price: Double
+}

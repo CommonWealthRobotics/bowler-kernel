@@ -18,7 +18,7 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.ConvertImmutableMap
+import com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier.ConvertImmutableMap
 
 data class DefaultBattery(
     override val voltage: Double,

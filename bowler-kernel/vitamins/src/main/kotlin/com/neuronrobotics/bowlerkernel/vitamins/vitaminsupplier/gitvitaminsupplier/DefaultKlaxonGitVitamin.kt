@@ -14,22 +14,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins.vitamin
+package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier
 
-import com.google.common.collect.ImmutableMap
-import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier.ConvertImmutableMap
+import com.beust.klaxon.TypeFor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 
-data class DefaultServo(
-    override val voltage: Double,
-    override val stallTorque: Double,
-    override val speed: Double,
-    override val width: Double,
-    override val length: Double,
-    override val height: Double,
-    override val weight: Double,
-    override val centerOfMass: CenterOfMass,
-    @ConvertImmutableMap
-    override val specs: ImmutableMap<String, Any>,
-    override val cadGenerator: GitFile
-) : Servo
+data class DefaultKlaxonGitVitamin(
+    @TypeFor(field = "vitamin", adapter = KlaxonVitaminAdapter::class)
+    override val type: String,
+    override val vitamin: Vitamin,
+    override val partNumber: String,
+    override val price: Double
+) : KlaxonGitVitamin

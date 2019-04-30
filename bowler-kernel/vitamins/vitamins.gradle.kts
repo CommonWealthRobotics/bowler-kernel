@@ -23,4 +23,15 @@ dependencies {
         name = "klaxon",
         version = property("klaxon.version") as String
     )
+
+    testImplementation(
+        group = "com.natpryce",
+        name = "hamkrest",
+        version = property("hamkrest.version") as String
+    )
+    testImplementation(
+        group = "com.nhaarman.mockitokotlin2",
+        name = "mockito-kotlin",
+        version = property("mockito-kotlin.version") as String
+    )
 }
