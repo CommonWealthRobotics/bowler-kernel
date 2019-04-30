@@ -22,7 +22,7 @@ plugins {
 
 val bowlerKernelVersion = "0.0.23"
 val ktlintVersion = "0.29.0"
-val junitJupiterVersion = "5.2.0"
+val junitJupiterVersion = "5.4.0"
 val jacocoToolVersion = "0.8.3"
 val checkstyleToolVersion = "8.1"
 val spotbugsToolVersion = "4.0.0-beta1"
@@ -32,21 +32,25 @@ val detektToolVersion = "1.0.0-RC12"
 val spotlessLicenseHeaderDelimiter = "(@|package|import)"
 
 val bowlerKernelProject = project(":bowler-kernel")
+val bowlerKernelSettingsProject = project(":bowler-kernel:config")
 val bowlerKernelGitFSProject = project(":bowler-kernel:gitfs")
 val bowlerKernelHardwareProject = project(":bowler-kernel:hardware")
 val bowlerKernelKinematicsProject = project(":bowler-kernel:kinematics")
 val bowlerKernelLoggingProject = project(":bowler-kernel:logging")
 val bowlerKernelScriptingProject = project(":bowler-kernel:scripting")
-val bowlerKernelSettingsProject = project(":bowler-kernel:config")
+val bowlerKernelUtilProject = project(":bowler-kernel:util")
+val bowlerKernelVitaminsProject = project(":bowler-kernel:vitamins")
 
 val kotlinProjects = setOf(
     bowlerKernelProject,
+    bowlerKernelSettingsProject,
     bowlerKernelGitFSProject,
     bowlerKernelHardwareProject,
     bowlerKernelKinematicsProject,
     bowlerKernelLoggingProject,
     bowlerKernelScriptingProject,
-    bowlerKernelSettingsProject
+    bowlerKernelUtilProject,
+    bowlerKernelVitaminsProject
 )
 
 val javaProjects = setOf<Project>() + kotlinProjects
@@ -144,9 +148,7 @@ configure(javaProjects) {
     }
 
     dependencies {
-        testCompile(junitJupiter("junit-jupiter-api"))
-        testCompile(junitJupiter("junit-jupiter-engine"))
-        testCompile(junitJupiter("junit-jupiter-params"))
+        testCompile(junitJupiter("junit-jupiter"))
 
         testRuntime(
             group = "org.junit.platform",

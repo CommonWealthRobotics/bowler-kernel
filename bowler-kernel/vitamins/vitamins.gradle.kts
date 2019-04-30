@@ -1,37 +1,32 @@
-description = "The kinematics stack."
+description = "This module supports Vitamins."
 
 fun DependencyHandler.arrow(name: String) =
     create(group = "io.arrow-kt", name = name, version = property("arrow.version") as String)
 
-repositories {
-    maven(url = "https://dl.bintray.com/s1m0nw1/KtsRunner")
-}
-
 dependencies {
-    api(group = "org.ejml", name = "ejml-all", version = "0.37.1")
-    api(project(":bowler-kernel:scripting"))
+    api(project(":bowler-kernel:gitfs"))
     api(project(":bowler-kernel:util"))
 
     implementation(arrow("arrow-core-data"))
+    implementation(arrow("arrow-core-extensions"))
+    implementation(arrow("arrow-syntax"))
+    implementation(arrow("arrow-typeclasses"))
+    implementation(arrow("arrow-extras-data"))
+    implementation(arrow("arrow-extras-extensions"))
+    implementation(
+        group = "com.google.guava",
+        name = "guava",
+        version = property("guava.version") as String
+    )
     implementation(
         group = "org.octogonapus",
         name = "kt-guava-core",
         version = property("kt-guava-core.version") as String
     )
     implementation(
-        group = "com.google.inject",
-        name = "guice",
-        version = property("guice.version") as String
-    )
-    implementation(
-        group = "com.google.inject.extensions",
-        name = "guice-assistedinject",
-        version = "4.1.0"
-    )
-    implementation(
-        group = "org.jlleitschuh.guice",
-        name = "kotlin-guiced-core",
-        version = property("kotlin-guiced-core.version") as String
+        group = "org.octogonapus",
+        name = "kt-guava-klaxon",
+        version = property("kt-guava-klaxon.version") as String
     )
     implementation(
         group = "com.beust",

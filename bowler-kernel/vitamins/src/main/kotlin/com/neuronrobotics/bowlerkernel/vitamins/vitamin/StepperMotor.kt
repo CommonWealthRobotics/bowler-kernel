@@ -14,16 +14,43 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics.limb.model
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
-import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
-import com.neuronrobotics.bowlerkernel.util.Limits
+/**
+ * A generic stepper motor.
+ *
+ * Good things to put in [Vitamin.specs]:
+ *  - Mounting holes (Vitamin for the screws and hole positions)
+ */
+interface StepperMotor : Vitamin {
 
-data class LinkData(
-    val type: LinkType,
-    val dhParamData: DhParamData,
-    val jointLimits: Limits,
-    val jointAngleController: GitFile,
-    val inertialStateEstimator: GitFile
-)
+    /**
+     * The shaft diameter.
+     */
+    val shaftDiameter: Double
+
+    /**
+     * The NEMA size.
+     */
+    val nemaSize: Int
+
+    /**
+     * The nominal voltage.
+     */
+    val voltage: Double
+
+    /**
+     * The holding torque.
+     */
+    val holdingTorque: Double
+
+    /**
+     * The rated current.
+     */
+    val current: Double
+
+    /**
+     * The degrees per step.
+     */
+    val stepAngle: Double
+}

@@ -17,7 +17,6 @@
 package com.neuronrobotics.bowlerkernel.control.kinematics
 
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.kinematics.Limits
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
@@ -26,6 +25,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.model.DhParamData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LinkData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
+import com.neuronrobotics.bowlerkernel.util.Limits
 import org.octogonapus.ktguava.collections.immutableListOf
 
 @SuppressWarnings("LongParameterList")

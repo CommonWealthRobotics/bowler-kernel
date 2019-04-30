@@ -14,16 +14,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics.limb.model
+package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier
 
-import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
-import com.neuronrobotics.bowlerkernel.util.Limits
+import com.beust.klaxon.TypeFor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 
-data class LinkData(
-    val type: LinkType,
-    val dhParamData: DhParamData,
-    val jointLimits: Limits,
-    val jointAngleController: GitFile,
-    val inertialStateEstimator: GitFile
-)
+data class DefaultKlaxonGitVitamin(
+    @TypeFor(field = "vitamin", adapter = KlaxonVitaminAdapter::class)
+    override val type: String,
+    override val vitamin: Vitamin,
+    override val partNumber: String,
+    override val price: Double
+) : KlaxonGitVitamin

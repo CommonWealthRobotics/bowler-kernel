@@ -14,14 +14,33 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics
+package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier
+
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 
 /**
- * A generic limits class.
+ * A [Vitamin] in Git that Klaxon can parse into.
  */
-data class Limits(
-    val maximum: Double,
-    val minimum: Double
-) {
-    constructor(maximum: Number, minimum: Number) : this(maximum.toDouble(), minimum.toDouble())
+interface KlaxonGitVitamin {
+
+    /**
+     * The type of this vitamin, used by Klaxon to handle polymorphism. MUST be annotated with
+     * Klaxon's TypeFor.
+     */
+    val type: String
+
+    /**
+     * The vitamin.
+     */
+    val vitamin: Vitamin
+
+    /**
+     * The part number.
+     */
+    val partNumber: String
+
+    /**
+     * The price for one unit.
+     */
+    val price: Double
 }

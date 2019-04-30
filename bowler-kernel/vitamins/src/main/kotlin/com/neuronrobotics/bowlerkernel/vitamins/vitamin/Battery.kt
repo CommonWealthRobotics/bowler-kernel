@@ -14,16 +14,35 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics.limb.model
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
-import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
-import com.neuronrobotics.bowlerkernel.util.Limits
+/**
+ * A generic battery.
+ *
+ * Good things to put in [Vitamin.specs]:
+ *  - Number of cells
+ *  - Connector type
+ *  - Chemistry
+ */
+interface Battery : Vitamin {
 
-data class LinkData(
-    val type: LinkType,
-    val dhParamData: DhParamData,
-    val jointLimits: Limits,
-    val jointAngleController: GitFile,
-    val inertialStateEstimator: GitFile
-)
+    /**
+     * The nominal voltage.
+     */
+    val voltage: Double
+
+    /**
+     * The maximum continuous current draw.
+     */
+    val current: Double
+
+    /**
+     * The maximum continuous discharge rate.
+     */
+    val dischargeRate: Double
+
+    /**
+     * The capacity.
+     */
+    val capacity: Double
+}

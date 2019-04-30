@@ -14,16 +14,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics.limb.model
+package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier
 
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
-import com.neuronrobotics.bowlerkernel.util.Limits
 
-data class LinkData(
-    val type: LinkType,
-    val dhParamData: DhParamData,
-    val jointLimits: Limits,
-    val jointAngleController: GitFile,
-    val inertialStateEstimator: GitFile
-)
+/**
+ * A factory for vitamin suppliers.
+ *
+ * @param T The type of vitamin supplier this factory creates.
+ */
+interface VitaminSupplierFactory<out T : VitaminSupplier> {
+
+    /**
+     * Creates a vitamin supplier.
+     */
+    fun createVitaminSupplier(vitaminSupplierFile: GitFile): T
+}
