@@ -18,7 +18,7 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier.ConvertImmutableMap
+import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 
 data class DefaultServo(
     override val voltage: Double,

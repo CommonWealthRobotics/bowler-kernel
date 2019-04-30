@@ -14,9 +14,19 @@ dependencies {
     implementation(arrow("arrow-extras-data"))
     implementation(arrow("arrow-extras-extensions"))
     implementation(
+        group = "com.google.guava",
+        name = "guava",
+        version = property("guava.version") as String
+    )
+    implementation(
         group = "org.octogonapus",
         name = "kt-guava-core",
         version = property("kt-guava-core.version") as String
+    )
+    implementation(
+        group = "org.octogonapus",
+        name = "kt-guava-klaxon",
+        version = property("kt-guava-klaxon.version") as String
     )
     implementation(
         group = "com.beust",

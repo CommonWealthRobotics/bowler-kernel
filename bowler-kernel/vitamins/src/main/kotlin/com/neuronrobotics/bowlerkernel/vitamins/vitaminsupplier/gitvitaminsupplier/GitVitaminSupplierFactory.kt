@@ -18,21 +18,17 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsuppl
 
 import arrow.core.extensions.`try`.monadThrow.bindingCatch
 import arrow.core.getOrElse
-import com.beust.klaxon.Converter
 import com.beust.klaxon.JsonObject
-import com.beust.klaxon.JsonValue
 import com.beust.klaxon.Klaxon
-import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.gitfs.GitFS
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 import com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.VitaminSupplierFactory
 import org.octogonapus.ktguava.collections.toImmutableMap
 import org.octogonapus.ktguava.collections.toImmutableSet
+import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
+import org.octogonapus.ktguava.klaxon.immutableMapConverter
 import java.io.FileReader
 import kotlin.reflect.KClass
-
-@Target(AnnotationTarget.FIELD)
-annotation class ConvertImmutableMap
 
 /**
  * Creates [GitVitaminSupplier] using a supplier file in a Git repository. The expected
@@ -45,20 +41,8 @@ class GitVitaminSupplierFactory(
     private val vitaminType: KClass<out KlaxonGitVitamin> = DefaultKlaxonGitVitamin::class
 ) : VitaminSupplierFactory<GitVitaminSupplier> {
 
-    private val klaxon = Klaxon()
-
-    private val immutableMapConverter = object : Converter {
-        override fun canConvert(cls: Class<*>) = cls == ImmutableMap::class.java
-
-        override fun fromJson(jv: JsonValue) =
-            klaxon.parseFromJsonObject<Map<*, *>>(jv.obj!!)!!.toImmutableMap()
-
-        override fun toJson(value: Any) =
-            klaxon.toJsonString(value as Map<*, *>)
-    }
-
-    init {
-        klaxon.fieldConverter(ConvertImmutableMap::class, immutableMapConverter)
+    private val klaxon = Klaxon().apply {
+        fieldConverter(ConvertImmutableMap::class, immutableMapConverter())
     }
 
     override fun createVitaminSupplier(vitaminSupplierFile: GitFile): GitVitaminSupplier {
