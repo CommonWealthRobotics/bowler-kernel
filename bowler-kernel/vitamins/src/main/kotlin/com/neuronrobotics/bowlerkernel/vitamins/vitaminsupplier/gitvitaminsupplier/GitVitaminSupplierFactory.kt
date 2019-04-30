@@ -68,14 +68,17 @@ class GitVitaminSupplierFactory(
             gitVitamins.name to allVitaminFiles.map {
                 // We have to parse this "by hand" because variables can't be used as reified
                 // type parameters
-                val jsonObject = klaxon.parser(vitaminType).parse(FileReader(it)) as JsonObject
-                val parsedObject = klaxon.fromJsonObject(jsonObject, vitaminType.java, vitaminType)
-                parsedObject as KlaxonGitVitamin? ?: throw IllegalStateException(
-                    """
-                    |Could not parse DefaultKlaxonGitVitamin from file:
-                    |$it
-                    """.trimMargin()
-                )
+                FileReader(it).use { reader ->
+                    val jsonObject = klaxon.parser(vitaminType).parse(reader) as JsonObject
+                    val parsedObject =
+                        klaxon.fromJsonObject(jsonObject, vitaminType.java, vitaminType)
+                    parsedObject as KlaxonGitVitamin? ?: throw IllegalStateException(
+                        """
+                        |Could not parse DefaultKlaxonGitVitamin from file:
+                        |$it
+                        """.trimMargin()
+                    )
+                }
             }
         }
 
