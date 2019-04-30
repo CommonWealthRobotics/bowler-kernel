@@ -21,6 +21,9 @@ import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 import com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.VitaminSupplier
 
+/**
+ * A vitamin supplier which pulls its configuration from a Git repository.
+ */
 class GitVitaminSupplier(
     override val name: String,
     override val allVitamins: ImmutableSet<Vitamin>,

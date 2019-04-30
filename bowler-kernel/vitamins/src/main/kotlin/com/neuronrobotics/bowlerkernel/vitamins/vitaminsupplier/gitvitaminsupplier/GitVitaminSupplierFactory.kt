@@ -34,6 +34,12 @@ import kotlin.reflect.KClass
 @Target(AnnotationTarget.FIELD)
 annotation class ConvertImmutableMap
 
+/**
+ * Creates [GitVitaminSupplier] using a supplier file in a Git repository. The expected
+ * repository format is:
+ *  - The file passed to [createVitaminSupplier] can be parsed into a [GitVitaminSupplierData].
+ *  - Each file in [GitVitaminSupplierData.files] can be parsed into a [vitaminType].
+ */
 class GitVitaminSupplierFactory(
     private val gitFS: GitFS,
     private val vitaminType: KClass<out KlaxonGitVitamin> = DefaultKlaxonGitVitamin::class
