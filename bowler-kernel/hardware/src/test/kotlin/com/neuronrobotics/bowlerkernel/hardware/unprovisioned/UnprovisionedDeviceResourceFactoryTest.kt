@@ -169,7 +169,7 @@ class UnprovisionedDeviceResourceFactoryTest {
     private fun testRegistry(
         resourceId: ResourceId,
         makeResource: UnprovisionedDeviceResourceFactory.(BowlerDevice) ->
-        Either<RegisterError, UnprovisionedDeviceResource>
+        Either<RegisterError, UnprovisionedDeviceResource<*>>
     ) {
         testSuccess(resourceId, makeResource)
         testFailure(resourceId, makeResource)
@@ -178,7 +178,7 @@ class UnprovisionedDeviceResourceFactoryTest {
     private fun testSuccess(
         resourceId: ResourceId,
         makeResource: UnprovisionedDeviceResourceFactory.(BowlerDevice) ->
-        Either<RegisterError, UnprovisionedDeviceResource>
+        Either<RegisterError, UnprovisionedDeviceResource<*>>
     ) {
         val device = mock<BowlerDevice> {
             on {
@@ -210,7 +210,7 @@ class UnprovisionedDeviceResourceFactoryTest {
     private fun testFailure(
         resourceId: ResourceId,
         makeResource: UnprovisionedDeviceResourceFactory.(BowlerDevice) ->
-        Either<RegisterError, UnprovisionedDeviceResource>
+        Either<RegisterError, UnprovisionedDeviceResource<*>>
     ) {
         val device = mock<BowlerDevice> {
             on {

@@ -16,33 +16,31 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.device
 
-import arrow.core.getOrElse
 import arrow.core.left
 import arrow.core.right
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericAnalogIn
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericDigitalOut
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.GenericSerialConnection
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceType
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedAnalogIn
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalIn
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOut
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedSerialConnection
 import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.immutableSetOf
+import org.octogonapus.ktguava.collections.toImmutableSet
 
 internal class BowlerDeviceTest {
 
@@ -131,10 +129,7 @@ internal class BowlerDeviceTest {
         verify(bowlerRPCProtocol).addWrite(led1Id)
         verify(bowlerRPCProtocol, never()).addRead(led1Id)
 
-        assertAll(
-            { assertTrue(result.isRight()) },
-            { assertTrue(result.getOrElse { fail { "" } } is GenericDigitalOut) }
-        )
+        assertTrue(result.isRight())
     }
 
     @Test
@@ -144,10 +139,7 @@ internal class BowlerDeviceTest {
         verify(bowlerRPCProtocol, never()).addWrite(line1Id)
         verify(bowlerRPCProtocol).addRead(line1Id)
 
-        assertAll(
-            { assertTrue(result.isRight()) },
-            { assertTrue(result.getOrElse { fail { "" } } is GenericAnalogIn) }
-        )
+        assertTrue(result.isRight())
     }
 
     @Test
@@ -157,10 +149,7 @@ internal class BowlerDeviceTest {
         verify(bowlerRPCProtocol).addWrite(serial1Id)
         verify(bowlerRPCProtocol).addRead(serial1Id)
 
-        assertAll(
-            { assertTrue(result.isRight()) },
-            { assertTrue(result.getOrElse { fail { "" } } is GenericSerialConnection) }
-        )
+        assertTrue(result.isRight())
     }
 
     @Test
@@ -201,5 +190,94 @@ internal class BowlerDeviceTest {
         verify(bowlerRPCProtocol, never()).addReadGroup(immutableSetOf(unknownId1, unknownId2))
 
         assertTrue(result.isLeft())
+    }
+
+    @Nested
+    inner class TestFailureToAddResource {
+
+        private val failingProtocol = mock<BowlerRPCProtocol> {
+            on { addRead(any()) } doReturn "".left()
+            on { addWrite(any()) } doReturn "".left()
+            on { addReadGroup(any()) } doReturn "".left()
+            on { addWriteGroup(any()) } doReturn "".left()
+        }
+
+        private val write1Id = ResourceId(
+            DefaultResourceTypes.DigitalOut,
+            DefaultAttachmentPoints.Pin(1)
+        )
+
+        private val write2Id = ResourceId(
+            DefaultResourceTypes.DigitalOut,
+            DefaultAttachmentPoints.Pin(2)
+        )
+
+        private val read1Id = ResourceId(
+            DefaultResourceTypes.DigitalIn,
+            DefaultAttachmentPoints.Pin(1)
+        )
+
+        private val read2Id = ResourceId(
+            DefaultResourceTypes.DigitalIn,
+            DefaultAttachmentPoints.Pin(2)
+        )
+
+        private val device = BowlerDevice(
+            DeviceId(
+                DefaultDeviceTypes.UnknownDevice,
+                DefaultConnectionMethods.RawHID(0, 0)
+            ),
+            failingProtocol,
+            DefaultResourceIdValidator()
+        )
+
+        private val write1 = UnprovisionedDigitalOut(device, write1Id)
+        private val write2 = UnprovisionedDigitalOut(device, write2Id)
+        private val read1 = UnprovisionedDigitalIn(device, read1Id)
+        private val read2 = UnprovisionedDigitalIn(device, read2Id)
+
+        @Test
+        fun `test failure to add read`() {
+            val result = device.add(read1)
+
+            verify(failingProtocol).addRead(read1Id)
+            verify(failingProtocol, never()).addWrite(read1Id)
+
+            assertTrue(result.isLeft())
+        }
+
+        @Test
+        fun `test failure to add write`() {
+            val result = device.add(write1)
+
+            verify(failingProtocol, never()).addRead(write1Id)
+            verify(failingProtocol).addWrite(write1Id)
+
+            assertTrue(result.isLeft())
+        }
+
+        @Test
+        fun `test failure to add read group`() {
+            val resources = immutableSetOf(read1, read2)
+            val ids = resources.map { it.resourceId }.toImmutableSet()
+            val result = device.add(resources)
+
+            verify(failingProtocol).addReadGroup(ids)
+            verify(failingProtocol, never()).addWriteGroup(ids)
+
+            assertTrue(result.isLeft())
+        }
+
+        @Test
+        fun `test failure to add write group`() {
+            val resources = immutableSetOf(write1, write2)
+            val ids = resources.map { it.resourceId }.toImmutableSet()
+            val result = device.add(resources)
+
+            verify(failingProtocol, never()).addReadGroup(ids)
+            verify(failingProtocol).addWriteGroup(ids)
+
+            assertTrue(result.isLeft())
+        }
     }
 }

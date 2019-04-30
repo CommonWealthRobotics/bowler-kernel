@@ -153,7 +153,7 @@ class HardwareRegistryTrackerTest {
                 )
             ),
             ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1))
-        ) { _, _ -> mock<UnprovisionedDeviceResource> {} }
+        ) { _, _ -> mock<UnprovisionedDeviceResource<*>> {} }
 
         assertAll(
             {

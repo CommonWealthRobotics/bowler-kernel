@@ -37,8 +37,6 @@ import org.octogonapus.ktguava.collections.toImmutableSet
 class BowlerDevice
 internal constructor(
     override val deviceId: DeviceId,
-    // We want to let users use the RPC directly
-    @Suppress("MemberVisibilityCanBePrivate")
     val bowlerRPCProtocol: BowlerRPCProtocol,
     private val resourceIdValidator: ResourceIdValidator
 ) : Device {
@@ -50,54 +48,79 @@ internal constructor(
     override fun isResourceInRange(resourceId: ResourceId) =
         bowlerRPCProtocol.isResourceInRange(resourceId)
 
-    fun add(resource: UnprovisionedDeviceResource): Either<String, ProvisionedDeviceResource> {
+    /**
+     * Adds the [resource] as a read and/or a write resource to the [bowlerRPCProtocol].
+     *
+     * @return The provisioned resource, or an error.
+     */
+    fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
+        resource: T
+    ): Either<String, R> {
         val id = resource.resourceId
 
         val readError = resourceIdValidator.validateIsReadType(id.resourceType).flatMap {
-            bowlerRPCProtocol.addRead(id)
+            bowlerRPCProtocol.addRead(id).also {
+                when (it) {
+                    is Either.Left -> return it
+                }
+            }
         }
 
         val writeError = resourceIdValidator.validateIsWriteType(id.resourceType).flatMap {
-            bowlerRPCProtocol.addWrite(id)
+            bowlerRPCProtocol.addWrite(id).also {
+                when (it) {
+                    is Either.Left -> return it
+                }
+            }
         }
 
-        return if (readError.isLeft() && writeError.isLeft()) {
-            """
-            |Could not add resource because it neither a read type nor a write type:
-            |$resource
-            """.trimMargin().left()
-        } else {
-            return resource.runProvision().right()
+        return when {
+            readError is Either.Left && writeError is Either.Left ->
+                """
+                |Could not add resource because it neither a read type nor a write type:
+                |$resource
+                """.trimMargin().left()
+
+            else -> resource.provision().right()
         }
     }
 
-    fun <T : UnprovisionedDeviceResource> add(
+    /**
+     * Adds the [resources] as a read and/or a write group to the [bowlerRPCProtocol].
+     *
+     * @return The provisioned resources, or an error.
+     */
+    fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
         resources: ImmutableSet<T>
-    ): Either<String, ImmutableSet<ProvisionedDeviceResource>> {
+    ): Either<String, ImmutableSet<R>> {
         val resourceIds = resources.map { it.resourceId }.toImmutableSet()
 
-        val readResources = resources.map {
+        val allReadResources = resources.map {
             resourceIdValidator.validateIsReadType(it.resourceId.resourceType)
-        }
-
-        val allReadResources = readResources.fold(true) { acc, elem ->
+        }.fold(true) { acc, elem ->
             acc && elem.isRight()
         }
 
         if (allReadResources) {
-            bowlerRPCProtocol.addReadGroup(resourceIds)
+            bowlerRPCProtocol.addReadGroup(resourceIds).also {
+                when (it) {
+                    is Either.Left -> return it
+                }
+            }
         }
 
-        val writeResources = resources.map {
+        val allWriteResources = resources.map {
             resourceIdValidator.validateIsWriteType(it.resourceId.resourceType)
-        }
-
-        val allWriteResources = writeResources.fold(true) { acc, elem ->
+        }.fold(true) { acc, elem ->
             acc && elem.isRight()
         }
 
         if (allWriteResources) {
-            bowlerRPCProtocol.addWriteGroup(resourceIds)
+            bowlerRPCProtocol.addWriteGroup(resourceIds).also {
+                when (it) {
+                    is Either.Left -> return it
+                }
+            }
         }
 
         return if (!allReadResources && !allWriteResources) {
@@ -107,7 +130,7 @@ internal constructor(
             |${resources.joinToString(separator = "\n")}
             """.trimMargin().left()
         } else {
-            resources.map { it.runProvision() }.toImmutableSet().right()
+            resources.map { it.provision() }.toImmutableSet().right()
         }
     }
 
