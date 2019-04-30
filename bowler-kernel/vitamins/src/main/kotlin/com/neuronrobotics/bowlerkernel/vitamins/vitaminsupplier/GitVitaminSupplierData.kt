@@ -14,23 +14,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins.vitamin
+package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier
 
-import com.google.common.collect.ImmutableMap
-import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.ConvertImmutableMap
-
-data class DefaultBattery(
-    override val voltage: Double,
-    override val current: Double,
-    override val dischargeRate: Double,
-    override val capacity: Double,
-    override val width: Double,
-    override val length: Double,
-    override val height: Double,
-    override val weight: Double,
-    override val centerOfMass: CenterOfMass,
-    @ConvertImmutableMap
-    override val specs: ImmutableMap<String, Any>,
-    override val cadGenerator: GitFile
-) : Battery
+/**
+ * The data of a vitamin supplier in a git repository.
+ *
+ * @param name The name of the supplier.
+ * @param files A list of file names relative to the root of the repository containing vitamins.
+ */
+data class GitVitaminSupplierData(
+    val name: String,
+    val files: List<String>
+)

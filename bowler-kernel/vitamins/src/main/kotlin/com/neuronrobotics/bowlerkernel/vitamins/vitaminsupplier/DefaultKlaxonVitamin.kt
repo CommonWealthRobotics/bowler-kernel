@@ -14,23 +14,30 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins.vitamin
+package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier
 
-import com.google.common.collect.ImmutableMap
-import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.ConvertImmutableMap
+import com.beust.klaxon.TypeFor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 
-data class DefaultBattery(
-    override val voltage: Double,
-    override val current: Double,
-    override val dischargeRate: Double,
-    override val capacity: Double,
-    override val width: Double,
-    override val length: Double,
-    override val height: Double,
-    override val weight: Double,
-    override val centerOfMass: CenterOfMass,
-    @ConvertImmutableMap
-    override val specs: ImmutableMap<String, Any>,
-    override val cadGenerator: GitFile
-) : Battery
+/**
+ * A [Vitamin] that Klaxon can parse into.
+ */
+interface KlaxonVitamin {
+
+    /**
+     * The type of this vitamin, used by Klaxon to handle polymorphism. MUST be annotated with
+     * [TypeFor].
+     */
+    val type: String
+
+    /**
+     * The vitamin.
+     */
+    val vitamin: Vitamin
+}
+
+data class DefaultKlaxonVitamin(
+    @TypeFor(field = "vitamin", adapter = KlaxonVitaminAdapter::class)
+    override val type: String,
+    override val vitamin: Vitamin
+) : KlaxonVitamin

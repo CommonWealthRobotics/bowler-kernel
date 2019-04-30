@@ -18,6 +18,7 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
+import com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.ConvertImmutableMap
 
 data class DefaultServo(
     override val voltage: Double,
@@ -28,6 +29,7 @@ data class DefaultServo(
     override val height: Double,
     override val weight: Double,
     override val centerOfMass: CenterOfMass,
+    @ConvertImmutableMap
     override val specs: ImmutableMap<String, Any>,
     override val cadGenerator: GitFile
 ) : Servo

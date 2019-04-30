@@ -33,7 +33,11 @@ dependencies {
         name = "kotlin-guiced-core",
         version = property("kotlin-guiced-core.version") as String
     )
-    implementation(group = "com.beust", name = "klaxon", version = "5.0.5")
+    implementation(
+        group = "com.beust",
+        name = "klaxon",
+        version = property("klaxon.version") as String
+    )
 
     testImplementation(
         group = "com.natpryce",
