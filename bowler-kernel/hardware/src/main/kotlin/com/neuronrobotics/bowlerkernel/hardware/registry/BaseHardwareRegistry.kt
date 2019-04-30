@@ -73,7 +73,7 @@ internal constructor() : HardwareRegistry {
         }
     }
 
-    override fun <D : Device, T : UnprovisionedDeviceResource> registerDeviceResource(
+    override fun <D : Device, T : UnprovisionedDeviceResource<*>> registerDeviceResource(
         device: D,
         resourceId: ResourceId,
         makeResource: (D, ResourceId) -> T

@@ -26,8 +26,8 @@ import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.DeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
-import org.octogonapus.ktguava.collections.toImmutableList
 import org.octogonapus.ktguava.collections.plus
+import org.octogonapus.ktguava.collections.toImmutableList
 import javax.inject.Inject
 
 /**
@@ -72,7 +72,7 @@ internal class HardwareRegistryTracker
         return registerError
     }
 
-    override fun <D : Device, T : UnprovisionedDeviceResource> registerDeviceResource(
+    override fun <D : Device, T : UnprovisionedDeviceResource<*>> registerDeviceResource(
         device: D,
         resourceId: ResourceId,
         makeResource: (D, ResourceId) -> T

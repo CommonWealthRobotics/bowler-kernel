@@ -19,6 +19,7 @@ package com.neuronrobotics.bowlerkernel.kinematics.motion
 import com.beust.klaxon.Klaxon
 import org.ejml.simple.SimpleMatrix
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -32,7 +33,7 @@ import kotlin.math.sqrt
 internal class FrameTransformationTest {
 
     // Used to check for SimpleMatrix equality
-    private val equalityTolerance = 1e-8
+    private val equalityTolerance = 1e-14
 
     @Test
     fun `test identity`() {
@@ -343,5 +344,47 @@ internal class FrameTransformationTest {
         val actual = getRotationMatrix(toDegrees(xRad), 0, 0)
 
         assertTrue(expected.isIdentical(actual, equalityTolerance))
+    }
+
+    @Test
+    fun `test approxEquals with negative zero`() {
+        assertTrue(
+            FrameTransformation.fromSimpleMatrix(SimpleMatrix(4, 4).apply {
+                this[0, 0] = 0.0
+            }).approxEquals(
+                FrameTransformation.fromSimpleMatrix(SimpleMatrix(4, 4).apply {
+                    this[0, 0] = -0.0
+                }),
+                equalityTolerance
+            )
+        )
+    }
+
+    @Test
+    fun `test approxEquals with tolerance`() {
+        assertTrue(
+            FrameTransformation.fromSimpleMatrix(SimpleMatrix(4, 4).apply {
+                this[0, 0] = 0.0
+            }).approxEquals(
+                FrameTransformation.fromSimpleMatrix(SimpleMatrix(4, 4).apply {
+                    this[0, 0] = equalityTolerance
+                }),
+                equalityTolerance
+            )
+        )
+    }
+
+    @Test
+    fun `test approxEquals failure`() {
+        assertFalse(
+            FrameTransformation.fromSimpleMatrix(SimpleMatrix(4, 4).apply {
+                this[0, 0] = 0.0
+            }).approxEquals(
+                FrameTransformation.fromSimpleMatrix(SimpleMatrix(4, 4).apply {
+                    this[0, 0] = equalityTolerance + 1e-20
+                }),
+                equalityTolerance
+            )
+        )
     }
 }

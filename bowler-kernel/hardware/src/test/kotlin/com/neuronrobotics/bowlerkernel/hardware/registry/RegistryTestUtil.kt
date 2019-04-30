@@ -51,7 +51,7 @@ internal data class MockDevice(
 internal data class MockUnprovisionedDeviceResource(
     override val device: Device,
     override val resourceId: ResourceId
-) : UnprovisionedDeviceResource() {
+) : UnprovisionedDeviceResource<MockProvisionedDeviceResource> {
 
     override fun provision() = MockProvisionedDeviceResource(device, resourceId)
 

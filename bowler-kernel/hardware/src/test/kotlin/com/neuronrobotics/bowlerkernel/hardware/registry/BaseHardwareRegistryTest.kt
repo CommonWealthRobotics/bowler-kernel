@@ -157,7 +157,7 @@ class BaseHardwareRegistryTest {
                 ),
                 ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1))
             ) { _, _ ->
-                mock<UnprovisionedDeviceResource> {}
+                mock<UnprovisionedDeviceResource<*>> {}
             }
 
         assertTrue(registerError.isLeft())

@@ -17,10 +17,9 @@
 package com.neuronrobotics.bowlerkernel.kinematics.limb.link
 
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
-import com.neuronrobotics.bowlerkernel.kinematics.motion.length
 import org.ejml.simple.SimpleMatrix
-import kotlin.math.atan2
 import kotlin.math.cos
+import kotlin.math.hypot
 import kotlin.math.sin
 
 /**
@@ -65,20 +64,12 @@ data class DhParam(
     /**
      * The translational length.
      */
-    val length: Double by lazy {
-        val pointBeforeTransform = FrameTransformation.fromTranslation(0, 0, 0)
-        val pointAfterTransform = pointBeforeTransform * frameTransformation
-        (pointAfterTransform.getTranslation() - pointBeforeTransform.getTranslation()).length()
-    }
+    val length: Double = hypot(d, r)
 
     /**
      * The angle the translation points in.
      */
-    val angle: Double by lazy {
-        frameTransformation.getTranslation().let {
-            Math.toDegrees(atan2(it[1], it[0]))
-        }
-    }
+    val angle: Double = theta
 
     companion object {
         val zero = DhParam(0, 0, 0, 0)

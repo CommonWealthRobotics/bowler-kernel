@@ -24,7 +24,7 @@ data class UnprovisionedButton
 internal constructor(
     override val device: BowlerDevice,
     override val resourceId: ResourceId
-) : UnprovisionedDeviceResource() {
+) : UnprovisionedDeviceResource<GenericButton> {
 
     override fun provision() = GenericButton(device, resourceId)
 }
