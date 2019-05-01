@@ -19,7 +19,6 @@ package com.neuronrobotics.bowlerkernel.control.kinematics.limb
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.control.createMotionConstraints
 import com.neuronrobotics.bowlerkernel.control.kinematics.MockJointAngleController
-import com.neuronrobotics.bowlerkernel.kinematics.Limits
 import com.neuronrobotics.bowlerkernel.kinematics.limb.DefaultLimb
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DefaultLink
@@ -33,6 +32,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.DefaultLimbMotionP
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlan
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanGenerator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanStep
+import com.neuronrobotics.bowlerkernel.util.Limits
 import com.nhaarman.mockitokotlin2.mock
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking

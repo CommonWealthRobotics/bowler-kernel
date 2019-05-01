@@ -1,49 +1,61 @@
-import Bowler_kernel_gradle.Strings.spotlessLicenseHeaderDelimiter
-import Bowler_kernel_gradle.Versions.bowlerKernelVersion
-import Bowler_kernel_gradle.Versions.ktlintVersion
 import com.adarshr.gradle.testlogger.theme.ThemeType
 import com.github.spotbugs.SpotBugsTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
-import org.gradle.util.GFileUtils
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.nio.file.Paths
-import java.util.Properties
 
 plugins {
     jacoco
     pmd
-    id("com.diffplug.gradle.spotless") version "3.16.0"
-    id("org.jlleitschuh.gradle.ktlint") version "6.2.1"
-    id("com.github.spotbugs") version "1.6.4"
+    id("com.diffplug.gradle.spotless") version "3.22.0"
+    id("org.jlleitschuh.gradle.ktlint") version "7.3.0"
+    id("com.github.spotbugs") version "1.7.1"
     id("io.gitlab.arturbosch.detekt") version "1.0.0-RC12"
     `maven-publish`
     id("com.jfrog.bintray") version "1.8.3"
     `java-library`
-    id("org.jetbrains.dokka") version "0.9.17"
+    id("org.jetbrains.dokka") version "0.9.18"
     id("com.adarshr.test-logger") version "1.6.0"
+    checkstyle
 }
 
-object Versions {
-    const val ktlintVersion = "0.29.0"
-    const val bowlerKernelVersion = "0.0.21"
-}
+val bowlerKernelVersion = "0.0.24"
+val ktlintVersion = "0.29.0"
+val junitJupiterVersion = "5.4.0"
+val jacocoToolVersion = "0.8.3"
+val checkstyleToolVersion = "8.1"
+val spotbugsToolVersion = "4.0.0-beta1"
+val pmdToolVersion = "6.3.0"
+val detektToolVersion = "1.0.0-RC12"
 
-allprojects {
-    version = bowlerKernelVersion
-    group = "com.neuronrobotics"
-}
+val spotlessLicenseHeaderDelimiter = "(@|package|import)"
 
 val bowlerKernelProject = project(":bowler-kernel")
+val bowlerKernelSettingsProject = project(":bowler-kernel:config")
 val bowlerKernelGitFSProject = project(":bowler-kernel:gitfs")
 val bowlerKernelHardwareProject = project(":bowler-kernel:hardware")
 val bowlerKernelKinematicsProject = project(":bowler-kernel:kinematics")
 val bowlerKernelLoggingProject = project(":bowler-kernel:logging")
 val bowlerKernelScriptingProject = project(":bowler-kernel:scripting")
-val bowlerKernelSettingsProject = project(":bowler-kernel:config")
+val bowlerKernelUtilProject = project(":bowler-kernel:util")
+val bowlerKernelVitaminsProject = project(":bowler-kernel:vitamins")
 
 val kotlinProjects = setOf(
     bowlerKernelProject,
+    bowlerKernelSettingsProject,
+    bowlerKernelGitFSProject,
+    bowlerKernelHardwareProject,
+    bowlerKernelKinematicsProject,
+    bowlerKernelLoggingProject,
+    bowlerKernelScriptingProject,
+    bowlerKernelUtilProject,
+    bowlerKernelVitaminsProject
+)
+
+val javaProjects = setOf<Project>() + kotlinProjects
+
+val publishedProjects = setOf(
     bowlerKernelGitFSProject,
     bowlerKernelHardwareProject,
     bowlerKernelKinematicsProject,
@@ -52,24 +64,13 @@ val kotlinProjects = setOf(
     bowlerKernelSettingsProject
 )
 
-val javaProjects = setOf<Project>() + kotlinProjects
-
-val publishedProjects = setOf<Project>() + kotlinProjects
-
-object Versions {
-    const val ktlintVersion = "0.29.0"
-}
-
-object Strings {
-    const val spotlessLicenseHeaderDelimiter = "(@|package|import)"
-}
-
 buildscript {
     repositories {
         mavenCentral() // Needed for kotlin gradle plugin
-        maven(url = "https://plugins.gradle.org/m2/")
-        maven(url = "https://oss.sonatype.org/content/repositories/staging/")
+        maven("https://plugins.gradle.org/m2/")
+        maven("https://oss.sonatype.org/content/repositories/staging/")
     }
+
     dependencies {
         // Gives us the KotlinJvmProjectExtension
         classpath(kotlin("gradle-plugin", property("kotlin.version") as String))
@@ -77,6 +78,9 @@ buildscript {
 }
 
 allprojects {
+    version = bowlerKernelVersion
+    group = "com.neuronrobotics"
+
     apply {
         plugin("com.diffplug.gradle.spotless")
         plugin("com.adarshr.test-logger")
@@ -85,15 +89,15 @@ allprojects {
     repositories {
         jcenter()
         mavenCentral()
-        maven(url = "https://dl.bintray.com/octogonapus/maven-artifacts")
-        maven(url = "https://oss.sonatype.org/content/repositories/staging/")
+        maven("https://dl.bintray.com/octogonapus/maven-artifacts")
+        maven("https://oss.sonatype.org/content/repositories/staging/")
     }
 
     // Configures the Jacoco tool version to be the same for all projects that have it applied.
     pluginManager.withPlugin("jacoco") {
         // If this project has the plugin applied, configure the tool version.
         jacoco {
-            toolVersion = "0.8.0"
+            toolVersion = jacocoToolVersion
         }
     }
 
@@ -131,6 +135,9 @@ allprojects {
     }
 }
 
+fun DependencyHandler.junitJupiter(name: String) =
+    create(group = "org.junit.jupiter", name = name, version = junitJupiterVersion)
+
 configure(javaProjects) {
     apply {
         plugin("java")
@@ -141,24 +148,13 @@ configure(javaProjects) {
     }
 
     dependencies {
-        fun junitJupiter(name: String, version: String = "5.2.0") =
-            create(group = "org.junit.jupiter", name = name, version = version)
+        testCompile(junitJupiter("junit-jupiter"))
 
-        fun testFx(name: String, version: String = "4.0.+") =
-            create(group = "org.testfx", name = name, version = version)
-
-        "testCompile"(junitJupiter(name = "junit-jupiter-api"))
-        "testCompile"(junitJupiter(name = "junit-jupiter-engine"))
-        "testCompile"(junitJupiter(name = "junit-jupiter-params"))
-        "testCompile"(testFx(name = "testfx-core", version = "4.0.7-alpha"))
-        "testCompile"(testFx(name = "testfx-junit5", version = "4.0.6-alpha"))
-
-        "testRuntime"(
+        testRuntime(
             group = "org.junit.platform",
             name = "junit-platform-launcher",
             version = "1.0.0"
         )
-        "testRuntime"(testFx(name = "openjfx-monocle", version = "8u76-b04"))
     }
 
     tasks.withType<JavaCompile> {
@@ -240,11 +236,11 @@ configure(javaProjects) {
     }
 
     checkstyle {
-        toolVersion = "8.1"
+        toolVersion = checkstyleToolVersion
     }
 
     spotbugs {
-        toolVersion = "3.1.3"
+        toolVersion = spotbugsToolVersion
         excludeFilter = file("${rootProject.rootDir}/config/spotbugs/spotbugs-excludeFilter.xml")
     }
 
@@ -258,7 +254,7 @@ configure(javaProjects) {
     }
 
     pmd {
-        toolVersion = "6.3.0"
+        toolVersion = pmdToolVersion
         ruleSets = emptyList() // Needed so PMD only uses our custom ruleset
         ruleSetFiles = files("${rootProject.rootDir}/config/pmd/pmd-ruleset.xml")
     }
@@ -275,22 +271,18 @@ configure(kotlinProjects) {
     }
 
     repositories {
-        maven { url = uri("https://dl.bintray.com/kotlin/ktor") }
-        maven { url = uri("https://dl.bintray.com/kotlin/kotlinx") }
+        maven("https://dl.bintray.com/kotlin/ktor")
+        maven("https://dl.bintray.com/kotlin/kotlinx")
     }
 
     dependencies {
-        // Weird syntax, see: https://github.com/gradle/kotlin-dsl/issues/894
-        "compile"(kotlin("stdlib-jdk8", kotlinVersion))
-        "compile"(kotlin("reflect", kotlinVersion))
-        "compile"(
+        implementation(kotlin("stdlib-jdk8", kotlinVersion))
+        implementation(kotlin("reflect", kotlinVersion))
+        implementation(
             group = "org.jetbrains.kotlinx",
             name = "kotlinx-coroutines-core",
             version = "1.0.0"
         )
-
-        "testCompile"(kotlin("test", kotlinVersion))
-        "testCompile"(kotlin("test-junit", kotlinVersion))
     }
 
     tasks.withType<KotlinCompile> {
@@ -340,42 +332,25 @@ configure(kotlinProjects) {
     }
 
     detekt {
-        toolVersion = "1.0.0-RC12"
-        input = files(
-            "src/main/kotlin",
-            "src/test/kotlin"
-        )
+        toolVersion = detektToolVersion
+        input = files("src/main/kotlin", "src/test/kotlin")
         parallel = true
         config = files("${rootProject.rootDir}/config/detekt/config.yml")
     }
 }
 
 configure(javaProjects + kotlinProjects) {
-    @Suppress("UnstableApiUsage")
-    val createPropertiesTask = tasks.register("createProperties") {
-        dependsOn("processResources")
-        doLast {
-            val propFileDir = Paths.get(
-                buildDir.path,
-                "resources",
-                "main"
-            ).toFile().apply {
-                mkdirs()
-            }
-
-            val propFile = Paths.get(
-                propFileDir.path,
-                "version.properties"
-            ).toFile()
-
-            val prop = Properties()
-            prop["version"] = version as String
-            prop.store(propFile.outputStream(), null)
+    val writePropertiesTask = tasks.create("writeProperties", WriteProperties::class) {
+        val propFileDir = Paths.get(buildDir.path, "resources", "main").toFile().apply {
+            mkdirs()
         }
+
+        outputFile = Paths.get(propFileDir.path, "version.properties").toFile()
+        property("version", version as String)
     }
 
     tasks.named("classes") {
-        dependsOn(createPropertiesTask)
+        dependsOn(writePropertiesTask)
     }
 }
 
@@ -386,9 +361,11 @@ configure(publishedProjects) {
         plugin("java-library")
     }
 
+    val projectName = "bowler-kernel"
+
     task<Jar>("sourcesJar") {
         classifier = "sources"
-        baseName = "bowler-kernel-${this@configure.name.toLowerCase()}"
+        baseName = "$projectName-${this@configure.name.toLowerCase()}"
         from(sourceSets.main.get().allSource)
     }
 
@@ -396,16 +373,16 @@ configure(publishedProjects) {
         group = JavaBasePlugin.DOCUMENTATION_GROUP
         description = "Assembles Kotlin docs with Dokka"
         classifier = "javadoc"
-        baseName = "bowler-kernel-${this@configure.name.toLowerCase()}"
+        baseName = "$projectName-${this@configure.name.toLowerCase()}"
         from(tasks.dokka)
     }
 
-    val publicationName = "publication-bowler-kernel-${name.toLowerCase()}"
+    val publicationName = "publication-$projectName-${name.toLowerCase()}"
 
     publishing {
         publications {
             create<MavenPublication>(publicationName) {
-                artifactId = "bowler-kernel-${this@configure.name.toLowerCase()}"
+                artifactId = "$projectName-${this@configure.name.toLowerCase()}"
                 from(components["java"])
                 artifact(tasks["sourcesJar"])
                 artifact(dokkaJar)
@@ -419,7 +396,7 @@ configure(publishedProjects) {
         setPublications(publicationName)
         with(pkg) {
             repo = "maven-artifacts"
-            name = "bowler-kernel"
+            name = projectName
             userOrg = "commonwealthrobotics"
             publish = true
             setLicenses("LGPL-3.0")
@@ -440,59 +417,6 @@ tasks.dokka {
 }
 
 tasks.wrapper {
-    gradleVersion = "5.0"
+    gradleVersion = "5.4.1"
     distributionType = Wrapper.DistributionType.ALL
-
-    doLast {
-        /*
-         * Copy the properties file into the buildSrc project.
-         * Related issues:
-         *
-         * https://youtrack.jetbrains.com/issue/KT-14895
-         * https://youtrack.jetbrains.com/issue/IDEA-169717
-         * https://youtrack.jetbrains.com/issue/IDEA-153336
-         */
-        val buildSrcWrapperDir = File(rootDir, "buildSrc/gradle/wrapper")
-        GFileUtils.mkdirs(buildSrcWrapperDir)
-        copy {
-            from(propertiesFile)
-            into(buildSrcWrapperDir)
-        }
-    }
 }
-
-/**
- * Configures the [publishing][org.gradle.api.publish.PublishingExtension] project extension.
- */
-fun Project.`publishing`(configure: org.gradle.api.publish.PublishingExtension.() -> Unit) =
-    extensions.configure("publishing", configure)
-
-/**
- * Configures the [checkstyle][org.gradle.api.plugins.quality.CheckstyleExtension] project extension.
- */
-fun Project.`checkstyle`(configure: org.gradle.api.plugins.quality.CheckstyleExtension.() -> Unit) =
-    extensions.configure("checkstyle", configure)
-
-/**
- * Configures the [findbugs][org.gradle.api.plugins.quality.FindBugsExtension] project extension.
- */
-fun Project.`findbugs`(configure: org.gradle.api.plugins.quality.FindBugsExtension.() -> Unit) =
-    extensions.configure("findbugs", configure)
-
-/**
- * Retrieves the [java][org.gradle.api.plugins.JavaPluginConvention] project convention.
- */
-val Project.`java`: org.gradle.api.plugins.JavaPluginConvention
-    get() = convention.getPluginByName("java")
-
-/**
- * Configures the [kotlin][org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension] project extension.
- */
-fun Project.`kotlin`(configure: org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension.() -> Unit): Unit =
-    extensions.configure("kotlin", configure)
-
-/**
- * Configures the [detekt][io.gitlab.arturbosch.detekt.extensions.DetektExtension] extension.
- */
-fun org.gradle.api.Project.`detekt`(configure: io.gitlab.arturbosch.detekt.extensions.DetektExtension.() -> Unit): Unit =
-    (this as org.gradle.api.plugins.ExtensionAware).extensions.configure("detekt", configure)

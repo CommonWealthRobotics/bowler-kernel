@@ -29,6 +29,7 @@ import org.jlleitschuh.guice.key
 import org.jlleitschuh.guice.module
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.toImmutableList
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * A script with managed hardware access.
@@ -46,12 +47,27 @@ abstract class Script {
     private val addedModules = mutableListOf<Module>()
 
     /**
-     * Runs the script on the current thread.
+     * Whether the script is currently running.
+     */
+    val isRunning
+        get() = internalIsRunning.get()
+
+    private var internalIsRunning = AtomicBoolean(false)
+
+    /**
+     * The child threads the script created.
+     */
+    private val threads = mutableListOf<Thread>()
+
+    /**
+     * Runs the script on the current thread. This should exit within a reasonable amount of time;
+     * essentially, don't put any very long-running, perhaps user-interactive, tasks in here;
+     * instead, spawn another thread and track it with [addThread].
      *
      * @param args The arguments to the script.
      * @return The result of the script.
      */
-    abstract fun runScript(args: ImmutableList<Any?>): Either<String, Any?>
+    protected abstract fun runScript(args: ImmutableList<Any?>): Either<String, Any?>
 
     /**
      * Forces the script to stop. Do not call this directly. Call `stopAndCleanUp()`.
@@ -59,12 +75,35 @@ abstract class Script {
     protected abstract fun stopScript()
 
     /**
+     * Starts running the script on the current thread.
+     *
+     * @param args The arguments to the script.
+     * @return The result of the script.
+     */
+    fun startScript(args: ImmutableList<Any?>): Either<String, Any?> {
+        internalIsRunning.set(true)
+        return runScript(args)
+    }
+
+    /**
      * Stops the script and unregisters/disconnects all hardware it registered. Always call this
      * after the script is done running.
+     *
+     * @param timeout The per-thread timeout before interrupting the thread.
      */
-    fun stopAndCleanUp() {
+    fun stopAndCleanUp(timeout: Long = 1000) {
         stopScript()
+
+        threads.forEach {
+            it.join(timeout)
+            if (it.isAlive) {
+                it.interrupt()
+            }
+        }
+
+        threads.clear()
         injector.getInstance(key<HardwareRegistryTracker>()).unregisterAllHardware()
+        internalIsRunning.set(false)
     }
 
     /**
@@ -91,6 +130,15 @@ abstract class Script {
      * @return The modules added to this script's [injector].
      */
     fun getModules(): ImmutableList<Module> = addedModules.toImmutableList()
+
+    /**
+     * Adds a thread to the list of threads this script tracks.
+     *
+     * @param thread The thread to add.
+     */
+    protected fun addThread(thread: Thread) {
+        threads.add(thread)
+    }
 
     companion object {
 

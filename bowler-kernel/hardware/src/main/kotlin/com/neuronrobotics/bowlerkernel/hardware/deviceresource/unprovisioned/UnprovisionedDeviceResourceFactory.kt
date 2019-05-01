@@ -19,6 +19,7 @@ package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned
 import arrow.core.Either
 import arrow.core.left
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.ProvisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
@@ -28,7 +29,7 @@ import org.jlleitschuh.guice.module
 import javax.inject.Inject
 
 /**
- * A facade for making any type of device resource. Requires the [device] to be connected or else
+ * A facade for making any type of device resource. Requires the device to be connected or else
  * require creation will fail due to RPC timeout.
  */
 @SuppressWarnings("TooManyFunctions")
@@ -47,12 +48,13 @@ class UnprovisionedDeviceResourceFactory
     UnprovisionedStepperFactory,
     UnprovisionedUltrasonicFactory {
 
-    private fun <T : UnprovisionedDeviceResource> makeUnprovisionedResource(
-        device: BowlerDevice,
-        resourceId: ResourceId,
-        errorMessageType: String,
-        makeResource: (BowlerDevice, ResourceId) -> T
-    ):
+    private fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource>
+        makeUnprovisionedResource(
+            device: BowlerDevice,
+            resourceId: ResourceId,
+            errorMessageType: String,
+            makeResource: (BowlerDevice, ResourceId) -> T
+        ):
         Either<RegisterError, T> {
         return if (device.isResourceInRange(resourceId)) {
             registry.registerDeviceResource(device, resourceId, makeResource)

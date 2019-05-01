@@ -24,7 +24,7 @@ data class UnprovisionedServo
 internal constructor(
     override val device: BowlerDevice,
     override val resourceId: ResourceId
-) : UnprovisionedDeviceResource() {
+) : UnprovisionedDeviceResource<GenericServo> {
 
     override fun provision() = GenericServo(device, resourceId)
 }

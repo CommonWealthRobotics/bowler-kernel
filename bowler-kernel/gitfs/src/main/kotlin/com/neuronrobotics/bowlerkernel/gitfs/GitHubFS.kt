@@ -17,7 +17,8 @@
 package com.neuronrobotics.bowlerkernel.gitfs
 
 import arrow.core.Try
-import arrow.core.recoverWith
+import arrow.core.Try.Companion.raiseError
+import arrow.core.handleErrorWith
 import com.google.common.base.Throwables
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.internal.logging.LoggerUtilities
@@ -66,7 +67,7 @@ class GitHubFS(
                 // If true, the directories were created which means a new repository is
                 // being cloned
                 Try {
-                    val git = Git.cloneRepository()
+                    Git.cloneRepository()
                         .setURI(gitUrl)
                         .setBranch(branch)
                         .setDirectory(directory)
@@ -77,23 +78,19 @@ class GitHubFS(
                             )
                         )
                         .call()
-
-                    git.submoduleInit().call()
-                    git.submoduleUpdate().call()
-                    git.close()
-                }.map {
-                    directory
-                }
+                        .use {
+                            it.submoduleInit().call()
+                            it.submoduleUpdate().call()
+                        }
+                }.map { directory }
             } else {
                 // If false, the repository is already cloned, so pull instead
                 Try {
-                    Git.open(directory).pull().call()
-                }.map {
-                    directory
-                }
+                    Git.open(directory).use { it.pull().call() }
+                }.map { directory }
             }
         } else {
-            Try.raise(
+            raiseError(
                 IllegalArgumentException(
                     """
                     |Invalid git URL:
@@ -135,7 +132,7 @@ class GitHubFS(
             gitHub.myself.listGists().firstOrNull {
                 it.gitPullUrl == gitUrl
             } != null
-        }.recoverWith {
+        }.handleErrorWith {
             Try {
                 gitHub.myself.listRepositories().first { repo ->
                     repo.gitTransportUrl == gitUrl

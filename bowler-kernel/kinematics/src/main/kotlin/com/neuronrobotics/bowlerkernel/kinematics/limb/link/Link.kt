@@ -16,9 +16,9 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.limb.link
 
-import com.neuronrobotics.bowlerkernel.kinematics.Limits
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialStateEstimator
+import com.neuronrobotics.bowlerkernel.util.Limits
 
 /**
  * A link which can form the chain of a [Limb].

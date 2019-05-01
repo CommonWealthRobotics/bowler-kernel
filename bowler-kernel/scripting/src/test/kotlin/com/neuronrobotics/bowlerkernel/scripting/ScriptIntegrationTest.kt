@@ -93,7 +93,7 @@ internal class ScriptIntegrationTest {
         }
 
         script.addToInjector(Script.getDefaultModules())
-        script.runScript(emptyImmutableList())
+        script.startScript(emptyImmutableList())
         script.stopAndCleanUp()
     }
 
@@ -161,7 +161,7 @@ internal class ScriptIntegrationTest {
         script.addToInjector(Script.getDefaultModules())
 
         // Run the script a first time, this should work fine
-        script.runScript(emptyImmutableList()).bimap(
+        script.startScript(emptyImmutableList()).bimap(
             {
                 fail {
                     """
@@ -175,7 +175,7 @@ internal class ScriptIntegrationTest {
 
         // Run the script a second time, this should fail (inside the script) because the hardware
         // has not been unregistered
-        script.runScript(emptyImmutableList()).bimap(
+        script.startScript(emptyImmutableList()).bimap(
             {
                 fail {
                     """
@@ -191,7 +191,7 @@ internal class ScriptIntegrationTest {
 
         // Run the script a third time, this should work again because the script was stopped and
         // clean up after
-        script.runScript(emptyImmutableList()).bimap(
+        script.startScript(emptyImmutableList()).bimap(
             {
                 fail {
                     """
@@ -281,7 +281,7 @@ internal class ScriptIntegrationTest {
         script.addToInjector(Script.getDefaultModules())
 
         // Run the script a first time, this should work fine
-        script.runScript(emptyImmutableList()).bimap(
+        script.startScript(emptyImmutableList()).bimap(
             {
                 fail {
                     """
@@ -295,7 +295,7 @@ internal class ScriptIntegrationTest {
 
         // Run the script a second time, this should fail (inside the script) because the hardware
         // has not been unregistered
-        script.runScript(emptyImmutableList()).bimap(
+        script.startScript(emptyImmutableList()).bimap(
             {
                 fail {
                     """
@@ -311,7 +311,7 @@ internal class ScriptIntegrationTest {
 
         // Run the script a third time, this should work again because the script was stopped and
         // clean up after
-        script.runScript(emptyImmutableList()).bimap(
+        script.startScript(emptyImmutableList()).bimap(
             {
                 fail {
                     """
@@ -366,7 +366,7 @@ internal class ScriptIntegrationTest {
         })
 
         // Run the script a first time, this should work fine
-        script.runScript(emptyImmutableList()).bimap(
+        script.startScript(emptyImmutableList()).bimap(
             {
                 fail {
                     """
@@ -428,7 +428,7 @@ internal class ScriptIntegrationTest {
 
         // Run the script a first time, this should work fine
         @Suppress("UNCHECKED_CAST")
-        val result = script.runScript(emptyImmutableList()).fold(
+        val result = script.startScript(emptyImmutableList()).fold(
             {
                 fail {
                     """

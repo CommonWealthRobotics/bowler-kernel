@@ -27,7 +27,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
-import org.junit.jupiter.api.Assertions.fail
+import com.neuronrobotics.bowlerkernel.hardware.getOrFail
 
 internal data class MockDevice(
     override val deviceId: DeviceId
@@ -51,9 +51,16 @@ internal data class MockDevice(
 internal data class MockUnprovisionedDeviceResource(
     override val device: Device,
     override val resourceId: ResourceId
-) : UnprovisionedDeviceResource() {
+) : UnprovisionedDeviceResource<MockProvisionedDeviceResource> {
 
     override fun provision() = MockProvisionedDeviceResource(device, resourceId)
+
+    companion object {
+
+        val create = { device: Device, resourceId: ResourceId ->
+            MockUnprovisionedDeviceResource(device, resourceId)
+        }
+    }
 }
 
 internal class MockProvisionedDeviceResource(
@@ -67,12 +74,7 @@ internal fun HardwareRegistry.makeDeviceOrFail(): MockDevice =
             DefaultDeviceTypes.UnknownDevice,
             DefaultConnectionMethods.RawHID(0, 0)
         )
-    ) {
-        MockDevice(it)
-    }.fold(
-        { fail<MockDevice> { it } },
-        { it }
-    )
+    ) { MockDevice(it) }.getOrFail()
 
 internal fun HardwareRegistry.makeDeviceResourceOrFail(
     device: Device,
@@ -80,10 +82,6 @@ internal fun HardwareRegistry.makeDeviceResourceOrFail(
 ): MockUnprovisionedDeviceResource =
     registerDeviceResource(
         device,
-        ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(attachmentPoint))
-    ) { device, resource ->
-        MockUnprovisionedDeviceResource(device, resource)
-    }.fold(
-        { fail<MockUnprovisionedDeviceResource> { it } },
-        { it }
-    )
+        ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(attachmentPoint)),
+        MockUnprovisionedDeviceResource.create
+    ).getOrFail()

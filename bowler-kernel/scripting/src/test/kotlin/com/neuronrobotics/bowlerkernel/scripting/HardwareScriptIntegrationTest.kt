@@ -39,7 +39,7 @@ internal class HardwareScriptIntegrationTest {
         val script = object : Script() {
             override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
                 injector.getInstance(key<TestHardware>()).let {
-                    it.runScript(args)
+                    it.startScript(args)
                     it.stopAndCleanUp()
                 }
                 return Either.right(null)
@@ -50,7 +50,7 @@ internal class HardwareScriptIntegrationTest {
         }
 
         script.addToInjector(Script.getDefaultModules())
-        script.runScript(emptyImmutableList())
+        script.startScript(emptyImmutableList())
         script.stopAndCleanUp()
     }
 

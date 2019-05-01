@@ -39,7 +39,7 @@ class DefaultScriptFactory
         scriptText: String
     ): Either<String, DefaultScript> =
         scriptLanguageParser.parse(language).map {
-            DefaultScript(it, scriptText)
+            createScriptFromText(it, scriptText)
         }
 
     /**

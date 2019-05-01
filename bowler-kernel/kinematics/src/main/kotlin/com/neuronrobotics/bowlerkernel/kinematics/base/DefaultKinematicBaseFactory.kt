@@ -19,6 +19,7 @@ package com.neuronrobotics.bowlerkernel.kinematics.base
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
+import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseData
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.LimbFactory
@@ -46,12 +47,11 @@ class DefaultKinematicBaseFactory
             .toImmutableMap()
 
         val bodyController = scriptFactory.getInstanceFromGit<BodyController>(
-            kinematicBaseData.bodyControllerPullURL,
-            kinematicBaseData.bodyControllerFilename
+            kinematicBaseData.bodyController
         ).fold({ return it.left() }, { it })
 
         return DefaultKinematicBase(
-            kinematicBaseData.id,
+            SimpleKinematicBaseId(kinematicBaseData.id),
             limbs,
             limbTransforms,
             bodyController

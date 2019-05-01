@@ -62,7 +62,7 @@ internal interface HardwareRegistry {
      * @param makeResource A lambda to construct the unprovisioned resource.
      * @return An empty option on success, a [RegisterError] on failure.
      */
-    fun <D : Device, T : UnprovisionedDeviceResource> registerDeviceResource(
+    fun <D : Device, T : UnprovisionedDeviceResource<*>> registerDeviceResource(
         device: D,
         resourceId: ResourceId,
         makeResource: (D, ResourceId) -> T

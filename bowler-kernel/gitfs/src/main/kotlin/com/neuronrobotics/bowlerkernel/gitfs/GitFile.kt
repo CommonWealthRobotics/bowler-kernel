@@ -14,14 +14,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics
+package com.neuronrobotics.bowlerkernel.gitfs
 
 /**
- * A generic limits class.
+ * Represents a file in Git.
+ *
+ * @param gitUrl The `.git` URL the repository could be cloned from, i.e.
+ * `https://github.com/CommonWealthRobotics/BowlerBuilder.git` or
+ * `https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git`.
+ * @param filename The name of the file in the repo (including extension).
  */
-data class Limits(
-    val maximum: Double,
-    val minimum: Double
-) {
-    constructor(maximum: Number, minimum: Number) : this(maximum.toDouble(), minimum.toDouble())
-}
+data class GitFile(
+    val gitUrl: String,
+    val filename: String
+)
