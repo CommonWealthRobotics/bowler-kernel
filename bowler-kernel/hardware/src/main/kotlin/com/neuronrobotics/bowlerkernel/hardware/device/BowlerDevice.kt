@@ -20,13 +20,14 @@ import arrow.core.Either
 import arrow.core.flatMap
 import arrow.core.left
 import arrow.core.right
-import com.google.common.collect.ImmutableSet
+import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.ProvisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
+import org.octogonapus.ktguava.collections.toImmutableList
 import org.octogonapus.ktguava.collections.toImmutableSet
 
 /**
@@ -91,8 +92,8 @@ internal constructor(
      * @return The provisioned resources, or an error.
      */
     fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
-        resources: ImmutableSet<T>
-    ): Either<String, ImmutableSet<R>> {
+        resources: ImmutableList<T>
+    ): Either<String, ImmutableList<R>> {
         val resourceIds = resources.map { it.resourceId }.toImmutableSet()
 
         val allReadResources = resources.map {
@@ -130,7 +131,7 @@ internal constructor(
             |${resources.joinToString(separator = "\n")}
             """.trimMargin().left()
         } else {
-            resources.map { it.provision() }.toImmutableSet().right()
+            resources.map { it.provision() }.toImmutableList().right()
         }
     }
 

@@ -29,7 +29,7 @@ import org.jlleitschuh.guice.key
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.emptyImmutableList
-import org.octogonapus.ktguava.collections.immutableSetOf
+import org.octogonapus.ktguava.collections.immutableListOf
 import javax.inject.Inject
 
 internal class HardwareScriptIntegrationTest {
@@ -81,7 +81,7 @@ internal class HardwareScriptIntegrationTest {
                 DefaultAttachmentPoints.Pin(2)
             ).fold({ fail { "" } }, { it })
 
-            device.add(immutableSetOf(led1, led2))
+            device.add(immutableListOf(led1, led2))
 
             val servo1 = resourceFactory.makeUnprovisionedServo(
                 device,

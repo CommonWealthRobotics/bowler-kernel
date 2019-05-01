@@ -16,11 +16,16 @@
  */
 package com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan
 
+import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.control.createMotionConstraints
 import com.neuronrobotics.bowlerkernel.control.kinematics.MockJointAngleController
+import com.neuronrobotics.bowlerkernel.kinematics.closedloop.JointAngleController
+import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.DefaultLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlan
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanStep
+import com.nhaarman.mockitokotlin2.doReturn
+import com.nhaarman.mockitokotlin2.mock
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -33,10 +38,15 @@ import kotlin.math.abs
 
 internal class DefaultLimbMotionPlanFollowerTest {
 
-    private val controller =
-        MockJointAngleController()
+    private val controller = MockJointAngleController()
 
-    private val follower = DefaultLimbMotionPlanFollower(immutableListOf(controller))
+    @Suppress("UNCHECKED_CAST")
+    private val limb = mock<Limb> {
+        on { jointAngleControllers } doReturn
+            immutableListOf(controller) as ImmutableList<JointAngleController>
+    }
+
+    private val follower = DefaultLimbMotionPlanFollower()
 
     @Test
     @Tag("performance")
@@ -50,7 +60,7 @@ internal class DefaultLimbMotionPlanFollowerTest {
         )
 
         fun timeOnce(): Long {
-            follower.followPlan(plan)
+            follower.followPlan(limb, plan)
             runBlocking { delay(timestep * 4L) }
             val time = controller.times[1] - controller.times[0]
             controller.times.clear()
@@ -76,7 +86,7 @@ internal class DefaultLimbMotionPlanFollowerTest {
         )
 
         assertThrows<IllegalArgumentException> {
-            follower.followPlan(plan)
+            follower.followPlan(limb, plan)
         }
     }
 
@@ -90,7 +100,7 @@ internal class DefaultLimbMotionPlanFollowerTest {
         )
 
         assertThrows<IllegalArgumentException> {
-            follower.followPlan(plan)
+            follower.followPlan(limb, plan)
         }
     }
 
@@ -103,7 +113,7 @@ internal class DefaultLimbMotionPlanFollowerTest {
         )
 
         assertThrows<IllegalArgumentException> {
-            follower.followPlan(plan)
+            follower.followPlan(limb, plan)
         }
     }
 }

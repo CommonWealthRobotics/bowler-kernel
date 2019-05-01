@@ -48,6 +48,9 @@ class DefaultLimb(
         links.map { 0.0 }.toImmutableList()
     )
 
+    var isMovingToTaskSpaceTransform = false
+        private set
+
     init {
         require(links.size == jointAngleControllers.size) {
             """
@@ -65,14 +68,17 @@ class DefaultLimb(
         desiredTaskSpaceTransform = taskSpaceTransform
 
         // Generate and follow the plan on a new thread
-        thread(isDaemon = true) {
+        isMovingToTaskSpaceTransform = true
+        thread {
             val plan = motionPlanGenerator.generatePlanForTaskSpaceTransform(
+                this,
                 getCurrentTaskSpaceTransform(),
                 taskSpaceTransform,
                 motionConstraints
             )
 
-            motionPlanFollower.followPlan(plan)
+            motionPlanFollower.followPlan(this, plan)
+            isMovingToTaskSpaceTransform = false
         }
     }
 

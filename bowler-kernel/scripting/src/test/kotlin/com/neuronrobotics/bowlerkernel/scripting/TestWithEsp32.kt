@@ -19,13 +19,11 @@ package com.neuronrobotics.bowlerkernel.scripting
 import arrow.core.Either
 import arrow.core.right
 import com.google.common.collect.ImmutableList
-import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.Script
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalOut
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
@@ -34,7 +32,6 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import org.octogonapus.ktguava.collections.immutableListOf
-import org.octogonapus.ktguava.collections.immutableSetOf
 import java.net.InetAddress
 import javax.inject.Inject
 
@@ -70,9 +67,9 @@ internal class TestWithEsp32 {
 
             device.connect().mapLeft { throw IllegalStateException(it) }
 
-            device.add(immutableSetOf(led1, led2)).fold(
+            device.add(immutableListOf(led1, led2)).fold(
                 { throw IllegalStateException(it) },
-                { it as ImmutableSet<DigitalOut> }
+                { it }
             )
 
             repeat(100) {

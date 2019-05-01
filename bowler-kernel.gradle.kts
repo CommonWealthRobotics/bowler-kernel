@@ -20,7 +20,7 @@ plugins {
     checkstyle
 }
 
-val bowlerKernelVersion = "0.0.24"
+val bowlerKernelVersion = "0.0.26"
 val ktlintVersion = "0.29.0"
 val junitJupiterVersion = "5.4.0"
 val jacocoToolVersion = "0.8.3"
@@ -56,12 +56,14 @@ val kotlinProjects = setOf(
 val javaProjects = setOf<Project>() + kotlinProjects
 
 val publishedProjects = setOf(
+    bowlerKernelSettingsProject,
     bowlerKernelGitFSProject,
     bowlerKernelHardwareProject,
     bowlerKernelKinematicsProject,
     bowlerKernelLoggingProject,
     bowlerKernelScriptingProject,
-    bowlerKernelSettingsProject
+    bowlerKernelUtilProject,
+    bowlerKernelVitaminsProject
 )
 
 buildscript {

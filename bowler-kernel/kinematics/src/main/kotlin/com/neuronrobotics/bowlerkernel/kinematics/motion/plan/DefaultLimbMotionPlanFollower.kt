@@ -16,33 +16,28 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.motion.plan
 
-import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.kinematics.closedloop.JointAngleController
+import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 /**
  * A [LimbMotionPlanFollower] which schedules each plan step using an
  * [Executors.newScheduledThreadPool] and sets the step's target joint angles to the
- * [jointAngleControllers].
- *
- * @param jointAngleControllers The controllers for the joints.
+ * [Limb.jointAngleControllers].
  */
-class DefaultLimbMotionPlanFollower(
-    private val jointAngleControllers: ImmutableList<JointAngleController>
-) : LimbMotionPlanFollower {
+class DefaultLimbMotionPlanFollower : LimbMotionPlanFollower {
 
-    override fun followPlan(plan: LimbMotionPlan) {
+    override fun followPlan(limb: Limb, plan: LimbMotionPlan) {
         if (plan.steps.isEmpty()) {
             return
         }
 
         plan.steps.forEach {
-            require(it.jointAngles.size == jointAngleControllers.size) {
+            require(it.jointAngles.size == limb.jointAngleControllers.size) {
                 """
                 |Must have an equal number of target joint angles and joint angle controllers.
                 |Number of target joint angles in the first plan step: $it.jointAngles.size
-                |Number of joint angle controllers: ${jointAngleControllers.size}
+                |Number of joint angle controllers: ${limb.jointAngleControllers.size}
                 """.trimMargin()
             }
         }
@@ -55,7 +50,7 @@ class DefaultLimbMotionPlanFollower(
             val scheduled = pool.schedule(
                 {
                     step.jointAngles.forEachIndexed { index, targetJointAngle ->
-                        jointAngleControllers[index].setTargetAngle(
+                        limb.jointAngleControllers[index].setTargetAngle(
                             targetJointAngle,
                             step.motionConstraints
                         )
@@ -67,13 +62,5 @@ class DefaultLimbMotionPlanFollower(
             timestepSum += step.motionConstraints.motionDuration.toLong()
             scheduled
         }
-    }
-
-    class Factory :
-        LimbMotionPlanFollower.Factory {
-        override fun create(jointAngleControllers: ImmutableList<JointAngleController>) =
-            DefaultLimbMotionPlanFollower(
-                jointAngleControllers
-            )
     }
 }

@@ -17,6 +17,7 @@
 package com.neuronrobotics.bowlerkernel.kinematics.motion.plan
 
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
@@ -29,11 +30,13 @@ interface LimbMotionPlanGenerator {
     /**
      * Generates a plan to reach a task space transform.
      *
+     * @param limb The limb to generate a plan for.
      * @param currentTaskSpaceTransform The current task space transform.
      * @param targetTaskSpaceTransform The target task space transform.
      * @return A list of joint angles.
      */
     fun generatePlanForTaskSpaceTransform(
+        limb: Limb,
         currentTaskSpaceTransform: FrameTransformation,
         targetTaskSpaceTransform: FrameTransformation,
         motionConstraints: MotionConstraints

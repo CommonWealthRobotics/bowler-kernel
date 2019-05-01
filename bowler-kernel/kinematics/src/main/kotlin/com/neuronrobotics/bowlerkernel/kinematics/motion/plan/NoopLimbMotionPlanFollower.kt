@@ -16,11 +16,13 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.motion.plan
 
+import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
+
 /**
  * A [LimbMotionPlanFollower] which does nothing.
  */
 object NoopLimbMotionPlanFollower : LimbMotionPlanFollower {
 
-    override fun followPlan(plan: LimbMotionPlan) {
+    override fun followPlan(limb: Limb, plan: LimbMotionPlan) {
     }
 }

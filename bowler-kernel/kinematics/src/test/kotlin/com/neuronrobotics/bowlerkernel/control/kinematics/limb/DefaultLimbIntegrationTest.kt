@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.control.createMotionConstraints
 import com.neuronrobotics.bowlerkernel.control.kinematics.MockJointAngleController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.DefaultLimb
+import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DefaultLink
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
@@ -71,6 +72,7 @@ internal class DefaultLimbIntegrationTest {
             mock {},
             object : LimbMotionPlanGenerator {
                 override fun generatePlanForTaskSpaceTransform(
+                    limb: Limb,
                     currentTaskSpaceTransform: FrameTransformation,
                     targetTaskSpaceTransform: FrameTransformation,
                     motionConstraints: MotionConstraints
@@ -89,7 +91,7 @@ internal class DefaultLimbIntegrationTest {
                     )
                 }
             },
-            DefaultLimbMotionPlanFollower(immutableListOf(controller)),
+            DefaultLimbMotionPlanFollower(),
             immutableListOf(controller),
             mock {}
         )
