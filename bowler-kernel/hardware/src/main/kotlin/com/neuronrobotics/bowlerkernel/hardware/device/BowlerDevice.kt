@@ -35,8 +35,7 @@ import org.octogonapus.ktguava.collections.toImmutableSet
  *
  * @param deviceId The serial port the device is on.
  */
-class BowlerDevice
-internal constructor(
+class BowlerDevice(
     override val deviceId: DeviceId,
     val bowlerRPCProtocol: BowlerRPCProtocol,
     private val resourceIdValidator: ResourceIdValidator
@@ -54,7 +53,7 @@ internal constructor(
      *
      * @return The provisioned resource, or an error.
      */
-    fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
+    override fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
         resource: T
     ): Either<String, R> {
         val id = resource.resourceId
@@ -91,7 +90,7 @@ internal constructor(
      *
      * @return The provisioned resources, or an error.
      */
-    fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
+    override fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
         resources: ImmutableList<T>
     ): Either<String, ImmutableList<R>> {
         val resourceIds = resources.map { it.resourceId }.toImmutableSet()

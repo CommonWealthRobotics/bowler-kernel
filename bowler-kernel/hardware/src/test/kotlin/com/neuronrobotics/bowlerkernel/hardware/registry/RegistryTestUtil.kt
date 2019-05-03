@@ -18,6 +18,7 @@ package com.neuronrobotics.bowlerkernel.hardware.registry
 
 import arrow.core.Either
 import arrow.core.right
+import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.device.Device
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
@@ -46,6 +47,14 @@ internal data class MockDevice(
     }
 
     override fun isResourceInRange(resourceId: ResourceId) = true
+
+    override fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
+        resource: T
+    ): Either<String, R> = Either.left("Not implemented")
+
+    override fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
+        resources: ImmutableList<T>
+    ): Either<String, ImmutableList<R>> = Either.left("Not implemented")
 }
 
 internal data class MockUnprovisionedDeviceResource(

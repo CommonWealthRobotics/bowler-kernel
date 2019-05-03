@@ -30,7 +30,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.length
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanGenerator
 import org.octogonapus.ktguava.collections.toImmutableList
-import kotlin.concurrent.thread
+import java.util.concurrent.Executors
 
 class DefaultLimb(
     override val id: LimbId,
@@ -48,8 +48,8 @@ class DefaultLimb(
         links.map { 0.0 }.toImmutableList()
     )
 
-    var isMovingToTaskSpaceTransform = false
-        private set
+    private var movingToTaskSpaceTransform = false
+    private val moveLimbPool = Executors.newSingleThreadExecutor()
 
     init {
         require(links.size == jointAngleControllers.size) {
@@ -68,8 +68,8 @@ class DefaultLimb(
         desiredTaskSpaceTransform = taskSpaceTransform
 
         // Generate and follow the plan on a new thread
-        isMovingToTaskSpaceTransform = true
-        thread {
+        movingToTaskSpaceTransform = true
+        moveLimbPool.submit {
             val plan = motionPlanGenerator.generatePlanForTaskSpaceTransform(
                 this,
                 getCurrentTaskSpaceTransform(),
@@ -78,7 +78,7 @@ class DefaultLimb(
             )
 
             motionPlanFollower.followPlan(this, plan)
-            isMovingToTaskSpaceTransform = false
+            movingToTaskSpaceTransform = false
         }
     }
 
@@ -86,6 +86,8 @@ class DefaultLimb(
 
     override fun getCurrentTaskSpaceTransform() =
         forwardKinematicsSolver.solveChain(getCurrentJointAngles())
+
+    override fun isMovingToTaskSpaceTransform() = movingToTaskSpaceTransform
 
     override fun setDesiredJointAngle(
         jointIndex: Int,

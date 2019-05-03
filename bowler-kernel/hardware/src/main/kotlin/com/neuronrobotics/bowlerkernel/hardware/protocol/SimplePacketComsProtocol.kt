@@ -976,9 +976,8 @@ open class SimplePacketComsProtocol(
         handleGroupWrite(resourcesAndValues, this::makeServoWritePayload)
 
     @Suppress("UNUSED_PARAMETER")
-    protected fun parseServoReadPayload(payload: ByteArray, start: Int, end: Int): Double {
-        return payload[start].toDouble()
-    }
+    protected fun parseServoReadPayload(payload: ByteArray, start: Int, end: Int) =
+        payload[start].toDouble()
 
     override fun servoRead(resourceId: ResourceId) =
         handleRead(resourceId, this::parseServoReadPayload)

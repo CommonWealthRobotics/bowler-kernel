@@ -17,8 +17,11 @@
 package com.neuronrobotics.bowlerkernel.hardware.device
 
 import arrow.core.Either
+import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.ProvisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
 
 interface Device {
 
@@ -49,4 +52,22 @@ interface Device {
      * @return Whether the resource id is in the valid range of resources for this device.
      */
     fun isResourceInRange(resourceId: ResourceId): Boolean
+
+    /**
+     * Adds the [resource] to the device.
+     *
+     * @return The provisioned resource, or an error.
+     */
+    fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
+        resource: T
+    ): Either<String, R>
+
+    /**
+     * Adds the [resources] to the device as a group.
+     *
+     * @return The provisioned resources, or an error.
+     */
+    fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
+        resources: ImmutableList<T>
+    ): Either<String, ImmutableList<R>>
 }

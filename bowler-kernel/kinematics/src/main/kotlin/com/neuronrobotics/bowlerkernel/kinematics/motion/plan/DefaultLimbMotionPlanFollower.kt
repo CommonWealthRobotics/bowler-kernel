@@ -17,6 +17,7 @@
 package com.neuronrobotics.bowlerkernel.kinematics.motion.plan
 
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -26,6 +27,8 @@ import java.util.concurrent.TimeUnit
  * [Limb.jointAngleControllers].
  */
 class DefaultLimbMotionPlanFollower : LimbMotionPlanFollower {
+
+    private val pool = Executors.newScheduledThreadPool(1)
 
     override fun followPlan(limb: Limb, plan: LimbMotionPlan) {
         if (plan.steps.isEmpty()) {
@@ -42,9 +45,8 @@ class DefaultLimbMotionPlanFollower : LimbMotionPlanFollower {
             }
         }
 
-        val pool = Executors.newScheduledThreadPool(1)
-
         // Schedule each plan step
+        val latch = CountDownLatch(plan.steps.size) // Used to wait for the plan to finish
         var timestepSum = 0L
         plan.steps.map { step ->
             val scheduled = pool.schedule(
@@ -55,12 +57,16 @@ class DefaultLimbMotionPlanFollower : LimbMotionPlanFollower {
                             step.motionConstraints
                         )
                     }
+                    latch.countDown()
                 },
-                timestepSum + step.motionConstraints.motionDuration.toLong(),
+                timestepSum,
                 TimeUnit.MILLISECONDS
             )
             timestepSum += step.motionConstraints.motionDuration.toLong()
             scheduled
         }
+
+        // Wait for the plan to finish
+        latch.await()
     }
 }
