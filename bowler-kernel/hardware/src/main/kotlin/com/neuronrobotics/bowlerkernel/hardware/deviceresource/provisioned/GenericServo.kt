@@ -25,7 +25,12 @@ internal constructor(
     override val resourceId: ResourceId
 ) : Servo {
 
-    override fun write(angle: Double) = device.bowlerRPCProtocol.servoWrite(resourceId, angle)
+    private var lastWrite = 0.0
 
-    override fun read() = device.bowlerRPCProtocol.servoRead(resourceId)
+    override fun write(angle: Double) {
+        device.bowlerRPCProtocol.servoWrite(resourceId, angle)
+        lastWrite = angle
+    }
+
+    override fun read() = lastWrite
 }

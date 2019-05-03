@@ -143,14 +143,6 @@ class MockBowlerRPCProtocol : BowlerRPCProtocol {
         TODO("not implemented")
     }
 
-    override fun servoRead(resourceId: ResourceId): Double {
-        TODO("not implemented")
-    }
-
-    override fun servoRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Double> {
-        TODO("not implemented")
-    }
-
     override fun stepperWrite(resourceId: ResourceId, steps: Int, speed: Int) {
         TODO("not implemented")
     }

@@ -17,8 +17,20 @@
 package com.neuronrobotics.bowlerkernel.kinematics.motion
 
 data class BasicMotionConstraints(
-    override val motionDuration: Number,
-    override val maximumVelocity: Number,
-    override val maximumAcceleration: Number,
-    override val maximumJerk: Number
-) : MotionConstraints
+    override val motionDuration: Double,
+    override val maximumVelocity: Double,
+    override val maximumAcceleration: Double,
+    override val maximumJerk: Double
+) : MotionConstraints {
+    constructor(
+        motionDuration: Number,
+        maximumVelocity: Number,
+        maximumAcceleration: Number,
+        maximumJerk: Number
+    ) : this(
+        motionDuration = motionDuration.toDouble(),
+        maximumVelocity = maximumVelocity.toDouble(),
+        maximumAcceleration = maximumAcceleration.toDouble(),
+        maximumJerk = maximumJerk.toDouble()
+    )
+}

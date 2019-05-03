@@ -48,8 +48,8 @@ class DefaultLimbMotionPlanFollower : LimbMotionPlanFollower {
         // Schedule each plan step
         val latch = CountDownLatch(plan.steps.size) // Used to wait for the plan to finish
         var timestepSum = 0L
-        plan.steps.map { step ->
-            val scheduled = pool.schedule(
+        plan.steps.forEach { step ->
+            pool.schedule(
                 {
                     step.jointAngles.forEachIndexed { index, targetJointAngle ->
                         limb.jointAngleControllers[index].setTargetAngle(
@@ -63,7 +63,6 @@ class DefaultLimbMotionPlanFollower : LimbMotionPlanFollower {
                 TimeUnit.MILLISECONDS
             )
             timestepSum += step.motionConstraints.motionDuration.toLong()
-            scheduled
         }
 
         // Wait for the plan to finish

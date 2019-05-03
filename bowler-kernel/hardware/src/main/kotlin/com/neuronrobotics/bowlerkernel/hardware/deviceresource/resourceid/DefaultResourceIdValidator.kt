@@ -32,7 +32,6 @@ class DefaultResourceIdValidator : ResourceIdValidator {
                 is DefaultResourceTypes.AnalogIn,
                 is DefaultResourceTypes.DigitalIn,
                 is DefaultResourceTypes.SerialConnection,
-                is DefaultResourceTypes.Servo,
                 is DefaultResourceTypes.Encoder,
                 is DefaultResourceTypes.Button,
                 is DefaultResourceTypes.Ultrasonic -> Unit.right()

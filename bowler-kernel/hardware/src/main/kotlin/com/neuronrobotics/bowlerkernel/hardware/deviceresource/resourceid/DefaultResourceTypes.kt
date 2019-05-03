@@ -59,7 +59,7 @@ sealed class DefaultResourceTypes(
     /**
      * A servo.
      */
-    object Servo : DefaultResourceTypes(6, 1, 1)
+    object Servo : DefaultResourceTypes(6, 1, 0)
 
     /**
      * A stepper motor, typically needs a [PinGroup] of 2 or 4 pins.
