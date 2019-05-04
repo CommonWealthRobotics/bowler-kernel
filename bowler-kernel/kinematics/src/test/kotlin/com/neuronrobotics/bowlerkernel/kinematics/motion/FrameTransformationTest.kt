@@ -19,9 +19,6 @@
 package com.neuronrobotics.bowlerkernel.kinematics.motion
 
 import com.beust.klaxon.Klaxon
-import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
-import com.neuronrobotics.bowlerkernel.kinematics.motion.getRotationMatrix
-import com.neuronrobotics.bowlerkernel.kinematics.motion.length
 import org.ejml.simple.SimpleMatrix
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
