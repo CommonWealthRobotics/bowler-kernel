@@ -14,16 +14,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.control
+package com.neuronrobotics.bowlerkernel.kinematics.limb
 
 import com.beust.klaxon.Klaxon
-import com.neuronrobotics.bowlerkernel.kinematics.motion.BasicMotionConstraints
-import org.junit.jupiter.api.Assertions.assertEquals
+import com.neuronrobotics.bowlerkernel.kinematics.createMockLinkData
+import com.neuronrobotics.bowlerkernel.kinematics.testJsonConversion
+import org.junit.jupiter.api.Test
 
-internal fun createMotionConstraints(duration: Number) = BasicMotionConstraints(
-    duration, 0, 0, 0
-)
+internal class LinkDataTest {
 
-internal inline fun <reified T> Klaxon.testJsonConversion(input: T) {
-    assertEquals(input, parse<T>(toJsonString(input)))
+    @Test
+    fun `test json conversion`() {
+        Klaxon().testJsonConversion(createMockLinkData())
+    }
 }

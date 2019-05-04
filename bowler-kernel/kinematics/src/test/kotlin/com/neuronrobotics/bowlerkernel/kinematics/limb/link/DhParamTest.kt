@@ -16,6 +16,8 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.limb.link
 
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.toFrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -52,13 +54,23 @@ internal class DhParamTest {
     @ParameterizedTest
     @MethodSource("lengthIndependentOfRotationSource")
     fun `test length independent of rotation`(theta: Double, alpha: Double) {
-        assertEquals(hypot(2.0, 3.0), DhParam(2.0, theta, 3.0, alpha).length)
+        assertEquals(hypot(2.0, 3.0), DhParam(
+            2.0,
+            theta,
+            3.0,
+            alpha
+        ).length)
     }
 
     @ParameterizedTest
     @MethodSource("angleSource")
     fun `test angle`(angle: Double) {
-        assertEquals(angle, DhParam(2.0, angle, 3.0, angle).angle)
+        assertEquals(angle, DhParam(
+            2.0,
+            angle,
+            3.0,
+            angle
+        ).angle)
     }
 
     @Test

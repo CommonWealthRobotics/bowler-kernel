@@ -14,16 +14,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.control.kinematics.motion.plan
+package com.neuronrobotics.bowlerkernel.kinematics.motion.plan
 
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.control.createMotionConstraints
-import com.neuronrobotics.bowlerkernel.control.kinematics.MockJointAngleController
+import com.neuronrobotics.bowlerkernel.kinematics.createMotionConstraints
+import com.neuronrobotics.bowlerkernel.kinematics.MockJointAngleController
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.JointAngleController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
-import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.DefaultLimbMotionPlanFollower
-import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlan
-import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanStep
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import kotlinx.coroutines.delay
@@ -54,8 +51,12 @@ internal class DefaultLimbMotionPlanFollowerTest {
         val timestep = 100
         val plan = LimbMotionPlan(
             immutableListOf(
-                LimbMotionPlanStep(immutableListOf(0.0), createMotionConstraints(timestep)),
-                LimbMotionPlanStep(immutableListOf(1.0), createMotionConstraints(timestep))
+                LimbMotionPlanStep(immutableListOf(0.0),
+                    createMotionConstraints(timestep)
+                ),
+                LimbMotionPlanStep(immutableListOf(1.0),
+                    createMotionConstraints(timestep)
+                )
             )
         )
 
@@ -81,7 +82,9 @@ internal class DefaultLimbMotionPlanFollowerTest {
     fun `test plan length validation with too few target joint angles`() {
         val plan = LimbMotionPlan(
             immutableListOf(
-                LimbMotionPlanStep(emptyImmutableList(), createMotionConstraints(0))
+                LimbMotionPlanStep(emptyImmutableList(),
+                    createMotionConstraints(0)
+                )
             )
         )
 
@@ -94,8 +97,12 @@ internal class DefaultLimbMotionPlanFollowerTest {
     fun `test plan length validation with too few target joint angles part way down the list`() {
         val plan = LimbMotionPlan(
             immutableListOf(
-                LimbMotionPlanStep(immutableListOf(0.0), createMotionConstraints(0)),
-                LimbMotionPlanStep(emptyImmutableList(), createMotionConstraints(0))
+                LimbMotionPlanStep(immutableListOf(0.0),
+                    createMotionConstraints(0)
+                ),
+                LimbMotionPlanStep(emptyImmutableList(),
+                    createMotionConstraints(0)
+                )
             )
         )
 
@@ -108,7 +115,9 @@ internal class DefaultLimbMotionPlanFollowerTest {
     fun `test plan length validation with too many target joint angles`() {
         val plan = LimbMotionPlan(
             immutableListOf(
-                LimbMotionPlanStep(immutableListOf(0.0, 0.0), createMotionConstraints(0))
+                LimbMotionPlanStep(immutableListOf(0.0, 0.0),
+                    createMotionConstraints(0)
+                )
             )
         )
 

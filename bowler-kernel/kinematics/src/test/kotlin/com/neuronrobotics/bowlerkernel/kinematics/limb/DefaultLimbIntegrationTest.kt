@@ -14,13 +14,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.control.kinematics.limb
+package com.neuronrobotics.bowlerkernel.kinematics.limb
 
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.control.createMotionConstraints
-import com.neuronrobotics.bowlerkernel.control.kinematics.MockJointAngleController
-import com.neuronrobotics.bowlerkernel.kinematics.limb.DefaultLimb
-import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
+import com.neuronrobotics.bowlerkernel.kinematics.createMotionConstraints
+import com.neuronrobotics.bowlerkernel.kinematics.MockJointAngleController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DefaultLink
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
@@ -81,11 +79,15 @@ internal class DefaultLimbIntegrationTest {
                         immutableListOf(
                             LimbMotionPlanStep(
                                 immutableListOf(0.0),
-                                createMotionConstraints(timestep)
+                                createMotionConstraints(
+                                    timestep
+                                )
                             ),
                             LimbMotionPlanStep(
                                 immutableListOf(1.0),
-                                createMotionConstraints(timestep)
+                                createMotionConstraints(
+                                    timestep
+                                )
                             )
                         )
                     )
