@@ -56,13 +56,16 @@ class DefaultLimbMotionPlanFollower : LimbMotionPlanFollower {
         plan.steps.forEach { step ->
             pool.schedule(
                 {
-                    step.jointAngles.forEachIndexed { index, targetJointAngle ->
-                        jointAngleControllers[index].setTargetAngle(
-                            targetJointAngle,
-                            step.motionConstraints
-                        )
+                    try {
+                        step.jointAngles.forEachIndexed { index, targetJointAngle ->
+                            jointAngleControllers[index].setTargetAngle(
+                                targetJointAngle,
+                                step.motionConstraints
+                            )
+                        }
+                    } finally {
+                        latch.countDown()
                     }
-                    latch.countDown()
                 },
                 timestepSum,
                 TimeUnit.MILLISECONDS

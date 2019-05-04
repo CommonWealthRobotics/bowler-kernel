@@ -71,15 +71,18 @@ class DefaultLimb(
         // Generate and follow the plan on a new thread
         movingToTaskSpaceTransform = true
         moveLimbPool.submit {
-            val plan = motionPlanGenerator.generatePlanForTaskSpaceTransform(
-                this,
-                getCurrentTaskSpaceTransform(),
-                taskSpaceTransform,
-                motionConstraints
-            )
+            try {
+                val plan = motionPlanGenerator.generatePlanForTaskSpaceTransform(
+                    this,
+                    getCurrentTaskSpaceTransform(),
+                    taskSpaceTransform,
+                    motionConstraints
+                )
 
-            motionPlanFollower.followPlan(jointAngleControllers, plan)
-            movingToTaskSpaceTransform = false
+                motionPlanFollower.followPlan(jointAngleControllers, plan)
+            } finally {
+                movingToTaskSpaceTransform = false
+            }
         }
     }
 
