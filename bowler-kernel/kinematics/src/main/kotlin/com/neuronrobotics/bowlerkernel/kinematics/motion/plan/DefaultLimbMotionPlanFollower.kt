@@ -18,21 +18,24 @@ package com.neuronrobotics.bowlerkernel.kinematics.motion.plan
 
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.JointAngleController
+import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 /**
  * A [LimbMotionPlanFollower] which schedules each plan step using an
  * [Executors.newScheduledThreadPool] and sets the step's target joint angles to the
- * [jointAngleControllers].
- *
- * @param jointAngleControllers The controllers for the joints.
+ * [Limb.jointAngleControllers].
  */
-class DefaultLimbMotionPlanFollower(
-    private val jointAngleControllers: ImmutableList<JointAngleController>
-) : LimbMotionPlanFollower {
+class DefaultLimbMotionPlanFollower : LimbMotionPlanFollower {
 
-    override fun followPlan(plan: LimbMotionPlan) {
+    private val pool = Executors.newScheduledThreadPool(1)
+
+    override fun followPlan(
+        jointAngleControllers: ImmutableList<JointAngleController>,
+        plan: LimbMotionPlan
+    ) {
         if (plan.steps.isEmpty()) {
             return
         }
@@ -47,33 +50,30 @@ class DefaultLimbMotionPlanFollower(
             }
         }
 
-        val pool = Executors.newScheduledThreadPool(1)
-
         // Schedule each plan step
+        val latch = CountDownLatch(plan.steps.size) // Used to wait for the plan to finish
         var timestepSum = 0L
-        plan.steps.map { step ->
-            val scheduled = pool.schedule(
+        plan.steps.forEach { step ->
+            pool.schedule(
                 {
-                    step.jointAngles.forEachIndexed { index, targetJointAngle ->
-                        jointAngleControllers[index].setTargetAngle(
-                            targetJointAngle,
-                            step.motionConstraints
-                        )
+                    try {
+                        step.jointAngles.forEachIndexed { index, targetJointAngle ->
+                            jointAngleControllers[index].setTargetAngle(
+                                targetJointAngle,
+                                step.motionConstraints
+                            )
+                        }
+                    } finally {
+                        latch.countDown()
                     }
                 },
-                timestepSum + step.motionConstraints.motionDuration.toLong(),
+                timestepSum,
                 TimeUnit.MILLISECONDS
             )
             timestepSum += step.motionConstraints.motionDuration.toLong()
-            scheduled
         }
-    }
 
-    class Factory :
-        LimbMotionPlanFollower.Factory {
-        override fun create(jointAngleControllers: ImmutableList<JointAngleController>) =
-            DefaultLimbMotionPlanFollower(
-                jointAngleControllers
-            )
+        // Wait for the plan to finish
+        latch.await()
     }
 }

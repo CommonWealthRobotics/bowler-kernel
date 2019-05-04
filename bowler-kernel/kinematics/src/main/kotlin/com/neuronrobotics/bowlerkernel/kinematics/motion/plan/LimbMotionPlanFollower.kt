@@ -27,19 +27,8 @@ interface LimbMotionPlanFollower {
     /**
      * Follows a [LimbMotionPlan].
      *
+     * @param jointAngleControllers The joint angle controllers to write to.
      * @param plan The [LimbMotionPlan] to follow.
      */
-    fun followPlan(plan: LimbMotionPlan)
-
-    interface Factory {
-
-        /**
-         * Creates a [LimbMotionPlanFollower].
-         *
-         * @param jointAngleControllers The joint angle controllers.
-         */
-        fun create(
-            jointAngleControllers: ImmutableList<JointAngleController>
-        ): LimbMotionPlanFollower
-    }
+    fun followPlan(jointAngleControllers: ImmutableList<JointAngleController>, plan: LimbMotionPlan)
 }

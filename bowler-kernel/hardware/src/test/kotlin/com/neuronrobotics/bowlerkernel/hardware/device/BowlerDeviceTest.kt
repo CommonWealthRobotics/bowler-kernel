@@ -39,6 +39,7 @@ import com.nhaarman.mockitokotlin2.verify
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableSetOf
 import org.octogonapus.ktguava.collections.toImmutableSet
 
@@ -164,7 +165,7 @@ internal class BowlerDeviceTest {
 
     @Test
     fun `test adding an led group`() {
-        val result = device.add(immutableSetOf(led1, led2))
+        val result = device.add(immutableListOf(led1, led2))
 
         verify(bowlerRPCProtocol).addWriteGroup(immutableSetOf(led1Id, led2Id))
         verify(bowlerRPCProtocol, never()).addReadGroup(immutableSetOf(led1Id, led2Id))
@@ -174,7 +175,7 @@ internal class BowlerDeviceTest {
 
     @Test
     fun `test adding a line sensor group`() {
-        val result = device.add(immutableSetOf(line1, line2))
+        val result = device.add(immutableListOf(line1, line2))
 
         verify(bowlerRPCProtocol, never()).addWriteGroup(immutableSetOf(line1Id, line2Id))
         verify(bowlerRPCProtocol).addReadGroup(immutableSetOf(line1Id, line2Id))
@@ -184,7 +185,7 @@ internal class BowlerDeviceTest {
 
     @Test
     fun `test adding an unknown resource group`() {
-        val result = device.add(immutableSetOf(unknownResource1, unknownResource2))
+        val result = device.add(immutableListOf(unknownResource1, unknownResource2))
 
         verify(bowlerRPCProtocol, never()).addWriteGroup(immutableSetOf(unknownId1, unknownId2))
         verify(bowlerRPCProtocol, never()).addReadGroup(immutableSetOf(unknownId1, unknownId2))
@@ -258,7 +259,7 @@ internal class BowlerDeviceTest {
 
         @Test
         fun `test failure to add read group`() {
-            val resources = immutableSetOf(read1, read2)
+            val resources = immutableListOf(read1, read2)
             val ids = resources.map { it.resourceId }.toImmutableSet()
             val result = device.add(resources)
 
@@ -270,7 +271,7 @@ internal class BowlerDeviceTest {
 
         @Test
         fun `test failure to add write group`() {
-            val resources = immutableSetOf(write1, write2)
+            val resources = immutableListOf(write1, write2)
             val ids = resources.map { it.resourceId }.toImmutableSet()
             val result = device.add(resources)
 

@@ -30,7 +30,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.length
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanGenerator
 import org.octogonapus.ktguava.collections.toImmutableList
-import kotlin.concurrent.thread
+import java.util.concurrent.Executors
 
 class DefaultLimb(
     override val id: LimbId,
@@ -45,8 +45,12 @@ class DefaultLimb(
 
     // Start the desired task space transform at the home position
     private var desiredTaskSpaceTransform = forwardKinematicsSolver.solveChain(
+        links,
         links.map { 0.0 }.toImmutableList()
     )
+
+    private var movingToTaskSpaceTransform = false
+    private val moveLimbPool = Executors.newSingleThreadExecutor()
 
     init {
         require(links.size == jointAngleControllers.size) {
@@ -65,21 +69,29 @@ class DefaultLimb(
         desiredTaskSpaceTransform = taskSpaceTransform
 
         // Generate and follow the plan on a new thread
-        thread(isDaemon = true) {
-            val plan = motionPlanGenerator.generatePlanForTaskSpaceTransform(
-                getCurrentTaskSpaceTransform(),
-                taskSpaceTransform,
-                motionConstraints
-            )
+        movingToTaskSpaceTransform = true
+        moveLimbPool.submit {
+            try {
+                val plan = motionPlanGenerator.generatePlanForTaskSpaceTransform(
+                    this,
+                    getCurrentTaskSpaceTransform(),
+                    taskSpaceTransform,
+                    motionConstraints
+                )
 
-            motionPlanFollower.followPlan(plan)
+                motionPlanFollower.followPlan(jointAngleControllers, plan)
+            } finally {
+                movingToTaskSpaceTransform = false
+            }
         }
     }
 
     override fun getDesiredTaskSpaceTransform() = desiredTaskSpaceTransform
 
     override fun getCurrentTaskSpaceTransform() =
-        forwardKinematicsSolver.solveChain(getCurrentJointAngles())
+        forwardKinematicsSolver.solveChain(links, getCurrentJointAngles())
+
+    override fun isMovingToTaskSpaceTransform() = movingToTaskSpaceTransform
 
     override fun setDesiredJointAngle(
         jointIndex: Int,
@@ -92,8 +104,8 @@ class DefaultLimb(
 
     // TODO: Add reachability interface instead of computing this naively
     override fun isTaskSpaceTransformReachable(taskSpaceTransform: FrameTransformation) =
-        taskSpaceTransform.getTranslation().length() <
-            links.map { it.dhParam }.toFrameTransformation().getTranslation().length()
+        taskSpaceTransform.translation.length() <
+            links.map { it.dhParam }.toFrameTransformation().translation.length()
 
     override fun getInertialState() = inertialStateEstimator.getInertialState()
 }

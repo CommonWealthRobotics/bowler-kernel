@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.motion.plan
 
+import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
 import org.octogonapus.ktguava.collections.emptyImmutableList
@@ -26,8 +27,9 @@ import org.octogonapus.ktguava.collections.emptyImmutableList
 object NoopLimbMotionPlanGenerator : LimbMotionPlanGenerator {
 
     override fun generatePlanForTaskSpaceTransform(
+        limb: Limb,
         currentTaskSpaceTransform: FrameTransformation,
         targetTaskSpaceTransform: FrameTransformation,
         motionConstraints: MotionConstraints
-    ) = LimbMotionPlan(emptyImmutableList())
+    ): LimbMotionPlan = LimbMotionPlan(emptyImmutableList())
 }

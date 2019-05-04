@@ -52,13 +52,23 @@ internal class DhParamTest {
     @ParameterizedTest
     @MethodSource("lengthIndependentOfRotationSource")
     fun `test length independent of rotation`(theta: Double, alpha: Double) {
-        assertEquals(hypot(2.0, 3.0), DhParam(2.0, theta, 3.0, alpha).length)
+        assertEquals(hypot(2.0, 3.0), DhParam(
+            2.0,
+            theta,
+            3.0,
+            alpha
+        ).length)
     }
 
     @ParameterizedTest
     @MethodSource("angleSource")
     fun `test angle`(angle: Double) {
-        assertEquals(angle, DhParam(2.0, angle, 3.0, angle).angle)
+        assertEquals(angle, DhParam(
+            2.0,
+            angle,
+            3.0,
+            angle
+        ).angle)
     }
 
     @Test

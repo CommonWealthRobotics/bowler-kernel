@@ -43,28 +43,47 @@ private constructor(private val mat: SimpleMatrix) {
      *
      * @return A 3x1 translation vector.
      */
-    fun getTranslation(): SimpleMatrix = mat.extractMatrix(0, 3, 3, 4)
+    val translation: SimpleMatrix
+        get() = mat.extractMatrix(0, 3, 3, 4)
 
     /**
      * Extracts the planar translation component.
      *
      * @return A 2x1 translation vector.
      */
-    fun getTranslationPlanar(): SimpleMatrix = mat.extractMatrix(0, 2, 3, 4)
+    val translationPlanar: SimpleMatrix
+        get() = mat.extractMatrix(0, 2, 3, 4)
 
     /**
      * Extracts the translation component plus the element from the row below it.
      *
      * @return A 4x1 translation vector.
      */
-    fun getTranslationCol(): SimpleMatrix = mat.extractMatrix(0, 4, 3, 4)
+    val translationCol: SimpleMatrix
+        get() = mat.extractMatrix(0, 4, 3, 4)
+
+    /**
+     * Extracts the X component of translation.
+     */
+    val translationX = internalData[3]
+
+    /**
+     * Extracts the Y component of translation.
+     */
+    val translationY = internalData[7]
+
+    /**
+     * Extracts the Z component of translation.
+     */
+    val translationZ = internalData[11]
 
     /**
      * Extracts the rotation component.
      *
      * @return A 3x3 rotation matrix.
      */
-    fun getRotation(): SimpleMatrix = mat.extractMatrix(0, 3, 0, 3)
+    val rotation: SimpleMatrix
+        get() = mat.extractMatrix(0, 3, 0, 3)
 
     /**
      * Extracts a generic submatrix.

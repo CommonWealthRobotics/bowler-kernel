@@ -17,12 +17,16 @@
 package com.neuronrobotics.bowlerkernel.kinematics.motion
 
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 
 /**
  * A [ForwardKinematicsSolver] which returns the identity frame transformation.
  */
 object NoopForwardKinematicsSolver : ForwardKinematicsSolver {
 
-    override fun solveChain(currentJointAngles: ImmutableList<Double>) =
+    override fun solveChain(
+        links: ImmutableList<Link>,
+        currentJointAngles: ImmutableList<Double>
+    ): FrameTransformation =
         FrameTransformation.identity
 }

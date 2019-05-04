@@ -75,7 +75,7 @@ internal class DefaultResourceIdValidatorTest {
             ResourceId(
                 DefaultResourceTypes.Servo,
                 DefaultAttachmentPoints.Pin(1)
-            ) to listOf(ResourceType.Read, ResourceType.Write),
+            ) to listOf(ResourceType.Write),
             ResourceId(
                 DefaultResourceTypes.Stepper,
                 DefaultAttachmentPoints.PinGroup(byteArrayOf(1, 2, 3, 4))

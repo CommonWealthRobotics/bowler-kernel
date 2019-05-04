@@ -964,7 +964,9 @@ open class SimplePacketComsProtocol(
 
     @Suppress("UNUSED_PARAMETER")
     protected fun makeServoWritePayload(angle: Double): ByteArray {
-        TODO()
+        val buffer = ByteBuffer.allocate(1)
+        buffer.put(angle.toByte())
+        return buffer.array()
     }
 
     override fun servoWrite(resourceId: ResourceId, angle: Double) =
@@ -972,17 +974,6 @@ open class SimplePacketComsProtocol(
 
     override fun servoWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Double>>) =
         handleGroupWrite(resourcesAndValues, this::makeServoWritePayload)
-
-    @Suppress("UNUSED_PARAMETER")
-    protected fun parseServoReadPayload(payload: ByteArray, start: Int, end: Int): Double {
-        TODO()
-    }
-
-    override fun servoRead(resourceId: ResourceId) =
-        handleRead(resourceId, this::parseServoReadPayload)
-
-    override fun servoRead(resourceIds: ImmutableList<ResourceId>) =
-        handleGroupRead(resourceIds, this::parseServoReadPayload)
 
     @Suppress("UNUSED_PARAMETER")
     protected fun makeStepperWritePayload(stepsAndSpeed: Pair<Int, Int>): ByteArray {

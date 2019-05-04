@@ -24,20 +24,20 @@ interface MotionConstraints {
     /**
      * The length of time, in milliseconds, the motion should be performed over.
      */
-    val motionDuration: Number
+    val motionDuration: Double
 
     /**
      * The maximum velocity, in m/s, during the motion.
      */
-    val maximumVelocity: Number
+    val maximumVelocity: Double
 
     /**
      * The maximum acceleration, in m/s/s, during the motion.
      */
-    val maximumAcceleration: Number
+    val maximumAcceleration: Double
 
     /**
      * The maximum jerk, in m/s/s/s, during the motion.
      */
-    val maximumJerk: Number
+    val maximumJerk: Double
 }

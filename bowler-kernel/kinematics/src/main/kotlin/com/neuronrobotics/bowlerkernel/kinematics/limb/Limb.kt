@@ -99,6 +99,11 @@ interface Limb {
     fun getCurrentTaskSpaceTransform(): FrameTransformation
 
     /**
+     * Whether the limb is currently moving to the desired task space transform.
+     */
+    fun isMovingToTaskSpaceTransform(): Boolean
+
+    /**
      * Sets a joint's desired angle.
      *
      * @param jointIndex The index of the joint.

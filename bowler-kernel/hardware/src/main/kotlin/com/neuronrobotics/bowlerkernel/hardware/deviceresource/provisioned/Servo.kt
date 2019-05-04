@@ -27,7 +27,7 @@ interface Servo : ProvisionedDeviceResource {
     fun write(angle: Double)
 
     /**
-     * Reads the current angle of the servo. In some cases, this is just the last value passed to
+     * Reads the current angle of the servo. Typically, this is just the last value passed to
      * [write].
      *
      * @return The current angle of the servo.

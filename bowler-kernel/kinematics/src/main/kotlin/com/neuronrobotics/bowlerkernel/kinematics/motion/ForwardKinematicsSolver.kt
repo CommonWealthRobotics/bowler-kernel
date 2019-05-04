@@ -27,18 +27,12 @@ interface ForwardKinematicsSolver {
     /**
      * Solve the system to produce its current task space frame transformation.
      *
+     * @param links The links that make up the limb.
      * @param currentJointAngles The current joint angles.
      * @return The task space frame transformation of the chain given the [currentJointAngles].
      */
-    fun solveChain(currentJointAngles: ImmutableList<Double>): FrameTransformation
-
-    interface Factory {
-
-        /**
-         * Creates a [ForwardKinematicsSolver].
-         *
-         * @param links The links to solve for.
-         */
-        fun create(links: ImmutableList<Link>): ForwardKinematicsSolver
-    }
+    fun solveChain(
+        links: ImmutableList<Link>,
+        currentJointAngles: ImmutableList<Double>
+    ): FrameTransformation
 }
