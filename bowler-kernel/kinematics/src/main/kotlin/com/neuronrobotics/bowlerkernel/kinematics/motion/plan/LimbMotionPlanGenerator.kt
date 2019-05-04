@@ -16,9 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.motion.plan
 
-import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
 
@@ -41,14 +39,4 @@ interface LimbMotionPlanGenerator {
         targetTaskSpaceTransform: FrameTransformation,
         motionConstraints: MotionConstraints
     ): LimbMotionPlan
-
-    interface Factory {
-
-        /**
-         * Creates a [LimbMotionPlanGenerator].
-         *
-         * @param links The links to control.
-         */
-        fun create(links: ImmutableList<Link>): LimbMotionPlanGenerator
-    }
 }

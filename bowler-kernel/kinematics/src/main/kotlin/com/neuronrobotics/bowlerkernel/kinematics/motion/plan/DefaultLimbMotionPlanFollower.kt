@@ -16,6 +16,8 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.motion.plan
 
+import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.kinematics.closedloop.JointAngleController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
@@ -30,17 +32,20 @@ class DefaultLimbMotionPlanFollower : LimbMotionPlanFollower {
 
     private val pool = Executors.newScheduledThreadPool(1)
 
-    override fun followPlan(limb: Limb, plan: LimbMotionPlan) {
+    override fun followPlan(
+        jointAngleControllers: ImmutableList<JointAngleController>,
+        plan: LimbMotionPlan
+    ) {
         if (plan.steps.isEmpty()) {
             return
         }
 
         plan.steps.forEach {
-            require(it.jointAngles.size == limb.jointAngleControllers.size) {
+            require(it.jointAngles.size == jointAngleControllers.size) {
                 """
                 |Must have an equal number of target joint angles and joint angle controllers.
                 |Number of target joint angles in the first plan step: $it.jointAngles.size
-                |Number of joint angle controllers: ${limb.jointAngleControllers.size}
+                |Number of joint angle controllers: ${jointAngleControllers.size}
                 """.trimMargin()
             }
         }
@@ -52,7 +57,7 @@ class DefaultLimbMotionPlanFollower : LimbMotionPlanFollower {
             pool.schedule(
                 {
                     step.jointAngles.forEachIndexed { index, targetJointAngle ->
-                        limb.jointAngleControllers[index].setTargetAngle(
+                        jointAngleControllers[index].setTargetAngle(
                             targetJointAngle,
                             step.motionConstraints
                         )

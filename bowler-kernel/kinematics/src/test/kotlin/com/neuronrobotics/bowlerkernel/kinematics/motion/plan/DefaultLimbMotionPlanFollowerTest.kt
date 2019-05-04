@@ -65,7 +65,7 @@ internal class DefaultLimbMotionPlanFollowerTest {
         )
 
         fun timeOnce(): Long {
-            follower.followPlan(limb, plan)
+            follower.followPlan(limb.jointAngleControllers, plan)
             runBlocking { delay(timestep * 4L) }
             val time = controller.times[1] - controller.times[0]
             controller.times.clear()
@@ -91,7 +91,7 @@ internal class DefaultLimbMotionPlanFollowerTest {
             }.toImmutableList()
         )
 
-        follower.followPlan(limb, plan)
+        follower.followPlan(limb.jointAngleControllers, plan)
 
         assertEquals(targetAngles, controller.targets)
     }
@@ -99,7 +99,7 @@ internal class DefaultLimbMotionPlanFollowerTest {
     @Test
     fun `test plan length validation with empty plan`() {
         val plan = LimbMotionPlan(emptyImmutableList())
-        follower.followPlan(limb, plan) // Should not get an exception
+        follower.followPlan(limb.jointAngleControllers, plan) // Should not get an exception
     }
 
     @Test
@@ -114,7 +114,7 @@ internal class DefaultLimbMotionPlanFollowerTest {
         )
 
         assertThrows<IllegalArgumentException> {
-            follower.followPlan(limb, plan)
+            follower.followPlan(limb.jointAngleControllers, plan)
         }
     }
 
@@ -134,7 +134,7 @@ internal class DefaultLimbMotionPlanFollowerTest {
         )
 
         assertThrows<IllegalArgumentException> {
-            follower.followPlan(limb, plan)
+            follower.followPlan(limb.jointAngleControllers, plan)
         }
     }
 
@@ -150,7 +150,7 @@ internal class DefaultLimbMotionPlanFollowerTest {
         )
 
         assertThrows<IllegalArgumentException> {
-            follower.followPlan(limb, plan)
+            follower.followPlan(limb.jointAngleControllers, plan)
         }
     }
 }

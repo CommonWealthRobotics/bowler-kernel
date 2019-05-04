@@ -45,6 +45,7 @@ class DefaultLimb(
 
     // Start the desired task space transform at the home position
     private var desiredTaskSpaceTransform = forwardKinematicsSolver.solveChain(
+        links,
         links.map { 0.0 }.toImmutableList()
     )
 
@@ -77,7 +78,7 @@ class DefaultLimb(
                 motionConstraints
             )
 
-            motionPlanFollower.followPlan(this, plan)
+            motionPlanFollower.followPlan(jointAngleControllers, plan)
             movingToTaskSpaceTransform = false
         }
     }
@@ -85,7 +86,7 @@ class DefaultLimb(
     override fun getDesiredTaskSpaceTransform() = desiredTaskSpaceTransform
 
     override fun getCurrentTaskSpaceTransform() =
-        forwardKinematicsSolver.solveChain(getCurrentJointAngles())
+        forwardKinematicsSolver.solveChain(links, getCurrentJointAngles())
 
     override fun isMovingToTaskSpaceTransform() = movingToTaskSpaceTransform
 
@@ -100,8 +101,8 @@ class DefaultLimb(
 
     // TODO: Add reachability interface instead of computing this naively
     override fun isTaskSpaceTransformReachable(taskSpaceTransform: FrameTransformation) =
-        taskSpaceTransform.getTranslation().length() <
-            links.map { it.dhParam }.toFrameTransformation().getTranslation().length()
+        taskSpaceTransform.translation.length() <
+            links.map { it.dhParam }.toFrameTransformation().translation.length()
 
     override fun getInertialState() = inertialStateEstimator.getInertialState()
 }

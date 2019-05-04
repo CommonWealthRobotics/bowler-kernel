@@ -17,8 +17,8 @@
 package com.neuronrobotics.bowlerkernel.kinematics.limb
 
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.kinematics.createMotionConstraints
 import com.neuronrobotics.bowlerkernel.kinematics.MockJointAngleController
+import com.neuronrobotics.bowlerkernel.kinematics.createMotionConstraints
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DefaultLink
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
@@ -62,6 +62,7 @@ internal class DefaultLimbIntegrationTest {
             links.map { it as Link }.toImmutableList(),
             object : ForwardKinematicsSolver {
                 override fun solveChain(
+                    links: ImmutableList<Link>,
                     currentJointAngles: ImmutableList<Double>
                 ): FrameTransformation {
                     return FrameTransformation.identity

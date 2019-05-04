@@ -73,7 +73,7 @@ internal class FrameTransformationTest {
                         this[0, 0] = 1.0
                         this[1, 0] = 2.0
                         this[2, 0] = 3.0
-                    }.isIdentical(tested.getTranslation(), equalityTolerance)
+                    }.isIdentical(tested.translation, equalityTolerance)
                 )
             }
         )
@@ -103,7 +103,7 @@ internal class FrameTransformationTest {
 
         assertAll(
             { assertEquals(expected, tested) },
-            { assertTrue(testedMat.isIdentical(tested.getTranslation(), equalityTolerance)) }
+            { assertTrue(testedMat.isIdentical(tested.translation, equalityTolerance)) }
         )
     }
 
@@ -139,7 +139,7 @@ internal class FrameTransformationTest {
                         this[1, 0] = sinAngle
                         this[0, 1] = -sinAngle
                         this[1, 1] = cosAngle
-                    }.isIdentical(tested.getRotation(), equalityTolerance)
+                    }.isIdentical(tested.rotation, equalityTolerance)
                 )
             }
         )
@@ -177,7 +177,7 @@ internal class FrameTransformationTest {
                         this[2, 0] = -sinAngle
                         this[0, 2] = sinAngle
                         this[2, 2] = cosAngle
-                    }.isIdentical(tested.getRotation(), equalityTolerance)
+                    }.isIdentical(tested.rotation, equalityTolerance)
                 )
             }
         )
@@ -215,7 +215,7 @@ internal class FrameTransformationTest {
                         this[2, 1] = sinAngle
                         this[1, 2] = -sinAngle
                         this[2, 2] = cosAngle
-                    }.isIdentical(tested.getRotation(), equalityTolerance)
+                    }.isIdentical(tested.rotation, equalityTolerance)
                 )
             }
         )
@@ -245,7 +245,7 @@ internal class FrameTransformationTest {
             {
                 assertTrue(
                     SimpleMatrix(3, 3).populate().isIdentical(
-                        tested.getRotation(),
+                        tested.rotation,
                         equalityTolerance
                     )
                 )
@@ -288,7 +288,7 @@ internal class FrameTransformationTest {
             1,
             2,
             3
-        ).getTranslationPlanar()
+        ).translationPlanar
 
         assertTrue(expected.isIdentical(actual, equalityTolerance))
     }
@@ -306,7 +306,7 @@ internal class FrameTransformationTest {
             1,
             2,
             3
-        ).getTranslationCol()
+        ).translationCol
 
         assertTrue(expected.isIdentical(actual, equalityTolerance))
     }
@@ -452,6 +452,30 @@ internal class FrameTransformationTest {
                     }),
                 equalityTolerance
             )
+        )
+    }
+
+    @Test
+    fun `test translationX`() {
+        assertEquals(
+            9.0,
+            FrameTransformation.fromTranslation(9, 0, 0).translationX
+        )
+    }
+
+    @Test
+    fun `test translationY`() {
+        assertEquals(
+            9.0,
+            FrameTransformation.fromTranslation(0, 9, 0).translationY
+        )
+    }
+
+    @Test
+    fun `test translationZ`() {
+        assertEquals(
+            9.0,
+            FrameTransformation.fromTranslation(0, 0, 9).translationZ
         )
     }
 }

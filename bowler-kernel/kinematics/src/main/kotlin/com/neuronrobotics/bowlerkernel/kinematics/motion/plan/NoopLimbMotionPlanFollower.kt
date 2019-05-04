@@ -16,13 +16,17 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.motion.plan
 
-import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
+import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.kinematics.closedloop.JointAngleController
 
 /**
  * A [LimbMotionPlanFollower] which does nothing.
  */
 object NoopLimbMotionPlanFollower : LimbMotionPlanFollower {
 
-    override fun followPlan(limb: Limb, plan: LimbMotionPlan) {
+    override fun followPlan(
+        jointAngleControllers: ImmutableList<JointAngleController>,
+        plan: LimbMotionPlan
+    ) {
     }
 }

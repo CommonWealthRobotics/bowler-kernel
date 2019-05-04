@@ -17,6 +17,7 @@
 package com.neuronrobotics.bowlerkernel.kinematics.motion
 
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 
 /**
  * An [InverseKinematicsSolver] which returns the given joint angles.
@@ -24,7 +25,8 @@ import com.google.common.collect.ImmutableList
 object NoopInverseKinematicsSolver : InverseKinematicsSolver {
 
     override fun solveChain(
+        links: ImmutableList<Link>,
         currentJointAngles: ImmutableList<Double>,
         targetFrameTransform: FrameTransformation
-    ) = currentJointAngles
+    ): ImmutableList<Double> = currentJointAngles
 }
