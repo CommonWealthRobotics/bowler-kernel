@@ -72,90 +72,90 @@ class MockBowlerRPCProtocol : BowlerRPCProtocol {
     }
 
     override fun analogRead(resourceId: ResourceId): Double {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 
     override fun analogRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Double> {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 
     override fun analogWrite(resourceId: ResourceId, value: Short) {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 
     override fun analogWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Short>>) {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 
     override fun buttonRead(resourceId: ResourceId): Boolean {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 
     override fun buttonRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Boolean> {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 
     override fun digitalRead(resourceId: ResourceId): DigitalState {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 
     override fun digitalRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<DigitalState> {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 
     override fun digitalWrite(resourceId: ResourceId, value: DigitalState) {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 
     override fun digitalWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, DigitalState>>) {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 
     override fun encoderRead(resourceId: ResourceId): Long {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 
     override fun encoderRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Long> {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 
     override fun toneWrite(resourceId: ResourceId, frequency: Int) {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 
     override fun toneWrite(resourceId: ResourceId, frequency: Int, duration: Long) {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 
     override fun serialWrite(resourceId: ResourceId, message: String) {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 
     override fun serialRead(resourceId: ResourceId): String {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 
     override fun servoWrite(resourceId: ResourceId, angle: Double) {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 
     override fun servoWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Double>>) {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 
     override fun stepperWrite(resourceId: ResourceId, steps: Int, speed: Int) {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 
     override fun stepperWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Pair<Int, Int>>>) {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 
     override fun ultrasonicRead(resourceId: ResourceId): Long {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 
     override fun ultrasonicRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Long> {
-        TODO("not implemented")
+        fail { "Not implemented" }
     }
 }

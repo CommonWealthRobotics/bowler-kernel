@@ -22,10 +22,6 @@ import arrow.core.right
 
 class DefaultResourceIdValidator : ResourceIdValidator {
 
-    override fun valdiateAttachmentPoint(attachmentPoint: AttachmentPoint): Either<String, Unit> {
-        TODO("not implemented")
-    }
-
     override fun validateIsReadType(resourceType: ResourceType): Either<String, Unit> {
         return if (resourceType is DefaultResourceTypes) {
             when (resourceType) {

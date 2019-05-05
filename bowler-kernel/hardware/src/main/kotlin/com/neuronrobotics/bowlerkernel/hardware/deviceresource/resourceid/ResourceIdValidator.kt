@@ -24,14 +24,6 @@ import arrow.core.Either
 interface ResourceIdValidator {
 
     /**
-     * Validates the attachment point is on the device.
-     *
-     * @param attachmentPoint The attachment point.
-     * @return An error.
-     */
-    fun valdiateAttachmentPoint(attachmentPoint: AttachmentPoint): Either<String, Unit>
-
-    /**
      * Validates the resource can be read from.
      *
      * @param resourceType The resource.
