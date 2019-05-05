@@ -18,20 +18,21 @@ package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned
 
 import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.Ultrasonic
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
 import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
 
 interface UnprovisionedUltrasonicFactory {
 
     /**
-     * Makes an [UnprovisionedUltrasonic] attached to a device.
+     * Makes an unprovisioned [Ultrasonic] attached to a device.
      *
      * @param device The device this ultrasonic is attached to.
      * @param attachmentPoint The attachment point.
-     * @return An [UnprovisionedUltrasonic] on success, a [RegisterError] on failure.
+     * @return An unprovisioned [Ultrasonic] on success, a [RegisterError] on failure.
      */
     fun makeUnprovisionedUltrasonic(
         device: BowlerDevice,
         attachmentPoint: AttachmentPoint
-    ): Either<RegisterError, UnprovisionedUltrasonic>
+    ): Either<RegisterError, UnprovisionedDeviceResource<Ultrasonic>>
 }

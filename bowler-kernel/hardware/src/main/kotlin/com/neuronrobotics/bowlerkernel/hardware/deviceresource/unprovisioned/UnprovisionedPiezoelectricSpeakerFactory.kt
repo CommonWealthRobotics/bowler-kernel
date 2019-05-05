@@ -18,20 +18,21 @@ package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned
 
 import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.PiezoelectricSpeaker
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
 import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
 
 interface UnprovisionedPiezoelectricSpeakerFactory {
 
     /**
-     * Makes an [UnprovisionedPiezoelectricSpeaker] attached to a device.
+     * Makes an unprovisioned [PiezoelectricSpeaker] attached to a device.
      *
      * @param device The device this piezoelectric speaker is attached to.
      * @param attachmentPoint The attachment point.
-     * @return An [UnprovisionedPiezoelectricSpeaker] on success, a [RegisterError] on failure.
+     * @return An unprovisioned [PiezoelectricSpeaker] on success, a [RegisterError] on failure.
      */
     fun makeUnprovisionedPiezoelectricSpeaker(
         device: BowlerDevice,
         attachmentPoint: AttachmentPoint
-    ): Either<RegisterError, UnprovisionedPiezoelectricSpeaker>
+    ): Either<RegisterError, UnprovisionedDeviceResource<PiezoelectricSpeaker>>
 }

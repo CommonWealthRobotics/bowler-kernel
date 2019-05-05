@@ -18,20 +18,21 @@ package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned
 
 import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.AnalogIn
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
 import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
 
 interface UnprovisionedAnalogInFactory {
 
     /**
-     * Makes an [UnprovisionedAnalogIn] attached to a device.
+     * Makes an unprovisioned [AnalogIn] attached to a device.
      *
      * @param device The device this analog in is attached to.
      * @param attachmentPoint The attachment point.
-     * @return An [UnprovisionedAnalogIn] on success, a [RegisterError] on failure.
+     * @return An unprovisioned [AnalogIn] on success, a [RegisterError] on failure.
      */
     fun makeUnprovisionedAnalogIn(
         device: BowlerDevice,
         attachmentPoint: AttachmentPoint
-    ): Either<RegisterError, UnprovisionedAnalogIn>
+    ): Either<RegisterError, UnprovisionedDeviceResource<AnalogIn>>
 }

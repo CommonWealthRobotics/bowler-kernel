@@ -18,20 +18,21 @@ package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned
 
 import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.Stepper
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
 import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
 
 interface UnprovisionedStepperFactory {
 
     /**
-     * Makes an [UnprovisionedStepper] attached to a device.
+     * Makes an unprovisioned [Stepper] attached to a device.
      *
      * @param device The device this stepper is attached to.
      * @param attachmentPoint The attachment point.
-     * @return An [UnprovisionedStepper] on success, a [RegisterError] on failure.
+     * @return An unprovisioned [Stepper] on success, a [RegisterError] on failure.
      */
     fun makeUnprovisionedStepper(
         device: BowlerDevice,
         attachmentPoint: AttachmentPoint
-    ): Either<RegisterError, UnprovisionedStepper>
+    ): Either<RegisterError, UnprovisionedDeviceResource<Stepper>>
 }

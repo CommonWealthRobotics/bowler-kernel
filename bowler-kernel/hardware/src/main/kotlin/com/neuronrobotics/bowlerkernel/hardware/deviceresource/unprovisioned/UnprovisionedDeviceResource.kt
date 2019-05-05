@@ -28,8 +28,8 @@ interface UnprovisionedDeviceResource<out T : ProvisionedDeviceResource> : Devic
 
     /**
      * Provisions this [DeviceResource] by communicating with the parent device to set up any
-     * hardware-local requirements. For example, this could initialize GPIO pins or register
-     * interrupt handlers.
+     * hardware-local requirements that must be performed BEFORE adding the
+     * [DeviceResource.resourceId] to the RPC (assuming the Bowler RPC is used).
      *
      * @return A [ProvisionedDeviceResource].
      */

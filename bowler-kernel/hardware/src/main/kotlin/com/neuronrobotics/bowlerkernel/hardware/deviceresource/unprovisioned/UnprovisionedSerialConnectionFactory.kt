@@ -18,20 +18,21 @@ package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned
 
 import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.SerialConnection
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
 import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
 
 interface UnprovisionedSerialConnectionFactory {
 
     /**
-     * Makes an [UnprovisionedSerialConnection] attached to a device.
+     * Makes an unprovisioned [SerialConnection] attached to a device.
      *
      * @param device The device this serial connection is attached to.
      * @param attachmentPoint The attachment point.
-     * @return An [UnprovisionedSerialConnection] on success, a [RegisterError] on failure.
+     * @return An unprovisioned [SerialConnection] on success, a [RegisterError] on failure.
      */
     fun makeUnprovisionedSerialConnection(
         device: BowlerDevice,
         attachmentPoint: AttachmentPoint
-    ): Either<RegisterError, UnprovisionedSerialConnection>
+    ): Either<RegisterError, UnprovisionedDeviceResource<SerialConnection>>
 }

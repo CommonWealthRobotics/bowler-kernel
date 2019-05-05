@@ -18,20 +18,21 @@ package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned
 
 import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalOut
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
 import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
 
 interface UnprovisionedDigitalOutFactory {
 
     /**
-     * Makes an [UnprovisionedDigitalOut] attached to a device.
+     * Makes an unprovisioned [DigitalOut] attached to a device.
      *
      * @param device The device this digital out is attached to.
      * @param attachmentPoint The attachment point.
-     * @return An [UnprovisionedDigitalOut] on success, a [RegisterError] on failure.
+     * @return An unprovisioned [DigitalOut] on success, a [RegisterError] on failure.
      */
     fun makeUnprovisionedDigitalOut(
         device: BowlerDevice,
         attachmentPoint: AttachmentPoint
-    ): Either<RegisterError, UnprovisionedDigitalOut>
+    ): Either<RegisterError, UnprovisionedDeviceResource<DigitalOut>>
 }

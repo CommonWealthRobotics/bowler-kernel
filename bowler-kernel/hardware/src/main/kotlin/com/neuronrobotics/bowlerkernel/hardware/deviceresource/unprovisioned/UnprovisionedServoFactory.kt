@@ -18,20 +18,21 @@ package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned
 
 import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.Servo
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
 import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
 
 interface UnprovisionedServoFactory {
 
     /**
-     * Makes an [UnprovisionedServo] attached to a device.
+     * Makes an unprovisioned [Servo] attached to a device.
      *
      * @param device The device this servo is attached to.
      * @param attachmentPoint The attachment point.
-     * @return An [UnprovisionedServo] on success, a [RegisterError] on failure.
+     * @return An unprovisioned [Servo] on success, a [RegisterError] on failure.
      */
     fun makeUnprovisionedServo(
         device: BowlerDevice,
         attachmentPoint: AttachmentPoint
-    ): Either<RegisterError, UnprovisionedServo>
+    ): Either<RegisterError, UnprovisionedDeviceResource<Servo>>
 }
