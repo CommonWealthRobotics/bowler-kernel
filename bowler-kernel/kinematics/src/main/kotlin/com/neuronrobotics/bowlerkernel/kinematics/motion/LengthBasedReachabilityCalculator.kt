@@ -14,17 +14,21 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics.limb.model
+package com.neuronrobotics.bowlerkernel.kinematics.motion
 
-import com.neuronrobotics.bowlerkernel.gitfs.GitFile
+import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.toFrameTransformation
 
-data class LimbData(
-    val id: String,
-    val links: List<LinkData>,
-    val forwardKinematicsSolver: GitFile,
-    val inverseKinematicsSolver: GitFile,
-    val reachabilityCalculator: GitFile,
-    val limbMotionPlanGenerator: GitFile,
-    val limbMotionPlanFollower: GitFile,
-    val inertialStateEstimator: GitFile
-)
+/**
+ * A simple implementation using only the distance to the transform from the origin and the
+ * length of the limb.
+ */
+class LengthBasedReachabilityCalculator : ReachabilityCalculator {
+
+    override fun isFrameTransformationReachable(
+        frameTransformation: FrameTransformation,
+        links: ImmutableList<Link>
+    ) = frameTransformation.translation.length() <=
+        links.map { it.dhParam }.toFrameTransformation().translation.length()
+}

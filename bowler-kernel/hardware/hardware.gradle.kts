@@ -1,6 +1,5 @@
 plugins {
     `java-library`
-    kotlin("kapt")
 }
 
 description = "Controlled access to hardware resources."
@@ -26,7 +25,6 @@ dependencies {
     implementation(arrow("arrow-typeclasses"))
     implementation(arrow("arrow-extras-data"))
     implementation(arrow("arrow-extras-extensions"))
-    kapt(arrow("arrow-meta"))
 
     implementation(
         group = "org.octogonapus",

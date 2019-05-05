@@ -14,17 +14,25 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics.limb.model
+package com.neuronrobotics.bowlerkernel.kinematics.motion
 
-import com.neuronrobotics.bowlerkernel.gitfs.GitFile
+import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 
-data class LimbData(
-    val id: String,
-    val links: List<LinkData>,
-    val forwardKinematicsSolver: GitFile,
-    val inverseKinematicsSolver: GitFile,
-    val reachabilityCalculator: GitFile,
-    val limbMotionPlanGenerator: GitFile,
-    val limbMotionPlanFollower: GitFile,
-    val inertialStateEstimator: GitFile
-)
+/**
+ * Determines whether a frame transform is reachable.
+ */
+interface ReachabilityCalculator {
+
+    /**
+     * Compute whether the [frameTransformation] is reachable.
+     *
+     * @param frameTransformation The task space transform to test.
+     * @param links The links that make up the limb.
+     * @return Whether the [frameTransformation] is reachable.
+     */
+    fun isFrameTransformationReachable(
+        frameTransformation: FrameTransformation,
+        links: ImmutableList<Link>
+    ): Boolean
+}

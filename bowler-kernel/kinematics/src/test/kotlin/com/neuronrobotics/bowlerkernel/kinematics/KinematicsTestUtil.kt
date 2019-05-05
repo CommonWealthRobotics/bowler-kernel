@@ -56,6 +56,8 @@ fun createMockLimbData(
     forwardKinematicsSolverFilename: String = "fksFilename",
     inverseKinematicsSolverGistId: String = "iksGistId",
     inverseKinematicsSolverFilename: String = "iksFilename",
+    reachabilityCalculatorGistId: String = "reCalcGistId",
+    reachabilityCalculatorFilename: String = "reCalcFilename",
     limbMotionPlanGeneratorGistId: String = "lmpgGistId",
     limbMotionPlanGeneratorFilename: String = "lmpgFilename",
     limbMotionPlanFollowerGistId: String = "lmpfGistId",
@@ -67,6 +69,7 @@ fun createMockLimbData(
     links,
     GitFile(forwardKinematicsSolverGistId, forwardKinematicsSolverFilename),
     GitFile(inverseKinematicsSolverGistId, inverseKinematicsSolverFilename),
+    GitFile(reachabilityCalculatorGistId, reachabilityCalculatorFilename),
     GitFile(limbMotionPlanGeneratorGistId, limbMotionPlanGeneratorFilename),
     GitFile(limbMotionPlanFollowerGistId, limbMotionPlanFollowerFilename),
     GitFile(inertialStateEstimatorGistId, inertialStateEstimatorFilename)

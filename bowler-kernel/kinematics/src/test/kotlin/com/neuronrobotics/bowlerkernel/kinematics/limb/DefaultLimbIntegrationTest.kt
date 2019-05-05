@@ -26,6 +26,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
 import com.neuronrobotics.bowlerkernel.kinematics.motion.ForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
+import com.neuronrobotics.bowlerkernel.kinematics.motion.LengthBasedReachabilityCalculator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.DefaultLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlan
@@ -69,6 +70,7 @@ internal class DefaultLimbIntegrationTest {
                 }
             },
             mock {},
+            LengthBasedReachabilityCalculator(),
             object : LimbMotionPlanGenerator {
                 override fun generatePlanForTaskSpaceTransform(
                     limb: Limb,

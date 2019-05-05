@@ -20,13 +20,12 @@ import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.JointAngleController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.toFrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.ForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialStateEstimator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
-import com.neuronrobotics.bowlerkernel.kinematics.motion.length
+import com.neuronrobotics.bowlerkernel.kinematics.motion.ReachabilityCalculator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanGenerator
 import org.octogonapus.ktguava.collections.toImmutableList
@@ -37,6 +36,7 @@ class DefaultLimb(
     override val links: ImmutableList<Link>,
     override val forwardKinematicsSolver: ForwardKinematicsSolver,
     override val inverseKinematicsSolver: InverseKinematicsSolver,
+    override val reachabilityCalculator: ReachabilityCalculator,
     override val motionPlanGenerator: LimbMotionPlanGenerator,
     override val motionPlanFollower: LimbMotionPlanFollower,
     override val jointAngleControllers: ImmutableList<JointAngleController>,
@@ -102,10 +102,8 @@ class DefaultLimb(
     override fun getCurrentJointAngles() =
         jointAngleControllers.map { it.getCurrentAngle() }.toImmutableList()
 
-    // TODO: Add reachability interface instead of computing this naively
     override fun isTaskSpaceTransformReachable(taskSpaceTransform: FrameTransformation) =
-        taskSpaceTransform.translation.length() <
-            links.map { it.dhParam }.toFrameTransformation().translation.length()
+        reachabilityCalculator.isFrameTransformationReachable(taskSpaceTransform, links)
 
     override fun getInertialState() = inertialStateEstimator.getInertialState()
 }

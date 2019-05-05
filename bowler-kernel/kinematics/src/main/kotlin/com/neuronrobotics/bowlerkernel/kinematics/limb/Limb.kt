@@ -27,6 +27,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialState
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialStateEstimator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
+import com.neuronrobotics.bowlerkernel.kinematics.motion.ReachabilityCalculator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanGenerator
 
@@ -55,6 +56,11 @@ interface Limb {
      * The solver used for inverse kinematics.
      */
     val inverseKinematicsSolver: InverseKinematicsSolver
+
+    /**
+     * Used to compute whether a target frame transform is reachable.
+     */
+    val reachabilityCalculator: ReachabilityCalculator
 
     /**
      * The motion planner used to generate plans for the limb to follow.
