@@ -192,13 +192,7 @@ private constructor(private val mat: SimpleMatrix) {
          * @return A rotation frame transformation.
          */
         fun fromRotation(x: Number, y: Number, z: Number) =
-            fromRotation(
-                getRotationMatrix(
-                    x,
-                    y,
-                    z
-                )
-            )
+            fromRotation(getRotationMatrix(x, y, z))
 
         /**
          * Constructs a frame transformation from a rotation.
@@ -210,14 +204,32 @@ private constructor(private val mat: SimpleMatrix) {
             require(rotation.numRows() == 3)
             require(rotation.numCols() == 3)
 
-            return FrameTransformation(
-                SimpleMatrix.identity(4).apply {
-                    for (row in 0 until 3) {
-                        for (col in 0 until 3) {
-                            this[row, col] = rotation[row, col]
-                        }
+            return FrameTransformation(SimpleMatrix.identity(4).apply {
+                for (row in 0 until 3) {
+                    for (col in 0 until 3) {
+                        this[row, col] = rotation[row, col]
                     }
-                })
+                }
+            })
+        }
+
+        /**
+         * Constructs a frame transformation from a rotation.
+         *
+         * @param rotation A 3x3 rotation matrix.
+         * @return A rotation frame transformation.
+         */
+        fun fromRotation(rotation: Array<DoubleArray>): FrameTransformation {
+            require(rotation.size == 3)
+            require(rotation[0].size == 3)
+
+            return FrameTransformation(SimpleMatrix.identity(4).apply {
+                for (row in 0 until 3) {
+                    for (col in 0 until 3) {
+                        this[row, col] = rotation[row][col]
+                    }
+                }
+            })
         }
 
         fun fromSimpleMatrix(simpleMatrix: SimpleMatrix): FrameTransformation {

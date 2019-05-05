@@ -254,6 +254,20 @@ internal class FrameTransformationTest {
     }
 
     @Test
+    fun `test fromRotation with 2D double array`() {
+        val data = Array(3) { row ->
+            DoubleArray(3) { col -> (row * 2 + col * 3).toDouble() }
+        }
+
+        assertTrue(
+            SimpleMatrix(data).isIdentical(
+                FrameTransformation.fromRotation(data).rotation,
+                equalityTolerance
+            )
+        )
+    }
+
+    @Test
     fun `test length with column vector`() {
         assertEquals(
             sqrt(1.0.pow(2) + 2.0.pow(2) + 3.0.pow(2)),
