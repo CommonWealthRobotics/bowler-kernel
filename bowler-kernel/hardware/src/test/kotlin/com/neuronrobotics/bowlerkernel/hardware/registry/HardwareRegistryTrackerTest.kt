@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.registry
 
+import arrow.core.None
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.hasSize
@@ -23,16 +24,19 @@ import com.neuronrobotics.bowlerkernel.hardware.device.Device
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.DeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.DeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResource
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.emptyImmutableSetMultimap
+import org.octogonapus.ktguava.collections.immutableListOf
 
 class HardwareRegistryTrackerTest {
 
@@ -128,7 +132,7 @@ class HardwareRegistryTrackerTest {
             {
                 assertEquals(
                     registry.sessionRegisteredDeviceResources.entries().map {
-                        it.key.deviceId to it.value.resourceId
+                        it.key.deviceId to it.value.fold({ it.resourceId }, { fail() })
                     }.toMap(),
                     mapOf(
                         DeviceId(
@@ -145,15 +149,21 @@ class HardwareRegistryTrackerTest {
 
     @Test
     fun `fail to register a device resource`() {
-        registry.registerDeviceResource(
-            MockDevice(
-                DeviceId(
-                    DefaultDeviceTypes.UnknownDevice,
-                    DefaultConnectionMethods.RawHID(0, 0)
-                )
-            ),
-            ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1))
-        ) { _, _ -> mock<UnprovisionedDeviceResource<*>> {} }
+        val device = MockDevice(
+            DeviceId(
+                DefaultDeviceTypes.UnknownDevice,
+                DefaultConnectionMethods.RawHID(0, 0)
+            )
+        )
+
+        val resourceId = ResourceId(
+            DefaultResourceTypes.DigitalOut,
+            DefaultAttachmentPoints.Pin(1)
+        )
+
+        registry.registerDeviceResource(device, resourceId) { _, _ ->
+            mock<UnprovisionedDeviceResource<*>> {}
+        }
 
         assertAll(
             {
@@ -171,9 +181,35 @@ class HardwareRegistryTrackerTest {
     @Test
     fun `successfully unregister a device resource`() {
         val device = registry.makeDeviceOrFail()
-        registry.unregisterDeviceResource(registry.makeDeviceResourceOrFail(device, 0))
+        val resource = registry.makeDeviceResourceOrFail(device, 0)
+        val result = registry.unregisterDeviceResource(resource)
 
         assertAll(
+            {
+                assertTrue(result is None)
+            },
+            {
+                assertThat(registry.sessionRegisteredDeviceResources.entries(), hasSize(equalTo(0)))
+            },
+            {
+                assertEquals(
+                    registry.sessionRegisteredDeviceResources,
+                    emptyImmutableSetMultimap<Device, DeviceResource>()
+                )
+            }
+        )
+    }
+
+    @Test
+    fun `successfully unregister a device resource group`() {
+        val device = registry.makeDeviceOrFail()
+        val resourceGroup = registry.makeDeviceResourceGroupOrFail(device, immutableListOf(0, 1))
+        val result = registry.unregisterDeviceResourceGroup(resourceGroup)
+
+        assertAll(
+            {
+                assertTrue(result is None)
+            },
             {
                 assertThat(registry.sessionRegisteredDeviceResources.entries(), hasSize(equalTo(0)))
             },
@@ -189,12 +225,38 @@ class HardwareRegistryTrackerTest {
     @Test
     fun `fail to unregister a device resource`() {
         val device = registry.makeDeviceOrFail()
-        registry.unregisterDeviceResource(
-            MockUnprovisionedDeviceResource(
-                device,
-                ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1))
+        val resource = MockUnprovisionedDeviceResource(
+            device,
+            ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1))
+        )
+
+        registry.unregisterDeviceResource(resource)
+
+        assertAll(
+            {
+                assertThat(registry.sessionRegisteredDeviceResources.entries(), hasSize(equalTo(0)))
+            },
+            {
+                assertEquals(
+                    registry.sessionRegisteredDeviceResources,
+                    emptyImmutableSetMultimap<Device, DeviceResource>()
+                )
+            }
+        )
+    }
+
+    @Test
+    fun `fail to unregister a device resource group`() {
+        val device = registry.makeDeviceOrFail()
+        val resourceGroup = MockUnprovisionedDeviceResourceGroup(
+            device,
+            immutableListOf(
+                ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1)),
+                ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(2))
             )
         )
+
+        registry.unregisterDeviceResourceGroup(resourceGroup)
 
         assertAll(
             {
@@ -213,6 +275,7 @@ class HardwareRegistryTrackerTest {
     fun `unregister all devices and resources`() {
         val device = registry.makeDeviceOrFail()
         registry.makeDeviceResourceOrFail(device, 0)
+        registry.makeDeviceResourceGroupOrFail(device, immutableListOf(1, 2))
 
         val unregisterErrors = registry.unregisterAllHardware()
 
@@ -227,16 +290,35 @@ class HardwareRegistryTrackerTest {
     fun `unregister all devices and resources with errors`() {
         val device = registry.makeDeviceOrFail()
         val resource = registry.makeDeviceResourceOrFail(device, 0)
+        val resourceGroup = registry.makeDeviceResourceGroupOrFail(device, immutableListOf(1, 2))
 
         baseRegistry.unregisterDeviceResource(resource)
+        baseRegistry.unregisterDeviceResourceGroup(resourceGroup)
         baseRegistry.unregisterDevice(device)
 
         val unregisterErrors = registry.unregisterAllHardware()
 
         assertAll(
-            { assertThat(unregisterErrors, hasSize(equalTo(2))) },
+            { assertThat(unregisterErrors, hasSize(equalTo(3))) },
             { assertThat(registry.sessionRegisteredDevices, hasSize(equalTo(1))) },
-            { assertThat(registry.sessionRegisteredDeviceResources.entries(), hasSize(equalTo(1))) }
+            { assertThat(registry.sessionRegisteredDeviceResources.entries(), hasSize(equalTo(2))) }
+        )
+    }
+
+    @Test
+    fun `unregister all devices and resources with some errors`() {
+        val device = registry.makeDeviceOrFail()
+        val resource = registry.makeDeviceResourceOrFail(device, 0)
+        registry.makeDeviceResourceGroupOrFail(device, immutableListOf(1, 2))
+
+        baseRegistry.unregisterDeviceResource(resource)
+
+        val unregisterErrors = registry.unregisterAllHardware()
+
+        assertAll(
+            { assertThat(unregisterErrors, hasSize(equalTo(1))) },
+            { assertThat(registry.sessionRegisteredDevices, hasSize(equalTo(0))) },
+            { assertThat(registry.sessionRegisteredDeviceResources.entries(), hasSize(equalTo(0))) }
         )
     }
 }

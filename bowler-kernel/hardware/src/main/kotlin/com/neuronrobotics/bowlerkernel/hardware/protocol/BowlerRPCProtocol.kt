@@ -19,7 +19,7 @@ package com.neuronrobotics.bowlerkernel.hardware.protocol
 import arrow.core.Either
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
 /**

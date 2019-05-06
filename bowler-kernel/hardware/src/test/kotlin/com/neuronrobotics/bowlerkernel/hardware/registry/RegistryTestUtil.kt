@@ -23,12 +23,15 @@ import com.neuronrobotics.bowlerkernel.hardware.device.Device
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.ProvisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.ProvisionedDeviceResourceGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.ProvisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDeviceResourceGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.getOrFail
+import org.octogonapus.ktguava.collections.toImmutableList
 
 internal data class MockDevice(
     override val deviceId: DeviceId
@@ -50,12 +53,17 @@ internal data class MockDevice(
 
     override fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
         resource: T
-    ): Either<String, R> = Either.left("Not implemented")
+    ) = Either.left("Not implemented")
 
-    override fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
-        resources: ImmutableList<T>
-    ): Either<String, ImmutableList<R>> = Either.left("Not implemented")
+    override fun <T : UnprovisionedDeviceResourceGroup<R>, R : ProvisionedDeviceResourceGroup> add(
+        resourceGroup: T
+    ) = Either.left("Not implemented")
 }
+
+internal class MockProvisionedDeviceResource(
+    override val device: Device,
+    override val resourceId: ResourceId
+) : ProvisionedDeviceResource
 
 internal data class MockUnprovisionedDeviceResource(
     override val device: Device,
@@ -72,10 +80,25 @@ internal data class MockUnprovisionedDeviceResource(
     }
 }
 
-internal class MockProvisionedDeviceResource(
+internal class MockProvisionedDeviceResourceGroup(
     override val device: Device,
-    override val resourceId: ResourceId
-) : ProvisionedDeviceResource
+    override val resourceIds: ImmutableList<ResourceId>
+) : ProvisionedDeviceResourceGroup
+
+internal data class MockUnprovisionedDeviceResourceGroup(
+    override val device: Device,
+    override val resourceIds: ImmutableList<ResourceId>
+) : UnprovisionedDeviceResourceGroup<MockProvisionedDeviceResourceGroup> {
+
+    override fun provision() = MockProvisionedDeviceResourceGroup(device, resourceIds)
+
+    companion object {
+
+        val create = { device: Device, resourceIds: ImmutableList<ResourceId> ->
+            MockUnprovisionedDeviceResourceGroup(device, resourceIds)
+        }
+    }
+}
 
 internal fun HardwareRegistry.makeDeviceOrFail(): MockDevice =
     registerDevice(
@@ -93,4 +116,19 @@ internal fun HardwareRegistry.makeDeviceResourceOrFail(
         device,
         ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(attachmentPoint)),
         MockUnprovisionedDeviceResource.create
+    ).getOrFail()
+
+internal fun HardwareRegistry.makeDeviceResourceGroupOrFail(
+    device: Device,
+    attachmentPoints: ImmutableList<Byte>
+): MockUnprovisionedDeviceResourceGroup =
+    registerDeviceResourceGroup(
+        device,
+        attachmentPoints.map {
+            ResourceId(
+                DefaultResourceTypes.DigitalOut,
+                DefaultAttachmentPoints.Pin(it)
+            )
+        }.toImmutableList(),
+        MockUnprovisionedDeviceResourceGroup.create
     ).getOrFail()

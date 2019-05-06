@@ -27,8 +27,8 @@ import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResourceFactory
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResourceFactory
 import com.neuronrobotics.bowlerkernel.hardware.registry.BaseHardwareRegistry
 import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
 import com.nhaarman.mockitokotlin2.doReturn
@@ -61,7 +61,9 @@ class UnprovisionedDeviceResourceFactoryTest {
                 DefaultConnectionMethods.RawHID(0, 0)
             )
         ) { device }
-        val error = UnprovisionedDeviceResourceFactory(registry)
+        val error = UnprovisionedDeviceResourceFactory(
+            registry
+        )
             .makeUnprovisionedDigitalOut(device, resourceId)
 
         assertTrue(error.isLeft())
@@ -200,7 +202,9 @@ class UnprovisionedDeviceResourceFactoryTest {
             )
         ) { device }
 
-        val resource = UnprovisionedDeviceResourceFactory(registry).makeResource(device)
+        val resource = UnprovisionedDeviceResourceFactory(
+            registry
+        ).makeResource(device)
 
         assertTrue(resource.isRight())
         assertThat(registry.registeredDevices, hasSize(equalTo(1)))
@@ -232,7 +236,9 @@ class UnprovisionedDeviceResourceFactoryTest {
             )
         ) { device }
 
-        val resource = UnprovisionedDeviceResourceFactory(registry).makeResource(device)
+        val resource = UnprovisionedDeviceResourceFactory(
+            registry
+        ).makeResource(device)
 
         assertTrue(resource.isLeft())
         assertThat(registry.registeredDevices, hasSize(equalTo(1)))

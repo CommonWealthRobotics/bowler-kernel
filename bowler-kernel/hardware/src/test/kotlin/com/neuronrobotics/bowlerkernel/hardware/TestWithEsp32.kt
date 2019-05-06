@@ -16,7 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware
 
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes

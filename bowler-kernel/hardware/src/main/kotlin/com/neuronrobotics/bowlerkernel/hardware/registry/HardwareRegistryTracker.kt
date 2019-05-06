@@ -17,17 +17,23 @@
 package com.neuronrobotics.bowlerkernel.hardware.registry
 
 import arrow.core.Either
+import arrow.core.None
 import arrow.core.Option
+import arrow.core.Some
+import arrow.core.left
+import arrow.core.right
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.MultimapBuilder
 import com.google.common.collect.SetMultimap
 import com.neuronrobotics.bowlerkernel.hardware.device.Device
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.DeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
-import org.octogonapus.ktguava.collections.plus
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.DeviceResourceGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDeviceResourceGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.DeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResource
 import org.octogonapus.ktguava.collections.toImmutableList
+import org.octogonapus.ktguava.collections.toImmutableMap
 import javax.inject.Inject
 
 /**
@@ -50,7 +56,8 @@ internal class HardwareRegistryTracker
      * The device resources that have been registered through this proxy.
      */
     @Suppress("UnstableApiUsage")
-    internal val sessionRegisteredDeviceResources: SetMultimap<Device, DeviceResource> =
+    internal val sessionRegisteredDeviceResources: SetMultimap<Device,
+        Either<DeviceResource, DeviceResourceGroup>> =
         MultimapBuilder.hashKeys().hashSetValues().build()
 
     override val registeredDevices
@@ -80,7 +87,22 @@ internal class HardwareRegistryTracker
         val registerError = registry.registerDeviceResource(device, resourceId, makeResource)
 
         registerError.map {
-            sessionRegisteredDeviceResources.put(device, it)
+            sessionRegisteredDeviceResources.put(device, it.left())
+        }
+
+        return registerError
+    }
+
+    override fun <D : Device, T : UnprovisionedDeviceResourceGroup<*>> registerDeviceResourceGroup(
+        device: D,
+        resourceIds: ImmutableList<ResourceId>,
+        makeResourceGroup: (D, ImmutableList<ResourceId>) -> T
+    ): Either<RegisterError, T> {
+        val registerError =
+            registry.registerDeviceResourceGroup(device, resourceIds, makeResourceGroup)
+
+        registerError.map {
+            sessionRegisteredDeviceResources.put(device, it.right())
         }
 
         return registerError
@@ -100,7 +122,17 @@ internal class HardwareRegistryTracker
         val unregisterError = registry.unregisterDeviceResource(resource)
 
         if (unregisterError.isEmpty()) {
-            sessionRegisteredDeviceResources.remove(resource.device, resource)
+            sessionRegisteredDeviceResources.remove(resource.device, resource.left())
+        }
+
+        return unregisterError
+    }
+
+    override fun unregisterDeviceResourceGroup(resourceGroup: DeviceResourceGroup): Option<UnregisterError> {
+        val unregisterError = registry.unregisterDeviceResourceGroup(resourceGroup)
+
+        if (unregisterError.isEmpty()) {
+            sessionRegisteredDeviceResources.remove(resourceGroup.device, resourceGroup.right())
         }
 
         return unregisterError
@@ -112,46 +144,34 @@ internal class HardwareRegistryTracker
      * @return A list of all the errors encountered.
      */
     internal fun unregisterAllHardware(): ImmutableList<UnregisterError> {
-        val unregisterDeviceResourceErrors = sessionRegisteredDeviceResources.entries().fold(
-            mapOf<Option<UnregisterError>, Map.Entry<Device, DeviceResource>?>(
-                Option.empty<UnregisterError>() to null
-            )
-        ) { acc, elem ->
-            acc + mapOf(
-                registry.unregisterDeviceResource(elem.value).fold(
-                    { Option.empty<UnregisterError>() to elem },
-                    { Option.just(it) to null }
-                )
-            )
-        }.toMap()
+        val unregisterDeviceResourceErrors = sessionRegisteredDeviceResources.asMap()
+            .mapValues { (device, resources) ->
+                device to resources.map { resource ->
+                    resource.fold(
+                        { registry.unregisterDeviceResource(it) },
+                        { registry.unregisterDeviceResourceGroup(it) }
+                    )
+                }
+            }
 
-        // Can't call removeAll() because it doesn't mutate a Multimap
-        unregisterDeviceResourceErrors.mapNotNull { it.value }.forEach {
-            sessionRegisteredDeviceResources.remove(it.key, it.value)
-        }
+        unregisterDeviceResourceErrors.filterValues { it.second.all { option -> option is None } }
+            .forEach {
+                sessionRegisteredDeviceResources.remove(it.key, it.value)
+            }
 
-        val unregisterDeviceErrors = sessionRegisteredDevices.fold(
-            mapOf<Option<UnregisterError>, Device?>(Option.empty<UnregisterError>() to null)
-        ) { acc, elem ->
-            acc + mapOf(
-                registry.unregisterDevice(elem).fold(
-                    { Option.empty<UnregisterError>() to elem },
-                    { Option.just(it) to null }
-                )
-            )
-        }.toMap()
+        val unregisterDeviceErrors = sessionRegisteredDevices.map {
+            it to registry.unregisterDevice(it)
+        }.toImmutableMap()
 
-        unregisterDeviceErrors.mapNotNull { it.value }.let {
-            sessionRegisteredDevices.removeAll(it)
+        unregisterDeviceErrors.filter { it.value is None }.forEach { (device, _) ->
+            sessionRegisteredDevices.remove(device)
 
             // Also be sure to clean up any resources that got stranded
-            sessionRegisteredDeviceResources.removeAll(it)
+            sessionRegisteredDeviceResources.removeAll(device)
         }
 
-        return unregisterDeviceResourceErrors.mapNotNull {
-            it.key.fold({ null }, { it })
-        }.toImmutableList() + unregisterDeviceErrors.mapNotNull {
-            it.key.fold({ null }, { it })
-        }.toImmutableList()
+        return (unregisterDeviceResourceErrors.flatMap {
+            it.value.second.mapNotNull { (it as? Some)?.t }
+        } + unregisterDeviceErrors.mapNotNull { (it.value as? Some)?.t }).toImmutableList()
     }
 }

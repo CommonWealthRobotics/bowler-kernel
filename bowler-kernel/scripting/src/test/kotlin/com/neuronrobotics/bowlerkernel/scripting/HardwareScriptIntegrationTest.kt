@@ -17,6 +17,7 @@
 package com.neuronrobotics.bowlerkernel.scripting
 
 import arrow.core.Either
+import arrow.core.extensions.either.monad.binding
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.Script
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
@@ -24,10 +25,10 @@ import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectio
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResourceFactory
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDigitalOutGroupFactory
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedServoFactory
 import org.jlleitschuh.guice.key
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import org.octogonapus.ktguava.collections.immutableListOf
 import javax.inject.Inject
@@ -57,42 +58,42 @@ internal class HardwareScriptIntegrationTest {
     private class TestHardware
     @Inject constructor(
         private val bowlerDeviceFactory: BowlerDeviceFactory,
-        private val resourceFactory: UnprovisionedDeviceResourceFactory
+        private val digitalOutGroupFactory: UnprovisionedDigitalOutGroupFactory,
+        private val servoFactory: UnprovisionedServoFactory
     ) : Script() {
 
         override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
-            val device = bowlerDeviceFactory.makeBowlerDevice(
-                DeviceId(
-                    DefaultDeviceTypes.UnknownDevice,
-                    DefaultConnectionMethods.RawHID(0, 0)
-                ),
-                MockBowlerRPCProtocol()
-            ).fold({ fail { "" } }, { it })
+            return binding {
+                val (device) = bowlerDeviceFactory.makeBowlerDevice(
+                    DeviceId(
+                        DefaultDeviceTypes.UnknownDevice,
+                        DefaultConnectionMethods.RawHID(0, 0)
+                    ),
+                    MockBowlerRPCProtocol()
+                )
 
-            device.connect()
+                device.connect().bind()
 
-            val led1 = resourceFactory.makeUnprovisionedDigitalOut(
-                device,
-                DefaultAttachmentPoints.Pin(1)
-            ).fold({ fail { "" } }, { it })
+                val (ledGroup) = digitalOutGroupFactory.makeUnprovisionedDigitalOutGroup(
+                    device,
+                    immutableListOf(
+                        DefaultAttachmentPoints.Pin(1),
+                        DefaultAttachmentPoints.Pin(2)
+                    )
+                )
 
-            val led2 = resourceFactory.makeUnprovisionedDigitalOut(
-                device,
-                DefaultAttachmentPoints.Pin(2)
-            ).fold({ fail { "" } }, { it })
+                device.add(ledGroup).bind()
 
-            device.add(immutableListOf(led1, led2))
+                val (servo1) = servoFactory.makeUnprovisionedServo(
+                    device,
+                    DefaultAttachmentPoints.Pin(3)
+                )
 
-            val servo1 = resourceFactory.makeUnprovisionedServo(
-                device,
-                DefaultAttachmentPoints.Pin(3)
-            ).fold({ fail { "" } }, { it })
+                device.add(servo1).bind()
 
-            device.add(servo1)
-
-            device.disconnect()
-
-            return Either.right(null)
+                device.disconnect().bind()
+                null
+            }
         }
 
         override fun stopScript() {

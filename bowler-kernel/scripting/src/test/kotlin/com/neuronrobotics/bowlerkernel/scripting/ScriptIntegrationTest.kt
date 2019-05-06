@@ -30,7 +30,7 @@ import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectio
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResourceFactory
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResourceFactory
 import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultScriptFactory
 import com.neuronrobotics.bowlerkernel.scripting.parser.DefaultScriptLanguageParser
 import org.jlleitschuh.guice.key
@@ -106,7 +106,7 @@ internal class ScriptIntegrationTest {
             import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
             import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
+            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDigitalOutFactory
             import com.neuronrobotics.bowlerkernel.scripting.MockBowlerRPCProtocol
 
             import javax.inject.Inject
@@ -218,7 +218,7 @@ internal class ScriptIntegrationTest {
             import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
             import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResourceFactory
+            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResourceFactory
             import com.neuronrobotics.bowlerkernel.scripting.MockBowlerRPCProtocol
             import javax.inject.Inject
 

@@ -18,13 +18,16 @@ package com.neuronrobotics.bowlerkernel.hardware.registry
 
 import arrow.core.Either
 import arrow.core.Option
+import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.google.common.collect.ImmutableSetMultimap
 import com.neuronrobotics.bowlerkernel.hardware.device.Device
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.DeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.DeviceResourceGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDeviceResourceGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.DeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResource
 
 /**
  * A utility to keep track of what hardware is in use.
@@ -39,7 +42,8 @@ internal interface HardwareRegistry {
     /**
      * The currently registered device resources.
      */
-    val registeredDeviceResources: ImmutableSetMultimap<Device, DeviceResource>
+    val registeredDeviceResources: ImmutableSetMultimap<Device,
+        Either<DeviceResource, DeviceResourceGroup>>
 
     /**
      * Registers a device id. Fails if the device is already registered.
@@ -69,6 +73,21 @@ internal interface HardwareRegistry {
     ): Either<RegisterError, T>
 
     /**
+     * Registers a resource group attached (physically) to a device. Fails if the resource group is
+     * already registered or if the device is not registered.
+     *
+     * @param device The device the resource is attached to.
+     * @param resourceIds The resource ids in the group to register.
+     * @param makeResourceGroup A lambda to construct the unprovisioned resource group.
+     * @return An empty option on success, a [RegisterError] on failure.
+     */
+    fun <D : Device, T : UnprovisionedDeviceResourceGroup<*>> registerDeviceResourceGroup(
+        device: D,
+        resourceIds: ImmutableList<ResourceId>,
+        makeResourceGroup: (D, ImmutableList<ResourceId>) -> T
+    ): Either<RegisterError, T>
+
+    /**
      * Unregisters and disconnects a device. Fails if the device is not registered or if the
      * device still has registered resources.
      *
@@ -78,7 +97,7 @@ internal interface HardwareRegistry {
     fun unregisterDevice(device: Device): Option<UnregisterError>
 
     /**
-     * Unregisters a resource id attached (physically) to a device. Fails if the resource is
+     * Unregisters a resource attached (physically) to a device. Fails if the resource is
      * not registered or if the device is not registered.
      *
      * @param resource The resource to unregister.
@@ -86,5 +105,16 @@ internal interface HardwareRegistry {
      */
     fun unregisterDeviceResource(
         resource: DeviceResource
+    ): Option<UnregisterError>
+
+    /**
+     * Unregisters a resource group attached (physically) to a device. Fails if the resource
+     * group is not registered or if the device is not registered.
+     *
+     * @param resourceGroup The resource group to unregister.
+     * @return An empty option on success, an [UnregisterError] on failure.
+     */
+    fun unregisterDeviceResourceGroup(
+        resourceGroup: DeviceResourceGroup
     ): Option<UnregisterError>
 }

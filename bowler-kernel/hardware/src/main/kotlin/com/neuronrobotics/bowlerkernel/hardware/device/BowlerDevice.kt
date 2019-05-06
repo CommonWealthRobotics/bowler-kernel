@@ -20,14 +20,14 @@ import arrow.core.Either
 import arrow.core.flatMap
 import arrow.core.left
 import arrow.core.right
-import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.ProvisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.ProvisionedDeviceResourceGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.ProvisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceIdValidator
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDeviceResourceGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
-import org.octogonapus.ktguava.collections.toImmutableList
 import org.octogonapus.ktguava.collections.toImmutableSet
 
 /**
@@ -48,11 +48,6 @@ class BowlerDevice(
     override fun isResourceInRange(resourceId: ResourceId) =
         bowlerRPCProtocol.isResourceInRange(resourceId)
 
-    /**
-     * Adds the [resource] as a read and/or a write resource to the [bowlerRPCProtocol].
-     *
-     * @return The provisioned resource, or an error.
-     */
     override fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
         resource: T
     ): Either<String, R> {
@@ -85,18 +80,21 @@ class BowlerDevice(
         }
     }
 
-    /**
-     * Adds the [resources] as a read and/or a write group to the [bowlerRPCProtocol].
-     *
-     * @return The provisioned resources, or an error.
-     */
-    override fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
-        resources: ImmutableList<T>
-    ): Either<String, ImmutableList<R>> {
-        val resourceIds = resources.map { it.resourceId }.toImmutableSet()
+    @SuppressWarnings("ReturnCount")
+    override fun <T : UnprovisionedDeviceResourceGroup<R>, R : ProvisionedDeviceResourceGroup> add(
+        resourceGroup: T
+    ): Either<String, R> {
+        if (resourceGroup.resourceIds.distinct() != resourceGroup.resourceIds) {
+            return """
+                |The provided resource ids must be unique:
+                |${resourceGroup.resourceIds}
+            """.trimMargin().left()
+        }
 
-        val allReadResources = resources.map {
-            resourceIdValidator.validateIsReadType(it.resourceId.resourceType)
+        val resourceIds = resourceGroup.resourceIds.toImmutableSet()
+
+        val allReadResources = resourceIds.map {
+            resourceIdValidator.validateIsReadType(it.resourceType)
         }.fold(true) { acc, elem ->
             acc && elem.isRight()
         }
@@ -109,8 +107,8 @@ class BowlerDevice(
             }
         }
 
-        val allWriteResources = resources.map {
-            resourceIdValidator.validateIsWriteType(it.resourceId.resourceType)
+        val allWriteResources = resourceIds.map {
+            resourceIdValidator.validateIsWriteType(it.resourceType)
         }.fold(true) { acc, elem ->
             acc && elem.isRight()
         }
@@ -127,10 +125,10 @@ class BowlerDevice(
             """
             |Could not add resources because they are neither all read types nor all write
             |types:
-            |${resources.joinToString(separator = "\n")}
+            |${resourceIds.joinToString(separator = "\n")}
             """.trimMargin().left()
         } else {
-            resources.map { it.provision() }.toImmutableList().right()
+            resourceGroup.provision().right()
         }
     }
 

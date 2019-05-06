@@ -21,13 +21,16 @@ import arrow.core.Option
 import arrow.core.Try
 import arrow.core.left
 import arrow.core.right
+import com.google.common.collect.ImmutableList
 import com.google.common.collect.MultimapBuilder
 import com.google.common.collect.SetMultimap
 import com.neuronrobotics.bowlerkernel.hardware.device.Device
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.DeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.DeviceResourceGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDeviceResourceGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.DeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResource
 import org.octogonapus.ktguava.collections.toImmutableSet
 import org.octogonapus.ktguava.collections.toImmutableSetMultimap
 
@@ -44,7 +47,8 @@ internal constructor() : HardwareRegistry {
     private val internalRegisteredDeviceResourceIds: SetMultimap<DeviceId, ResourceId> =
         MultimapBuilder.hashKeys().hashSetValues().build()
     @Suppress("UnstableApiUsage")
-    private val internalRegisteredDeviceResources: SetMultimap<Device, DeviceResource> =
+    private val internalRegisteredDeviceResources: SetMultimap<Device,
+        Either<DeviceResource, DeviceResourceGroup>> =
         MultimapBuilder.hashKeys().hashSetValues().build()
 
     override val registeredDevices
@@ -106,7 +110,47 @@ internal constructor() : HardwareRegistry {
                 internalRegisteredDeviceResourceIds.put(device.deviceId, resourceId)
 
                 makeResource(device, resourceId).also {
-                    internalRegisteredDeviceResources.put(device, it)
+                    internalRegisteredDeviceResources.put(device, it.left())
+                }.right()
+            }
+        }
+    }
+
+    override fun <D : Device, T : UnprovisionedDeviceResourceGroup<*>> registerDeviceResourceGroup(
+        device: D,
+        resourceIds: ImmutableList<ResourceId>,
+        makeResourceGroup: (D, ImmutableList<ResourceId>) -> T
+    ): Either<RegisterError, T> {
+        return when {
+            !internalRegisteredDeviceIds.contains(device.deviceId) ->
+                """
+                |Cannot register resource group $resourceIds on device ${device.deviceId} because
+                |device ${device.deviceId} is not registered.
+                """.trimMargin().left()
+
+            resourceIds.any {
+                internalRegisteredDeviceResourceIds.containsEntry(device.deviceId, it)
+            } ->
+                """
+                |Cannot register resource group $resourceIds on device ${device.deviceId} because
+                |the resource group is already registered.
+                """.trimMargin().left()
+
+            resourceIds.any {
+                internalRegisteredDeviceResourceIds.values().any { registeredResourceId ->
+                    registeredResourceId.attachmentPoint == it.attachmentPoint
+                }
+            } ->
+                """
+                |Cannot register resource group $resourceIds on device ${device.deviceId} because
+                |there is already a resource on the same attachment point.
+                """.trimMargin().left()
+
+            else -> {
+                internalRegisteredDeviceResourceIds.putAll(device.deviceId, resourceIds)
+
+                makeResourceGroup(device, resourceIds).also {
+                    internalRegisteredDeviceResources.put(device, it.right())
                 }.right()
             }
         }
@@ -168,7 +212,46 @@ internal constructor() : HardwareRegistry {
                     resource.resourceId
                 )
 
-                internalRegisteredDeviceResources.remove(resource.device, resource)
+                internalRegisteredDeviceResources.remove(resource.device, resource.left())
+                Option.empty()
+            }
+        }
+    }
+
+    override fun unregisterDeviceResourceGroup(
+        resourceGroup: DeviceResourceGroup
+    ): Option<UnregisterError> {
+        return when {
+            !internalRegisteredDeviceIds.contains(resourceGroup.device.deviceId) -> Option.just(
+                """
+                |Cannot unregister resource ${resourceGroup.resourceIds} on device
+                |${resourceGroup.device.deviceId} because device ${resourceGroup.device.deviceId}
+                |is not registered.
+                """.trimMargin()
+            )
+
+            resourceGroup.resourceIds.any {
+                !internalRegisteredDeviceResourceIds.containsEntry(
+                    resourceGroup.device.deviceId,
+                    it
+                )
+            } -> Option.just(
+                """
+                |Cannot unregister resource group ${resourceGroup.resourceIds} on device
+                |${resourceGroup.device.deviceId} because the resource is not registered on that
+                |device.
+                """.trimMargin()
+            )
+
+            else -> {
+                resourceGroup.resourceIds.forEach { id ->
+                    internalRegisteredDeviceResourceIds.remove(resourceGroup.device.deviceId, id)
+                }
+
+                internalRegisteredDeviceResources.remove(
+                    resourceGroup.device,
+                    resourceGroup.right()
+                )
                 Option.empty()
             }
         }

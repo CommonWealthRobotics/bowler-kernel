@@ -18,16 +18,17 @@ package com.neuronrobotics.bowlerkernel.hardware.registry
 
 import arrow.core.Either
 import arrow.core.right
-import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.device.Device
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.ProvisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.ProvisionedDeviceResourceGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.ProvisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDeviceResourceGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.getOrFail
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -86,11 +87,11 @@ class BaseHardwareRegistryTest {
 
             override fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
                 resource: T
-            ): Either<String, R> = Either.left("Not implemented")
+            ) = Either.left("Not implemented")
 
-            override fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
-                resources: ImmutableList<T>
-            ): Either<String, ImmutableList<R>> = Either.left("Not implemented")
+            override fun <T : UnprovisionedDeviceResourceGroup<R>, R : ProvisionedDeviceResourceGroup> add(
+                resourceGroup: T
+            ) = Either.left("Not implemented")
         }
 
         val device = registry.registerDevice(

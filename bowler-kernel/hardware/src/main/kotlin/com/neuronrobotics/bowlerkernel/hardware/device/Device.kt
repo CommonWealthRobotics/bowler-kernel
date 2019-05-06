@@ -17,11 +17,12 @@
 package com.neuronrobotics.bowlerkernel.hardware.device
 
 import arrow.core.Either
-import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.ProvisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.ProvisionedDeviceResourceGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.ProvisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDeviceResourceGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResource
 
 interface Device {
 
@@ -63,11 +64,11 @@ interface Device {
     ): Either<String, R>
 
     /**
-     * Adds the [resources] to the device as a group.
+     * Adds the [resourceGroup] to the device.
      *
-     * @return The provisioned resources, or an error.
+     * @return The provisioned resource group, or an error.
      */
-    fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
-        resources: ImmutableList<T>
-    ): Either<String, ImmutableList<R>>
+    fun <T : UnprovisionedDeviceResourceGroup<R>, R : ProvisionedDeviceResourceGroup> add(
+        resourceGroup: T
+    ): Either<String, R>
 }

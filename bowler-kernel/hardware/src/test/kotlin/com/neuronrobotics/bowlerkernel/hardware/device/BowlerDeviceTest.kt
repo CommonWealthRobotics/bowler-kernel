@@ -26,10 +26,13 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceType
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedAnalogIn
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalIn
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOut
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedSerialConnection
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedAnalogInGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDigitalInGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDigitalOutGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedAnalogIn
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDigitalIn
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDigitalOut
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedSerialConnection
 import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturn
@@ -116,12 +119,13 @@ internal class BowlerDeviceTest {
     )
 
     private val led1 = UnprovisionedDigitalOut(device, led1Id)
-    private val led2 = UnprovisionedDigitalOut(device, led2Id)
+    private val ledGroup = UnprovisionedDigitalOutGroup(device, immutableListOf(led1Id, led2Id))
     private val line1 = UnprovisionedAnalogIn(device, line1Id)
-    private val line2 = UnprovisionedAnalogIn(device, line2Id)
+    private val lineGroup = UnprovisionedAnalogInGroup(device, immutableListOf(line1Id, line2Id))
     private val serial1 = UnprovisionedSerialConnection(device, serial1Id)
     private val unknownResource1 = UnprovisionedAnalogIn(device, unknownId1)
-    private val unknownResource2 = UnprovisionedAnalogIn(device, unknownId2)
+    private val unknownGroup =
+        UnprovisionedAnalogInGroup(device, immutableListOf(unknownId1, unknownId2))
 
     @Test
     fun `test adding an led`() {
@@ -165,7 +169,7 @@ internal class BowlerDeviceTest {
 
     @Test
     fun `test adding an led group`() {
-        val result = device.add(immutableListOf(led1, led2))
+        val result = device.add(ledGroup)
 
         verify(bowlerRPCProtocol).addWriteGroup(immutableSetOf(led1Id, led2Id))
         verify(bowlerRPCProtocol, never()).addReadGroup(immutableSetOf(led1Id, led2Id))
@@ -175,7 +179,7 @@ internal class BowlerDeviceTest {
 
     @Test
     fun `test adding a line sensor group`() {
-        val result = device.add(immutableListOf(line1, line2))
+        val result = device.add(lineGroup)
 
         verify(bowlerRPCProtocol, never()).addWriteGroup(immutableSetOf(line1Id, line2Id))
         verify(bowlerRPCProtocol).addReadGroup(immutableSetOf(line1Id, line2Id))
@@ -185,7 +189,7 @@ internal class BowlerDeviceTest {
 
     @Test
     fun `test adding an unknown resource group`() {
-        val result = device.add(immutableListOf(unknownResource1, unknownResource2))
+        val result = device.add(unknownGroup)
 
         verify(bowlerRPCProtocol, never()).addWriteGroup(immutableSetOf(unknownId1, unknownId2))
         verify(bowlerRPCProtocol, never()).addReadGroup(immutableSetOf(unknownId1, unknownId2))
@@ -233,9 +237,11 @@ internal class BowlerDeviceTest {
         )
 
         private val write1 = UnprovisionedDigitalOut(device, write1Id)
-        private val write2 = UnprovisionedDigitalOut(device, write2Id)
+        private val writeGroup =
+            UnprovisionedDigitalOutGroup(device, immutableListOf(write1Id, write2Id))
         private val read1 = UnprovisionedDigitalIn(device, read1Id)
-        private val read2 = UnprovisionedDigitalIn(device, read2Id)
+        private val readGroup =
+            UnprovisionedDigitalInGroup(device, immutableListOf(read1Id, read2Id))
 
         @Test
         fun `test failure to add read`() {
@@ -259,9 +265,8 @@ internal class BowlerDeviceTest {
 
         @Test
         fun `test failure to add read group`() {
-            val resources = immutableListOf(read1, read2)
-            val ids = resources.map { it.resourceId }.toImmutableSet()
-            val result = device.add(resources)
+            val ids = readGroup.resourceIds.toImmutableSet()
+            val result = device.add(readGroup)
 
             verify(failingProtocol).addReadGroup(ids)
             verify(failingProtocol, never()).addWriteGroup(ids)
@@ -271,9 +276,8 @@ internal class BowlerDeviceTest {
 
         @Test
         fun `test failure to add write group`() {
-            val resources = immutableListOf(write1, write2)
-            val ids = resources.map { it.resourceId }.toImmutableSet()
-            val result = device.add(resources)
+            val ids = writeGroup.resourceIds.toImmutableSet()
+            val result = device.add(writeGroup)
 
             verify(failingProtocol, never()).addReadGroup(ids)
             verify(failingProtocol).addWriteGroup(ids)

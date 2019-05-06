@@ -17,16 +17,16 @@
 package com.neuronrobotics.bowlerkernel.scripting
 
 import arrow.core.Either
-import arrow.core.right
+import arrow.core.extensions.either.monad.binding
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.Script
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.DigitalState
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDigitalOutFactory
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDigitalOutGroupFactory
 import org.jlleitschuh.guice.getInstance
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -40,59 +40,47 @@ internal class TestWithEsp32 {
     private class TestScript
     @Inject constructor(
         private val deviceFactory: BowlerDeviceFactory,
-        private val resourceFactory: UnprovisionedDigitalOutFactory
+        private val digitalOutGroupFactory: UnprovisionedDigitalOutGroupFactory
     ) : Script() {
         @Suppress("UNCHECKED_CAST")
         override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
-            val device = deviceFactory.makeBowlerDevice(
-                DeviceId(
-                    DefaultDeviceTypes.Esp32wroom32,
-                    DefaultConnectionMethods.InternetAddress(
-                        InetAddress.getByAddress(
-                            listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
+            return binding {
+                val (device) = deviceFactory.makeBowlerDevice(
+                    DeviceId(
+                        DefaultDeviceTypes.Esp32wroom32,
+                        DefaultConnectionMethods.InternetAddress(
+                            InetAddress.getByAddress(
+                                listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
+                            )
                         )
                     )
                 )
-            ).fold({ throw IllegalStateException(it) }, { it })
 
-            val led1 = resourceFactory.makeUnprovisionedDigitalOut(
-                device,
-                DefaultAttachmentPoints.Pin(32)
-            ).fold({ throw IllegalStateException(it) }, { it })
-
-            val led2 = resourceFactory.makeUnprovisionedDigitalOut(
-                device,
-                DefaultAttachmentPoints.Pin(33)
-            ).fold({ throw IllegalStateException(it) }, { it })
-
-            device.connect().mapLeft { throw IllegalStateException(it) }
-
-            device.add(immutableListOf(led1, led2)).fold(
-                { throw IllegalStateException(it) },
-                { it }
-            )
-
-            repeat(100) {
-                if (it % 2 == 0) {
-                    device.bowlerRPCProtocol.digitalWrite(
+                val (unprovisionedLedGroup) =
+                    digitalOutGroupFactory.makeUnprovisionedDigitalOutGroup(
+                        device,
                         immutableListOf(
-                            led1.resourceId to DigitalState.LOW,
-                            led2.resourceId to DigitalState.HIGH
+                            DefaultAttachmentPoints.Pin(32),
+                            DefaultAttachmentPoints.Pin(33)
                         )
                     )
-                } else {
-                    device.bowlerRPCProtocol.digitalWrite(
-                        immutableListOf(
-                            led1.resourceId to DigitalState.HIGH,
-                            led2.resourceId to DigitalState.LOW
-                        )
-                    )
+
+                device.connect().bind()
+
+                val (ledGroup) = device.add(unprovisionedLedGroup)
+
+                repeat(100) {
+                    if (it % 2 == 0) {
+                        ledGroup.write(immutableListOf(DigitalState.LOW, DigitalState.HIGH))
+                    } else {
+                        ledGroup.write(immutableListOf(DigitalState.HIGH, DigitalState.LOW))
+                    }
+
+                    Thread.sleep(500)
                 }
 
-                Thread.sleep(500)
+                Unit
             }
-
-            return Unit.right()
         }
 
         override fun stopScript() {

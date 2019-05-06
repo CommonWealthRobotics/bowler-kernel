@@ -22,7 +22,7 @@ import com.google.inject.Injector
 import com.google.inject.Module
 import com.google.inject.Singleton
 import com.neuronrobotics.bowlerkernel.hardware.device.DeviceFactory
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.UnprovisionedDeviceResourceFactory
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResourceFactory
 import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistry
 import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistryTracker
 import org.jlleitschuh.guice.key
