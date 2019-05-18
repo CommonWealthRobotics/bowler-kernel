@@ -92,26 +92,126 @@ internal class GitVitaminSupplierFactoryTest {
                             {
                               "type": "defaultServo",
                               "vitamin": {
-                                "cadGenerator": {
-                                  "filename": "",
-                                  "gitUrl": ""
+                                  "cadGenerator": {
+                                    "filename": "",
+                                    "gitUrl": ""
+                                  },
+                                  "centerOfMass": {
+                                    "x": {
+                                      "value": 0.01651,
+                                      "angleDim": 0,
+                                      "currentDim": 0,
+                                      "lengthDim": 1,
+                                      "luminDim": 0,
+                                      "massDim": 0,
+                                      "moleDim": 0,
+                                      "tempDim": 0,
+                                      "timeDim": 0
+                                    },
+                                    "y": {
+                                      "value": 0.00635,
+                                      "angleDim": 0,
+                                      "currentDim": 0,
+                                      "lengthDim": 1,
+                                      "luminDim": 0,
+                                      "massDim": 0,
+                                      "moleDim": 0,
+                                      "tempDim": 0,
+                                      "timeDim": 0
+                                    },
+                                    "z": {
+                                      "value": 0.01143,
+                                      "angleDim": 0,
+                                      "currentDim": 0,
+                                      "lengthDim": 1,
+                                      "luminDim": 0,
+                                      "massDim": 0,
+                                      "moleDim": 0,
+                                      "tempDim": 0,
+                                      "timeDim": 0
+                                    }
+                                  },
+                                  "height": {
+                                    "value": 0.02286,
+                                    "angleDim": 0,
+                                    "currentDim": 0,
+                                    "lengthDim": 1,
+                                    "luminDim": 0,
+                                    "massDim": 0,
+                                    "moleDim": 0,
+                                    "tempDim": 0,
+                                    "timeDim": 0
+                                  },
+                                  "length": {
+                                    "value": 0.0127,
+                                    "angleDim": 0,
+                                    "currentDim": 0,
+                                    "lengthDim": 1,
+                                    "luminDim": 0,
+                                    "massDim": 0,
+                                    "moleDim": 0,
+                                    "tempDim": 0,
+                                    "timeDim": 0
+                                  },
+                                  "mass": {
+                                    "value": 0.012,
+                                    "angleDim": 0,
+                                    "currentDim": 0,
+                                    "lengthDim": 0,
+                                    "luminDim": 0,
+                                    "massDim": 1,
+                                    "moleDim": 0,
+                                    "tempDim": 0,
+                                    "timeDim": 0
+                                  },
+                                  "specs": {
+                                    "feedback": "supported"
+                                  },
+                                  "speed": {
+                                    "value": 8.726646259971647,
+                                    "angleDim": 1,
+                                    "currentDim": 0,
+                                    "lengthDim": 0,
+                                    "luminDim": 0,
+                                    "massDim": 0,
+                                    "moleDim": 0,
+                                    "tempDim": 0,
+                                    "timeDim": -1
+                                  },
+                                  "stallTorque": {
+                                    "value": 0.19614,
+                                    "angleDim": 0,
+                                    "currentDim": 0,
+                                    "lengthDim": 2,
+                                    "luminDim": 0,
+                                    "massDim": 1,
+                                    "moleDim": 0,
+                                    "tempDim": 0,
+                                    "timeDim": -2
+                                  },
+                                  "voltage": {
+                                    "value": 6,
+                                    "angleDim": 0,
+                                    "currentDim": -1,
+                                    "lengthDim": 2,
+                                    "luminDim": 0,
+                                    "massDim": 1,
+                                    "moleDim": 0,
+                                    "tempDim": 0,
+                                    "timeDim": -3
+                                  },
+                                  "width": {
+                                    "value": 0.03302,
+                                    "angleDim": 0,
+                                    "currentDim": 0,
+                                    "lengthDim": 1,
+                                    "luminDim": 0,
+                                    "massDim": 0,
+                                    "moleDim": 0,
+                                    "tempDim": 0,
+                                    "timeDim": 0
+                                  }
                                 },
-                                "centerOfMass": {
-                                  "x": 1.0,
-                                  "y": 2.0,
-                                  "z": 3.0
-                                },
-                                "height": 30,
-                                "length": 19,
-                                "specs": {
-                                  "feedback": "supported"
-                                },
-                                "speed": 16,
-                                "stallTorque": 4.1,
-                                "voltage": 12,
-                                "mass": 5,
-                                "width": 12
-                              },
                               "partNumber": "abcd",
                               "price": 3.5
                             }
@@ -194,10 +294,40 @@ internal class GitVitaminSupplierFactoryTest {
                                   "gitUrl": ""
                                 },
                                 "centerOfMass": {
-                                  "x": 1.0,
-                                  "y": 2.0,
-                                  "z": 3.0
-                                }
+                                    "x": {
+                                      "value": 0.01651,
+                                      "angleDim": 0,
+                                      "currentDim": 0,
+                                      "lengthDim": 1,
+                                      "luminDim": 0,
+                                      "massDim": 0,
+                                      "moleDim": 0,
+                                      "tempDim": 0,
+                                      "timeDim": 0
+                                    },
+                                    "y": {
+                                      "value": 0.00635,
+                                      "angleDim": 0,
+                                      "currentDim": 0,
+                                      "lengthDim": 1,
+                                      "luminDim": 0,
+                                      "massDim": 0,
+                                      "moleDim": 0,
+                                      "tempDim": 0,
+                                      "timeDim": 0
+                                    },
+                                    "z": {
+                                      "value": 0.01143,
+                                      "angleDim": 0,
+                                      "currentDim": 0,
+                                      "lengthDim": 1,
+                                      "luminDim": 0,
+                                      "massDim": 0,
+                                      "moleDim": 0,
+                                      "tempDim": 0,
+                                      "timeDim": 0
+                                    }
+                                  }
                             }
                             """.trimIndent()
                     )
