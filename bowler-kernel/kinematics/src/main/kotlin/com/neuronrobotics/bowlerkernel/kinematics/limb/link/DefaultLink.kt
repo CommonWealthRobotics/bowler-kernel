@@ -22,6 +22,6 @@ import com.neuronrobotics.bowlerkernel.util.Limits
 data class DefaultLink(
     override val type: LinkType,
     override val dhParam: DhParam,
-    override val jointLimits: Limits<Double>,
+    override val jointLimits: Limits,
     override val inertialStateEstimator: InertialStateEstimator
 ) : Link

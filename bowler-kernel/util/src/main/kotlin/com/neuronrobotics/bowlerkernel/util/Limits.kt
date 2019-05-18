@@ -19,7 +19,9 @@ package com.neuronrobotics.bowlerkernel.util
 /**
  * A generic limits class.
  */
-data class Limits<out T>(
-    val maximum: T,
-    val minimum: T
-)
+data class Limits(
+    val maximum: Double,
+    val minimum: Double
+) {
+    constructor(maximum: Number, minimum: Number) : this(maximum.toDouble(), minimum.toDouble())
+}

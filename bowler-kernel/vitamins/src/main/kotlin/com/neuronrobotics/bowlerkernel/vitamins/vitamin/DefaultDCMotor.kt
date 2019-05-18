@@ -18,7 +18,6 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.util.Limits
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.AngularVelocity
 import org.octogonapus.ktunits.quantities.ElectricCurrent
@@ -29,7 +28,7 @@ import org.octogonapus.ktunits.quantities.Power
 import org.octogonapus.ktunits.quantities.Torque
 
 data class DefaultDCMotor(
-    override val voltage: Limits<ElectricPotential>,
+    override val voltage: ElectricPotential,
     override val outputShaftDiameter: Length,
     override val freeSpeed: AngularVelocity,
     override val freeCurrent: ElectricCurrent,

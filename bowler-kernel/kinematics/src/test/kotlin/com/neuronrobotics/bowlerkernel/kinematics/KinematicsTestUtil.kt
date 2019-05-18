@@ -32,7 +32,7 @@ import org.octogonapus.ktguava.collections.immutableListOf
 fun createMockLinkData(
     type: LinkType = LinkType.Rotary,
     dhParamData: DhParamData = DhParamData(0.0, 0.0, 0.0, 0.0),
-    jointLimits: Limits<Double> = Limits(1.0, 0.0),
+    jointLimits: Limits = Limits(1, 0),
     jointAngleControllerGistId: String = "jacGistId",
     jointAngleControllerFilename: String = "jacFilename",
     inertialStateEstimatorGistId: String = "iseGistId",

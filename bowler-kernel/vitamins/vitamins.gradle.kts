@@ -30,6 +30,11 @@ dependencies {
     )
     implementation(
         group = "org.octogonapus",
+        name = "kt-units-annotation",
+        version = property("kt-units.version") as String
+    )
+    implementation(
+        group = "org.octogonapus",
         name = "kt-units-quantities",
         version = property("kt-units.version") as String
     )

@@ -16,7 +16,6 @@
  */
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
-import com.neuronrobotics.bowlerkernel.util.Limits
 import org.octogonapus.ktunits.quantities.AngularVelocity
 import org.octogonapus.ktunits.quantities.ElectricCurrent
 import org.octogonapus.ktunits.quantities.ElectricPotential
@@ -35,9 +34,9 @@ import org.octogonapus.ktunits.quantities.Torque
 interface DCMotor : Vitamin {
 
     /**
-     * The operating voltage limits.
+     * The operating voltage.
      */
-    val voltage: Limits<ElectricPotential>
+    val voltage: ElectricPotential
 
     /**
      * The output shaft diameter.

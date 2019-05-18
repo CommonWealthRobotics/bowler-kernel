@@ -27,7 +27,7 @@ interface LinkFactory {
     fun createLink(
         type: LinkType,
         dhParam: DhParam,
-        jointLimits: Limits<Double>,
+        jointLimits: Limits,
         inertialStateEstimator: InertialStateEstimator
     ): Link
 }

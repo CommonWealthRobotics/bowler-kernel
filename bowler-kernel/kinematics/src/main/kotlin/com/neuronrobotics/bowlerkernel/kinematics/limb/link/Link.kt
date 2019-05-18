@@ -39,7 +39,7 @@ interface Link {
      * The movement limits of this link. This can represent angle for a rotary link or length for
      * a prismatic link.
      */
-    val jointLimits: Limits<Double>
+    val jointLimits: Limits
 
     /**
      * The [InertialStateEstimator].
