@@ -16,6 +16,12 @@
  */
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
+import org.octogonapus.ktunits.quantities.Angle
+import org.octogonapus.ktunits.quantities.ElectricCurrent
+import org.octogonapus.ktunits.quantities.ElectricPotential
+import org.octogonapus.ktunits.quantities.Length
+import org.octogonapus.ktunits.quantities.Torque
+
 /**
  * A generic stepper motor.
  *
@@ -27,7 +33,7 @@ interface StepperMotor : Vitamin {
     /**
      * The shaft diameter.
      */
-    val shaftDiameter: Double
+    val shaftDiameter: Length
 
     /**
      * The NEMA size.
@@ -37,20 +43,20 @@ interface StepperMotor : Vitamin {
     /**
      * The nominal voltage.
      */
-    val voltage: Double
+    val voltage: ElectricPotential
 
     /**
      * The holding torque.
      */
-    val holdingTorque: Double
+    val holdingTorque: Torque
 
     /**
      * The rated current.
      */
-    val current: Double
+    val current: ElectricCurrent
 
     /**
      * The degrees per step.
      */
-    val stepAngle: Double
+    val stepAngle: Angle
 }

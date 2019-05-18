@@ -16,6 +16,11 @@
  */
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
+import org.octogonapus.ktunits.quantities.ElectricCharge
+import org.octogonapus.ktunits.quantities.ElectricCurrent
+import org.octogonapus.ktunits.quantities.ElectricPotential
+import org.octogonapus.ktunits.quantities.Frequency
+
 /**
  * A generic battery.
  *
@@ -29,20 +34,20 @@ interface Battery : Vitamin {
     /**
      * The nominal voltage.
      */
-    val voltage: Double
+    val voltage: ElectricPotential
 
     /**
      * The maximum continuous current draw.
      */
-    val current: Double
+    val current: ElectricCurrent
 
     /**
      * The maximum continuous discharge rate.
      */
-    val dischargeRate: Double
+    val dischargeRate: Frequency
 
     /**
      * The capacity.
      */
-    val capacity: Double
+    val capacity: ElectricCharge
 }

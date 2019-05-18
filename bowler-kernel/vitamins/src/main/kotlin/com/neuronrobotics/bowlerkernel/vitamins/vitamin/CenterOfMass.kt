@@ -16,8 +16,10 @@
  */
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
+import org.octogonapus.ktunits.quantities.Length
+
 data class CenterOfMass(
-    val x: Double,
-    val y: Double,
-    val z: Double
+    val x: Length,
+    val y: Length,
+    val z: Length
 )

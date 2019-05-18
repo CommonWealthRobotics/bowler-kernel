@@ -36,7 +36,7 @@ internal class LengthBasedReachabilityCalculatorTest {
             DefaultLink(
                 LinkType.Rotary,
                 DhParam(0, 0, 15, 0),
-                Limits(180, -180),
+                Limits(180.0, -180.0),
                 NoopInertialStateEstimator
             ) as Link
         )
@@ -54,7 +54,7 @@ internal class LengthBasedReachabilityCalculatorTest {
             DefaultLink(
                 LinkType.Rotary,
                 DhParam(0, 0, 10, 0),
-                Limits(180, -180),
+                Limits(180.0, -180.0),
                 NoopInertialStateEstimator
             ) as Link
         )
@@ -70,7 +70,7 @@ internal class LengthBasedReachabilityCalculatorTest {
             DefaultLink(
                 LinkType.Rotary,
                 DhParam(0, 0, 10, 0),
-                Limits(180, -180),
+                Limits(180.0, -180.0),
                 NoopInertialStateEstimator
             ) as Link
         )

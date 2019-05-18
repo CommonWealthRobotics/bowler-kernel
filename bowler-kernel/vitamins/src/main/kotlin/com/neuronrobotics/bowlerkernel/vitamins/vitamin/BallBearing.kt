@@ -16,6 +16,8 @@
  */
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
+import org.octogonapus.ktunits.quantities.Length
+
 /**
  * A generic ball bearing. [Vitamin.width] should be the width (between the two flat faces of the
  * bearing). For rotational bearings, [Vitamin.height] and [Vitamin.length] should be equal to each
@@ -32,5 +34,5 @@ interface BallBearing : Vitamin {
     /**
      * The bore diameter (where the shaft goes).
      */
-    val bore: Double
+    val bore: Length
 }

@@ -53,7 +53,7 @@ internal class DefaultLimbIntegrationTest {
         val links = immutableListOf(
             DefaultLink(
                 LinkType.Rotary, DhParam.zero,
-                Limits(0, 0), mock {})
+                Limits(0.0, 0.0), mock {})
         )
 
         val controller = MockJointAngleController()

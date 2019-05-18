@@ -32,22 +32,29 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableMapOf
+import org.octogonapus.ktunits.quantities.degree
+import org.octogonapus.ktunits.quantities.div
+import org.octogonapus.ktunits.quantities.gram
+import org.octogonapus.ktunits.quantities.inch
+import org.octogonapus.ktunits.quantities.kgFCm
+import org.octogonapus.ktunits.quantities.second
+import org.octogonapus.ktunits.quantities.volt
 import java.io.File
 
 internal class GitVitaminSupplierFactoryTest {
 
     private val firstVitamin = DefaultServo(
-        12.0,
-        4.1,
-        16.0,
-        12.0,
-        19.0,
-        30.0,
-        5.0,
+        6.volt,
+        2.kgFCm,
+        60.degree / 0.12.second,
+        1.3.inch,
+        0.5.inch,
+        0.9.inch,
+        12.gram,
         CenterOfMass(
-            1.0,
-            2.0,
-            3.0
+            1.3.inch / 2,
+            0.5.inch / 2,
+            0.9.inch / 2
         ),
         immutableMapOf("feedback" to "supported"),
         GitFile("", "")
@@ -102,7 +109,7 @@ internal class GitVitaminSupplierFactoryTest {
                                 "speed": 16,
                                 "stallTorque": 4.1,
                                 "voltage": 12,
-                                "weight": 5,
+                                "mass": 5,
                                 "width": 12
                               },
                               "partNumber": "abcd",

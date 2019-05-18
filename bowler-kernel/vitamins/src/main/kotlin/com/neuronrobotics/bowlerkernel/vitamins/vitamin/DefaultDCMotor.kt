@@ -19,20 +19,29 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 import com.neuronrobotics.bowlerkernel.util.Limits
+import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
+import org.octogonapus.ktunits.quantities.AngularVelocity
+import org.octogonapus.ktunits.quantities.ElectricCurrent
+import org.octogonapus.ktunits.quantities.ElectricPotential
+import org.octogonapus.ktunits.quantities.Length
+import org.octogonapus.ktunits.quantities.Mass
+import org.octogonapus.ktunits.quantities.Power
+import org.octogonapus.ktunits.quantities.Torque
 
 data class DefaultDCMotor(
-    override val voltage: Limits,
-    override val outputShaftDiameter: Double,
-    override val freeSpeed: Double,
-    override val freeCurrent: Double,
-    override val stallTorque: Double,
-    override val stallCurrent: Double,
-    override val power: Double,
-    override val width: Double,
-    override val length: Double,
-    override val height: Double,
-    override val weight: Double,
+    override val voltage: Limits<ElectricPotential>,
+    override val outputShaftDiameter: Length,
+    override val freeSpeed: AngularVelocity,
+    override val freeCurrent: ElectricCurrent,
+    override val stallTorque: Torque,
+    override val stallCurrent: ElectricCurrent,
+    override val power: Power,
+    override val width: Length,
+    override val length: Length,
+    override val height: Length,
+    override val mass: Mass,
     override val centerOfMass: CenterOfMass,
+    @ConvertImmutableMap
     override val specs: ImmutableMap<String, Any>,
     override val cadGenerator: GitFile
 ) : DCMotor

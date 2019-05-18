@@ -23,7 +23,7 @@ import com.neuronrobotics.bowlerkernel.util.Limits
 data class LinkData(
     val type: LinkType,
     val dhParamData: DhParamData,
-    val jointLimits: Limits,
+    val jointLimits: Limits<Double>,
     val jointAngleController: GitFile,
     val inertialStateEstimator: GitFile
 )

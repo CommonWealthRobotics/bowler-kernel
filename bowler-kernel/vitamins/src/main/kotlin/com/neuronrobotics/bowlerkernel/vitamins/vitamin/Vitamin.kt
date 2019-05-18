@@ -18,6 +18,8 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
+import org.octogonapus.ktunits.quantities.Length
+import org.octogonapus.ktunits.quantities.Mass
 
 /**
  * A Vitamin is typically something which cannot be 3d-printed; the electrical and hardware
@@ -26,27 +28,24 @@ import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 interface Vitamin {
 
     /**
-     * The overall width, not including keep-away zones for CAD. The frame this is measured from
-     * is arbitrary.
+     * The overall width (x-axis), not including keep-away zones for CAD.
      */
-    val width: Double
+    val width: Length
 
     /**
-     * The overall length, not including keep-away zones for CAD. The frame this is measured from
-     * is arbitrary.
+     * The overall length (y-axis), not including keep-away zones for CAD.
      */
-    val length: Double
+    val length: Length
 
     /**
-     * The overall height, not including keep-away zones for CAD. The frame this is measured from
-     * is arbitrary.
+     * The overall height (z-axis), not including keep-away zones for CAD.
      */
-    val height: Double
+    val height: Length
 
     /**
-     * The weight of this Vitamin.
+     * The mass of this Vitamin.
      */
-    val weight: Double
+    val mass: Mass
 
     /**
      * The center of mass.

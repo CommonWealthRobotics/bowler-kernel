@@ -24,7 +24,7 @@ class DefaultLinkFactory : LinkFactory {
     override fun createLink(
         type: LinkType,
         dhParam: DhParam,
-        jointLimits: Limits,
+        jointLimits: Limits<Double>,
         inertialStateEstimator: InertialStateEstimator
     ) = DefaultLink(
         type,

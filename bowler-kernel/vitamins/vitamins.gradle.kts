@@ -29,6 +29,11 @@ dependencies {
         version = property("kt-guava-klaxon.version") as String
     )
     implementation(
+        group = "org.octogonapus",
+        name = "kt-units-quantities",
+        version = property("kt-units.version") as String
+    )
+    implementation(
         group = "com.beust",
         name = "klaxon",
         version = property("klaxon.version") as String

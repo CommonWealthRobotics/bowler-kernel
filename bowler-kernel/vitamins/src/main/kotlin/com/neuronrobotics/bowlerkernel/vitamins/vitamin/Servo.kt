@@ -16,6 +16,10 @@
  */
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
+import org.octogonapus.ktunits.quantities.AngularVelocity
+import org.octogonapus.ktunits.quantities.ElectricPotential
+import org.octogonapus.ktunits.quantities.Torque
+
 /**
  * A hobby servo motor.
  *
@@ -27,15 +31,15 @@ interface Servo : Vitamin {
     /**
      * The operating voltage.
      */
-    val voltage: Double
+    val voltage: ElectricPotential
 
     /**
      * The stall torque.
      */
-    val stallTorque: Double
+    val stallTorque: Torque
 
     /**
      * The operating speed.
      */
-    val speed: Double
+    val speed: AngularVelocity
 }

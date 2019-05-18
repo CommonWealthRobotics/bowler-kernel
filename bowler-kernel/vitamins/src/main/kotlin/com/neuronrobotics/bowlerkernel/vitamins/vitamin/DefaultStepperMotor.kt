@@ -18,19 +18,27 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
+import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
+import org.octogonapus.ktunits.quantities.Angle
+import org.octogonapus.ktunits.quantities.ElectricCurrent
+import org.octogonapus.ktunits.quantities.ElectricPotential
+import org.octogonapus.ktunits.quantities.Length
+import org.octogonapus.ktunits.quantities.Mass
+import org.octogonapus.ktunits.quantities.Torque
 
 data class DefaultStepperMotor(
-    override val shaftDiameter: Double,
+    override val shaftDiameter: Length,
     override val nemaSize: Int,
-    override val voltage: Double,
-    override val holdingTorque: Double,
-    override val current: Double,
-    override val stepAngle: Double,
-    override val width: Double,
-    override val length: Double,
-    override val height: Double,
-    override val weight: Double,
+    override val voltage: ElectricPotential,
+    override val holdingTorque: Torque,
+    override val current: ElectricCurrent,
+    override val stepAngle: Angle,
+    override val width: Length,
+    override val length: Length,
+    override val height: Length,
+    override val mass: Mass,
     override val centerOfMass: CenterOfMass,
+    @ConvertImmutableMap
     override val specs: ImmutableMap<String, Any>,
     override val cadGenerator: GitFile
 ) : StepperMotor

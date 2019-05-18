@@ -17,6 +17,12 @@
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 import com.neuronrobotics.bowlerkernel.util.Limits
+import org.octogonapus.ktunits.quantities.AngularVelocity
+import org.octogonapus.ktunits.quantities.ElectricCurrent
+import org.octogonapus.ktunits.quantities.ElectricPotential
+import org.octogonapus.ktunits.quantities.Length
+import org.octogonapus.ktunits.quantities.Power
+import org.octogonapus.ktunits.quantities.Torque
 
 /**
  * A generic DC motor.
@@ -31,35 +37,35 @@ interface DCMotor : Vitamin {
     /**
      * The operating voltage limits.
      */
-    val voltage: Limits
+    val voltage: Limits<ElectricPotential>
 
     /**
      * The output shaft diameter.
      */
-    val outputShaftDiameter: Double
+    val outputShaftDiameter: Length
 
     /**
      * The free speed.
      */
-    val freeSpeed: Double
+    val freeSpeed: AngularVelocity
 
     /**
      * The free current.
      */
-    val freeCurrent: Double
+    val freeCurrent: ElectricCurrent
 
     /**
      * The stall torque.
      */
-    val stallTorque: Double
+    val stallTorque: Torque
 
     /**
      * The stall current.
      */
-    val stallCurrent: Double
+    val stallCurrent: ElectricCurrent
 
     /**
      * The maximum power output.
      */
-    val power: Double
+    val power: Power
 }
