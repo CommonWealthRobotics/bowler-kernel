@@ -42,12 +42,12 @@ class DefaultKinematicBase(
         bodyController.setDesiredWorldSpaceTransformDelta(worldSpaceTransform, motionConstraints)
     }
 
-    override fun setWorldSpaceTransform(worldSpaceTransform: FrameTransformation) {
+    override fun setCurrentWorldSpaceTransform(worldSpaceTransform: FrameTransformation) {
         currentWorldSpaceTransform = worldSpaceTransform
     }
 
-    override fun getCurrentWorldSpaceTransform() =
-        currentWorldSpaceTransform + bodyController.getDeltaSinceLastDesiredTransform()
+    override fun getCurrentWorldSpaceTransformWithDelta() =
+        currentWorldSpaceTransform * bodyController.getDeltaSinceLastDesiredTransform()
 
     override fun setDesiredLimbTipTransform(
         limbId: LimbId,
@@ -65,7 +65,7 @@ class DefaultKinematicBase(
         motionConstraints: MotionConstraints
     ) = limbs[limbIndex].let { limb ->
         limb.setDesiredTaskSpaceTransform(
-            worldSpaceTransform * getCurrentWorldSpaceTransform().inverse *
+            worldSpaceTransform * getCurrentWorldSpaceTransformWithDelta().inverse *
                 limbBaseTransforms[limb.id]!!.inverse,
             motionConstraints
         )
@@ -77,7 +77,16 @@ class DefaultKinematicBase(
     override fun getCurrentLimbTipTransform(limbIndex: Int) =
         limbs[limbIndex].let { limb ->
             limb.getCurrentTaskSpaceTransform() * limbBaseTransforms[limb.id]!! *
-                getCurrentWorldSpaceTransform()
+                getCurrentWorldSpaceTransformWithDelta()
+        }
+
+    override fun getDesiredLimbTipTransform(limbId: LimbId) =
+        getDesiredLimbTipTransform(limbs.indexOfFirst { it.id == limbId })
+
+    override fun getDesiredLimbTipTransform(limbIndex: Int) =
+        limbs[limbIndex].let { limb ->
+            limb.getDesiredTaskSpaceTransform() * limbBaseTransforms[limb.id]!! *
+                getCurrentWorldSpaceTransformWithDelta()
         }
 
     override fun computeJacobian(limbIndex: Int, linkIndex: Int): SimpleMatrix {

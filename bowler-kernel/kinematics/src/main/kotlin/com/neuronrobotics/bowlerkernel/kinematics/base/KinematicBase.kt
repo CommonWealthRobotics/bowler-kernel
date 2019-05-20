@@ -67,17 +67,19 @@ interface KinematicBase {
     )
 
     /**
-     * Sets the current world space transform. This can be used for error correction if the
-     * transform can be estimated externally or can be used to set a starting position.
+     * Sets the current world space transform, not including the
+     * [BodyController.getDeltaSinceLastDesiredTransform]. This can be used for error correction
+     * if the transform can be estimated externally or can be used to set a starting position.
      *
      * @param worldSpaceTransform The current world space transform.
      */
-    fun setWorldSpaceTransform(worldSpaceTransform: FrameTransformation)
+    fun setCurrentWorldSpaceTransform(worldSpaceTransform: FrameTransformation)
 
     /**
-     * The current (estimated) world space transform.
+     * The current world space transform including the
+     * [BodyController.getDeltaSinceLastDesiredTransform].
      */
-    fun getCurrentWorldSpaceTransform(): FrameTransformation
+    fun getCurrentWorldSpaceTransformWithDelta(): FrameTransformation
 
     /**
      * Sets a desired world space transform the limb tip should try to move to.
@@ -122,6 +124,22 @@ interface KinematicBase {
      * @return The current limb tip transform in world space.
      */
     fun getCurrentLimbTipTransform(limbIndex: Int): FrameTransformation
+
+    /**
+     * Reads the desired tip transform of the limb in world space.
+     *
+     * @param limbId The id of the limb.
+     * @return The desired limb tip transform in world space.
+     */
+    fun getDesiredLimbTipTransform(limbId: LimbId): FrameTransformation
+
+    /**
+     * Reads the desired tip transform of the limb in world space.
+     *
+     * @param limbIndex The index of the limb in [limbs].
+     * @return The desired limb tip transform in world space.
+     */
+    fun getDesiredLimbTipTransform(limbIndex: Int): FrameTransformation
 
     /**
      * Computes the current Jacobian matrix for the given link.
