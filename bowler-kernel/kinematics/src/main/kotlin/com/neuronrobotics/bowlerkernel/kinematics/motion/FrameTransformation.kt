@@ -62,6 +62,13 @@ private constructor(private val mat: RealMatrix) {
         get() = internalData.copyOf()
 
     /**
+     * The inverse of this [FrameTransformation].
+     */
+    val inverse by lazy {
+        FrameTransformation(MatrixUtils.inverse(mat))
+    }
+
+    /**
      * Extracts the translation component.
      *
      * @return A 3x1 translation vector.

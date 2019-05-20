@@ -80,6 +80,50 @@ interface KinematicBase {
     fun getCurrentWorldSpaceTransform(): FrameTransformation
 
     /**
+     * Sets a desired world space transform the limb tip should try to move to.
+     *
+     * @param limbId The id of the limb.
+     * @param worldSpaceTransform The desired world space transform for the limb tip.
+     * @param motionConstraints The constraints on the motion to move from the current task
+     * space transform to the desired [worldSpaceTransform].
+     */
+    fun setDesiredLimbTipTransform(
+        limbId: LimbId,
+        worldSpaceTransform: FrameTransformation,
+        motionConstraints: MotionConstraints
+    )
+
+    /**
+     * Sets a desired world space transform the limb tip should try to move to.
+     *
+     * @param limbIndex The index of the limb in [limbs].
+     * @param worldSpaceTransform The desired world space transform for the limb tip.
+     * @param motionConstraints The constraints on the motion to move from the current task
+     * space transform to the desired [worldSpaceTransform].
+     */
+    fun setDesiredLimbTipTransform(
+        limbIndex: Int,
+        worldSpaceTransform: FrameTransformation,
+        motionConstraints: MotionConstraints
+    )
+
+    /**
+     * Reads the current tip transform of the limb in world space.
+     *
+     * @param limbId The id of the limb.
+     * @return The current limb tip transform in world space.
+     */
+    fun getCurrentLimbTipTransform(limbId: LimbId): FrameTransformation
+
+    /**
+     * Reads the current tip transform of the limb in world space.
+     *
+     * @param limbIndex The index of the limb in [limbs].
+     * @return The current limb tip transform in world space.
+     */
+    fun getCurrentLimbTipTransform(limbIndex: Int): FrameTransformation
+
+    /**
      * Computes the current Jacobian matrix for the given link.
      *
      * @param limbIndex The index of the limb in [limbs].
