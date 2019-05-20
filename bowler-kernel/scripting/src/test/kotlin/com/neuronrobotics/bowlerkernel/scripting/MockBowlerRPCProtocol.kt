@@ -21,6 +21,7 @@ import arrow.core.right
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.DigitalState
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.IMUState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
 import org.junit.jupiter.api.fail
@@ -156,6 +157,14 @@ class MockBowlerRPCProtocol : BowlerRPCProtocol {
     }
 
     override fun ultrasonicRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Long> {
+        fail { "Not implemented" }
+    }
+
+    override fun imuRead(resourceId: ResourceId): IMUState {
+        fail { "Not implemented" }
+    }
+
+    override fun imuRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<IMUState> {
         fail { "Not implemented" }
     }
 }

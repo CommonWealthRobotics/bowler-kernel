@@ -28,6 +28,7 @@ import arrow.core.right
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.DigitalState
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.IMUState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceType
@@ -996,6 +997,17 @@ open class SimplePacketComsProtocol(
 
     override fun ultrasonicRead(resourceIds: ImmutableList<ResourceId>) =
         handleGroupRead(resourceIds, this::parseUltrasonicReadPayload)
+
+    @Suppress("UNUSED_PARAMETER")
+    protected fun parseIMUReadPayload(payload: ByteArray, start: Int, end: Int): IMUState {
+        TODO()
+    }
+
+    override fun imuRead(resourceId: ResourceId) =
+        handleRead(resourceId, this::parseIMUReadPayload)
+
+    override fun imuRead(resourceIds: ImmutableList<ResourceId>) =
+        handleGroupRead(resourceIds, this::parseIMUReadPayload)
 
     /**
      * The lowest packet id.

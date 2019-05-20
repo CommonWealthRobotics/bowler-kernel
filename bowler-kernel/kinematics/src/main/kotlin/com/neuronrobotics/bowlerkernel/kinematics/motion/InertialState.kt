@@ -38,6 +38,7 @@ data class InertialState(
     val yAcceleration: Double = 0.0,
     val zAcceleration: Double = 0.0
 ) {
+
     constructor(
         xPosition: Number = 0,
         yPosition: Number = 0,
@@ -55,21 +56,21 @@ data class InertialState(
         yAcceleration: Number = 0,
         zAcceleration: Number = 0
     ) : this(
-        xPosition.toDouble(),
-        yPosition.toDouble(),
-        zPosition.toDouble(),
-        roll.toDouble(),
-        pitch.toDouble(),
-        yaw.toDouble(),
-        xVelocity.toDouble(),
-        yVelocity.toDouble(),
-        zVelocity.toDouble(),
-        rollRate.toDouble(),
-        pitchRate.toDouble(),
-        yawRate.toDouble(),
-        xAcceleration.toDouble(),
-        yAcceleration.toDouble(),
-        zAcceleration.toDouble()
+        xPosition = xPosition.toDouble(),
+        yPosition = yPosition.toDouble(),
+        zPosition = zPosition.toDouble(),
+        roll = roll.toDouble(),
+        pitch = pitch.toDouble(),
+        yaw = yaw.toDouble(),
+        xVelocity = xVelocity.toDouble(),
+        yVelocity = yVelocity.toDouble(),
+        zVelocity = zVelocity.toDouble(),
+        rollRate = rollRate.toDouble(),
+        pitchRate = pitchRate.toDouble(),
+        yawRate = yawRate.toDouble(),
+        xAcceleration = xAcceleration.toDouble(),
+        yAcceleration = yAcceleration.toDouble(),
+        zAcceleration = zAcceleration.toDouble()
     )
 
     /**
