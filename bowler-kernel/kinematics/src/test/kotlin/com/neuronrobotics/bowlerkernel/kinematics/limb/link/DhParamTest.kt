@@ -17,6 +17,7 @@
 package com.neuronrobotics.bowlerkernel.kinematics.limb.link
 
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
+import com.neuronrobotics.bowlerkernel.kinematics.motion.getRotationMatrix
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -32,7 +33,7 @@ internal class DhParamTest {
     @Test
     fun `test theta 90`() {
         assertTrue(
-            FrameTransformation.fromRotation(0, 0, 90).approxEquals(
+            FrameTransformation.fromRotation(getRotationMatrix(90, 0, 0)).approxEquals(
                 DhParam(0, 90, 0, 0).frameTransformation,
                 tolerance
             )
@@ -42,7 +43,7 @@ internal class DhParamTest {
     @Test
     fun `test alpha 90`() {
         assertTrue(
-            FrameTransformation.fromRotation(90, 0, 0).approxEquals(
+            FrameTransformation.fromRotation(getRotationMatrix(0, 0, 90)).approxEquals(
                 DhParam(0, 0, 0, 90).frameTransformation,
                 tolerance
             )
@@ -52,35 +53,40 @@ internal class DhParamTest {
     @ParameterizedTest
     @MethodSource("lengthIndependentOfRotationSource")
     fun `test length independent of rotation`(theta: Double, alpha: Double) {
-        assertEquals(hypot(2.0, 3.0), DhParam(
-            2.0,
-            theta,
-            3.0,
-            alpha
-        ).length)
+        assertEquals(
+            hypot(2.0, 3.0), DhParam(
+                2.0,
+                theta,
+                3.0,
+                alpha
+            ).length
+        )
     }
 
     @ParameterizedTest
     @MethodSource("angleSource")
     fun `test angle`(angle: Double) {
-        assertEquals(angle, DhParam(
-            2.0,
-            angle,
-            3.0,
-            angle
-        ).angle)
+        assertEquals(
+            angle, DhParam(
+                2.0,
+                angle,
+                3.0,
+                angle
+            ).angle
+        )
     }
 
     @Test
     fun `test toFrameTransform`() {
-        assertEquals(
-            FrameTransformation.fromTranslation(3, 0, 2) *
-                FrameTransformation.fromRotation(90, 0, 0),
-            listOf(
-                DhParam(2, 0, 0, 0),
-                DhParam(0, 0, 3, 90)
-            ).toFrameTransformation()
-        )
+        val expected = FrameTransformation.fromTranslation(3, 0, 2) *
+            FrameTransformation.fromRotation(getRotationMatrix(0, 0, 90))
+
+        val actual = listOf(
+            DhParam(2, 0, 0, 0),
+            DhParam(0, 0, 3, 90)
+        ).toFrameTransformation()
+
+        assertTrue(expected.approxEquals(actual, tolerance))
     }
 
     companion object {

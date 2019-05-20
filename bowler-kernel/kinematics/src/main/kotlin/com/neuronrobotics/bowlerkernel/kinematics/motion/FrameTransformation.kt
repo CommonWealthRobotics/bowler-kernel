@@ -21,20 +21,43 @@ package com.neuronrobotics.bowlerkernel.kinematics.motion
 import com.beust.klaxon.Converter
 import com.beust.klaxon.JsonValue
 import com.google.common.math.DoubleMath
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention
+import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
+import org.apache.commons.math3.linear.MatrixUtils
+import org.apache.commons.math3.linear.RealMatrix
 import org.ejml.simple.SimpleMatrix
+import java.lang.Math.toRadians
 import java.util.Arrays
-import kotlin.math.cos
 import kotlin.math.pow
-import kotlin.math.sin
 import kotlin.math.sqrt
 
 /**
  * An immutable frame transformation, internally back by a [SimpleMatrix].
  */
 data class FrameTransformation
-private constructor(private val mat: SimpleMatrix) {
+private constructor(private val mat: RealMatrix) {
 
-    private val internalData = DoubleArray(mat.numRows() * mat.numCols()) { mat[it] }
+    init {
+        require(mat.rowDimension == 4) {
+            "The input matrix must have 4 rows, given ${mat.rowDimension}"
+        }
+
+        require(mat.columnDimension == 4) {
+            "The input matrix must have 4 columns, given ${mat.columnDimension}"
+        }
+    }
+
+    // The let is not redundant because mat.data makes a copy
+    @Suppress("ReplaceSingleLineLet")
+    private val internalData = mat.data.let { data ->
+        DoubleArray(16) {
+            val row = it / 4
+            val col = it % 4
+            data[row][col]
+        }
+    }
+
     val data
         get() = internalData.copyOf()
 
@@ -43,73 +66,73 @@ private constructor(private val mat: SimpleMatrix) {
      *
      * @return A 3x1 translation vector.
      */
-    val translation: SimpleMatrix
-        get() = mat.extractMatrix(0, 3, 3, 4)
+    val translation: RealMatrix
+        get() = mat.getSubMatrix(0, 2, 3, 3)
 
     /**
      * Extracts the planar translation component.
      *
      * @return A 2x1 translation vector.
      */
-    val translationPlanar: SimpleMatrix
-        get() = mat.extractMatrix(0, 2, 3, 4)
+    val translationPlanar: RealMatrix
+        get() = mat.getSubMatrix(0, 1, 3, 3)
 
     /**
      * Extracts the translation component plus the element from the row below it.
      *
      * @return A 4x1 translation vector.
      */
-    val translationCol: SimpleMatrix
-        get() = mat.extractMatrix(0, 4, 3, 4)
+    val translationCol: RealMatrix
+        get() = mat.getSubMatrix(0, 3, 3, 3)
 
     /**
      * Extracts the X component of translation.
      */
-    val translationX = internalData[3]
+    val translationX: Double = internalData[3]
 
     /**
      * Extracts the Y component of translation.
      */
-    val translationY = internalData[7]
+    val translationY: Double = internalData[7]
 
     /**
      * Extracts the Z component of translation.
      */
-    val translationZ = internalData[11]
+    val translationZ: Double = internalData[11]
 
     /**
      * Extracts the rotation component.
      *
      * @return A 3x3 rotation matrix.
      */
-    val rotation: SimpleMatrix
-        get() = mat.extractMatrix(0, 3, 0, 3)
+    val rotation: RealMatrix
+        get() = mat.getSubMatrix(0, 2, 0, 2)
 
     /**
      * Extracts a generic submatrix.
      *
      * @param rowStartInclusive The starting row index, inclusive.
-     * @param rowEndExclusive The ending row index, exclusive.
+     * @param rowEndInclusive The ending row index, inclusive.
      * @param colStartInclusive The starting column index, inclusive.
-     * @param colEndExclusive The ending column index, exclusive.
+     * @param colEndInclusive The ending column index, inclusive.
      * @return A new submatrix.
      */
     fun subMatrix(
         rowStartInclusive: Int,
-        rowEndExclusive: Int,
+        rowEndInclusive: Int,
         colStartInclusive: Int,
-        colEndExclusive: Int
-    ): SimpleMatrix =
-        mat.extractMatrix(rowStartInclusive, rowEndExclusive, colStartInclusive, colEndExclusive)
+        colEndInclusive: Int
+    ): RealMatrix =
+        mat.getSubMatrix(rowStartInclusive, rowEndInclusive, colStartInclusive, colEndInclusive)
 
     operator fun plus(other: FrameTransformation) =
-        FrameTransformation(mat + other.mat)
+        FrameTransformation(mat.add(other.mat))
 
     operator fun minus(other: FrameTransformation) =
-        FrameTransformation(mat - other.mat)
+        FrameTransformation(mat.subtract(other.mat))
 
     operator fun times(other: FrameTransformation) =
-        FrameTransformation(mat.mult(other.mat))
+        FrameTransformation(mat.multiply(other.mat))
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -145,7 +168,7 @@ private constructor(private val mat: SimpleMatrix) {
         /**
          * The identity frame transformation.
          */
-        val identity = FrameTransformation(SimpleMatrix.identity(4))
+        val identity = FrameTransformation(MatrixUtils.createRealIdentityMatrix(4))
 
         /**
          * Constructs a frame transformation from a translation.
@@ -157,12 +180,10 @@ private constructor(private val mat: SimpleMatrix) {
          */
         fun fromTranslation(x: Number, y: Number, z: Number) =
             FrameTransformation(
-                SimpleMatrix.identity(
-                    4
-                ).apply {
-                    this[0, 3] = x.toDouble()
-                    this[1, 3] = y.toDouble()
-                    this[2, 3] = z.toDouble()
+                MatrixUtils.createRealIdentityMatrix(4).apply {
+                    setEntry(0, 3, x.toDouble())
+                    setEntry(1, 3, y.toDouble())
+                    setEntry(2, 3, z.toDouble())
                 })
 
         /**
@@ -171,28 +192,17 @@ private constructor(private val mat: SimpleMatrix) {
          * @param translation A 3x1 column vector representing the x, y, and z axis translations.
          * @return A translation frame transformation.
          */
-        fun fromTranslation(translation: SimpleMatrix): FrameTransformation {
-            require(translation.numRows() == 3)
-            require(translation.numCols() == 1)
+        fun fromTranslation(translation: RealMatrix): FrameTransformation {
+            require(translation.rowDimension == 3)
+            require(translation.columnDimension == 1)
 
             return FrameTransformation(
-                SimpleMatrix.identity(4).apply {
-                    this[0, 3] = translation[0, 0]
-                    this[1, 3] = translation[1, 0]
-                    this[2, 3] = translation[2, 0]
+                MatrixUtils.createRealIdentityMatrix(4).apply {
+                    setEntry(0, 3, translation.getEntry(0, 0))
+                    setEntry(1, 3, translation.getEntry(1, 0))
+                    setEntry(2, 3, translation.getEntry(2, 0))
                 })
         }
-
-        /**
-         * Constructs a frame transformation from an Euler rotation. Uses ZYX rotation order.
-         *
-         * @param x The rotation around the x-axis.
-         * @param y The rotation around the y-axis.
-         * @param z The rotation around the z-axis.
-         * @return A rotation frame transformation.
-         */
-        fun fromRotation(x: Number, y: Number, z: Number) =
-            fromRotation(getRotationMatrix(x, y, z))
 
         /**
          * Constructs a frame transformation from a rotation.
@@ -200,14 +210,14 @@ private constructor(private val mat: SimpleMatrix) {
          * @param rotation A 3x3 rotation matrix.
          * @return A rotation frame transformation.
          */
-        fun fromRotation(rotation: SimpleMatrix): FrameTransformation {
-            require(rotation.numRows() == 3)
-            require(rotation.numCols() == 3)
+        fun fromRotation(rotation: RealMatrix): FrameTransformation {
+            require(rotation.rowDimension == 3)
+            require(rotation.columnDimension == 3)
 
-            return FrameTransformation(SimpleMatrix.identity(4).apply {
+            return FrameTransformation(MatrixUtils.createRealIdentityMatrix(4).apply {
                 for (row in 0 until 3) {
                     for (col in 0 until 3) {
-                        this[row, col] = rotation[row, col]
+                        setEntry(row, col, rotation.getEntry(row, col))
                     }
                 }
             })
@@ -223,20 +233,20 @@ private constructor(private val mat: SimpleMatrix) {
             require(rotation.size == 3)
             require(rotation[0].size == 3)
 
-            return FrameTransformation(SimpleMatrix.identity(4).apply {
+            return FrameTransformation(MatrixUtils.createRealIdentityMatrix(4).apply {
                 for (row in 0 until 3) {
                     for (col in 0 until 3) {
-                        this[row, col] = rotation[row][col]
+                        setEntry(row, col, rotation[row][col])
                     }
                 }
             })
         }
 
-        fun fromSimpleMatrix(simpleMatrix: SimpleMatrix): FrameTransformation {
-            require(simpleMatrix.numRows() == 4)
-            require(simpleMatrix.numCols() == 4)
+        fun fromMatrix(matrix: RealMatrix): FrameTransformation {
+            require(matrix.rowDimension == 4)
+            require(matrix.columnDimension == 4)
 
-            return FrameTransformation(simpleMatrix)
+            return FrameTransformation(matrix)
         }
 
         /**
@@ -249,8 +259,8 @@ private constructor(private val mat: SimpleMatrix) {
                 value as FrameTransformation
                 return """
                     |{
-                    |   "rows": ${value.mat.numRows()},
-                    |   "cols": ${value.mat.numCols()},
+                    |   "rows": ${value.mat.rowDimension},
+                    |   "cols": ${value.mat.columnDimension},
                     |   "data": [${value.internalData.joinToString(",")}]
                     |}
                 """.trimMargin()
@@ -261,12 +271,18 @@ private constructor(private val mat: SimpleMatrix) {
                     val rows = it.int("rows")!!
                     val cols = it.int("cols")!!
                     val data = it.array<Double>("data")!!.toDoubleArray()
+
+                    require(rows == 4)
+                    require(cols == 4)
+                    require(data.size == 16)
+
                     FrameTransformation(
-                        SimpleMatrix(
-                            rows,
-                            cols,
-                            true,
-                            data
+                        MatrixUtils.createRealMatrix(
+                            Array(4) { row ->
+                                DoubleArray(4) { col ->
+                                    data[col + row * 4]
+                                }
+                            }
                         )
                     )
                 }
@@ -276,58 +292,69 @@ private constructor(private val mat: SimpleMatrix) {
 }
 
 /**
- * Creates a 3x3 matrix representing a rotation. Computed using ZYX rotation order.
+ * Creates a 3x3 matrix representing a rotation.
  *
- * @param x The rotation around the x-axis in degrees.
- * @param y The rotation around the y-axis in degrees.
- * @param z The rotation around the z-axis in degrees.
+ * @param r1 The first rotation in degrees.
+ * @param r2 The second rotation in degrees.
+ * @param r3 The third rotation in degrees.
+ * @param order The rotation order.
+ * @param convention The rotation convention.
+ * @return The rotation matrix.
  */
-fun getRotationMatrix(x: Number, y: Number, z: Number): SimpleMatrix {
-    val xRad = Math.toRadians(x.toDouble())
-    val yRad = Math.toRadians(y.toDouble())
-    val zRad = Math.toRadians(z.toDouble())
-
-    val zMat = SimpleMatrix.identity(3).apply {
-        this[0, 0] = cos(zRad)
-        this[0, 1] = -sin(zRad)
-        this[1, 0] = sin(zRad)
-        this[1, 1] = cos(zRad)
-    }
-
-    val yMat = SimpleMatrix.identity(3).apply {
-        this[0, 0] = cos(yRad)
-        this[0, 2] = sin(yRad)
-        this[2, 0] = -sin(yRad)
-        this[2, 2] = cos(yRad)
-    }
-
-    val xMat = SimpleMatrix.identity(3).apply {
-        this[1, 1] = cos(xRad)
-        this[1, 2] = -sin(xRad)
-        this[2, 1] = sin(xRad)
-        this[2, 2] = cos(xRad)
-    }
-
-    return zMat.mult(yMat).mult(xMat)
-}
+fun getRotationMatrix(
+    r1: Number,
+    r2: Number,
+    r3: Number,
+    order: RotationOrder = RotationOrder.ZYX,
+    convention: RotationConvention = RotationConvention.VECTOR_OPERATOR
+): RealMatrix = Rotation(
+    order,
+    convention,
+    toRadians(r1.toDouble()),
+    toRadians(r2.toDouble()),
+    toRadians(r3.toDouble())
+).let { MatrixUtils.createRealMatrix(it.matrix) }
 
 /**
  * Treats the matrix as a row or column vector and computes its length.
+ *
+ * @return The length.
  */
-fun SimpleMatrix.length(): Double {
-    require(numRows() == 1 || numCols() == 1)
+fun RealMatrix.length(): Double {
+    require((rowDimension == 1 || columnDimension == 1) && !isSquare)
 
-    var sum = 0.0
-
-    if (numRows() == 1) {
-        for (i in 0 until numCols()) {
-            sum += this[0, i].pow(2)
+    return sqrt(
+        if (rowDimension == 1) {
+            getRow(0).sumByDouble { it.pow(2) }
+        } else {
+            getColumn(0).sumByDouble { it.pow(2) }
         }
-    } else {
-        for (i in 0 until numRows()) {
-            sum += this[i, 0].pow(2)
+    )
+}
+
+/**
+ * Computes whether [this] is equal to [other] within a per-element [equalityTolerance].
+ *
+ * @param other The other matrix.
+ * @param equalityTolerance The per-element tolerance.
+ * @return True if [this] equals [other].
+ */
+fun RealMatrix.isIdentical(other: RealMatrix, equalityTolerance: Double): Boolean {
+    require(rowDimension == other.rowDimension)
+    require(columnDimension == other.columnDimension)
+
+    for (row in 0 until rowDimension) {
+        for (col in 0 until columnDimension) {
+            if (!DoubleMath.fuzzyEquals(
+                    getEntry(row, col),
+                    other.getEntry(row, col),
+                    equalityTolerance
+                )
+            ) {
+                return false
+            }
         }
     }
 
-    return sqrt(sum)
+    return true
 }

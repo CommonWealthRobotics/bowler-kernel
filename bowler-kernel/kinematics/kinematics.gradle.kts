@@ -44,6 +44,11 @@ dependencies {
         name = "klaxon",
         version = property("klaxon.version") as String
     )
+    implementation(
+        group = "org.apache.commons",
+        name = "commons-math3",
+        version = property("commons-math3.version") as String
+    )
 
     testImplementation(
         group = "com.natpryce",
