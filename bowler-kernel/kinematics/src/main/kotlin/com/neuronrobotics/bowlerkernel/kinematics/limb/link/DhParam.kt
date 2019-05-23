@@ -17,7 +17,7 @@
 package com.neuronrobotics.bowlerkernel.kinematics.limb.link
 
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
-import org.apache.commons.math3.linear.MatrixUtils
+import org.ejml.simple.SimpleMatrix
 import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.sin
@@ -40,25 +40,25 @@ data class DhParam(
      * the normal convention (CoR n to CoR n+1).
      */
     val frameTransformation: FrameTransformation by lazy {
-        MatrixUtils.createRealIdentityMatrix(4).apply {
+        SimpleMatrix.identity(4).apply {
             val thetaRadians = Math.toRadians(theta)
             val alphaRadians = Math.toRadians(alpha)
 
-            setEntry(0, 0, cos(thetaRadians))
-            setEntry(1, 0, sin(thetaRadians))
+            this[0, 0] = cos(thetaRadians)
+            this[1, 0] = sin(thetaRadians)
 
-            setEntry(0, 1, -sin(thetaRadians) * cos(alphaRadians))
-            setEntry(1, 1, cos(thetaRadians) * cos(alphaRadians))
-            setEntry(2, 1, sin(alphaRadians))
+            this[0, 1] = -sin(thetaRadians) * cos(alphaRadians)
+            this[1, 1] = cos(thetaRadians) * cos(alphaRadians)
+            this[2, 1] = sin(alphaRadians)
 
-            setEntry(0, 2, sin(thetaRadians) * sin(alphaRadians))
-            setEntry(1, 2, -cos(thetaRadians) * sin(alphaRadians))
-            setEntry(2, 2, cos(alphaRadians))
+            this[0, 2] = sin(thetaRadians) * sin(alphaRadians)
+            this[1, 2] = -cos(thetaRadians) * sin(alphaRadians)
+            this[2, 2] = cos(alphaRadians)
 
-            setEntry(0, 3, r * cos(thetaRadians))
-            setEntry(1, 3, r * sin(thetaRadians))
-            setEntry(2, 3, d)
-        }.let { FrameTransformation.fromMatrix(it) }
+            this[0, 3] = r * cos(thetaRadians)
+            this[1, 3] = r * sin(thetaRadians)
+            this[2, 3] = d
+        }.let { FrameTransformation.fromSimpleMatrix(it) }
     }
 
     /**
