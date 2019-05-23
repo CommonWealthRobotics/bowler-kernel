@@ -18,8 +18,8 @@
 
 package com.neuronrobotics.bowlerkernel.kinematics.motion
 
+import Jama.Matrix
 import com.beust.klaxon.Klaxon
-import org.ejml.simple.SimpleMatrix
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -34,15 +34,12 @@ import kotlin.math.sqrt
 
 internal class FrameTransformationTest {
 
-    // Used to check for SimpleMatrix equality
     private val equalityTolerance = 1e-14
 
     @Test
     fun `test identity`() {
         assertEquals(
-            FrameTransformation.fromSimpleMatrix(
-                SimpleMatrix.identity(4)
-            ),
+            FrameTransformation.fromMatrix(Matrix.identity(4, 4)),
             FrameTransformation.identity
         )
     }
@@ -50,60 +47,52 @@ internal class FrameTransformationTest {
     @Test
     fun `test fromTranslation with xyz and getTranslation`() {
         val expected =
-            FrameTransformation.fromSimpleMatrix(
-                SimpleMatrix.identity(4).apply {
+            FrameTransformation.fromMatrix(
+                Matrix.identity(4, 4).apply {
                     this[0, 3] = 1.0
                     this[1, 3] = 2.0
                     this[2, 3] = 3.0
                 }
             )
 
-        val tested =
-            FrameTransformation.fromTranslation(
-                1,
-                2,
-                3
-            )
+        val tested = FrameTransformation.fromTranslation(1, 2, 3)
 
         assertAll(
             { assertEquals(expected, tested) },
             {
                 assertTrue(
-                    SimpleMatrix(3, 1).apply {
+                    Matrix(3, 1).apply {
                         this[0, 0] = 1.0
                         this[1, 0] = 2.0
                         this[2, 0] = 3.0
-                    }.isIdentical(tested.translation, equalityTolerance)
+                    }.approxEquals(tested.translation, equalityTolerance)
                 )
             }
         )
     }
 
     @Test
-    fun `test fromTranslation with SimpleMatrix`() {
+    fun `test fromTranslation with Matrix`() {
         val expected =
-            FrameTransformation.fromSimpleMatrix(
-                SimpleMatrix.identity(4).apply {
+            FrameTransformation.fromMatrix(
+                Matrix.identity(4, 4).apply {
                     this[0, 3] = 1.0
                     this[1, 3] = 2.0
                     this[2, 3] = 3.0
                 }
             )
 
-        val testedMat = SimpleMatrix(3, 1).apply {
+        val testedMat = Matrix(3, 1).apply {
             this[0, 0] = 1.0
             this[1, 0] = 2.0
             this[2, 0] = 3.0
         }
 
-        val tested =
-            FrameTransformation.fromTranslation(
-                testedMat
-            )
+        val tested = FrameTransformation.fromTranslation(testedMat)
 
         assertAll(
-            { assertEquals(expected, tested) },
-            { assertTrue(testedMat.isIdentical(tested.translation, equalityTolerance)) }
+            { assertTrue(expected.approxEquals(tested, equalityTolerance)) },
+            { assertTrue(testedMat.approxEquals(tested.translation, equalityTolerance)) }
         )
     }
 
@@ -114,8 +103,8 @@ internal class FrameTransformationTest {
         val sinAngle = sin(angle)
 
         val expected =
-            FrameTransformation.fromSimpleMatrix(
-                SimpleMatrix.identity(4).apply {
+            FrameTransformation.fromMatrix(
+                Matrix.identity(4, 4).apply {
                     this[0, 0] = cosAngle
                     this[1, 0] = sinAngle
                     this[0, 1] = -sinAngle
@@ -123,23 +112,18 @@ internal class FrameTransformationTest {
                 }
             )
 
-        val tested =
-            FrameTransformation.fromRotation(
-                0,
-                0,
-                toDegrees(angle)
-            )
+        val tested = FrameTransformation.fromRotation(toDegrees(angle), 0, 0)
 
         assertAll(
-            { assertEquals(expected, tested) },
+            { assertTrue(expected.approxEquals(tested, equalityTolerance)) },
             {
                 assertTrue(
-                    SimpleMatrix.identity(3).apply {
+                    Matrix.identity(3, 3).apply {
                         this[0, 0] = cosAngle
                         this[1, 0] = sinAngle
                         this[0, 1] = -sinAngle
                         this[1, 1] = cosAngle
-                    }.isIdentical(tested.rotation, equalityTolerance)
+                    }.approxEquals(tested.rotation, equalityTolerance)
                 )
             }
         )
@@ -152,8 +136,8 @@ internal class FrameTransformationTest {
         val sinAngle = sin(angle)
 
         val expected =
-            FrameTransformation.fromSimpleMatrix(
-                SimpleMatrix.identity(4).apply {
+            FrameTransformation.fromMatrix(
+                Matrix.identity(4, 4).apply {
                     this[0, 0] = cosAngle
                     this[2, 0] = -sinAngle
                     this[0, 2] = sinAngle
@@ -161,23 +145,18 @@ internal class FrameTransformationTest {
                 }
             )
 
-        val tested =
-            FrameTransformation.fromRotation(
-                0,
-                toDegrees(angle),
-                0
-            )
+        val tested = FrameTransformation.fromRotation(0, toDegrees(angle), 0)
 
         assertAll(
-            { assertEquals(expected, tested) },
+            { assertTrue(expected.approxEquals(tested, equalityTolerance)) },
             {
                 assertTrue(
-                    SimpleMatrix.identity(3).apply {
+                    Matrix.identity(3, 3).apply {
                         this[0, 0] = cosAngle
                         this[2, 0] = -sinAngle
                         this[0, 2] = sinAngle
                         this[2, 2] = cosAngle
-                    }.isIdentical(tested.rotation, equalityTolerance)
+                    }.approxEquals(tested.rotation, equalityTolerance)
                 )
             }
         )
@@ -190,8 +169,8 @@ internal class FrameTransformationTest {
         val sinAngle = sin(angle)
 
         val expected =
-            FrameTransformation.fromSimpleMatrix(
-                SimpleMatrix.identity(4).apply {
+            FrameTransformation.fromMatrix(
+                Matrix.identity(4, 4).apply {
                     this[1, 1] = cosAngle
                     this[2, 1] = sinAngle
                     this[1, 2] = -sinAngle
@@ -199,31 +178,26 @@ internal class FrameTransformationTest {
                 }
             )
 
-        val tested =
-            FrameTransformation.fromRotation(
-                toDegrees(angle),
-                0,
-                0
-            )
+        val tested = FrameTransformation.fromRotation(0, 0, toDegrees(angle))
 
         assertAll(
-            { assertEquals(expected, tested) },
+            { assertTrue(expected.approxEquals(tested, equalityTolerance)) },
             {
                 assertTrue(
-                    SimpleMatrix.identity(3).apply {
+                    Matrix.identity(3, 3).apply {
                         this[1, 1] = cosAngle
                         this[2, 1] = sinAngle
                         this[1, 2] = -sinAngle
                         this[2, 2] = cosAngle
-                    }.isIdentical(tested.rotation, equalityTolerance)
+                    }.approxEquals(tested.rotation, equalityTolerance)
                 )
             }
         )
     }
 
     @Test
-    fun `test fromRotation with SimpleMatrix`() {
-        fun SimpleMatrix.populate() = apply {
+    fun `test fromRotation with Matrix`() {
+        fun Matrix.populate() = apply {
             for (row in 0 until 3) {
                 for (col in 0 until 3) {
                     this[row, col] = (row + col).toDouble()
@@ -232,19 +206,19 @@ internal class FrameTransformationTest {
         }
 
         val expected =
-            FrameTransformation.fromSimpleMatrix(
-                SimpleMatrix.identity(4).populate()
+            FrameTransformation.fromMatrix(
+                Matrix.identity(4, 4).populate()
             )
         val tested =
             FrameTransformation.fromRotation(
-                SimpleMatrix(3, 3).populate()
+                Matrix(3, 3).populate()
             )
 
         assertAll(
             { assertEquals(expected, tested) },
             {
                 assertTrue(
-                    SimpleMatrix(3, 3).populate().isIdentical(
+                    Matrix(3, 3).populate().approxEquals(
                         tested.rotation,
                         equalityTolerance
                     )
@@ -260,7 +234,7 @@ internal class FrameTransformationTest {
         }
 
         assertTrue(
-            SimpleMatrix(data).isIdentical(
+            Matrix(data).approxEquals(
                 FrameTransformation.fromRotation(data).rotation,
                 equalityTolerance
             )
@@ -271,7 +245,7 @@ internal class FrameTransformationTest {
     fun `test length with column vector`() {
         assertEquals(
             sqrt(1.0.pow(2) + 2.0.pow(2) + 3.0.pow(2)),
-            SimpleMatrix(3, 1).apply {
+            Matrix(3, 1).apply {
                 this[0, 0] = 1.0
                 this[1, 0] = 2.0
                 this[2, 0] = 3.0
@@ -283,7 +257,7 @@ internal class FrameTransformationTest {
     fun `test length with row vector`() {
         assertEquals(
             sqrt(1.0.pow(2) + 2.0.pow(2) + 3.0.pow(2)),
-            SimpleMatrix(1, 3).apply {
+            Matrix(1, 3).apply {
                 this[0, 0] = 1.0
                 this[0, 1] = 2.0
                 this[0, 2] = 3.0
@@ -293,68 +267,55 @@ internal class FrameTransformationTest {
 
     @Test
     fun `test getTranslationPlanar`() {
-        val expected = SimpleMatrix(2, 1).apply {
-            this[0] = 1.0
-            this[1] = 2.0
+        val expected = Matrix(2, 1).apply {
+            this[0, 0] = 1.0
+            this[1, 0] = 2.0
         }
 
-        val actual = FrameTransformation.fromTranslation(
-            1,
-            2,
-            3
-        ).translationPlanar
+        val actual = FrameTransformation.fromTranslation(1, 2, 3).translationPlanar
 
-        assertTrue(expected.isIdentical(actual, equalityTolerance))
+        assertTrue(expected.approxEquals(actual, equalityTolerance))
     }
 
     @Test
     fun `test getTranslationCol`() {
-        val expected = SimpleMatrix(4, 1).apply {
-            this[0] = 1.0
-            this[1] = 2.0
-            this[2] = 3.0
-            this[3] = 1.0
+        val expected = Matrix(4, 1).apply {
+            this[0, 0] = 1.0
+            this[1, 0] = 2.0
+            this[2, 0] = 3.0
+            this[3, 0] = 1.0
         }
 
-        val actual = FrameTransformation.fromTranslation(
-            1,
-            2,
-            3
-        ).translationCol
+        val actual = FrameTransformation.fromTranslation(1, 2, 3).translationCol
 
-        assertTrue(expected.isIdentical(actual, equalityTolerance))
+        assertTrue(expected.approxEquals(actual, equalityTolerance))
     }
 
     @Test
     fun `test subMatrix`() {
-        fun SimpleMatrix.populate(rowOffset: Int = 0, colOffset: Int = 0) {
+        fun Matrix.populate(rowOffset: Int = 0, colOffset: Int = 0) {
             this[rowOffset + 0, colOffset + 0] = 1.0
             this[rowOffset + 0, colOffset + 1] = 2.0
             this[rowOffset + 1, colOffset + 0] = 3.0
             this[rowOffset + 1, colOffset + 1] = 4.0
         }
 
-        val expected = SimpleMatrix(2, 2).apply {
+        val expected = Matrix(2, 2).apply {
             populate()
         }
 
-        val actual = FrameTransformation.fromSimpleMatrix(
-            SimpleMatrix(4, 4).apply {
+        val actual = FrameTransformation.fromMatrix(
+            Matrix(4, 4).apply {
                 populate(1, 1)
             }
         ).subMatrix(1, 3, 1, 3)
 
-        assertTrue(expected.isIdentical(actual, equalityTolerance))
+        assertTrue(expected.approxEquals(actual, equalityTolerance))
     }
 
     @Test
     fun `test json round trip`() {
-        val expected =
-            FrameTransformation.fromTranslation(
-                1,
-                2,
-                3
-            )
+        val expected = FrameTransformation.fromTranslation(1, 2, 3)
         val klaxon = Klaxon().converter(FrameTransformation.converter)
         val json = klaxon.toJsonString(expected)
         val ftFromJson = klaxon.parse<FrameTransformation>(json)
@@ -365,71 +326,63 @@ internal class FrameTransformationTest {
     fun `test getRotationMatrix around z only`() {
         val zRad = PI / 3
 
-        val expected = SimpleMatrix.identity(3).apply {
+        val expected = FrameTransformation.fromRotation(Matrix.identity(3, 3).apply {
             this[0, 0] = cos(zRad)
             this[0, 1] = -sin(zRad)
             this[1, 0] = sin(zRad)
             this[1, 1] = cos(zRad)
-        }
+        })
 
-        val actual = getRotationMatrix(
-            0,
-            0,
-            toDegrees(zRad)
-        )
+        val actual = FrameTransformation.fromRotation(toDegrees(zRad), 0, 0)
 
-        assertTrue(expected.isIdentical(actual, equalityTolerance))
+        assertTrue(expected.approxEquals(actual, equalityTolerance))
     }
 
     @Test
     fun `test getRotationMatrix around y only`() {
         val yRad = PI / 3
 
-        val expected = SimpleMatrix.identity(3).apply {
-            this[0, 0] = cos(yRad)
-            this[0, 2] = sin(yRad)
-            this[2, 0] = -sin(yRad)
-            this[2, 2] = cos(yRad)
-        }
-
-        val actual = getRotationMatrix(
-            0,
-            toDegrees(yRad),
-            0
+        val expected = FrameTransformation.fromRotation(
+            Matrix.identity(3, 3).apply {
+                this[0, 0] = cos(yRad)
+                this[0, 2] = sin(yRad)
+                this[2, 0] = -sin(yRad)
+                this[2, 2] = cos(yRad)
+            }
         )
 
-        assertTrue(expected.isIdentical(actual, equalityTolerance))
+        val actual = FrameTransformation.fromRotation(0, toDegrees(yRad), 0)
+
+        assertTrue(expected.approxEquals(actual, equalityTolerance))
     }
 
     @Test
     fun `test getRotationMatrix around x only`() {
         val xRad = PI / 3
 
-        val expected = SimpleMatrix.identity(3).apply {
-            this[1, 1] = cos(xRad)
-            this[1, 2] = -sin(xRad)
-            this[2, 1] = sin(xRad)
-            this[2, 2] = cos(xRad)
-        }
-
-        val actual = getRotationMatrix(
-            toDegrees(xRad),
-            0,
-            0
+        val expected = FrameTransformation.fromRotation(
+            Matrix.identity(3, 3).apply {
+                this[1, 1] = cos(xRad)
+                this[1, 2] = -sin(xRad)
+                this[2, 1] = sin(xRad)
+                this[2, 2] = cos(xRad)
+            }
         )
 
-        assertTrue(expected.isIdentical(actual, equalityTolerance))
+        val actual = FrameTransformation.fromRotation(0, 0, toDegrees(xRad))
+
+        assertTrue(expected.approxEquals(actual, equalityTolerance))
     }
 
     @Test
     fun `test approxEquals with negative zero`() {
         assertTrue(
-            FrameTransformation.fromSimpleMatrix(
-                SimpleMatrix(4, 4).apply {
+            FrameTransformation.fromMatrix(
+                Matrix(4, 4).apply {
                     this[0, 0] = 0.0
                 }).approxEquals(
-                FrameTransformation.fromSimpleMatrix(
-                    SimpleMatrix(4, 4).apply {
+                FrameTransformation.fromMatrix(
+                    Matrix(4, 4).apply {
                         this[0, 0] = -0.0
                     }),
                 equalityTolerance
@@ -440,12 +393,12 @@ internal class FrameTransformationTest {
     @Test
     fun `test approxEquals with tolerance`() {
         assertTrue(
-            FrameTransformation.fromSimpleMatrix(
-                SimpleMatrix(4, 4).apply {
+            FrameTransformation.fromMatrix(
+                Matrix(4, 4).apply {
                     this[0, 0] = 0.0
                 }).approxEquals(
-                FrameTransformation.fromSimpleMatrix(
-                    SimpleMatrix(4, 4).apply {
+                FrameTransformation.fromMatrix(
+                    Matrix(4, 4).apply {
                         this[0, 0] = equalityTolerance
                     }),
                 equalityTolerance
@@ -456,12 +409,12 @@ internal class FrameTransformationTest {
     @Test
     fun `test approxEquals failure`() {
         assertFalse(
-            FrameTransformation.fromSimpleMatrix(
-                SimpleMatrix(4, 4).apply {
+            FrameTransformation.fromMatrix(
+                Matrix(4, 4).apply {
                     this[0, 0] = 0.0
                 }).approxEquals(
-                FrameTransformation.fromSimpleMatrix(
-                    SimpleMatrix(4, 4).apply {
+                FrameTransformation.fromMatrix(
+                    Matrix(4, 4).apply {
                         this[0, 0] = equalityTolerance + 1e-20
                     }),
                 equalityTolerance

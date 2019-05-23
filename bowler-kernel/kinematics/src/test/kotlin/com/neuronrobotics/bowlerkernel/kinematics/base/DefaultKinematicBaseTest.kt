@@ -33,7 +33,6 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.LengthBasedReachability
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInertialStateEstimator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInverseKinematicsSolver
-import com.neuronrobotics.bowlerkernel.kinematics.motion.getRotationMatrix
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanGenerator
 import com.neuronrobotics.bowlerkernel.util.Limits
@@ -147,7 +146,7 @@ internal class DefaultKinematicBaseTest {
 
         base.setCurrentWorldSpaceTransform(
             FrameTransformation.fromTranslation(10, 0, 0) *
-                FrameTransformation.fromRotation(getRotationMatrix(0, 90, 0))
+                FrameTransformation.fromRotation(0, 90, 0)
         )
 
         val desiredTipTransform = FrameTransformation.fromTranslation(25, 0, -15)
@@ -175,7 +174,7 @@ internal class DefaultKinematicBaseTest {
                     x = 25 - 10,
                     y = 0,
                     z = -15 - 10 - 10
-                ) * FrameTransformation.fromRotation(getRotationMatrix(0, -90, 0))
+                ) * FrameTransformation.fromRotation(0, -90, 0)
                 val actual = limb.getDesiredTaskSpaceTransform()
                 assertTrue(
                     expected.approxEquals(actual, tolerance),

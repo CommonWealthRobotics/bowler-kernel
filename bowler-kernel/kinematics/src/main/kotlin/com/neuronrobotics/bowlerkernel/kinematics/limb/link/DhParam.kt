@@ -16,8 +16,8 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.limb.link
 
+import Jama.Matrix
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
-import org.ejml.simple.SimpleMatrix
 import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.sin
@@ -40,7 +40,7 @@ data class DhParam(
      * the normal convention (CoR n to CoR n+1).
      */
     val frameTransformation: FrameTransformation by lazy {
-        SimpleMatrix.identity(4).apply {
+        Matrix.identity(4, 4).apply {
             val thetaRadians = Math.toRadians(theta)
             val alphaRadians = Math.toRadians(alpha)
 
@@ -58,7 +58,7 @@ data class DhParam(
             this[0, 3] = r * cos(thetaRadians)
             this[1, 3] = r * sin(thetaRadians)
             this[2, 3] = d
-        }.let { FrameTransformation.fromSimpleMatrix(it) }
+        }.let { FrameTransformation.fromMatrix(it) }
     }
 
     /**

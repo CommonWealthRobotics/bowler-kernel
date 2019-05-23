@@ -31,6 +31,7 @@ import org.ejml.simple.SimpleMatrix
  * The main "base" of a robot. Generally, it is the central hub of the robot to which the limbs
  * are attached.
  */
+@SuppressWarnings("ComplexInterface", "TooManyFunctions")
 interface KinematicBase {
 
     /**

@@ -26,6 +26,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
 import org.ejml.simple.SimpleMatrix
 
+@SuppressWarnings("TooManyFunctions")
 class DefaultKinematicBase(
     override val id: KinematicBaseId,
     override val limbs: ImmutableList<Limb>,
