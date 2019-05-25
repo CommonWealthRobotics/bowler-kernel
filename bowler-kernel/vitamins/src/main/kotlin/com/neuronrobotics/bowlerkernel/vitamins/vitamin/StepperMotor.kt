@@ -19,7 +19,6 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 import org.octogonapus.ktunits.quantities.Angle
 import org.octogonapus.ktunits.quantities.ElectricCurrent
 import org.octogonapus.ktunits.quantities.ElectricPotential
-import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Torque
 
 /**
@@ -29,11 +28,6 @@ import org.octogonapus.ktunits.quantities.Torque
  *  - Mounting holes (Vitamin for the screws and hole positions)
  */
 interface StepperMotor : Vitamin {
-
-    /**
-     * The shaft diameter.
-     */
-    val shaftDiameter: Length
 
     /**
      * The NEMA size.
@@ -59,4 +53,9 @@ interface StepperMotor : Vitamin {
      * The degrees per step.
      */
     val stepAngle: Angle
+
+    /**
+     * The shaft type.
+     */
+    val shaft: DefaultShaft
 }

@@ -16,24 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
-import com.google.common.collect.ImmutableMap
-import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
-import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
-import org.octogonapus.ktunits.quantities.Length
-import org.octogonapus.ktunits.quantities.Mass
-
-data class DefaultBallBearing(
-    override val bore: Length,
-    override val width: Length,
-    override val length: Length,
-    override val height: Length,
-    override val mass: Mass,
-    override val centerOfMass: CenterOfMass,
-    @ConvertImmutableMap
-    override val specs: ImmutableMap<String, Any>,
-    override val cadGenerator: GitFile
-) : BallBearing, KlaxonVitaminTo {
-
-    override fun toVitamin() = this
-}
+/**
+ * A shaft for transferring torque.
+ */
+interface Shaft : Vitamin

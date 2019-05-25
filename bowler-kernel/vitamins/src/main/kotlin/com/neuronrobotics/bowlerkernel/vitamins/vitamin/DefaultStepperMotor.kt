@@ -27,12 +27,12 @@ import org.octogonapus.ktunits.quantities.Mass
 import org.octogonapus.ktunits.quantities.Torque
 
 data class DefaultStepperMotor(
-    override val shaftDiameter: Length,
     override val nemaSize: Int,
     override val voltage: ElectricPotential,
     override val holdingTorque: Torque,
     override val current: ElectricCurrent,
     override val stepAngle: Angle,
+    override val shaft: DefaultShaft,
     override val width: Length,
     override val length: Length,
     override val height: Length,

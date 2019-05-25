@@ -19,23 +19,28 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsuppl
 import com.beust.klaxon.TypeAdapter
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBallBearing
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBattery
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultDCMotor
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultServo
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultStepperMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonDCMotor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonShaft
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonStepperMotor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
 import kotlin.reflect.KClass
 
 /**
- * Adapts [Vitamin] and [DefaultKlaxonGitVitamin] so Klaxon can handle polymorphism.
+ * Adapts [Vitamin] and [KlaxonGitVitamin] so Klaxon can handle polymorphism.
  */
-class KlaxonVitaminAdapter : TypeAdapter<Vitamin> {
+class KlaxonVitaminAdapter : TypeAdapter<KlaxonVitaminTo> {
 
-    override fun classFor(type: Any): KClass<out Vitamin> = when (type as String) {
-        "defaultBallBearing" -> DefaultBallBearing::class
-        "defaultBattery" -> DefaultBattery::class
-        "defaultDCMotor" -> DefaultDCMotor::class
-        "defaultServo" -> DefaultServo::class
-        "defaultStepperMotor" -> DefaultStepperMotor::class
-        else -> throw IllegalArgumentException("Unknown type: $type")
+    override fun classFor(type: Any): KClass<out KlaxonVitaminTo> {
+        return when (type as String) {
+            "DefaultBallBearing" -> DefaultBallBearing::class
+            "DefaultBattery" -> DefaultBattery::class
+            "KlaxonDCMotor" -> KlaxonDCMotor::class
+            "KlaxonServo" -> KlaxonServo::class
+            "KlaxonShaft" -> KlaxonShaft::class
+            "KlaxonStepperMotor" -> KlaxonStepperMotor::class
+            else -> throw IllegalArgumentException("Unknown type: $type")
+        }
     }
 }

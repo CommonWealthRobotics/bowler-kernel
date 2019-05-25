@@ -19,7 +19,6 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 import org.octogonapus.ktunits.quantities.AngularVelocity
 import org.octogonapus.ktunits.quantities.ElectricCurrent
 import org.octogonapus.ktunits.quantities.ElectricPotential
-import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Power
 import org.octogonapus.ktunits.quantities.Torque
 
@@ -37,11 +36,6 @@ interface DCMotor : Vitamin {
      * The operating voltage.
      */
     val voltage: ElectricPotential
-
-    /**
-     * The output shaft diameter.
-     */
-    val outputShaftDiameter: Length
 
     /**
      * The free speed.
@@ -67,4 +61,9 @@ interface DCMotor : Vitamin {
      * The maximum power output.
      */
     val power: Power
+
+    /**
+     * The shaft type.
+     */
+    val shaft: DefaultShaft
 }

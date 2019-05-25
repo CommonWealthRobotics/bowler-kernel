@@ -14,10 +14,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins.vitamin
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 
+import com.beust.klaxon.TypeFor
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DCMotor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultDCMotor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.ShaftTypeAdapter
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.AngularVelocity
 import org.octogonapus.ktunits.quantities.ElectricCurrent
@@ -27,13 +33,15 @@ import org.octogonapus.ktunits.quantities.Mass
 import org.octogonapus.ktunits.quantities.Power
 import org.octogonapus.ktunits.quantities.Torque
 
-data class DefaultDCMotor(
+data class KlaxonDCMotor(
     override val voltage: ElectricPotential,
     override val freeSpeed: AngularVelocity,
     override val freeCurrent: ElectricCurrent,
     override val stallTorque: Torque,
     override val stallCurrent: ElectricCurrent,
     override val power: Power,
+    @TypeFor(field = "shaft", adapter = ShaftTypeAdapter::class)
+    val shaftType: Int,
     override val shaft: DefaultShaft,
     override val width: Length,
     override val length: Length,
@@ -43,4 +51,43 @@ data class DefaultDCMotor(
     @ConvertImmutableMap
     override val specs: ImmutableMap<String, Any>,
     override val cadGenerator: GitFile
-) : DCMotor
+) : DCMotor, KlaxonVitaminTo {
+
+    override fun toVitamin() = DefaultDCMotor(
+        voltage = voltage,
+        freeSpeed = freeSpeed,
+        freeCurrent = freeCurrent,
+        stallTorque = stallTorque,
+        stallCurrent = stallCurrent,
+        power = power,
+        shaft = shaft,
+        width = width,
+        length = length,
+        height = height,
+        mass = mass,
+        centerOfMass = centerOfMass,
+        specs = specs,
+        cadGenerator = cadGenerator
+    )
+
+    companion object : KlaxonVitaminFrom<DCMotor> {
+
+        override fun fromVitamin(other: DCMotor) = KlaxonDCMotor(
+            voltage = other.voltage,
+            freeSpeed = other.freeSpeed,
+            freeCurrent = other.freeCurrent,
+            stallTorque = other.stallTorque,
+            stallCurrent = other.stallCurrent,
+            power = other.power,
+            shaftType = ShaftTypeAdapter().typeFor(other.shaft::class),
+            shaft = other.shaft,
+            width = other.width,
+            length = other.length,
+            height = other.height,
+            mass = other.mass,
+            centerOfMass = other.centerOfMass,
+            specs = other.specs,
+            cadGenerator = other.cadGenerator
+        )
+    }
+}

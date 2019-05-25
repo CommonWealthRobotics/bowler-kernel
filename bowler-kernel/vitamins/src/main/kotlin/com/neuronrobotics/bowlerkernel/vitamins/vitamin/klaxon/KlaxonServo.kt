@@ -14,10 +14,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins.vitamin
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 
+import com.beust.klaxon.TypeFor
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultServo
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Servo
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.ShaftTypeAdapter
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.AngularVelocity
 import org.octogonapus.ktunits.quantities.ElectricPotential
@@ -25,10 +31,12 @@ import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Mass
 import org.octogonapus.ktunits.quantities.Torque
 
-data class DefaultServo(
+data class KlaxonServo(
     override val voltage: ElectricPotential,
     override val stallTorque: Torque,
     override val speed: AngularVelocity,
+    @TypeFor(field = "shaft", adapter = ShaftTypeAdapter::class)
+    val shaftType: Int,
     override val shaft: DefaultShaft,
     override val width: Length,
     override val length: Length,
@@ -38,4 +46,37 @@ data class DefaultServo(
     @ConvertImmutableMap
     override val specs: ImmutableMap<String, Any>,
     override val cadGenerator: GitFile
-) : Servo
+) : Servo, KlaxonVitaminTo {
+
+    override fun toVitamin() = DefaultServo(
+        voltage = voltage,
+        stallTorque = stallTorque,
+        speed = speed,
+        shaft = shaft,
+        width = width,
+        length = length,
+        height = height,
+        mass = mass,
+        centerOfMass = centerOfMass,
+        specs = specs,
+        cadGenerator = cadGenerator
+    )
+
+    companion object : KlaxonVitaminFrom<Servo> {
+
+        override fun fromVitamin(other: Servo) = KlaxonServo(
+            voltage = other.voltage,
+            stallTorque = other.stallTorque,
+            speed = other.speed,
+            shaftType = ShaftTypeAdapter().typeFor(other.shaft::class),
+            shaft = other.shaft,
+            width = other.width,
+            length = other.length,
+            height = other.height,
+            mass = other.mass,
+            centerOfMass = other.centerOfMass,
+            specs = other.specs,
+            cadGenerator = other.cadGenerator
+        )
+    }
+}

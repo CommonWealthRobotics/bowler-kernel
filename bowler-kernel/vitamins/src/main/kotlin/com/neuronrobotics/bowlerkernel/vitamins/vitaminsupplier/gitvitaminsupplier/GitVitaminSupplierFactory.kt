@@ -34,11 +34,11 @@ import kotlin.reflect.KClass
  * Creates [GitVitaminSupplier] using a supplier file in a Git repository. The expected
  * repository format is:
  *  - The file passed to [createVitaminSupplier] can be parsed into a [GitVitaminSupplierData].
- *  - Each file in [GitVitaminSupplierData.files] can be parsed into a [vitaminType].
+ *  - Each file in [GitVitaminSupplierData.files] can be parsed into a [KlaxonGitVitamin].
  */
 class GitVitaminSupplierFactory(
     private val gitFS: GitFS,
-    private val vitaminType: KClass<out KlaxonGitVitamin> = DefaultKlaxonGitVitamin::class
+    private val vitaminType: KClass<out KlaxonGitVitamin> = KlaxonGitVitamin::class
 ) : VitaminSupplierFactory<GitVitaminSupplier> {
 
     private val klaxon = Klaxon().apply {
@@ -93,11 +93,15 @@ class GitVitaminSupplierFactory(
             )
         }
 
+        val convertedVitaminsFromGit =
+            vitaminsFromGit.map { it.vitamin.toVitamin() }.toImmutableSet()
+        val bothVitamins = convertedVitaminsFromGit.zip(vitaminsFromGit)
+
         return GitVitaminSupplier(
             nameFromGit,
-            vitaminsFromGit.map { it.vitamin }.toImmutableSet(),
-            vitaminsFromGit.map { it.vitamin to it.partNumber }.toImmutableMap(),
-            vitaminsFromGit.map { it.vitamin to it.price }.toImmutableMap()
+            convertedVitaminsFromGit,
+            bothVitamins.map { it.first to it.second.partNumber }.toImmutableMap(),
+            bothVitamins.map { it.first to it.second.price }.toImmutableMap()
         )
     }
 }

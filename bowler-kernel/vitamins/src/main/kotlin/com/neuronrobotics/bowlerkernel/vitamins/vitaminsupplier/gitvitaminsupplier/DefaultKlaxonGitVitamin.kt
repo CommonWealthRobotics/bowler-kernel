@@ -17,12 +17,39 @@
 package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier
 
 import com.beust.klaxon.TypeFor
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
 
-data class DefaultKlaxonGitVitamin(
+data class KlaxonGitVitamin(
+    /**
+     * The type of this vitamin, used by Klaxon to handle polymorphism.
+     */
     @TypeFor(field = "vitamin", adapter = KlaxonVitaminAdapter::class)
-    override val type: String,
-    override val vitamin: Vitamin,
-    override val partNumber: String,
-    override val price: Double
-) : KlaxonGitVitamin
+    val type: String,
+
+    /**
+     * The vitamin.
+     */
+    val vitamin: KlaxonVitaminTo,
+
+    /**
+     * The part number.
+     */
+    val partNumber: String,
+
+    /**
+     * The price for one unit.
+     */
+    val price: Double
+) {
+
+    companion object {
+
+        fun from(other: KlaxonVitaminTo, partNumber: String, price: Double) =
+            KlaxonGitVitamin(
+                type = other::class.simpleName!!,
+                vitamin = other,
+                partNumber = partNumber,
+                price = price
+            )
+    }
+}

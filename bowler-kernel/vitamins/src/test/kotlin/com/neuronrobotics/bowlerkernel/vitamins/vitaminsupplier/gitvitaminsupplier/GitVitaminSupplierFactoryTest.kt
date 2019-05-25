@@ -17,11 +17,14 @@
 package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier
 
 import arrow.core.Try
+import com.beust.klaxon.Klaxon
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.gitfs.GitFS
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultServo
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonDCMotor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonShaft
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonStepperMotor
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
@@ -31,34 +34,36 @@ import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import org.octogonapus.ktguava.collections.immutableListOf
-import org.octogonapus.ktguava.collections.immutableMapOf
-import org.octogonapus.ktunits.quantities.degree
-import org.octogonapus.ktunits.quantities.div
-import org.octogonapus.ktunits.quantities.gram
-import org.octogonapus.ktunits.quantities.inch
-import org.octogonapus.ktunits.quantities.kgFCm
-import org.octogonapus.ktunits.quantities.second
-import org.octogonapus.ktunits.quantities.volt
+import org.octogonapus.ktguava.collections.plus
+import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
+import org.octogonapus.ktguava.klaxon.immutableMapConverter
 import java.io.File
+import kotlin.random.Random
 
 internal class GitVitaminSupplierFactoryTest {
 
-    private val firstVitamin = DefaultServo(
-        6.volt,
-        2.kgFCm,
-        60.degree / 0.12.second,
-        1.3.inch,
-        0.5.inch,
-        0.9.inch,
-        12.gram,
-        CenterOfMass(
-            1.3.inch / 2,
-            0.5.inch / 2,
-            0.9.inch / 2
-        ),
-        immutableMapOf("feedback" to "supported"),
-        GitFile("", "")
-    )
+    private val klaxon = Klaxon().apply {
+        fieldConverter(ConvertImmutableMap::class, immutableMapConverter())
+    }
+
+    private val vitamins = with(Random) {
+        listOf(
+            randomBallBearing(),
+            randomBattery(),
+            KlaxonDCMotor.fromVitamin(randomDCMotor()),
+            KlaxonServo.fromVitamin(randomServo()),
+            KlaxonShaft.fromVitamin(randomShaft()),
+            KlaxonStepperMotor.fromVitamin(randomStepperMotor())
+        )
+    }
+
+    private val klaxonVitamins = vitamins.map {
+        KlaxonGitVitamin.from(
+            other = it,
+            partNumber = it::class.toString(),
+            price = Random.nextDouble()
+        )
+    }
 
     private val supplierName = "test-supplier"
     private val firstFileName = "vitamin1.json"
@@ -80,154 +85,38 @@ internal class GitVitaminSupplierFactoryTest {
                             {
                               "name": "$supplierName",
                               "files": [
-                                "$firstFileName"
+                                ${klaxonVitamins.joinToString(",") {
+                            "\"${it.vitamin::class}.json\""
+                        }}
                               ]
                             }
                         """.trimIndent()
                     )
-                },
-                File(tempDir, firstFileName).apply {
-                    writeText(
-                        """
-                            {
-                              "type": "defaultServo",
-                              "vitamin": {
-                                  "cadGenerator": {
-                                    "filename": "",
-                                    "gitUrl": ""
-                                  },
-                                  "centerOfMass": {
-                                    "x": {
-                                      "value": 0.01651,
-                                      "angleDim": 0,
-                                      "currentDim": 0,
-                                      "lengthDim": 1,
-                                      "luminDim": 0,
-                                      "massDim": 0,
-                                      "moleDim": 0,
-                                      "tempDim": 0,
-                                      "timeDim": 0
-                                    },
-                                    "y": {
-                                      "value": 0.00635,
-                                      "angleDim": 0,
-                                      "currentDim": 0,
-                                      "lengthDim": 1,
-                                      "luminDim": 0,
-                                      "massDim": 0,
-                                      "moleDim": 0,
-                                      "tempDim": 0,
-                                      "timeDim": 0
-                                    },
-                                    "z": {
-                                      "value": 0.01143,
-                                      "angleDim": 0,
-                                      "currentDim": 0,
-                                      "lengthDim": 1,
-                                      "luminDim": 0,
-                                      "massDim": 0,
-                                      "moleDim": 0,
-                                      "tempDim": 0,
-                                      "timeDim": 0
-                                    }
-                                  },
-                                  "height": {
-                                    "value": 0.02286,
-                                    "angleDim": 0,
-                                    "currentDim": 0,
-                                    "lengthDim": 1,
-                                    "luminDim": 0,
-                                    "massDim": 0,
-                                    "moleDim": 0,
-                                    "tempDim": 0,
-                                    "timeDim": 0
-                                  },
-                                  "length": {
-                                    "value": 0.0127,
-                                    "angleDim": 0,
-                                    "currentDim": 0,
-                                    "lengthDim": 1,
-                                    "luminDim": 0,
-                                    "massDim": 0,
-                                    "moleDim": 0,
-                                    "tempDim": 0,
-                                    "timeDim": 0
-                                  },
-                                  "mass": {
-                                    "value": 0.012,
-                                    "angleDim": 0,
-                                    "currentDim": 0,
-                                    "lengthDim": 0,
-                                    "luminDim": 0,
-                                    "massDim": 1,
-                                    "moleDim": 0,
-                                    "tempDim": 0,
-                                    "timeDim": 0
-                                  },
-                                  "specs": {
-                                    "feedback": "supported"
-                                  },
-                                  "speed": {
-                                    "value": 8.726646259971647,
-                                    "angleDim": 1,
-                                    "currentDim": 0,
-                                    "lengthDim": 0,
-                                    "luminDim": 0,
-                                    "massDim": 0,
-                                    "moleDim": 0,
-                                    "tempDim": 0,
-                                    "timeDim": -1
-                                  },
-                                  "stallTorque": {
-                                    "value": 0.19614,
-                                    "angleDim": 0,
-                                    "currentDim": 0,
-                                    "lengthDim": 2,
-                                    "luminDim": 0,
-                                    "massDim": 1,
-                                    "moleDim": 0,
-                                    "tempDim": 0,
-                                    "timeDim": -2
-                                  },
-                                  "voltage": {
-                                    "value": 6,
-                                    "angleDim": 0,
-                                    "currentDim": -1,
-                                    "lengthDim": 2,
-                                    "luminDim": 0,
-                                    "massDim": 1,
-                                    "moleDim": 0,
-                                    "tempDim": 0,
-                                    "timeDim": -3
-                                  },
-                                  "width": {
-                                    "value": 0.03302,
-                                    "angleDim": 0,
-                                    "currentDim": 0,
-                                    "lengthDim": 1,
-                                    "luminDim": 0,
-                                    "massDim": 0,
-                                    "moleDim": 0,
-                                    "tempDim": 0,
-                                    "timeDim": 0
-                                  }
-                                },
-                              "partNumber": "abcd",
-                              "price": 3.5
-                            }
-                        """.trimIndent()
-                    )
                 }
-            )
+            ) + klaxonVitamins.map {
+                File(tempDir, "${it.vitamin::class}.json").apply {
+                    writeText(klaxon.toJsonString(it))
+                }
+            }
         )
 
         val result = GitVitaminSupplierFactory(mockGitFS).createVitaminSupplier(supplierFile)
 
         assertAll(
             { assertEquals(supplierName, result.name) },
-            { assertEquals(setOf(firstVitamin), result.allVitamins) },
-            { assertEquals(mapOf(firstVitamin to "abcd"), result.partNumbers) },
-            { assertEquals(mapOf(firstVitamin to 3.5), result.prices) }
+            { assertEquals(vitamins.map { it.toVitamin() }.toSet(), result.allVitamins) },
+            {
+                assertEquals(
+                    klaxonVitamins.map { it.vitamin.toVitamin() to it.partNumber }.toMap(),
+                    result.partNumbers
+                )
+            },
+            {
+                assertEquals(
+                    klaxonVitamins.map { it.vitamin.toVitamin() to it.price }.toMap(),
+                    result.prices
+                )
+            }
         )
     }
 

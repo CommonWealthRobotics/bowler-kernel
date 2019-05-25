@@ -14,37 +14,25 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins.vitamin
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 
-import org.octogonapus.ktunits.quantities.AngularVelocity
-import org.octogonapus.ktunits.quantities.ElectricPotential
-import org.octogonapus.ktunits.quantities.Torque
+import com.beust.klaxon.TypeFor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.ShaftTypeAdapter
 
-/**
- * A hobby servo motor.
- *
- * Good things to put in [Vitamin.specs]:
- *  - Any supported feedback
- */
-interface Servo : Vitamin {
+data class KlaxonShaft(
+    @TypeFor(field = "shaft", adapter = ShaftTypeAdapter::class)
+    val shaftType: Int,
+    val shaft: Shaft
+) : Shaft by shaft, KlaxonVitaminTo {
 
-    /**
-     * The operating voltage.
-     */
-    val voltage: ElectricPotential
+    override fun toVitamin() = shaft
 
-    /**
-     * The stall torque.
-     */
-    val stallTorque: Torque
+    companion object : KlaxonVitaminFrom<Shaft> {
 
-    /**
-     * The operating speed.
-     */
-    val speed: AngularVelocity
-
-    /**
-     * The shaft type.
-     */
-    val shaft: DefaultShaft
+        override fun fromVitamin(other: Shaft) = KlaxonShaft(
+            ShaftTypeAdapter().typeFor(other::class),
+            other
+        )
+    }
 }
