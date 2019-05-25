@@ -18,6 +18,9 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 
+/**
+ * Conversion from a [Vitamin] to a [KlaxonVitaminTo].
+ */
 interface KlaxonVitaminFrom<T : Vitamin> {
 
     fun fromVitamin(other: T): KlaxonVitaminTo

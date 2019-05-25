@@ -75,9 +75,7 @@ data class KlaxonStepperMotor(
             holdingTorque = other.holdingTorque,
             current = other.current,
             stepAngle = other.stepAngle,
-            shaftType = ShaftTypeAdapter().typeFor(
-                other.shaft::class
-            ),
+            shaftType = ShaftTypeAdapter().typeFor(other.shaft::class),
             shaft = other.shaft,
             width = other.width,
             length = other.length,
