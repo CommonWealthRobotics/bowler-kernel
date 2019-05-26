@@ -25,6 +25,9 @@ import org.octogonapus.ktunits.quantities.Torque
 /**
  * A generic DC motor.
  *
+ * For CAD, x=0, y=0 should be in the center of the output shaft. z=0 should be on the flat face
+ * of the motor.
+ *
  * Good things to put in [Vitamin.specs]:
  *  - Peak power RPM
  *  - Peak efficiency RPM

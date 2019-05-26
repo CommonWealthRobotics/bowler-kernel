@@ -25,6 +25,10 @@ import org.octogonapus.ktunits.quantities.Length
  * outer diameter and [Vitamin.length] should be equal to either the outer diameter or the
  * outer housing dimension.
  *
+ * For CAD, x=0, y=0 should be in the center of the bore. z=0 should be on one of the two flat
+ * faces of the bearing such that the z-axis is aligned with the bore axis and the bearing
+ * extends vertically into the positive z range.
+ *
  * Good things to put in [Vitamin.specs]:
  *  - Construction type
  *  - Lubrication

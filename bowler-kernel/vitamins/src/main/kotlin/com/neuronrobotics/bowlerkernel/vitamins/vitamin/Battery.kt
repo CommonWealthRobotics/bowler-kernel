@@ -24,6 +24,8 @@ import org.octogonapus.ktunits.quantities.Frequency
 /**
  * A generic battery.
  *
+ * For CAD, x=0, y=0, z=0 should be on the bottom, upper-left corner of the battery.
+ *
  * Good things to put in [Vitamin.specs]:
  *  - Number of cells
  *  - Connector type

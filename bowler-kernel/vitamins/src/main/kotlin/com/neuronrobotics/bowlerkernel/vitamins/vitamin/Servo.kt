@@ -23,6 +23,9 @@ import org.octogonapus.ktunits.quantities.Torque
 /**
  * A hobby servo motor.
  *
+ * For CAD, x=0, y=0 should be in the center of the output shaft. z=0 should be on the flat face
+ * of the servo.
+ *
  * Good things to put in [Vitamin.specs]:
  *  - Any supported feedback
  */

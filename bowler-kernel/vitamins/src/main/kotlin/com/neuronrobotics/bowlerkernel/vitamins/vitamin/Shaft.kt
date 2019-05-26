@@ -18,5 +18,9 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 /**
  * A shaft for transferring torque.
+ *
+ * For CAD, x=0, y=0 should be in the center of the shaft. z=0 should be on one of the smaller
+ * flat faces of the shaft such that the z-axis is aligned with the shaft and the shaft extends
+ * vertically into the positive z range.
  */
 interface Shaft : Vitamin

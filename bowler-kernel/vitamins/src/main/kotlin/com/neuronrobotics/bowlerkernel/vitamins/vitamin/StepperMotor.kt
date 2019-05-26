@@ -24,6 +24,9 @@ import org.octogonapus.ktunits.quantities.Torque
 /**
  * A generic stepper motor.
  *
+ * For CAD, x=0, y=0 should be in the center of the output shaft. z=0 should be on the flat face
+ * of the stepper motor.
+ *
  * Good things to put in [Vitamin.specs]:
  *  - Mounting holes (Vitamin for the screws and hole positions)
  */

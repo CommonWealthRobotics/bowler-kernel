@@ -24,6 +24,9 @@ import org.octogonapus.ktunits.quantities.Mass
 /**
  * A Vitamin is typically something which cannot be 3d-printed; the electrical and hardware
  * components of a robot that you can buy from a store can typically be modeled as Vitamins.
+ *
+ * For aligning CAD, no origin constraints are enforced, but if any convention exists, it is
+ * specified in the Vitamin's documentation.
  */
 interface Vitamin {
 
