@@ -7,14 +7,12 @@ plugins {
 }
 
 object Versions {
-    const val kernel_version = "0.0.20"
+    const val kernel_version = "0.1.1"
 }
 
 dependencies {
     api(group = "com.neuronrobotics", name = "bowler-kernel-kinematics", version = kernel_version)
     api(group = "com.neuronrobotics", name = "JavaCad", version = "0.18.1")
-
-    implementation(group = "org.octogonapus", name = "kt-guava-core", version = "0.0.5")
 
     testImplementation(group = "com.natpryce", name = "hamkrest", version = "1.4.2.2")
 }

@@ -17,7 +17,6 @@
 package com.neuronrobotics.bowlercad
 
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.kinematics.Limits
 import com.neuronrobotics.bowlerkernel.kinematics.base.DefaultKinematicBase
 import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBase
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
@@ -29,11 +28,13 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DefaultLink
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
+import com.neuronrobotics.bowlerkernel.kinematics.motion.LengthBasedReachabilityCalculator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInertialStateEstimator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanGenerator
+import com.neuronrobotics.bowlerkernel.util.Limits
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.toImmutableList
 import org.octogonapus.ktguava.collections.toImmutableMap
@@ -54,6 +55,7 @@ internal fun createMockKinematicBase(limbs: ImmutableList<ImmutableList<DhParam>
                 }.toImmutableList(),
                 NoopForwardKinematicsSolver,
                 NoopInverseKinematicsSolver,
+                LengthBasedReachabilityCalculator(),
                 NoopLimbMotionPlanGenerator,
                 NoopLimbMotionPlanFollower,
                 limb.map { NoopJointAngleController }.toImmutableList(),

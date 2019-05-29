@@ -88,7 +88,7 @@ class DefaultCadGenerator(
                             limbCad,
                             linkTransforms,
                             limb.jointAngleControllers.map(limbAngleBuffer) {
-                                FrameTransformation.fromRotation(0, 0, it.getCurrentAngle())
+                                FrameTransformation.fromRotation(it.getCurrentAngle(), 0, 0)
                             }
                         )
 
