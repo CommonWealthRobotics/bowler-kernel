@@ -13,20 +13,20 @@ dependencies {
         name = "github-api",
         version = property("github-api.version") as String
     )
-
-    implementation(project(":bowler-kernel:config"))
-    implementation(project(":bowler-kernel:logging"))
-    implementation(arrow("arrow-core-data"))
-    implementation(
+    api(
         group = "com.google.guava",
         name = "guava",
         version = property("guava.version") as String
     )
-    implementation(
+    api(
         group = "org.octogonapus",
         name = "kt-guava-core",
         version = property("kt-guava-core.version") as String
     )
+
+    implementation(project(":bowler-kernel:config"))
+    implementation(project(":bowler-kernel:logging"))
+    implementation(arrow("arrow-core-data"))
     implementation(
         group = "org.eclipse.jgit",
         name = "org.eclipse.jgit",

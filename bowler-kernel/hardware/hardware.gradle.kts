@@ -16,6 +16,11 @@ dependencies {
     api(group = "com.neuronrobotics", name = "SimplePacketComsJava", version = "0.9.2")
     api(group = "com.neuronrobotics", name = "SimplePacketComsJava-HID", version = "0.9.3")
     api("org.hid4java:hid4java:0.5.0")
+    api(
+        group = "org.octogonapus",
+        name = "kt-guava-core",
+        version = property("kt-guava-core.version") as String
+    )
 
     implementation(project(":bowler-kernel:logging"))
 
@@ -26,11 +31,6 @@ dependencies {
     implementation(arrow("arrow-extras-data"))
     implementation(arrow("arrow-extras-extensions"))
 
-    implementation(
-        group = "org.octogonapus",
-        name = "kt-guava-core",
-        version = property("kt-guava-core.version") as String
-    )
     implementation(
         group = "com.google.inject",
         name = "guice",

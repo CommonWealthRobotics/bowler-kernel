@@ -16,7 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.motion
 
-import org.ejml.simple.SimpleMatrix
+import Jama.Matrix
 
 /**
  * The 15-dimensional state of a moving body.
@@ -77,7 +77,7 @@ data class InertialState(
      * The matrix representation of this state.
      */
     val state by lazy {
-        SimpleMatrix(1, 15).apply {
+        Matrix(1, 15).apply {
             this[0, 0] = xPosition
             this[0, 1] = yPosition
             this[0, 2] = zPosition

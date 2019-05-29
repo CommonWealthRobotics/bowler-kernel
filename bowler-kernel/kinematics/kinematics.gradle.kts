@@ -8,9 +8,23 @@ fun DependencyHandler.arrow(name: String) =
     create(group = "io.arrow-kt", name = name, version = property("arrow.version") as String)
 
 dependencies {
-    api(group = "org.ejml", name = "ejml-all", version = "0.37.1")
     api(project(":bowler-kernel:scripting"))
     api(project(":bowler-kernel:util"))
+    api(
+        group = "org.apache.commons",
+        name = "commons-math3",
+        version = property("commons-math3.version") as String
+    )
+    api(
+        group = "gov.nist.math",
+        name = "jama",
+        version = property("jama.version") as String
+    )
+    api(
+        group = "org.octogonapus",
+        name = "kt-guava-core",
+        version = property("kt-guava-core.version") as String
+    )
 
     implementation(arrow("arrow-core-data"))
     implementation(arrow("arrow-core-extensions"))
@@ -19,11 +33,6 @@ dependencies {
     implementation(arrow("arrow-extras-data"))
     implementation(arrow("arrow-extras-extensions"))
 
-    implementation(
-        group = "org.octogonapus",
-        name = "kt-guava-core",
-        version = property("kt-guava-core.version") as String
-    )
     implementation(
         group = "com.google.inject",
         name = "guice",
@@ -43,16 +52,6 @@ dependencies {
         group = "com.beust",
         name = "klaxon",
         version = property("klaxon.version") as String
-    )
-    implementation(
-        group = "org.apache.commons",
-        name = "commons-math3",
-        version = property("commons-math3.version") as String
-    )
-    implementation(
-        group = "gov.nist.math",
-        name = "jama",
-        version = property("jama.version") as String
     )
 
     testImplementation(

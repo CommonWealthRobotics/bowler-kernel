@@ -6,6 +6,31 @@ fun DependencyHandler.arrow(name: String) =
 dependencies {
     api(project(":bowler-kernel:gitfs"))
     api(project(":bowler-kernel:util"))
+    api(
+        group = "com.google.guava",
+        name = "guava",
+        version = property("guava.version") as String
+    )
+    api(
+        group = "org.octogonapus",
+        name = "kt-guava-core",
+        version = property("kt-guava-core.version") as String
+    )
+    api(
+        group = "org.octogonapus",
+        name = "kt-guava-klaxon",
+        version = property("kt-guava-klaxon.version") as String
+    )
+    api(
+        group = "org.octogonapus",
+        name = "kt-units-annotation",
+        version = property("kt-units.version") as String
+    )
+    api(
+        group = "org.octogonapus",
+        name = "kt-units-quantities",
+        version = property("kt-units.version") as String
+    )
 
     implementation(arrow("arrow-core-data"))
     implementation(arrow("arrow-core-extensions"))
@@ -13,31 +38,6 @@ dependencies {
     implementation(arrow("arrow-typeclasses"))
     implementation(arrow("arrow-extras-data"))
     implementation(arrow("arrow-extras-extensions"))
-    implementation(
-        group = "com.google.guava",
-        name = "guava",
-        version = property("guava.version") as String
-    )
-    implementation(
-        group = "org.octogonapus",
-        name = "kt-guava-core",
-        version = property("kt-guava-core.version") as String
-    )
-    implementation(
-        group = "org.octogonapus",
-        name = "kt-guava-klaxon",
-        version = property("kt-guava-klaxon.version") as String
-    )
-    implementation(
-        group = "org.octogonapus",
-        name = "kt-units-annotation",
-        version = property("kt-units.version") as String
-    )
-    implementation(
-        group = "org.octogonapus",
-        name = "kt-units-quantities",
-        version = property("kt-units.version") as String
-    )
     implementation(
         group = "com.beust",
         name = "klaxon",

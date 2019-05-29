@@ -14,6 +14,21 @@ repositories {
 dependencies {
     api(project(":bowler-kernel:hardware"))
     api(project(":bowler-kernel:gitfs"))
+    api(
+        group = "org.octogonapus",
+        name = "kt-guava-core",
+        version = property("kt-guava-core.version") as String
+    )
+    api(
+        group = "com.google.inject",
+        name = "guice",
+        version = property("guice.version") as String
+    )
+    api(
+        group = "com.google.inject.extensions",
+        name = "guice-assistedinject",
+        version = "4.1.0"
+    )
 
     implementation(arrow("arrow-core-data"))
     implementation(arrow("arrow-core-extensions"))
@@ -22,21 +37,6 @@ dependencies {
     implementation(arrow("arrow-extras-data"))
     implementation(arrow("arrow-extras-extensions"))
 
-    implementation(
-        group = "org.octogonapus",
-        name = "kt-guava-core",
-        version = property("kt-guava-core.version") as String
-    )
-    implementation(
-        group = "com.google.inject",
-        name = "guice",
-        version = property("guice.version") as String
-    )
-    implementation(
-        group = "com.google.inject.extensions",
-        name = "guice-assistedinject",
-        version = "4.1.0"
-    )
     implementation(
         group = "org.jlleitschuh.guice",
         name = "kotlin-guiced-core",

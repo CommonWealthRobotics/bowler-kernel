@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.base
 
+import Jama.Matrix
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.KinematicBaseId
@@ -25,7 +26,6 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialState
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
-import org.ejml.simple.SimpleMatrix
 
 /**
  * The main "base" of a robot. Generally, it is the central hub of the robot to which the limbs
@@ -149,7 +149,7 @@ interface KinematicBase {
      * @param linkIndex The index of the link in [Limb.links].
      * @return The Jacobian matrix.
      */
-    fun computeJacobian(limbIndex: Int, linkIndex: Int): SimpleMatrix
+    fun computeJacobian(limbIndex: Int, linkIndex: Int): Matrix
 
     /**
      * Returns the current [InertialState] for this base.

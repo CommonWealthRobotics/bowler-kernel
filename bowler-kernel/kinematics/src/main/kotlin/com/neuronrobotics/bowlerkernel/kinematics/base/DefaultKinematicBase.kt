@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.base
 
+import Jama.Matrix
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.KinematicBaseId
@@ -24,7 +25,6 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
-import org.ejml.simple.SimpleMatrix
 
 @SuppressWarnings("TooManyFunctions")
 class DefaultKinematicBase(
@@ -90,7 +90,7 @@ class DefaultKinematicBase(
                 getCurrentWorldSpaceTransformWithDelta()
         }
 
-    override fun computeJacobian(limbIndex: Int, linkIndex: Int): SimpleMatrix {
+    override fun computeJacobian(limbIndex: Int, linkIndex: Int): Matrix {
         TODO("not implemented")
     }
 
