@@ -44,11 +44,12 @@ internal fun Random.randomMap(): ImmutableMap<String, Any> =
     immutableMapOf(nextDouble().toString() to nextDouble())
 
 internal fun Random.Default.randomBallBearing(): DefaultBallBearing {
+    val height = nextDouble().inch
     return DefaultBallBearing(
         nextDouble().inch,
         nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().inch,
+        height,
+        height,
         nextDouble().gram,
         randomCenterOfMass(),
         randomMap()
