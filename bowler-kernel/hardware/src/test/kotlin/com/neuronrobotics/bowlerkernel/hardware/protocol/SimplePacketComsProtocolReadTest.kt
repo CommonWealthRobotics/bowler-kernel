@@ -51,7 +51,7 @@ internal class SimplePacketComsProtocolReadTest {
     fun `test adding a polling read`() {
         device.pollingPayload = getPayload()
         setupPollingRead()
-        Thread.sleep(100)
+        device.pollingLatch.await()
     }
 
     @Test
@@ -78,8 +78,7 @@ internal class SimplePacketComsProtocolReadTest {
     fun `test reading with polling`() {
         device.pollingPayload = getPayload(0, 1)
         setupPollingRead()
-
-        Thread.sleep(100)
+        device.pollingLatch.await()
 
         protocolTest(protocol, device) {
             operation {

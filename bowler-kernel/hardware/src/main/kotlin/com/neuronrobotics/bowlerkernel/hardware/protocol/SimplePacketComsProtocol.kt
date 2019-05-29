@@ -617,6 +617,7 @@ open class SimplePacketComsProtocol(
      * @param parseReceivePayload Parses the receive payload into a value.
      * @return The value.
      */
+    @Suppress("MemberVisibilityCanBePrivate")
     protected fun <T> handleRead(
         resourceId: ResourceId,
         parseReceivePayload: (ByteArray, Int, Int) -> T
@@ -642,6 +643,7 @@ open class SimplePacketComsProtocol(
      * @param parseReceivePayload Parses a member's section of the group receive payload.
      * @return The values in the same order as [resourceIds].
      */
+    @Suppress("MemberVisibilityCanBePrivate")
     protected fun <T> handleGroupRead(
         resourceIds: ImmutableList<ResourceId>,
         parseReceivePayload: (ByteArray, Int, Int) -> T
@@ -669,6 +671,7 @@ open class SimplePacketComsProtocol(
      * @param value The value to write.
      * @param makeSendPayload Makes a send payload from a value.
      */
+    @Suppress("MemberVisibilityCanBePrivate")
     protected fun <S> handleWrite(
         resourceId: ResourceId,
         value: S,
@@ -692,6 +695,7 @@ open class SimplePacketComsProtocol(
      * @param parseReceivePayload Parses the receive payload into a value.
      * @return The value.
      */
+    @Suppress("unused")
     protected fun <S, R> handleWrite(
         resourceId: ResourceId,
         value: S,
@@ -729,6 +733,7 @@ open class SimplePacketComsProtocol(
      * 3. Call [makeGroupSendPayload] with [makeSendPayload] and write the result to [idToSendData]
      * 4. Call [callAndWait]
      */
+    @Suppress("MemberVisibilityCanBePrivate")
     protected fun <T> handleGroupWrite(
         resourcesAndValues: ImmutableList<Pair<ResourceId, T>>,
         makeSendPayload: (T) -> ByteArray
@@ -876,6 +881,7 @@ open class SimplePacketComsProtocol(
     override fun analogRead(resourceIds: ImmutableList<ResourceId>) =
         handleGroupRead(resourceIds, this::parseAnalogReadPayload)
 
+    @Suppress("MemberVisibilityCanBePrivate")
     protected fun makeAnalogWritePayload(value: Short): ByteArray {
         val buffer = ByteBuffer.allocate(2)
         buffer.putShort(value)
@@ -1012,11 +1018,13 @@ open class SimplePacketComsProtocol(
     /**
      * The lowest packet id.
      */
+    @Suppress("MemberVisibilityCanBePrivate")
     fun getLowestPacketId(): Int = startPacketId
 
     /**
      * The highest packet id.
      */
+    @Suppress("MemberVisibilityCanBePrivate")
     fun getHighestPacketId(): Int = highestPacketId.get()
 
     companion object {

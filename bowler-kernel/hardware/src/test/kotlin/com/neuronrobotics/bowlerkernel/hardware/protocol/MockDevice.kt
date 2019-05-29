@@ -19,13 +19,15 @@ package com.neuronrobotics.bowlerkernel.hardware.protocol
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
 import org.junit.jupiter.api.fail
 import java.util.ArrayDeque
+import java.util.concurrent.CountDownLatch
 
 internal class MockDevice : AbstractSimpleComsDevice() {
 
     val writesReceived = ArrayDeque<ByteArray>()
     val readsToSend = ArrayDeque<ByteArray>()
-    var canSendNextRead = false
+    private var canSendNextRead = false
     var pollingPayload: ByteArray? = null
+    var pollingLatch = CountDownLatch(1)
 
     override fun write(message: ByteArray?, length: Int, howLongToWaitBeforeTimeout: Int) = 0
 
@@ -56,6 +58,7 @@ internal class MockDevice : AbstractSimpleComsDevice() {
                 pollingPayload?.forEachIndexed { index, byte ->
                     values[index] = byte
                 }
+                pollingLatch.countDown()
             } else {
                 readsToSend.removeFirst().forEachIndexed { index, byte ->
                     values[index] = byte
@@ -65,6 +68,7 @@ internal class MockDevice : AbstractSimpleComsDevice() {
             pollingPayload?.forEachIndexed { index, byte ->
                 values[index] = byte
             }
+            pollingLatch.countDown()
         }
     }
 
