@@ -17,7 +17,6 @@
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 import com.google.common.collect.ImmutableMap
-import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Mass
@@ -29,8 +28,7 @@ sealed class DefaultShaft(
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap
-    override val specs: ImmutableMap<String, Any>,
-    override val cadGenerator: GitFile
+    override val specs: ImmutableMap<String, Any>
 ) : Shaft {
 
     data class SquareShaft(
@@ -40,9 +38,8 @@ sealed class DefaultShaft(
         override val mass: Mass,
         override val centerOfMass: CenterOfMass,
         @ConvertImmutableMap
-        override val specs: ImmutableMap<String, Any>,
-        override val cadGenerator: GitFile
-    ) : DefaultShaft(width, length, height, mass, centerOfMass, specs, cadGenerator)
+        override val specs: ImmutableMap<String, Any>
+    ) : DefaultShaft(width, length, height, mass, centerOfMass, specs)
 
     data class RoundShaft(
         override val width: Length,
@@ -51,9 +48,8 @@ sealed class DefaultShaft(
         override val mass: Mass,
         override val centerOfMass: CenterOfMass,
         @ConvertImmutableMap
-        override val specs: ImmutableMap<String, Any>,
-        override val cadGenerator: GitFile
-    ) : DefaultShaft(width, length, height, mass, centerOfMass, specs, cadGenerator)
+        override val specs: ImmutableMap<String, Any>
+    ) : DefaultShaft(width, length, height, mass, centerOfMass, specs)
 
     data class DShaft(
         override val width: Length,
@@ -62,9 +58,8 @@ sealed class DefaultShaft(
         override val mass: Mass,
         override val centerOfMass: CenterOfMass,
         @ConvertImmutableMap
-        override val specs: ImmutableMap<String, Any>,
-        override val cadGenerator: GitFile
-    ) : DefaultShaft(width, length, height, mass, centerOfMass, specs, cadGenerator)
+        override val specs: ImmutableMap<String, Any>
+    ) : DefaultShaft(width, length, height, mass, centerOfMass, specs)
 
     sealed class ServoHorn(
         override val width: Length,
@@ -73,9 +68,8 @@ sealed class DefaultShaft(
         override val mass: Mass,
         override val centerOfMass: CenterOfMass,
         @ConvertImmutableMap
-        override val specs: ImmutableMap<String, Any>,
-        override val cadGenerator: GitFile
-    ) : DefaultShaft(width, length, height, mass, centerOfMass, specs, cadGenerator) {
+        override val specs: ImmutableMap<String, Any>
+    ) : DefaultShaft(width, length, height, mass, centerOfMass, specs) {
 
         data class Arm(
             override val width: Length,
@@ -84,9 +78,8 @@ sealed class DefaultShaft(
             override val mass: Mass,
             override val centerOfMass: CenterOfMass,
             @ConvertImmutableMap
-            override val specs: ImmutableMap<String, Any>,
-            override val cadGenerator: GitFile
-        ) : ServoHorn(width, length, height, mass, centerOfMass, specs, cadGenerator)
+            override val specs: ImmutableMap<String, Any>
+        ) : ServoHorn(width, length, height, mass, centerOfMass, specs)
 
         data class DoubleArm(
             override val width: Length,
@@ -95,9 +88,8 @@ sealed class DefaultShaft(
             override val mass: Mass,
             override val centerOfMass: CenterOfMass,
             @ConvertImmutableMap
-            override val specs: ImmutableMap<String, Any>,
-            override val cadGenerator: GitFile
-        ) : ServoHorn(width, length, height, mass, centerOfMass, specs, cadGenerator)
+            override val specs: ImmutableMap<String, Any>
+        ) : ServoHorn(width, length, height, mass, centerOfMass, specs)
 
         data class XArm(
             override val width: Length,
@@ -106,9 +98,8 @@ sealed class DefaultShaft(
             override val mass: Mass,
             override val centerOfMass: CenterOfMass,
             @ConvertImmutableMap
-            override val specs: ImmutableMap<String, Any>,
-            override val cadGenerator: GitFile
-        ) : ServoHorn(width, length, height, mass, centerOfMass, specs, cadGenerator)
+            override val specs: ImmutableMap<String, Any>
+        ) : ServoHorn(width, length, height, mass, centerOfMass, specs)
 
         data class Wheel(
             override val width: Length,
@@ -117,8 +108,7 @@ sealed class DefaultShaft(
             override val mass: Mass,
             override val centerOfMass: CenterOfMass,
             @ConvertImmutableMap
-            override val specs: ImmutableMap<String, Any>,
-            override val cadGenerator: GitFile
-        ) : ServoHorn(width, length, height, mass, centerOfMass, specs, cadGenerator)
+            override val specs: ImmutableMap<String, Any>
+        ) : ServoHorn(width, length, height, mass, centerOfMass, specs)
     }
 }

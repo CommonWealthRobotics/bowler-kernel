@@ -17,7 +17,6 @@
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 import com.google.common.collect.ImmutableMap
-import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Mass
 
@@ -59,9 +58,4 @@ interface Vitamin {
      * Any extra specifications that the human interacting with this Vitamin might want to know.
      */
     val specs: ImmutableMap<String, Any>
-
-    /**
-     * The CAD generator.
-     */
-    val cadGenerator: GitFile
 }

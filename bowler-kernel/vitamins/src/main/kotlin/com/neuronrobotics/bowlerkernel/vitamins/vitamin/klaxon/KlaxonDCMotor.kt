@@ -18,7 +18,6 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 
 import com.beust.klaxon.TypeFor
 import com.google.common.collect.ImmutableMap
-import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DCMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultDCMotor
@@ -49,8 +48,7 @@ data class KlaxonDCMotor(
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap
-    override val specs: ImmutableMap<String, Any>,
-    override val cadGenerator: GitFile
+    override val specs: ImmutableMap<String, Any>
 ) : DCMotor, KlaxonVitaminTo {
 
     override fun toVitamin() = DefaultDCMotor(
@@ -66,8 +64,7 @@ data class KlaxonDCMotor(
         height = height,
         mass = mass,
         centerOfMass = centerOfMass,
-        specs = specs,
-        cadGenerator = cadGenerator
+        specs = specs
     )
 
     companion object : KlaxonVitaminFrom<DCMotor> {
@@ -86,8 +83,7 @@ data class KlaxonDCMotor(
             height = other.height,
             mass = other.mass,
             centerOfMass = other.centerOfMass,
-            specs = other.specs,
-            cadGenerator = other.cadGenerator
+            specs = other.specs
         )
     }
 }

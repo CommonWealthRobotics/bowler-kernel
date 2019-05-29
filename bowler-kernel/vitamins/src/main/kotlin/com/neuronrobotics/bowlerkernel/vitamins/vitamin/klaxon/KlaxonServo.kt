@@ -18,7 +18,6 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 
 import com.beust.klaxon.TypeFor
 import com.google.common.collect.ImmutableMap
-import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultServo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
@@ -44,8 +43,7 @@ data class KlaxonServo(
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap
-    override val specs: ImmutableMap<String, Any>,
-    override val cadGenerator: GitFile
+    override val specs: ImmutableMap<String, Any>
 ) : Servo, KlaxonVitaminTo {
 
     override fun toVitamin() = DefaultServo(
@@ -58,8 +56,7 @@ data class KlaxonServo(
         height = height,
         mass = mass,
         centerOfMass = centerOfMass,
-        specs = specs,
-        cadGenerator = cadGenerator
+        specs = specs
     )
 
     companion object : KlaxonVitaminFrom<Servo> {
@@ -75,8 +72,7 @@ data class KlaxonServo(
             height = other.height,
             mass = other.mass,
             centerOfMass = other.centerOfMass,
-            specs = other.specs,
-            cadGenerator = other.cadGenerator
+            specs = other.specs
         )
     }
 }

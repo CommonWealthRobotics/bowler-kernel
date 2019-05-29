@@ -17,7 +17,6 @@
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 import com.google.common.collect.ImmutableMap
-import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.ElectricCharge
@@ -38,8 +37,7 @@ data class DefaultBattery(
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap
-    override val specs: ImmutableMap<String, Any>,
-    override val cadGenerator: GitFile
+    override val specs: ImmutableMap<String, Any>
 ) : Battery, KlaxonVitaminTo {
 
     override fun toVitamin() = this

@@ -17,7 +17,6 @@
 package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier
 
 import com.google.common.collect.ImmutableMap
-import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBallBearing
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBattery
@@ -44,8 +43,6 @@ internal fun Random.randomCenterOfMass() =
 internal fun Random.randomMap(): ImmutableMap<String, Any> =
     immutableMapOf(nextDouble().toString() to nextDouble())
 
-internal fun Random.randomGitFile() = GitFile(nextDouble().toString(), nextDouble().toString())
-
 internal fun Random.Default.randomBallBearing(): DefaultBallBearing {
     return DefaultBallBearing(
         nextDouble().inch,
@@ -54,8 +51,7 @@ internal fun Random.Default.randomBallBearing(): DefaultBallBearing {
         nextDouble().inch,
         nextDouble().gram,
         randomCenterOfMass(),
-        randomMap(),
-        randomGitFile()
+        randomMap()
     )
 }
 
@@ -70,8 +66,7 @@ internal fun Random.Default.randomBattery(): DefaultBattery {
         nextDouble().inch,
         nextDouble().gram,
         randomCenterOfMass(),
-        randomMap(),
-        randomGitFile()
+        randomMap()
     )
 }
 
@@ -89,16 +84,14 @@ internal fun Random.Default.randomDCMotor(): DefaultDCMotor {
             nextDouble().inch,
             nextDouble().gram,
             randomCenterOfMass(),
-            randomMap(),
-            randomGitFile()
+            randomMap()
         ),
         nextDouble().inch,
         nextDouble().inch,
         nextDouble().inch,
         nextDouble().gram,
         randomCenterOfMass(),
-        randomMap(),
-        randomGitFile()
+        randomMap()
     )
 }
 
@@ -113,16 +106,14 @@ internal fun Random.Default.randomServo(): DefaultServo {
             nextDouble().inch,
             nextDouble().gram,
             randomCenterOfMass(),
-            randomMap(),
-            randomGitFile()
+            randomMap()
         ),
         nextDouble().inch,
         nextDouble().inch,
         nextDouble().inch,
         nextDouble().gram,
         randomCenterOfMass(),
-        randomMap(),
-        randomGitFile()
+        randomMap()
     )
 }
 
@@ -133,8 +124,7 @@ internal fun Random.Default.randomShaft(): DefaultShaft.ServoHorn.DoubleArm {
         nextDouble().inch,
         nextDouble().gram,
         randomCenterOfMass(),
-        randomMap(),
-        randomGitFile()
+        randomMap()
     )
 }
 
@@ -151,15 +141,13 @@ internal fun Random.Default.randomStepperMotor(): DefaultStepperMotor {
             nextDouble().inch,
             nextDouble().gram,
             randomCenterOfMass(),
-            randomMap(),
-            randomGitFile()
+            randomMap()
         ),
         nextDouble().inch,
         nextDouble().inch,
         nextDouble().inch,
         nextDouble().gram,
         randomCenterOfMass(),
-        randomMap(),
-        randomGitFile()
+        randomMap()
     )
 }

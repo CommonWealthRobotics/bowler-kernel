@@ -17,7 +17,6 @@
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 import com.google.common.collect.ImmutableMap
-import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.Angle
 import org.octogonapus.ktunits.quantities.ElectricCurrent
@@ -39,6 +38,5 @@ data class DefaultStepperMotor(
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap
-    override val specs: ImmutableMap<String, Any>,
-    override val cadGenerator: GitFile
+    override val specs: ImmutableMap<String, Any>
 ) : StepperMotor
