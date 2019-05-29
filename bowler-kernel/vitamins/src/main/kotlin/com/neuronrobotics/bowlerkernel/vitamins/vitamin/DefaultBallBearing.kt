@@ -33,5 +33,11 @@ data class DefaultBallBearing(
     override val specs: ImmutableMap<String, Any>
 ) : BallBearing, KlaxonVitaminTo {
 
+    init {
+        require(height == length) {
+            "Height ($height) and length ($length) must be equal."
+        }
+    }
+
     override fun toVitamin() = this
 }
