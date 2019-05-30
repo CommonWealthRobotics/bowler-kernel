@@ -17,7 +17,6 @@
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 import com.google.common.collect.ImmutableMap
-import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Mass
 
 /**
@@ -28,21 +27,6 @@ import org.octogonapus.ktunits.quantities.Mass
  * specified in the Vitamin's documentation.
  */
 interface Vitamin {
-
-    /**
-     * The overall width (x-axis), not including keep-away zones for CAD.
-     */
-    val width: Length
-
-    /**
-     * The overall length (y-axis), not including keep-away zones for CAD.
-     */
-    val length: Length
-
-    /**
-     * The overall height (z-axis), not including keep-away zones for CAD.
-     */
-    val height: Length
 
     /**
      * The mass of this Vitamin.

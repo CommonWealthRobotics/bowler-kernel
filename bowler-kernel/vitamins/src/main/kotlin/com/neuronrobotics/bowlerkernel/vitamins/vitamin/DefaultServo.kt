@@ -25,13 +25,19 @@ import org.octogonapus.ktunits.quantities.Mass
 import org.octogonapus.ktunits.quantities.Torque
 
 data class DefaultServo(
+    override val width: Length,
+    override val length: Length,
+    override val height: Length,
+    override val shaftCenterToTopOfBody: Length,
+    override val flangeHeight: Length,
+    override val flangeWidth: Length,
+    override val flangeThickness: Length,
+    override val boltHeightSeparation: Length,
+    override val boltWidthSeparation: Length,
     override val voltage: ElectricPotential,
     override val stallTorque: Torque,
     override val speed: AngularVelocity,
     override val shaft: DefaultShaft,
-    override val width: Length,
-    override val length: Length,
-    override val height: Length,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap

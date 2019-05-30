@@ -27,13 +27,13 @@ import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Mass
 
 data class DefaultBattery(
+    override val width: Length,
+    override val length: Length,
+    override val height: Length,
     override val voltage: ElectricPotential,
     override val current: ElectricCurrent,
     override val dischargeRate: Frequency,
     override val capacity: ElectricCharge,
-    override val width: Length,
-    override val length: Length,
-    override val height: Length,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap

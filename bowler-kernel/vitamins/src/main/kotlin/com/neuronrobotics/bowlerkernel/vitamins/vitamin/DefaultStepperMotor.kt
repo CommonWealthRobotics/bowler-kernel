@@ -33,7 +33,6 @@ data class DefaultStepperMotor(
     override val stepAngle: Angle,
     override val shaft: DefaultShaft,
     override val width: Length,
-    override val length: Length,
     override val height: Length,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,

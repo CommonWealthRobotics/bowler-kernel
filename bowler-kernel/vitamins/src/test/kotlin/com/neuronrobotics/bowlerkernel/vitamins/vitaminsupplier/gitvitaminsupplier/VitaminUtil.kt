@@ -44,12 +44,10 @@ internal fun Random.randomMap(): ImmutableMap<String, Any> =
     immutableMapOf(nextDouble().toString() to nextDouble())
 
 internal fun Random.Default.randomBallBearing(): DefaultBallBearing {
-    val height = nextDouble().inch
     return DefaultBallBearing(
         nextDouble().inch,
         nextDouble().inch,
-        height,
-        height,
+        nextDouble().inch,
         nextDouble().gram,
         randomCenterOfMass(),
         randomMap()
@@ -58,13 +56,13 @@ internal fun Random.Default.randomBallBearing(): DefaultBallBearing {
 
 internal fun Random.Default.randomBattery(): DefaultBattery {
     return DefaultBattery(
+        nextDouble().inch,
+        nextDouble().inch,
+        nextDouble().inch,
         nextDouble().volt,
         nextDouble().ampere,
         nextDouble().hz,
         nextDouble().coulomb,
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().inch,
         nextDouble().gram,
         randomCenterOfMass(),
         randomMap()
@@ -98,6 +96,15 @@ internal fun Random.Default.randomDCMotor(): DefaultDCMotor {
 
 internal fun Random.Default.randomServo(): DefaultServo {
     return DefaultServo(
+        nextDouble().inch,
+        nextDouble().inch,
+        nextDouble().inch,
+        nextDouble().inch,
+        nextDouble().inch,
+        nextDouble().inch,
+        nextDouble().inch,
+        nextDouble().inch,
+        nextDouble().inch,
         nextDouble().volt,
         nextDouble().nM,
         nextDouble().radianPerMinute,
@@ -109,9 +116,6 @@ internal fun Random.Default.randomServo(): DefaultServo {
             randomCenterOfMass(),
             randomMap()
         ),
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().inch,
         nextDouble().gram,
         randomCenterOfMass(),
         randomMap()
@@ -144,7 +148,6 @@ internal fun Random.Default.randomStepperMotor(): DefaultStepperMotor {
             randomCenterOfMass(),
             randomMap()
         ),
-        nextDouble().inch,
         nextDouble().inch,
         nextDouble().inch,
         nextDouble().gram,

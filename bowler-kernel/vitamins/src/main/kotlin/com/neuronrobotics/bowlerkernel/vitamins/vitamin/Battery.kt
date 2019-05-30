@@ -20,6 +20,7 @@ import org.octogonapus.ktunits.quantities.ElectricCharge
 import org.octogonapus.ktunits.quantities.ElectricCurrent
 import org.octogonapus.ktunits.quantities.ElectricPotential
 import org.octogonapus.ktunits.quantities.Frequency
+import org.octogonapus.ktunits.quantities.Length
 
 /**
  * A generic battery.
@@ -32,6 +33,21 @@ import org.octogonapus.ktunits.quantities.Frequency
  *  - Chemistry
  */
 interface Battery : Vitamin {
+
+    /**
+     * The overall width (x-axis), not including keep-away zones for CAD.
+     */
+    val width: Length
+
+    /**
+     * The overall length (y-axis), not including keep-away zones for CAD.
+     */
+    val length: Length
+
+    /**
+     * The overall height (z-axis), not including keep-away zones for CAD.
+     */
+    val height: Length
 
     /**
      * The nominal voltage.

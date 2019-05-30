@@ -23,21 +23,14 @@ import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Mass
 
 data class DefaultBallBearing(
-    override val bore: Length,
     override val width: Length,
-    override val length: Length,
-    override val height: Length,
+    override val diameter: Length,
+    override val bore: Length,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap
     override val specs: ImmutableMap<String, Any>
 ) : BallBearing, KlaxonVitaminTo {
-
-    init {
-        require(height == length) {
-            "Height ($height) and length ($length) must be equal."
-        }
-    }
 
     override fun toVitamin() = this
 }

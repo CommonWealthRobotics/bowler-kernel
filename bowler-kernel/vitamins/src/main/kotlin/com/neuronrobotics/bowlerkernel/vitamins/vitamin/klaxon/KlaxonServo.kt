@@ -31,15 +31,21 @@ import org.octogonapus.ktunits.quantities.Mass
 import org.octogonapus.ktunits.quantities.Torque
 
 data class KlaxonServo(
+    override val width: Length,
+    override val length: Length,
+    override val height: Length,
+    override val shaftCenterToTopOfBody: Length,
+    override val flangeHeight: Length,
+    override val flangeWidth: Length,
+    override val flangeThickness: Length,
+    override val boltHeightSeparation: Length,
+    override val boltWidthSeparation: Length,
     override val voltage: ElectricPotential,
     override val stallTorque: Torque,
     override val speed: AngularVelocity,
     @TypeFor(field = "shaft", adapter = ShaftTypeAdapter::class)
     val shaftType: Int,
     override val shaft: DefaultShaft,
-    override val width: Length,
-    override val length: Length,
-    override val height: Length,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap
@@ -47,13 +53,19 @@ data class KlaxonServo(
 ) : Servo, KlaxonVitaminTo {
 
     override fun toVitamin() = DefaultServo(
+        width = width,
+        length = length,
+        height = height,
+        shaftCenterToTopOfBody = shaftCenterToTopOfBody,
+        flangeHeight = flangeHeight,
+        flangeWidth = flangeWidth,
+        flangeThickness = flangeThickness,
+        boltHeightSeparation = boltHeightSeparation,
+        boltWidthSeparation = boltWidthSeparation,
         voltage = voltage,
         stallTorque = stallTorque,
         speed = speed,
         shaft = shaft,
-        width = width,
-        length = length,
-        height = height,
         mass = mass,
         centerOfMass = centerOfMass,
         specs = specs
@@ -62,14 +74,20 @@ data class KlaxonServo(
     companion object : KlaxonVitaminFrom<Servo> {
 
         override fun fromVitamin(other: Servo) = KlaxonServo(
+            width = other.width,
+            length = other.length,
+            height = other.height,
+            shaftCenterToTopOfBody = other.shaftCenterToTopOfBody,
+            flangeHeight = other.flangeHeight,
+            flangeWidth = other.flangeWidth,
+            flangeThickness = other.flangeThickness,
+            boltHeightSeparation = other.boltHeightSeparation,
+            boltWidthSeparation = other.boltWidthSeparation,
             voltage = other.voltage,
             stallTorque = other.stallTorque,
             speed = other.speed,
             shaftType = ShaftTypeAdapter().typeFor(other.shaft::class),
             shaft = other.shaft,
-            width = other.width,
-            length = other.length,
-            height = other.height,
             mass = other.mass,
             centerOfMass = other.centerOfMass,
             specs = other.specs

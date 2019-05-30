@@ -19,6 +19,7 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 import org.octogonapus.ktunits.quantities.AngularVelocity
 import org.octogonapus.ktunits.quantities.ElectricCurrent
 import org.octogonapus.ktunits.quantities.ElectricPotential
+import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Power
 import org.octogonapus.ktunits.quantities.Torque
 
@@ -34,6 +35,21 @@ import org.octogonapus.ktunits.quantities.Torque
  *  - Mounting holes (Vitamin for the screws and a bolt circle diameter)
  */
 interface DCMotor : Vitamin {
+
+    /**
+     * The overall width (x-axis), not including keep-away zones for CAD.
+     */
+    val width: Length
+
+    /**
+     * The overall length (y-axis), not including keep-away zones for CAD.
+     */
+    val length: Length
+
+    /**
+     * The overall height (z-axis), not including keep-away zones for CAD.
+     */
+    val height: Length
 
     /**
      * The operating voltage.
