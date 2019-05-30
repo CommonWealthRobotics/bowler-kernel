@@ -37,7 +37,7 @@ class BallBearingGenerator(
             it!!
 
             val bearingOutside = Cylinder(
-                it.height.millimeter / 2,
+                it.diameter.millimeter / 2,
                 it.width.millimeter,
                 resolution
             ).toCSG()

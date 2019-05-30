@@ -35,8 +35,7 @@ internal class BallBearingGeneratorTest {
         val bearing = DefaultBallBearing(
             bore = 12.millimeter,
             width = 8.millimeter,
-            length = 28.millimeter,
-            height = 28.millimeter,
+            diameter = 28.millimeter,
             mass = 0.1.lbM,
             centerOfMass = CenterOfMass(0.inch, 0.inch, 0.inch),
             specs = immutableMapOf(
@@ -51,8 +50,8 @@ internal class BallBearingGeneratorTest {
             { assertEquals(0.0, cad.bounds.center.x) },
             { assertEquals(0.0, cad.bounds.center.y) },
             { assertEquals(bearing.width.millimeter / 2, cad.bounds.center.z) },
-            { assertEquals(bearing.height.millimeter, cad.bounds.bounds.x) },
-            { assertEquals(bearing.height.millimeter, cad.bounds.bounds.y) },
+            { assertEquals(bearing.diameter.millimeter, cad.bounds.bounds.x) },
+            { assertEquals(bearing.diameter.millimeter, cad.bounds.bounds.y) },
             { assertEquals(bearing.width.millimeter, cad.bounds.bounds.z) }
         )
     }
