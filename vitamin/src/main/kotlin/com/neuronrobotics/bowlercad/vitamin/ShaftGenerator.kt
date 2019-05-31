@@ -35,17 +35,13 @@ class ShaftGenerator(
             it!!
 
             when (it) {
-                is DefaultShaft -> {
-                    when (it) {
-                        is DefaultShaft.ServoHorn -> {
-                            when (it) {
-                                is DefaultShaft.ServoHorn.Arm -> makeArm(it)
-                                is DefaultShaft.ServoHorn.Wheel -> makeWheel(it)
-                            }
-                        }
-
-                        else -> throw IllegalArgumentException()
+                is DefaultShaft -> when (it) {
+                    is DefaultShaft.ServoHorn -> when (it) {
+                        is DefaultShaft.ServoHorn.Arm -> makeArm(it)
+                        is DefaultShaft.ServoHorn.Wheel -> makeWheel(it)
                     }
+
+                    else -> throw IllegalArgumentException()
                 }
 
                 else -> throw IllegalArgumentException()
