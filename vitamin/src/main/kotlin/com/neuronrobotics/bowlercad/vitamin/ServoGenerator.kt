@@ -30,8 +30,8 @@ import org.octogonapus.ktunits.quantities.minus
  * Generates [Servo] CAD.
  */
 class ServoGenerator(
-    maxCacheSize: Long = 100,
-    shaftGenerator: VitaminCadGenerator<Shaft>
+    shaftGenerator: VitaminCadGenerator<Shaft>,
+    maxCacheSize: Long = 100
 ) : VitaminCadGenerator<Servo> {
 
     private val cache = CacheBuilder.newBuilder()

@@ -27,8 +27,8 @@ import org.octogonapus.ktunits.quantities.millimeter
  * Generates [BallBearing] CAD.
  */
 class BallBearingGenerator(
-    maxCacheSize: Long = 100,
-    resolution: Int = 24
+    resolution: Int = 24,
+    maxCacheSize: Long = 100
 ) : VitaminCadGenerator<BallBearing> {
 
     private val cache = CacheBuilder.newBuilder()
