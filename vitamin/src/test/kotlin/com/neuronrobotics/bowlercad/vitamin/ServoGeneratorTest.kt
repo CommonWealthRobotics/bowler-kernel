@@ -90,6 +90,7 @@ internal class ServoGeneratorTest {
         )
 
         val cad = generator.generateCAD(servo)
+        writeSTLToFile(generator.generateCAD(servo, 8.millimeter, 40.millimeter), "servo")
 
         assertAll(
             { assertEquals(servo.shaftCenterToTopOfBody.millimeter, cad.bounds.center.x) },
