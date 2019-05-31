@@ -8,6 +8,7 @@ buildCache {
 rootProject.name = "bowler-cad"
 
 include(":core")
+include(":vitamin")
 
 /**
  * This configures the gradle build so we can use non-standard build file names.

@@ -16,8 +16,8 @@
  */
 package com.neuronrobotics.bowlercad.cadgenerator
 
+import Jama.Matrix
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
-import org.ejml.simple.SimpleMatrix
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -26,7 +26,7 @@ internal class FrameTransformationMapperTest {
 
     @Test
     fun `test rotation and translation affine`() {
-        val ft = FrameTransformation.fromSimpleMatrix(SimpleMatrix(4, 4).apply {
+        val ft = FrameTransformation.fromMatrix(Matrix(4, 4).apply {
             for (row in 0 until 4) {
                 for (col in 0 until 4) {
                     this[row, col] = row * 2.0 + col

@@ -35,7 +35,7 @@ fun FrameTransformation.affine(): Affine = Affine().also { setAffine(it) }
  * @param affine The [Affine] to modify.
  */
 fun FrameTransformation.setAffine(affine: Affine) {
-    getRotation().let {
+    rotation.let {
         affine.mxx = it[0, 0]
         affine.mxy = it[0, 1]
         affine.mxz = it[0, 2]
@@ -47,10 +47,10 @@ fun FrameTransformation.setAffine(affine: Affine) {
         affine.mzz = it[2, 2]
     }
 
-    getTranslation().let {
-        affine.tx = it[0]
-        affine.ty = it[1]
-        affine.tz = it[2]
+    translation.let {
+        affine.tx = it[0, 0]
+        affine.ty = it[1, 0]
+        affine.tz = it[2, 0]
     }
 }
 

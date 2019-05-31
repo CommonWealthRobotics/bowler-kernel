@@ -1,4 +1,4 @@
-description = "The core module."
+description = "This module contains CAD generators for Vitamins."
 
 plugins {
     `java-library`
@@ -7,7 +7,7 @@ plugins {
 dependencies {
     api(
         group = "com.neuronrobotics",
-        name = "bowler-kernel-kinematics",
+        name = "bowler-kernel-vitamins",
         version = property("bowler-kernel.version") as String
     )
     api(

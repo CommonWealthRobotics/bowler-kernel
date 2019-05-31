@@ -26,7 +26,7 @@ plugins {
 
 object Versions {
     const val ktlintVersion = "0.29.0"
-    const val bowlerCadVersion = "0.0.9"
+    const val bowlerCadVersion = "0.1.0"
 }
 
 allprojects {
@@ -35,14 +35,19 @@ allprojects {
 }
 
 val coreProject = project(":core")
+val vitaminProject = project(":vitamin")
 
 val kotlinProjects = setOf(
-    coreProject
+    coreProject,
+    vitaminProject
 )
 
 val javaProjects = setOf<Project>() + kotlinProjects
 
-val publishedProjects = setOf<Project>() + kotlinProjects
+val publishedProjects = setOf(
+    coreProject,
+    vitaminProject
+)
 
 object Versions {
     const val ktlintVersion = "0.29.0"
@@ -76,6 +81,7 @@ allprojects {
         maven(url = "https://dl.bintray.com/commonwealthrobotics/maven-artifacts")
         maven(url = "https://dl.bintray.com/octogonapus/maven-artifacts")
         maven(url = "https://dl.bintray.com/s1m0nw1/KtsRunner")
+//        mavenLocal()
     }
 
     // Configures the Jacoco tool version to be the same for all projects that have it applied.
@@ -277,9 +283,6 @@ configure(kotlinProjects) {
             name = "kotlinx-coroutines-core",
             version = "1.0.0"
         )
-
-        "testCompile"(kotlin("test", kotlinVersion))
-        "testCompile"(kotlin("test-junit", kotlinVersion))
     }
 
     tasks.withType<KotlinCompile> {
