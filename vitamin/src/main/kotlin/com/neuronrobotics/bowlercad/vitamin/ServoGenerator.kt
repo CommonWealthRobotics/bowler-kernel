@@ -79,7 +79,7 @@ class ServoGenerator(
         return cache[vitamin].union(
             boltHoles.toZMin()
                 .toYMin()
-                .movey(-vitamin.boltDepthSeparation.millimeter + boltHoleDiameter.millimeter/2)
+                .movey(-vitamin.boltDepthSeparation.millimeter + boltHoleDiameter.millimeter / 2)
                 .movex(
                     -(vitamin.shaftCenterToTopOfBody + (vitamin.boltWidthSeparation - vitamin.width) / 2).millimeter
                 )

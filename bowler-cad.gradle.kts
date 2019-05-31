@@ -57,7 +57,6 @@ buildscript {
     repositories {
         mavenCentral() // Needed for kotlin gradle plugin
         maven(url = "https://plugins.gradle.org/m2/")
-        maven(url = "https://oss.sonatype.org/content/repositories/staging/")
     }
     dependencies {
         // Gives us the KotlinJvmProjectExtension
@@ -77,7 +76,8 @@ allprojects {
         maven(url = "https://dl.bintray.com/commonwealthrobotics/maven-artifacts")
         maven(url = "https://dl.bintray.com/octogonapus/maven-artifacts")
         maven(url = "https://dl.bintray.com/s1m0nw1/KtsRunner")
-        mavenLocal()
+        maven(url = "https://oss.sonatype.org/content/repositories/staging/")
+//        mavenLocal()
     }
 
     // Configures the Jacoco tool version to be the same for all projects that have it applied.
