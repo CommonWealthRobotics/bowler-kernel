@@ -20,8 +20,8 @@ import com.beust.klaxon.TypeFor
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultServo
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Servo
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.ShaftTypeAdapter
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.AngularVelocity
@@ -47,7 +47,7 @@ data class KlaxonServo(
     override val speed: AngularVelocity,
     @TypeFor(field = "shaft", adapter = ShaftTypeAdapter::class)
     val shaftType: Int,
-    override val shaft: DefaultShaft,
+    override val shaft: Shaft,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap

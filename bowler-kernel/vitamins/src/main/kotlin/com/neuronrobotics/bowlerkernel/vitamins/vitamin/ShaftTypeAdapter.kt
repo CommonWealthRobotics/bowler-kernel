@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableList
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.plus
 import kotlin.reflect.KClass
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
 
 /**
  * A Klaxon [TypeAdapter] for [DefaultShaft]. Reflectively reads all [DefaultShaft] nested subclasses to

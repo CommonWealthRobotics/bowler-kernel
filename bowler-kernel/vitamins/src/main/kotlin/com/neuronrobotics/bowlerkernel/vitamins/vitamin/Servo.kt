@@ -107,5 +107,5 @@ interface Servo : Vitamin {
     /**
      * The shaft type.
      */
-    val shaft: DefaultShaft
+    val shaft: Shaft
 }

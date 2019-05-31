@@ -39,7 +39,7 @@ data class DefaultServo(
     override val voltage: ElectricPotential,
     override val stallTorque: Torque,
     override val speed: AngularVelocity,
-    override val shaft: DefaultShaft,
+    override val shaft: Shaft,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap
