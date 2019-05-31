@@ -27,6 +27,8 @@ import org.octogonapus.ktunits.quantities.Power
 import org.octogonapus.ktunits.quantities.Torque
 
 data class DefaultDCMotor(
+    override val diameter: Length,
+    override val height: Length,
     override val voltage: ElectricPotential,
     override val freeSpeed: AngularVelocity,
     override val freeCurrent: ElectricCurrent,
@@ -34,9 +36,6 @@ data class DefaultDCMotor(
     override val stallCurrent: ElectricCurrent,
     override val power: Power,
     override val shaft: DefaultShaft,
-    override val width: Length,
-    override val length: Length,
-    override val height: Length,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap

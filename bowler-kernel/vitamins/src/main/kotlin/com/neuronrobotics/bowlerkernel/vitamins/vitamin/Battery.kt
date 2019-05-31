@@ -19,7 +19,6 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 import org.octogonapus.ktunits.quantities.ElectricCharge
 import org.octogonapus.ktunits.quantities.ElectricCurrent
 import org.octogonapus.ktunits.quantities.ElectricPotential
-import org.octogonapus.ktunits.quantities.Frequency
 import org.octogonapus.ktunits.quantities.Length
 
 /**
@@ -40,12 +39,12 @@ interface Battery : Vitamin {
     val width: Length
 
     /**
-     * The overall height (z-axis), not including keep-away zones for CAD.
+     * The overall length (y-axis), not including keep-away zones for CAD.
      */
     val length: Length
 
     /**
-     * The overall height (y-axis), not including keep-away zones for CAD.
+     * The overall height (z-axis), not including keep-away zones for CAD.
      */
     val height: Length
 
@@ -58,11 +57,6 @@ interface Battery : Vitamin {
      * The maximum continuous current draw.
      */
     val current: ElectricCurrent
-
-    /**
-     * The maximum continuous discharge rate.
-     */
-    val dischargeRate: Frequency
 
     /**
      * The capacity.

@@ -19,7 +19,6 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 import org.octogonapus.ktunits.quantities.Angle
 import org.octogonapus.ktunits.quantities.ElectricCurrent
 import org.octogonapus.ktunits.quantities.ElectricPotential
-import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Torque
 
 /**
@@ -32,16 +31,6 @@ import org.octogonapus.ktunits.quantities.Torque
  *  - Mounting holes (Vitamin for the screws and hole positions)
  */
 interface StepperMotor : Vitamin {
-
-    /**
-     * The overall width (x-axis), not including keep-away zones for CAD.
-     */
-    val width: Length
-
-    /**
-     * The overall height (y-axis), not including keep-away zones for CAD.
-     */
-    val height: Length
 
     /**
      * The NEMA size.

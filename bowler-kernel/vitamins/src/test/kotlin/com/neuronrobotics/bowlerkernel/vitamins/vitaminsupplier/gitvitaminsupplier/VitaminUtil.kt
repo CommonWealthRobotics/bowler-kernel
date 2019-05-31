@@ -29,7 +29,6 @@ import org.octogonapus.ktunits.quantities.ampere
 import org.octogonapus.ktunits.quantities.coulomb
 import org.octogonapus.ktunits.quantities.degree
 import org.octogonapus.ktunits.quantities.gram
-import org.octogonapus.ktunits.quantities.hz
 import org.octogonapus.ktunits.quantities.inch
 import org.octogonapus.ktunits.quantities.nM
 import org.octogonapus.ktunits.quantities.radianPerMinute
@@ -61,7 +60,6 @@ internal fun Random.Default.randomBattery(): DefaultBattery {
         nextDouble().inch,
         nextDouble().volt,
         nextDouble().ampere,
-        nextDouble().hz,
         nextDouble().coulomb,
         nextDouble().gram,
         randomCenterOfMass(),
@@ -71,6 +69,8 @@ internal fun Random.Default.randomBattery(): DefaultBattery {
 
 internal fun Random.Default.randomDCMotor(): DefaultDCMotor {
     return DefaultDCMotor(
+        nextDouble().inch,
+        nextDouble().inch,
         nextDouble().volt,
         nextDouble().radianPerMinute,
         nextDouble().ampere,
@@ -85,9 +85,6 @@ internal fun Random.Default.randomDCMotor(): DefaultDCMotor {
             randomCenterOfMass(),
             randomMap()
         ),
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().inch,
         nextDouble().gram,
         randomCenterOfMass(),
         randomMap()
@@ -143,7 +140,7 @@ internal fun Random.Default.randomShaft(): DefaultShaft.ServoHorn.Arm {
 
 internal fun Random.Default.randomStepperMotor(): DefaultStepperMotor {
     return DefaultStepperMotor(
-        1,
+        nextInt(),
         nextDouble().volt,
         nextDouble().nM,
         nextDouble().ampere,
@@ -156,8 +153,6 @@ internal fun Random.Default.randomStepperMotor(): DefaultStepperMotor {
             randomCenterOfMass(),
             randomMap()
         ),
-        nextDouble().inch,
-        nextDouble().inch,
         nextDouble().gram,
         randomCenterOfMass(),
         randomMap()

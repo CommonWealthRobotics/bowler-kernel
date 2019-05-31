@@ -37,17 +37,12 @@ import org.octogonapus.ktunits.quantities.Torque
 interface DCMotor : Vitamin {
 
     /**
-     * The overall width (x-axis), not including keep-away zones for CAD.
+     * The diameter of the case.
      */
-    val width: Length
+    val diameter: Length
 
     /**
      * The overall height (z-axis), not including keep-away zones for CAD.
-     */
-    val length: Length
-
-    /**
-     * The overall height (y-axis), not including keep-away zones for CAD.
      */
     val height: Length
 

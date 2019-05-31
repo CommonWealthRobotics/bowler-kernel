@@ -22,7 +22,6 @@ import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.ElectricCharge
 import org.octogonapus.ktunits.quantities.ElectricCurrent
 import org.octogonapus.ktunits.quantities.ElectricPotential
-import org.octogonapus.ktunits.quantities.Frequency
 import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Mass
 
@@ -32,7 +31,6 @@ data class DefaultBattery(
     override val height: Length,
     override val voltage: ElectricPotential,
     override val current: ElectricCurrent,
-    override val dischargeRate: Frequency,
     override val capacity: ElectricCharge,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,

@@ -27,7 +27,6 @@ import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.Angle
 import org.octogonapus.ktunits.quantities.ElectricCurrent
 import org.octogonapus.ktunits.quantities.ElectricPotential
-import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Mass
 import org.octogonapus.ktunits.quantities.Torque
 
@@ -40,8 +39,6 @@ data class KlaxonStepperMotor(
     @TypeFor(field = "shaft", adapter = ShaftTypeAdapter::class)
     val shaftType: Int,
     override val shaft: DefaultShaft,
-    override val width: Length,
-    override val height: Length,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap
@@ -55,8 +52,6 @@ data class KlaxonStepperMotor(
         current = current,
         stepAngle = stepAngle,
         shaft = shaft,
-        width = width,
-        height = height,
         mass = mass,
         centerOfMass = centerOfMass,
         specs = specs
@@ -72,8 +67,6 @@ data class KlaxonStepperMotor(
             stepAngle = other.stepAngle,
             shaftType = ShaftTypeAdapter().typeFor(other.shaft::class),
             shaft = other.shaft,
-            width = other.width,
-            height = other.height,
             mass = other.mass,
             centerOfMass = other.centerOfMass,
             specs = other.specs

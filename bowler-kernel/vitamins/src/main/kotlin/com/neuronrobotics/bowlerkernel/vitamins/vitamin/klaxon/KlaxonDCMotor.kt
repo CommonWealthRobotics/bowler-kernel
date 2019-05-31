@@ -33,6 +33,8 @@ import org.octogonapus.ktunits.quantities.Power
 import org.octogonapus.ktunits.quantities.Torque
 
 data class KlaxonDCMotor(
+    override val diameter: Length,
+    override val height: Length,
     override val voltage: ElectricPotential,
     override val freeSpeed: AngularVelocity,
     override val freeCurrent: ElectricCurrent,
@@ -42,9 +44,6 @@ data class KlaxonDCMotor(
     @TypeFor(field = "shaft", adapter = ShaftTypeAdapter::class)
     val shaftType: Int,
     override val shaft: DefaultShaft,
-    override val width: Length,
-    override val length: Length,
-    override val height: Length,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap
@@ -52,6 +51,8 @@ data class KlaxonDCMotor(
 ) : DCMotor, KlaxonVitaminTo {
 
     override fun toVitamin() = DefaultDCMotor(
+        diameter = diameter,
+        height = height,
         voltage = voltage,
         freeSpeed = freeSpeed,
         freeCurrent = freeCurrent,
@@ -59,9 +60,6 @@ data class KlaxonDCMotor(
         stallCurrent = stallCurrent,
         power = power,
         shaft = shaft,
-        width = width,
-        length = length,
-        height = height,
         mass = mass,
         centerOfMass = centerOfMass,
         specs = specs
@@ -70,6 +68,8 @@ data class KlaxonDCMotor(
     companion object : KlaxonVitaminFrom<DCMotor> {
 
         override fun fromVitamin(other: DCMotor) = KlaxonDCMotor(
+            diameter = other.diameter,
+            height = other.height,
             voltage = other.voltage,
             freeSpeed = other.freeSpeed,
             freeCurrent = other.freeCurrent,
@@ -78,9 +78,6 @@ data class KlaxonDCMotor(
             power = other.power,
             shaftType = ShaftTypeAdapter().typeFor(other.shaft::class),
             shaft = other.shaft,
-            width = other.width,
-            length = other.length,
-            height = other.height,
             mass = other.mass,
             centerOfMass = other.centerOfMass,
             specs = other.specs
