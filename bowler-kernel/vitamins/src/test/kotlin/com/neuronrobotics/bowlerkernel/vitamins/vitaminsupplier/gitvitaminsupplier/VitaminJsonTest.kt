@@ -19,6 +19,7 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsuppl
 import com.beust.klaxon.Klaxon
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBallBearing
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBattery
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultCapScrew
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonDCMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
@@ -51,6 +52,16 @@ internal class VitaminJsonTest {
             val vitaminBefore = randomBattery()
             val jsonString = klaxon.toJsonString(vitaminBefore)
             val vitaminAfter = klaxon.parse<DefaultBattery>(jsonString)
+            assertEquals(vitaminBefore, vitaminAfter)
+        }
+    }
+
+    @Test
+    fun `test converting cap screw`() {
+        Random.apply {
+            val vitaminBefore = randomCapScrew()
+            val jsonString = klaxon.toJsonString(vitaminBefore)
+            val vitaminAfter = klaxon.parse<DefaultCapScrew>(jsonString)
             assertEquals(vitaminBefore, vitaminAfter)
         }
     }

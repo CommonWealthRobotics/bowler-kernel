@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBallBearing
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBattery
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultCapScrew
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultDCMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultServo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
@@ -42,90 +43,76 @@ internal fun Random.randomCenterOfMass() =
 internal fun Random.randomMap(): ImmutableMap<String, Any> =
     immutableMapOf(nextDouble().toString() to nextDouble())
 
-internal fun Random.Default.randomBallBearing(): DefaultBallBearing {
-    return DefaultBallBearing(
+internal fun Random.Default.randomBallBearing() = DefaultBallBearing(
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().gram,
+    randomCenterOfMass(),
+    randomMap()
+)
+
+internal fun Random.Default.randomBattery() = DefaultBattery(
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().volt,
+    nextDouble().ampere,
+    nextDouble().coulomb,
+    nextDouble().gram,
+    randomCenterOfMass(),
+    randomMap()
+)
+
+internal fun Random.Default.randomCapScrew() = DefaultCapScrew(
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextInt(),
+    nextDouble().inch,
+    nextDouble().gram,
+    randomCenterOfMass(),
+    randomMap()
+)
+
+internal fun Random.Default.randomDCMotor() = DefaultDCMotor(
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().volt,
+    nextDouble().radianPerMinute,
+    nextDouble().ampere,
+    nextDouble().nM,
+    nextDouble().ampere,
+    nextDouble().watt,
+    DefaultShaft.DShaft(
         nextDouble().inch,
         nextDouble().inch,
         nextDouble().inch,
         nextDouble().gram,
         randomCenterOfMass(),
         randomMap()
-    )
-}
+    ),
+    nextDouble().gram,
+    randomCenterOfMass(),
+    randomMap()
+)
 
-internal fun Random.Default.randomBattery(): DefaultBattery {
-    return DefaultBattery(
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().volt,
-        nextDouble().ampere,
-        nextDouble().coulomb,
-        nextDouble().gram,
-        randomCenterOfMass(),
-        randomMap()
-    )
-}
-
-internal fun Random.Default.randomDCMotor(): DefaultDCMotor {
-    return DefaultDCMotor(
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().volt,
-        nextDouble().radianPerMinute,
-        nextDouble().ampere,
-        nextDouble().nM,
-        nextDouble().ampere,
-        nextDouble().watt,
-        DefaultShaft.DShaft(
-            nextDouble().inch,
-            nextDouble().inch,
-            nextDouble().inch,
-            nextDouble().gram,
-            randomCenterOfMass(),
-            randomMap()
-        ),
-        nextDouble().gram,
-        randomCenterOfMass(),
-        randomMap()
-    )
-}
-
-internal fun Random.Default.randomServo(): DefaultServo {
-    return DefaultServo(
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().volt,
-        nextDouble().nM,
-        nextDouble().radianPerMinute,
-        DefaultShaft.ServoHorn.Arm(
-            nextDouble().inch,
-            nextDouble().inch,
-            nextDouble().inch,
-            nextDouble().inch,
-            nextDouble().inch,
-            nextInt(),
-            nextDouble().gram,
-            randomCenterOfMass(),
-            randomMap()
-        ),
-        nextDouble().gram,
-        randomCenterOfMass(),
-        randomMap()
-    )
-}
-
-internal fun Random.Default.randomShaft(): DefaultShaft.ServoHorn.Arm {
-    return DefaultShaft.ServoHorn.Arm(
+internal fun Random.Default.randomServo() = DefaultServo(
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().volt,
+    nextDouble().nM,
+    nextDouble().radianPerMinute,
+    DefaultShaft.ServoHorn.Arm(
         nextDouble().inch,
         nextDouble().inch,
         nextDouble().inch,
@@ -135,26 +122,39 @@ internal fun Random.Default.randomShaft(): DefaultShaft.ServoHorn.Arm {
         nextDouble().gram,
         randomCenterOfMass(),
         randomMap()
-    )
-}
+    ),
+    nextDouble().gram,
+    randomCenterOfMass(),
+    randomMap()
+)
 
-internal fun Random.Default.randomStepperMotor(): DefaultStepperMotor {
-    return DefaultStepperMotor(
-        nextInt(),
-        nextDouble().volt,
-        nextDouble().nM,
-        nextDouble().ampere,
-        nextDouble().degree,
-        DefaultShaft.DShaft(
-            nextDouble().inch,
-            nextDouble().inch,
-            nextDouble().inch,
-            nextDouble().gram,
-            randomCenterOfMass(),
-            randomMap()
-        ),
+internal fun Random.Default.randomShaft() = DefaultShaft.ServoHorn.Arm(
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextInt(),
+    nextDouble().gram,
+    randomCenterOfMass(),
+    randomMap()
+)
+
+internal fun Random.Default.randomStepperMotor() = DefaultStepperMotor(
+    nextInt(),
+    nextDouble().volt,
+    nextDouble().nM,
+    nextDouble().ampere,
+    nextDouble().degree,
+    DefaultShaft.DShaft(
+        nextDouble().inch,
+        nextDouble().inch,
+        nextDouble().inch,
         nextDouble().gram,
         randomCenterOfMass(),
         randomMap()
-    )
-}
+    ),
+    nextDouble().gram,
+    randomCenterOfMass(),
+    randomMap()
+)

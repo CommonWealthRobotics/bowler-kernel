@@ -30,6 +30,7 @@ internal class GitVitaminSupplierTest {
         immutableSetOf(
             randomBallBearing(),
             randomBattery(),
+            randomCapScrew(),
             randomDCMotor(),
             randomServo(),
             randomShaft(),
