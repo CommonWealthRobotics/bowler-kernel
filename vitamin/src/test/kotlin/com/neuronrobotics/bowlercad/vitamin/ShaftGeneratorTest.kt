@@ -29,6 +29,7 @@ import org.octogonapus.ktunits.quantities.inch
 import org.octogonapus.ktunits.quantities.millimeter
 import org.octogonapus.ktunits.quantities.minus
 import org.octogonapus.ktunits.quantities.plus
+import org.octogonapus.ktunits.quantities.times
 
 internal class ShaftGeneratorTest {
 
@@ -52,7 +53,6 @@ internal class ShaftGeneratorTest {
         )
 
         val cad = generator.generateCAD(shaft)
-        writeSTLToFile(cad, "shaft")
 
         assertAll(
             {
@@ -73,6 +73,50 @@ internal class ShaftGeneratorTest {
                 assertEquals(
                     (shaft.baseCenterToTipCenterLength + shaft.baseDiameter / 2 +
                         shaft.tipDiameter / 2).millimeter,
+                    cad.bounds.bounds.x
+                )
+            },
+            { assertEquals(shaft.baseDiameter.millimeter, cad.bounds.bounds.y) },
+            { assertEquals(shaft.baseColumnThickness.millimeter, cad.bounds.bounds.z) }
+        )
+    }
+
+    @Test
+    fun `test double arm`() {
+        val shaft = DefaultShaft.ServoHorn.DoubleArm(
+            baseDiameter = 8.millimeter,
+            tipDiameter = 3.millimeter,
+            baseCenterToTipCenterLength = 22.5.millimeter,
+            thickness = 2.millimeter,
+            baseColumnThickness = 5.4.millimeter,
+            mass = 0.1.gram,
+            centerOfMass = CenterOfMass(
+                0.inch,
+                0.inch,
+                0.inch
+            ),
+            specs = emptyImmutableMap()
+        )
+
+        val cad = generator.generateCAD(shaft)
+
+        assertAll(
+            {
+                assertEquals(
+                    0.0,
+                    cad.bounds.center.x
+                )
+            },
+            { assertEquals(0.0, cad.bounds.center.y) },
+            {
+                assertEquals(
+                    (shaft.baseColumnThickness / 2).millimeter,
+                    cad.bounds.center.z
+                )
+            },
+            {
+                assertEquals(
+                    (shaft.baseCenterToTipCenterLength * 2 + shaft.tipDiameter).millimeter,
                     cad.bounds.bounds.x
                 )
             },
