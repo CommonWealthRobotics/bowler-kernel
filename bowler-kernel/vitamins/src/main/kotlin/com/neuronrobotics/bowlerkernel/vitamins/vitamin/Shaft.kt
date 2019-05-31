@@ -33,12 +33,12 @@ interface Shaft : Vitamin {
     val width: Length
 
     /**
-     * The overall length (y-axis), not including keep-away zones for CAD.
+     * The overall length (z-axis), not including keep-away zones for CAD.
      */
     val length: Length
 
     /**
-     * The overall height (z-axis), not including keep-away zones for CAD.
+     * The overall height (y-axis), not including keep-away zones for CAD.
      */
     val height: Length
 }

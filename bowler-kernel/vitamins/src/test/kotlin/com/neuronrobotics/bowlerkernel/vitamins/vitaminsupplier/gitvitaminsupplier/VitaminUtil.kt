@@ -110,7 +110,9 @@ internal fun Random.Default.randomServo(): DefaultServo {
         nextDouble().volt,
         nextDouble().nM,
         nextDouble().radianPerMinute,
-        DefaultShaft.ServoHorn.XArm(
+        DefaultShaft.ServoHorn.CrossArm(
+            nextDouble().inch,
+            nextDouble().inch,
             nextDouble().inch,
             nextDouble().inch,
             nextDouble().inch,
@@ -126,6 +128,8 @@ internal fun Random.Default.randomServo(): DefaultServo {
 
 internal fun Random.Default.randomShaft(): DefaultShaft.ServoHorn.DoubleArm {
     return DefaultShaft.ServoHorn.DoubleArm(
+        nextDouble().inch,
+        nextDouble().inch,
         nextDouble().inch,
         nextDouble().inch,
         nextDouble().inch,

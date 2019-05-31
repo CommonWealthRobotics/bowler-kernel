@@ -39,7 +39,7 @@ interface StepperMotor : Vitamin {
     val width: Length
 
     /**
-     * The overall height (z-axis), not including keep-away zones for CAD.
+     * The overall height (y-axis), not including keep-away zones for CAD.
      */
     val height: Length
 
