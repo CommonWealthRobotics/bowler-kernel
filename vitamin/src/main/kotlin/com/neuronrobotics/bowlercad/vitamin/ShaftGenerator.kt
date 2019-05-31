@@ -41,9 +41,7 @@ class ShaftGenerator(
                             when (it) {
                                 is DefaultShaft.ServoHorn.Arm -> makeArm(it)
 
-                                is DefaultShaft.ServoHorn.DoubleArm -> {
-                                    TODO()
-                                }
+                                is DefaultShaft.ServoHorn.DoubleArm -> makeDoubleArm(it)
 
                                 is DefaultShaft.ServoHorn.CrossArm -> {
                                     TODO()
@@ -64,14 +62,30 @@ class ShaftGenerator(
         })
 
     private fun makeArm(arm: DefaultShaft.ServoHorn.Arm): CSG {
-        val base = Cylinder(arm.baseDiameter.millimeter, arm.thickness.millimeter, 48).toCSG()
-        val tip = Cylinder(arm.tipDiameter.millimeter, arm.thickness.millimeter, 48).toCSG()
+        val base = Cylinder(arm.baseDiameter.millimeter / 2, arm.thickness.millimeter, 48).toCSG()
+        val tip = Cylinder(arm.tipDiameter.millimeter / 2, arm.thickness.millimeter, 48).toCSG()
         val baseColumn =
-            Cylinder(arm.baseDiameter.millimeter, arm.baseColumnThickness.millimeter, 48).toCSG()
+            Cylinder(arm.baseDiameter.millimeter / 2, arm.baseColumnThickness.millimeter, 48).toCSG()
         return baseColumn.toZMin().union(
-            base.hull(tip.movex(arm.baseCenterToTipCenterLength.millimeter))
+            base.union(tip.movex(arm.baseCenterToTipCenterLength.millimeter))
+                .hull()
                 .movez((arm.baseColumnThickness - arm.thickness).millimeter)
         )
+    }
+
+    private fun makeDoubleArm(arm: DefaultShaft.ServoHorn.DoubleArm): CSG {
+        val singleArm = DefaultShaft.ServoHorn.Arm(
+            baseDiameter = arm.baseDiameter,
+            tipDiameter = arm.tipDiameter,
+            baseCenterToTipCenterLength = arm.baseCenterToTipCenterLength,
+            thickness = arm.thickness,
+            baseColumnThickness = arm.baseColumnThickness,
+            mass = arm.mass,
+            centerOfMass = arm.centerOfMass,
+            specs = arm.specs
+        )
+
+        return makeArm(singleArm).union(makeArm(singleArm).rotz(180))
     }
 
     override fun generateCAD(vitamin: Shaft): CSG = cache[vitamin]

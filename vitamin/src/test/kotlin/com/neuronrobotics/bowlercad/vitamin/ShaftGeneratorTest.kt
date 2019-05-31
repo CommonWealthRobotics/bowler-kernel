@@ -27,6 +27,7 @@ import org.octogonapus.ktunits.quantities.div
 import org.octogonapus.ktunits.quantities.gram
 import org.octogonapus.ktunits.quantities.inch
 import org.octogonapus.ktunits.quantities.millimeter
+import org.octogonapus.ktunits.quantities.minus
 import org.octogonapus.ktunits.quantities.plus
 
 internal class ShaftGeneratorTest {
@@ -34,7 +35,6 @@ internal class ShaftGeneratorTest {
     private val generator = ShaftGenerator()
 
     @Test
-    @Disabled
     fun `test arm`() {
         val shaft = DefaultShaft.ServoHorn.Arm(
             baseDiameter = 8.millimeter,
@@ -52,12 +52,13 @@ internal class ShaftGeneratorTest {
         )
 
         val cad = generator.generateCAD(shaft)
+        writeSTLToFile(cad, "shaft")
 
         assertAll(
             {
                 assertEquals(
                     ((shaft.baseCenterToTipCenterLength + shaft.baseDiameter / 2 +
-                        shaft.tipDiameter / 2) / 2).millimeter,
+                        shaft.tipDiameter / 2) / 2 - shaft.baseDiameter / 2).millimeter,
                     cad.bounds.center.x
                 )
             },
@@ -75,8 +76,8 @@ internal class ShaftGeneratorTest {
                     cad.bounds.bounds.x
                 )
             },
-            { assertEquals(shaft.baseColumnThickness.millimeter, cad.bounds.bounds.y) },
-            { assertEquals(shaft.baseDiameter.millimeter, cad.bounds.bounds.z) }
+            { assertEquals(shaft.baseDiameter.millimeter, cad.bounds.bounds.y) },
+            { assertEquals(shaft.baseColumnThickness.millimeter, cad.bounds.bounds.z) }
         )
     }
 }
