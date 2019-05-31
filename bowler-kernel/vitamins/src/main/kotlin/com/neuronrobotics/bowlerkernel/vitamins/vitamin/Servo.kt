@@ -33,17 +33,17 @@ import org.octogonapus.ktunits.quantities.Torque
 interface Servo : Vitamin {
 
     /**
-     * The width of the body (between the two large rectangular sides).
+     * The width of the body (between the face the wire attaches on and the opposite face).
      */
     val width: Length
 
     /**
-     * The length of the body (between the face the shaft is on and the opposite face).
+     * The depth of the body (between the two large rectangular sides).
      */
-    val length: Length
+    val depth: Length
 
     /**
-     * The height of the body (between the face the wire attaches on and the opposite face).
+     * The height of the body (between the face the shaft is on and the opposite face).
      */
     val height: Length
 
@@ -54,30 +54,40 @@ interface Servo : Vitamin {
     val shaftCenterToTopOfBody: Length
 
     /**
-     * The flange height from the top face to the bottom face (i.e., including the
-     * body height).
-     */
-    val flangeHeight: Length
-
-    /**
-     * The flange width from the left face to the right face (i.e., including the body width).
+     * The flange width from the top face to the bottom face (i.e., including the
+     * body width).
      */
     val flangeWidth: Length
 
     /**
-     * The flange thickness (between the two large flat faces of the flange).
+     * The flange depth from the left face to the right face (i.e., including the body depth).
      */
-    val flangeThickness: Length
+    val flangeDepth: Length
 
     /**
-     * The height between the bolt hole centers (the longer dimension).
+     * The flange height (between the two large flat faces of the flange).
      */
-    val boltHeightSeparation: Length
+    val flangeHeight: Length
 
     /**
-     * The width between the bolt hole centers (the smaller dimension).
+     * The distance between the bottom face of the body and the bottom face of the flange.
+     */
+    val flangeHeightFromBottomOfBody: Length
+
+    /**
+     * The width between the bolt hole centers (the longer dimension).
      */
     val boltWidthSeparation: Length
+
+    /**
+     * The depth between the bolt hole centers (the smaller dimension).
+     */
+    val boltDepthSeparation: Length
+
+    /**
+     * The diameter of the bolt holes.
+     */
+    val boltHoleDiameter: Length
 
     /**
      * The operating voltage.

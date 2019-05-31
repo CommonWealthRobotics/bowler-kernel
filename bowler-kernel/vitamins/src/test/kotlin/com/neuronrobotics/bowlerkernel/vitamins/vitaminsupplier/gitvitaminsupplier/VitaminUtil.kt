@@ -105,6 +105,8 @@ internal fun Random.Default.randomServo(): DefaultServo {
         nextDouble().inch,
         nextDouble().inch,
         nextDouble().inch,
+        nextDouble().inch,
+        nextDouble().inch,
         nextDouble().volt,
         nextDouble().nM,
         nextDouble().radianPerMinute,
