@@ -49,10 +49,6 @@ val publishedProjects = setOf(
     vitaminProject
 )
 
-object Versions {
-    const val ktlintVersion = "0.29.0"
-}
-
 object Strings {
     const val spotlessLicenseHeaderDelimiter = "(@|package|import)"
 }
