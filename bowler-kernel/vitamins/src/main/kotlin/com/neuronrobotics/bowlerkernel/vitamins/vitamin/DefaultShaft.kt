@@ -22,7 +22,6 @@ import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Mass
 import org.octogonapus.ktunits.quantities.div
 import org.octogonapus.ktunits.quantities.plus
-import org.octogonapus.ktunits.quantities.times
 
 sealed class DefaultShaft(
     override val width: Length,
@@ -107,6 +106,11 @@ sealed class DefaultShaft(
              * The thickness of the column at the base of the arm.
              */
             val baseColumnThickness: Length,
+
+            /**
+             * The number of points. Each point is another "single" arm.
+             */
+            val points: Int,
             override val mass: Mass,
             override val centerOfMass: CenterOfMass,
             @ConvertImmutableMap
@@ -114,82 +118,6 @@ sealed class DefaultShaft(
         ) : ServoHorn(
             width = baseCenterToTipCenterLength + baseDiameter / 2 + tipDiameter / 2,
             length = baseDiameter,
-            height = baseColumnThickness,
-            mass = mass,
-            centerOfMass = centerOfMass,
-            specs = specs
-        )
-
-        data class DoubleArm(
-            /**
-             * The diameter of the base (where the arm attaches to the servo).
-             */
-            val baseDiameter: Length,
-
-            /**
-             * The diameter of the tip.
-             */
-            val tipDiameter: Length,
-
-            /**
-             * The center-to-center length between the base and tip.
-             */
-            val baseCenterToTipCenterLength: Length,
-
-            /**
-             * The thickness of the overall arm (excluding [baseColumnThickness].
-             */
-            val thickness: Length,
-
-            /**
-             * The thickness of the column at the base of the arm.
-             */
-            val baseColumnThickness: Length,
-            override val mass: Mass,
-            override val centerOfMass: CenterOfMass,
-            @ConvertImmutableMap
-            override val specs: ImmutableMap<String, Any>
-        ) : ServoHorn(
-            width = baseCenterToTipCenterLength * 2 + tipDiameter,
-            length = baseDiameter,
-            height = baseColumnThickness,
-            mass = mass,
-            centerOfMass = centerOfMass,
-            specs = specs
-        )
-
-        data class CrossArm(
-            /**
-             * The diameter of the base (where the arm attaches to the servo).
-             */
-            val baseDiameter: Length,
-
-            /**
-             * The diameter of the tip.
-             */
-            val tipDiameter: Length,
-
-            /**
-             * The center-to-center length between the base and tip.
-             */
-            val baseCenterToTipCenterLength: Length,
-
-            /**
-             * The thickness of the overall arm (excluding [baseColumnThickness].
-             */
-            val thickness: Length,
-
-            /**
-             * The thickness of the column at the base of the arm.
-             */
-            val baseColumnThickness: Length,
-            override val mass: Mass,
-            override val centerOfMass: CenterOfMass,
-            @ConvertImmutableMap
-            override val specs: ImmutableMap<String, Any>
-        ) : ServoHorn(
-            width = baseCenterToTipCenterLength * 2 + tipDiameter,
-            length = baseCenterToTipCenterLength * 2 + tipDiameter,
             height = baseColumnThickness,
             mass = mass,
             centerOfMass = centerOfMass,

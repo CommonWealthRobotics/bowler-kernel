@@ -80,7 +80,7 @@ internal class VitaminJsonTest {
         Random.apply {
             val vitaminBefore = randomShaft()
             val jsonString = klaxon.toJsonString(vitaminBefore)
-            val vitaminAfter = klaxon.parse<DefaultShaft.ServoHorn.DoubleArm>(jsonString)
+            val vitaminAfter = klaxon.parse<DefaultShaft.ServoHorn.Arm>(jsonString)
             assertEquals(vitaminBefore, vitaminAfter)
         }
     }
