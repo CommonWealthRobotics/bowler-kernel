@@ -19,6 +19,7 @@ package com.neuronrobotics.bowlercad.vitamin
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.emptyImmutableMap
@@ -33,6 +34,7 @@ internal class ShaftGeneratorTest {
     private val generator = ShaftGenerator()
 
     @Test
+    @Disabled
     fun `test arm`() {
         val shaft = DefaultShaft.ServoHorn.Arm(
             baseDiameter = 8.millimeter,
