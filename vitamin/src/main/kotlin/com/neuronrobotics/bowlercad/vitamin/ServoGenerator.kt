@@ -18,8 +18,8 @@ package com.neuronrobotics.bowlercad.vitamin
 
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Servo
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cube
 import eu.mihosoft.vrl.v3d.Cylinder
@@ -31,7 +31,7 @@ import org.octogonapus.ktunits.quantities.minus
  */
 class ServoGenerator(
     maxCacheSize: Long = 100,
-    shaftGenerator: VitaminCadGenerator<DefaultShaft>
+    shaftGenerator: VitaminCadGenerator<Shaft>
 ) : VitaminCadGenerator<Servo> {
 
     private val cache = CacheBuilder.newBuilder()

@@ -19,6 +19,7 @@ package com.neuronrobotics.bowlercad.vitamin
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultServo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cylinder
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -42,8 +43,8 @@ internal class ServoGeneratorTest {
     private val shaftLength = 7.1.millimeter
 
     private val generator = ServoGenerator(shaftGenerator = object :
-        VitaminCadGenerator<DefaultShaft> {
-        override fun generateCAD(vitamin: DefaultShaft): CSG {
+        VitaminCadGenerator<Shaft> {
+        override fun generateCAD(vitamin: Shaft): CSG {
             return Cylinder(3.0, shaftLength.millimeter).toCSG()
         }
     })
@@ -65,17 +66,19 @@ internal class ServoGeneratorTest {
             voltage = 7.4.volt,
             stallTorque = 22.8.kgFCm,
             speed = 60.degree / 0.11.second,
-            shaft = DefaultShaft.ServoHorn.Wheel(
-                0.inch,
-                0.inch,
-                0.inch,
-                0.gram,
-                CenterOfMass(
+            shaft = DefaultShaft.ServoHorn.Arm(
+                baseDiameter = 8.millimeter,
+                tipDiameter = 3.millimeter,
+                baseCenterToTipCenterLength = 22.5.millimeter,
+                thickness = 2.millimeter,
+                baseColumnThickness = 5.4.millimeter,
+                mass = 0.1.gram,
+                centerOfMass = CenterOfMass(
                     0.inch,
                     0.inch,
                     0.inch
                 ),
-                emptyImmutableMap()
+                specs = emptyImmutableMap()
             ),
             mass = 58.gram,
             centerOfMass = CenterOfMass(
