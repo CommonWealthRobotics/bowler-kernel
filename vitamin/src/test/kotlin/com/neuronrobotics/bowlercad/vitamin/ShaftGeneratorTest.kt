@@ -145,15 +145,9 @@ internal class ShaftGeneratorTest {
         )
 
         val cad = generator.generateCAD(shaft)
-        writeSTLToFile(cad, "shaft")
 
         assertAll(
-            {
-                assertEquals(
-                    0.0,
-                    cad.bounds.center.x
-                )
-            },
+            { assertEquals(0.0, cad.bounds.center.x) },
             { assertEquals(0.0, cad.bounds.center.y) },
             {
                 assertEquals(
@@ -173,6 +167,39 @@ internal class ShaftGeneratorTest {
                     cad.bounds.bounds.y
                 )
             },
+            { assertEquals(shaft.baseColumnThickness.millimeter, cad.bounds.bounds.z) }
+        )
+    }
+
+    @Test
+    fun `test wheel`() {
+        val shaft = DefaultShaft.ServoHorn.Wheel(
+            diameter = 12.millimeter,
+            baseDiameter = 4.millimeter,
+            thickness = 2.millimeter,
+            baseColumnThickness = 5.4.millimeter,
+            mass = 0.1.gram,
+            centerOfMass = CenterOfMass(
+                0.inch,
+                0.inch,
+                0.inch
+            ),
+            specs = emptyImmutableMap()
+        )
+
+        val cad = generator.generateCAD(shaft)
+
+        assertAll(
+            { assertEquals(0.0, cad.bounds.center.x) },
+            { assertEquals(0.0, cad.bounds.center.y) },
+            {
+                assertEquals(
+                    (shaft.baseColumnThickness / 2).millimeter,
+                    cad.bounds.center.z
+                )
+            },
+            { assertEquals(shaft.diameter.millimeter, cad.bounds.bounds.x) },
+            { assertEquals(shaft.diameter.millimeter, cad.bounds.bounds.y) },
             { assertEquals(shaft.baseColumnThickness.millimeter, cad.bounds.bounds.z) }
         )
     }
