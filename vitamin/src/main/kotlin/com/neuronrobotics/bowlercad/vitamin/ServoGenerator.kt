@@ -24,8 +24,10 @@ import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cube
 import eu.mihosoft.vrl.v3d.Cylinder
 import org.octogonapus.ktunits.quantities.Length
+import org.octogonapus.ktunits.quantities.div
 import org.octogonapus.ktunits.quantities.millimeter
 import org.octogonapus.ktunits.quantities.minus
+import org.octogonapus.ktunits.quantities.plus
 
 /**
  * Generates [Servo] CAD.
@@ -76,7 +78,12 @@ class ServoGenerator(
         val boltHoles = getBoltHoles(vitamin, boltHoleDiameter, boltHoleLength)
         return cache[vitamin].union(
             boltHoles.toZMin()
-                .movex(-vitamin.shaftCenterToTopOfBody.millimeter)
+                .toYMin()
+                .movey(-vitamin.boltDepthSeparation.millimeter + boltHoleDiameter.millimeter/2)
+                .movex(
+                    -(vitamin.shaftCenterToTopOfBody + (vitamin.boltWidthSeparation - vitamin.width) / 2).millimeter
+                )
+                .movez(-(vitamin.height - vitamin.flangeHeightFromBottomOfBody - vitamin.flangeHeight).millimeter)
         )
     }
 
