@@ -63,12 +63,7 @@ internal class ShaftGeneratorTest {
                 )
             },
             { assertEquals(0.0, cad.bounds.center.y) },
-            {
-                assertEquals(
-                    (shaft.baseColumnThickness / 2).millimeter,
-                    cad.bounds.center.z
-                )
-            },
+            { assertEquals((shaft.baseColumnThickness / 2).millimeter, cad.bounds.center.z) },
             {
                 assertEquals(
                     (shaft.baseCenterToTipCenterLength + shaft.baseDiameter / 2 +
@@ -102,19 +97,9 @@ internal class ShaftGeneratorTest {
         val cad = generator.generateCAD(shaft)
 
         assertAll(
-            {
-                assertEquals(
-                    0.0,
-                    cad.bounds.center.x
-                )
-            },
+            { assertEquals(0.0, cad.bounds.center.x) },
             { assertEquals(0.0, cad.bounds.center.y) },
-            {
-                assertEquals(
-                    (shaft.baseColumnThickness / 2).millimeter,
-                    cad.bounds.center.z
-                )
-            },
+            { assertEquals((shaft.baseColumnThickness / 2).millimeter, cad.bounds.center.z) },
             {
                 assertEquals(
                     (shaft.baseCenterToTipCenterLength * 2 + shaft.tipDiameter).millimeter,
@@ -149,12 +134,7 @@ internal class ShaftGeneratorTest {
         assertAll(
             { assertEquals(0.0, cad.bounds.center.x) },
             { assertEquals(0.0, cad.bounds.center.y) },
-            {
-                assertEquals(
-                    (shaft.baseColumnThickness / 2).millimeter,
-                    cad.bounds.center.z
-                )
-            },
+            { assertEquals((shaft.baseColumnThickness / 2).millimeter, cad.bounds.center.z) },
             {
                 assertEquals(
                     (shaft.baseCenterToTipCenterLength * 2 + shaft.tipDiameter).millimeter,
@@ -192,12 +172,7 @@ internal class ShaftGeneratorTest {
         assertAll(
             { assertEquals(0.0, cad.bounds.center.x) },
             { assertEquals(0.0, cad.bounds.center.y) },
-            {
-                assertEquals(
-                    (shaft.baseColumnThickness / 2).millimeter,
-                    cad.bounds.center.z
-                )
-            },
+            { assertEquals((shaft.baseColumnThickness / 2).millimeter, cad.bounds.center.z) },
             { assertEquals(shaft.diameter.millimeter, cad.bounds.bounds.x) },
             { assertEquals(shaft.diameter.millimeter, cad.bounds.bounds.y) },
             { assertEquals(shaft.baseColumnThickness.millimeter, cad.bounds.bounds.z) }
