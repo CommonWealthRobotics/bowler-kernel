@@ -72,6 +72,7 @@ internal class ServoGeneratorTest {
                 baseCenterToTipCenterLength = 22.5.millimeter,
                 thickness = 2.millimeter,
                 baseColumnThickness = 5.4.millimeter,
+                points = 1,
                 mass = 0.1.gram,
                 centerOfMass = CenterOfMass(
                     0.inch,

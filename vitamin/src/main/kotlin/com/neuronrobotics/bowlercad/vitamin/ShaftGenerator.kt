@@ -41,12 +41,6 @@ class ShaftGenerator(
                             when (it) {
                                 is DefaultShaft.ServoHorn.Arm -> makeArm(it)
 
-                                is DefaultShaft.ServoHorn.DoubleArm -> makeDoubleArm(it)
-
-                                is DefaultShaft.ServoHorn.CrossArm -> {
-                                    TODO()
-                                }
-
                                 is DefaultShaft.ServoHorn.Wheel -> {
                                     TODO()
                                 }
@@ -66,26 +60,19 @@ class ShaftGenerator(
         val tip = Cylinder(arm.tipDiameter.millimeter / 2, arm.thickness.millimeter, 48).toCSG()
         val baseColumn =
             Cylinder(arm.baseDiameter.millimeter / 2, arm.baseColumnThickness.millimeter, 48).toCSG()
-        return baseColumn.toZMin().union(
+        val armCSG = baseColumn.toZMin().union(
             base.union(tip.movex(arm.baseCenterToTipCenterLength.millimeter))
                 .hull()
                 .movez((arm.baseColumnThickness - arm.thickness).millimeter)
         )
+        return makeCompoundArm(armCSG, arm.points)
     }
 
-    private fun makeDoubleArm(arm: DefaultShaft.ServoHorn.DoubleArm): CSG {
-        val singleArm = DefaultShaft.ServoHorn.Arm(
-            baseDiameter = arm.baseDiameter,
-            tipDiameter = arm.tipDiameter,
-            baseCenterToTipCenterLength = arm.baseCenterToTipCenterLength,
-            thickness = arm.thickness,
-            baseColumnThickness = arm.baseColumnThickness,
-            mass = arm.mass,
-            centerOfMass = arm.centerOfMass,
-            specs = arm.specs
-        )
-
-        return makeArm(singleArm).union(makeArm(singleArm).rotz(180))
+    private fun makeCompoundArm(armCSG: CSG, arms: Int): CSG {
+        val armAngleDelta = 360 / arms
+        return (0..arms).map {
+            armCSG.rotz(armAngleDelta * it)
+        }.let { CSG.unionAll(it) }
     }
 
     override fun generateCAD(vitamin: Shaft): CSG = cache[vitamin]

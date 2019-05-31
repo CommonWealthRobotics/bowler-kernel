@@ -19,7 +19,6 @@ package com.neuronrobotics.bowlercad.vitamin
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.emptyImmutableMap
@@ -43,6 +42,7 @@ internal class ShaftGeneratorTest {
             baseCenterToTipCenterLength = 22.5.millimeter,
             thickness = 2.millimeter,
             baseColumnThickness = 5.4.millimeter,
+            points = 1,
             mass = 0.1.gram,
             centerOfMass = CenterOfMass(
                 0.inch,
@@ -83,12 +83,13 @@ internal class ShaftGeneratorTest {
 
     @Test
     fun `test double arm`() {
-        val shaft = DefaultShaft.ServoHorn.DoubleArm(
+        val shaft = DefaultShaft.ServoHorn.Arm(
             baseDiameter = 8.millimeter,
             tipDiameter = 3.millimeter,
             baseCenterToTipCenterLength = 22.5.millimeter,
             thickness = 2.millimeter,
             baseColumnThickness = 5.4.millimeter,
+            points = 2,
             mass = 0.1.gram,
             centerOfMass = CenterOfMass(
                 0.inch,
@@ -121,6 +122,57 @@ internal class ShaftGeneratorTest {
                 )
             },
             { assertEquals(shaft.baseDiameter.millimeter, cad.bounds.bounds.y) },
+            { assertEquals(shaft.baseColumnThickness.millimeter, cad.bounds.bounds.z) }
+        )
+    }
+
+    @Test
+    fun `test cross arm`() {
+        val shaft = DefaultShaft.ServoHorn.Arm(
+            baseDiameter = 8.millimeter,
+            tipDiameter = 3.millimeter,
+            baseCenterToTipCenterLength = 22.5.millimeter,
+            thickness = 2.millimeter,
+            baseColumnThickness = 5.4.millimeter,
+            points = 4,
+            mass = 0.1.gram,
+            centerOfMass = CenterOfMass(
+                0.inch,
+                0.inch,
+                0.inch
+            ),
+            specs = emptyImmutableMap()
+        )
+
+        val cad = generator.generateCAD(shaft)
+        writeSTLToFile(cad, "shaft")
+
+        assertAll(
+            {
+                assertEquals(
+                    0.0,
+                    cad.bounds.center.x
+                )
+            },
+            { assertEquals(0.0, cad.bounds.center.y) },
+            {
+                assertEquals(
+                    (shaft.baseColumnThickness / 2).millimeter,
+                    cad.bounds.center.z
+                )
+            },
+            {
+                assertEquals(
+                    (shaft.baseCenterToTipCenterLength * 2 + shaft.tipDiameter).millimeter,
+                    cad.bounds.bounds.x
+                )
+            },
+            {
+                assertEquals(
+                    (shaft.baseCenterToTipCenterLength * 2 + shaft.tipDiameter).millimeter,
+                    cad.bounds.bounds.y
+                )
+            },
             { assertEquals(shaft.baseColumnThickness.millimeter, cad.bounds.bounds.z) }
         )
     }
