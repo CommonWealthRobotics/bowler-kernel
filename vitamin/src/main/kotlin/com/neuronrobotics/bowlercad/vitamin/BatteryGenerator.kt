@@ -18,38 +18,25 @@ package com.neuronrobotics.bowlercad.vitamin
 
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.BallBearing
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Battery
 import eu.mihosoft.vrl.v3d.CSG
-import eu.mihosoft.vrl.v3d.Cylinder
+import eu.mihosoft.vrl.v3d.Cube
 import org.octogonapus.ktunits.quantities.millimeter
 
-/**
- * Generates [BallBearing] CAD.
- */
-class BallBearingGenerator(
-    resolution: Int = 24,
+class BatteryGenerator(
     maxCacheSize: Long = 100
-) : VitaminCadGenerator<BallBearing> {
+) : VitaminCadGenerator<Battery> {
 
     private val cache = CacheBuilder.newBuilder()
         .maximumSize(maxCacheSize)
-        .build(CacheLoader.from<BallBearing, CSG> {
+        .build(CacheLoader.from<Battery, CSG> {
             it!!
 
-            val bearingOutside = Cylinder(
-                it.diameter.millimeter / 2,
-                it.width.millimeter,
-                resolution
-            ).toCSG()
-
-            val bore = Cylinder(
-                it.bore.millimeter / 2,
-                it.width.millimeter,
-                resolution
-            ).toCSG()
-
-            bearingOutside.difference(bore)
+            Cube(it.width.millimeter, it.length.millimeter, it.height.millimeter).toCSG()
+                .toXMin()
+                .toYMin()
+                .toZMin()
         })
 
-    override fun generateCAD(vitamin: BallBearing): CSG = cache[vitamin]
+    override fun generateCAD(vitamin: Battery): CSG = cache[vitamin]
 }

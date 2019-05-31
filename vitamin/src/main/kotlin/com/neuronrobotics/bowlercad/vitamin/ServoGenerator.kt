@@ -23,15 +23,18 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cube
 import eu.mihosoft.vrl.v3d.Cylinder
+import org.octogonapus.ktunits.quantities.Length
+import org.octogonapus.ktunits.quantities.div
 import org.octogonapus.ktunits.quantities.millimeter
 import org.octogonapus.ktunits.quantities.minus
+import org.octogonapus.ktunits.quantities.plus
 
 /**
  * Generates [Servo] CAD.
  */
 class ServoGenerator(
-    maxCacheSize: Long = 100,
-    shaftGenerator: VitaminCadGenerator<Shaft>
+    shaftGenerator: VitaminCadGenerator<Shaft>,
+    maxCacheSize: Long = 100
 ) : VitaminCadGenerator<Servo> {
 
     private val cache = CacheBuilder.newBuilder()
@@ -47,14 +50,7 @@ class ServoGenerator(
             ).toCSG()
 
             val shaft = shaftGenerator.generateCAD(it.shaft)
-            val boltHole =
-                Cylinder(it.boltHoleDiameter.millimeter / 2, it.flangeHeight.millimeter).toCSG()
-            val boltHoles = boltHole.union(
-                boltHole.movex(it.boltWidthSeparation.millimeter),
-                boltHole.movex(it.boltWidthSeparation.millimeter)
-                    .movey(it.boltDepthSeparation.millimeter),
-                boltHole.movey(it.boltDepthSeparation.millimeter)
-            )
+            val boltHoles = getBoltHoles(it, it.boltHoleDiameter, it.flangeHeight)
 
             val flangeWithHoles = flange.difference(boltHoles.move(boltHoles.center * -1.0))
 
@@ -69,4 +65,40 @@ class ServoGenerator(
         })
 
     override fun generateCAD(vitamin: Servo): CSG = cache[vitamin]
+
+    /**
+     * Generates a servo with screw hole cylinders that can be used to cut out holes for the
+     * screws.
+     *
+     * @param vitamin The vitamin.
+     * @param boltHoleDiameter The diameter of the screw hole cylinders.
+     * @param boltHoleLength The length of the screw hole cylinders.
+     */
+    fun generateCAD(vitamin: Servo, boltHoleDiameter: Length, boltHoleLength: Length): CSG {
+        val boltHoles = getBoltHoles(vitamin, boltHoleDiameter, boltHoleLength)
+        return cache[vitamin].union(
+            boltHoles.toZMin()
+                .toYMin()
+                .movey(-vitamin.boltDepthSeparation.millimeter + boltHoleDiameter.millimeter / 2)
+                .movex(
+                    -(vitamin.shaftCenterToTopOfBody + (vitamin.boltWidthSeparation - vitamin.width) / 2).millimeter
+                )
+                .movez(-(vitamin.height - vitamin.flangeHeightFromBottomOfBody - vitamin.flangeHeight).millimeter)
+        )
+    }
+
+    private fun getBoltHoles(
+        it: Servo,
+        boltHoleDiameter: Length,
+        boltHoleLength: Length
+    ): CSG {
+        val boltHole =
+            Cylinder(boltHoleDiameter.millimeter / 2, boltHoleLength.millimeter).toCSG()
+        return boltHole.union(
+            boltHole.movex(it.boltWidthSeparation.millimeter),
+            boltHole.movex(it.boltWidthSeparation.millimeter)
+                .movey(it.boltDepthSeparation.millimeter),
+            boltHole.movey(it.boltDepthSeparation.millimeter)
+        )
+    }
 }

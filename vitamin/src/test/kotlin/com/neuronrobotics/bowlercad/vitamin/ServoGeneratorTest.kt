@@ -44,9 +44,8 @@ internal class ServoGeneratorTest {
 
     private val generator = ServoGenerator(shaftGenerator = object :
         VitaminCadGenerator<Shaft> {
-        override fun generateCAD(vitamin: Shaft): CSG {
-            return Cylinder(3.0, shaftLength.millimeter).toCSG()
-        }
+        override fun generateCAD(vitamin: Shaft): CSG =
+            Cylinder(3.0, shaftLength.millimeter).toCSG()
     })
 
     @Test
@@ -72,6 +71,7 @@ internal class ServoGeneratorTest {
                 baseCenterToTipCenterLength = 22.5.millimeter,
                 thickness = 2.millimeter,
                 baseColumnThickness = 5.4.millimeter,
+                points = 1,
                 mass = 0.1.gram,
                 centerOfMass = CenterOfMass(
                     0.inch,

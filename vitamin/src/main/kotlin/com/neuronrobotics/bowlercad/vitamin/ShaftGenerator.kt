@@ -35,28 +35,13 @@ class ShaftGenerator(
             it!!
 
             when (it) {
-                is DefaultShaft -> {
-                    when (it) {
-                        is DefaultShaft.ServoHorn -> {
-                            when (it) {
-                                is DefaultShaft.ServoHorn.Arm -> makeArm(it)
-
-                                is DefaultShaft.ServoHorn.DoubleArm -> {
-                                    TODO()
-                                }
-
-                                is DefaultShaft.ServoHorn.CrossArm -> {
-                                    TODO()
-                                }
-
-                                is DefaultShaft.ServoHorn.Wheel -> {
-                                    TODO()
-                                }
-                            }
-                        }
-
-                        else -> throw IllegalArgumentException()
+                is DefaultShaft -> when (it) {
+                    is DefaultShaft.ServoHorn -> when (it) {
+                        is DefaultShaft.ServoHorn.Arm -> makeArm(it)
+                        is DefaultShaft.ServoHorn.Wheel -> makeWheel(it)
                     }
+
+                    else -> throw IllegalArgumentException()
                 }
 
                 else -> throw IllegalArgumentException()
@@ -64,14 +49,33 @@ class ShaftGenerator(
         })
 
     private fun makeArm(arm: DefaultShaft.ServoHorn.Arm): CSG {
-        val base = Cylinder(arm.baseDiameter.millimeter, arm.thickness.millimeter, 48).toCSG()
-        val tip = Cylinder(arm.tipDiameter.millimeter, arm.thickness.millimeter, 48).toCSG()
+        val base = Cylinder(arm.baseDiameter.millimeter / 2, arm.thickness.millimeter).toCSG()
+        val tip = Cylinder(arm.tipDiameter.millimeter / 2, arm.thickness.millimeter).toCSG()
         val baseColumn =
-            Cylinder(arm.baseDiameter.millimeter, arm.baseColumnThickness.millimeter, 48).toCSG()
-        return baseColumn.toZMin().union(
-            base.hull(tip.movex(arm.baseCenterToTipCenterLength.millimeter))
+            Cylinder(arm.baseDiameter.millimeter / 2, arm.baseColumnThickness.millimeter).toCSG()
+        val armCSG = baseColumn.toZMin().union(
+            base.union(tip.movex(arm.baseCenterToTipCenterLength.millimeter))
+                .hull()
                 .movez((arm.baseColumnThickness - arm.thickness).millimeter)
         )
+        return makeCompoundArm(armCSG, arm.points)
+    }
+
+    private fun makeCompoundArm(armCSG: CSG, arms: Int): CSG {
+        val armAngleDelta = 360 / arms
+        return (0..arms).map {
+            armCSG.rotz(armAngleDelta * it)
+        }.let { CSG.unionAll(it) }
+    }
+
+    private fun makeWheel(wheel: DefaultShaft.ServoHorn.Wheel): CSG {
+        val base = Cylinder(wheel.diameter.millimeter / 2, wheel.thickness.millimeter).toCSG()
+        val baseColumn = Cylinder(
+            wheel.baseDiameter.millimeter / 2,
+            wheel.baseColumnThickness.millimeter
+        ).toCSG()
+        return baseColumn.toZMin()
+            .union(base.movez((wheel.baseColumnThickness - wheel.thickness).millimeter))
     }
 
     override fun generateCAD(vitamin: Shaft): CSG = cache[vitamin]

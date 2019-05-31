@@ -26,7 +26,7 @@ plugins {
 
 object Versions {
     const val ktlintVersion = "0.29.0"
-    const val bowlerCadVersion = "0.1.0"
+    const val bowlerCadVersion = "0.2.0"
 }
 
 allprojects {
@@ -49,10 +49,6 @@ val publishedProjects = setOf(
     vitaminProject
 )
 
-object Versions {
-    const val ktlintVersion = "0.29.0"
-}
-
 object Strings {
     const val spotlessLicenseHeaderDelimiter = "(@|package|import)"
 }
@@ -61,7 +57,6 @@ buildscript {
     repositories {
         mavenCentral() // Needed for kotlin gradle plugin
         maven(url = "https://plugins.gradle.org/m2/")
-        maven(url = "https://oss.sonatype.org/content/repositories/staging/")
     }
     dependencies {
         // Gives us the KotlinJvmProjectExtension
@@ -81,6 +76,7 @@ allprojects {
         maven(url = "https://dl.bintray.com/commonwealthrobotics/maven-artifacts")
         maven(url = "https://dl.bintray.com/octogonapus/maven-artifacts")
         maven(url = "https://dl.bintray.com/s1m0nw1/KtsRunner")
+        maven(url = "https://oss.sonatype.org/content/repositories/staging/")
 //        mavenLocal()
     }
 
