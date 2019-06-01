@@ -44,7 +44,9 @@ dependencies {
     )
     implementation(group = "org.codehaus.groovy", name = "groovy", version = "2.5.4")
     implementation(group = "org.apache.ivy", name = "ivy", version = "2.4.0")
-    implementation(group = "de.swirtz", name = "ktsRunner", version = "0.0.7")
+    implementation(group = "de.swirtz", name = "ktsRunner", version = "0.0.7") {
+        exclude(group = "ch.qos.logback", module = "logback-classic")
+    }
 
     testImplementation(
         group = "com.natpryce",
