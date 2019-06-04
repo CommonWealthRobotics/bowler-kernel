@@ -83,16 +83,19 @@ internal fun <T : Random> T.randomBattery() = DefaultBattery(
 internal fun <T : Random> T.randomBolt() = DefaultBolt(
     nextDouble().inch,
     nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
     nextDouble().gram,
     randomCenterOfMass(),
     randomMap()
 )
 
 internal fun <T : Random> T.randomCapScrew() = DefaultCapScrew(
-    nextDouble().inch,
-    nextDouble().inch,
-    nextDouble().inch,
     nextInt(),
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
     nextDouble().inch,
     nextDouble().gram,
     randomCenterOfMass(),

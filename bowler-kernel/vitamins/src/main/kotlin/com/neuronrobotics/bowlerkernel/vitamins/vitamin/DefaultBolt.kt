@@ -24,7 +24,9 @@ import org.octogonapus.ktunits.quantities.Mass
 
 data class DefaultBolt(
     override val headDiameter: Length,
+    override val headHeight: Length,
     override val throughHoleDiameter: Length,
+    override val bodyHeight: Length,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap

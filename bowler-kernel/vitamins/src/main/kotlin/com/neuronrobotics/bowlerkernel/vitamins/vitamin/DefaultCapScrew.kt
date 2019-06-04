@@ -23,11 +23,12 @@ import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Mass
 
 data class DefaultCapScrew(
-    override val outerDiameter: Length,
-    override val headDiameter: Length,
-    override val headHeight: Length,
     override val keySize: Int,
     override val keyDepth: Length,
+    override val headDiameter: Length,
+    override val headHeight: Length,
+    override val throughHoleDiameter: Length,
+    override val bodyHeight: Length,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap

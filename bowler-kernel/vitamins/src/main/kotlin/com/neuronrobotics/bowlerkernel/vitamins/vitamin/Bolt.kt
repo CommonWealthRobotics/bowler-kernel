@@ -29,7 +29,17 @@ interface Bolt : Vitamin {
     val headDiameter: Length
 
     /**
+     * The height of the head.
+     */
+    val headHeight: Length
+
+    /**
      * The diameter of the hole the threads go through.
      */
     val throughHoleDiameter: Length
+
+    /**
+     * The height of the threaded section.
+     */
+    val bodyHeight: Length
 }

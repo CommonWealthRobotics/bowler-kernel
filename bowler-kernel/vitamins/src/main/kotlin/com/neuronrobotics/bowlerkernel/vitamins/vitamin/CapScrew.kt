@@ -21,22 +21,7 @@ import org.octogonapus.ktunits.quantities.Length
 /**
  * A standard keyed cap screw.
  */
-interface CapScrew : Vitamin {
-
-    /**
-     * The shaft diameter.
-     */
-    val outerDiameter: Length
-
-    /**
-     * The head diameter.
-     */
-    val headDiameter: Length
-
-    /**
-     * The head height.
-     */
-    val headHeight: Length
+interface CapScrew : Bolt {
 
     /**
      * The size of the key.
