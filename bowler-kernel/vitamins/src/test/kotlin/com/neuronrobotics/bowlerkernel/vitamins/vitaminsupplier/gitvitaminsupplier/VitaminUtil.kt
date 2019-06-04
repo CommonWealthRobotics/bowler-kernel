@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBallBearing
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBattery
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBolt
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultCapScrew
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultDCMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultServo
@@ -59,6 +60,14 @@ internal fun Random.Default.randomBattery() = DefaultBattery(
     nextDouble().volt,
     nextDouble().ampere,
     nextDouble().coulomb,
+    nextDouble().gram,
+    randomCenterOfMass(),
+    randomMap()
+)
+
+internal fun Random.Default.randomBolt() = DefaultBolt(
+    nextDouble().inch,
+    nextDouble().inch,
     nextDouble().gram,
     randomCenterOfMass(),
     randomMap()

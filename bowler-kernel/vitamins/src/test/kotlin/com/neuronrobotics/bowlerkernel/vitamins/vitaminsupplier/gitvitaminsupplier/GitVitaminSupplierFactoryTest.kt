@@ -50,6 +50,7 @@ internal class GitVitaminSupplierFactoryTest {
         listOf(
             randomBallBearing(),
             randomBattery(),
+            randomBolt(),
             KlaxonDCMotor.fromVitamin(randomDCMotor()),
             KlaxonServo.fromVitamin(randomServo()),
             KlaxonShaft.fromVitamin(randomShaft()),
