@@ -168,11 +168,10 @@ internal fun <T : Random> T.randomShaft() = DefaultShaft.ServoHorn.Arm(
 )
 
 internal fun <T : Random> T.randomStepperMotor() = DefaultStepperMotor(
-    nextInt(),
-    nextDouble().volt,
-    nextDouble().nM,
-    nextDouble().ampere,
-    nextDouble().degree,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    randomBolt(),
     DefaultShaft.DShaft(
         nextDouble().inch,
         nextDouble().inch,
@@ -181,6 +180,10 @@ internal fun <T : Random> T.randomStepperMotor() = DefaultStepperMotor(
         randomCenterOfMass(),
         randomMap()
     ),
+    nextDouble().volt,
+    nextDouble().nM,
+    nextDouble().ampere,
+    nextDouble().degree,
     nextDouble().gram,
     randomCenterOfMass(),
     randomMap()

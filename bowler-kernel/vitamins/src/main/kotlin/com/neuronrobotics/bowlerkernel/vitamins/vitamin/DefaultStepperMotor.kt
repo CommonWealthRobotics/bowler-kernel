@@ -21,16 +21,20 @@ import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.Angle
 import org.octogonapus.ktunits.quantities.ElectricCurrent
 import org.octogonapus.ktunits.quantities.ElectricPotential
+import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Mass
 import org.octogonapus.ktunits.quantities.Torque
 
 data class DefaultStepperMotor(
-    override val nemaSize: Int,
+    override val width: Length,
+    override val height: Length,
+    override val boltHoleSpacing: Length,
+    override val bolt: DefaultBolt,
+    override val shaft: DefaultShaft,
     override val voltage: ElectricPotential,
     override val holdingTorque: Torque,
     override val current: ElectricCurrent,
     override val stepAngle: Angle,
-    override val shaft: DefaultShaft,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap

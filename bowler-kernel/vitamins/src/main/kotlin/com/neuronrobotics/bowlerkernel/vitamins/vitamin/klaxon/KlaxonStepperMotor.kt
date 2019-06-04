@@ -19,6 +19,7 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 import com.beust.klaxon.TypeFor
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBolt
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultStepperMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.ShaftTypeAdapter
@@ -27,18 +28,22 @@ import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.Angle
 import org.octogonapus.ktunits.quantities.ElectricCurrent
 import org.octogonapus.ktunits.quantities.ElectricPotential
+import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Mass
 import org.octogonapus.ktunits.quantities.Torque
 
 data class KlaxonStepperMotor(
-    override val nemaSize: Int,
+    override val width: Length,
+    override val height: Length,
+    override val boltHoleSpacing: Length,
+    override val bolt: DefaultBolt,
+    @TypeFor(field = "shaft", adapter = ShaftTypeAdapter::class)
+    val shaftType: Int,
+    override val shaft: DefaultShaft,
     override val voltage: ElectricPotential,
     override val holdingTorque: Torque,
     override val current: ElectricCurrent,
     override val stepAngle: Angle,
-    @TypeFor(field = "shaft", adapter = ShaftTypeAdapter::class)
-    val shaftType: Int,
-    override val shaft: DefaultShaft,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap
@@ -46,12 +51,15 @@ data class KlaxonStepperMotor(
 ) : StepperMotor, KlaxonVitaminTo {
 
     override fun toVitamin() = DefaultStepperMotor(
-        nemaSize = nemaSize,
+        width = width,
+        height = height,
+        boltHoleSpacing = boltHoleSpacing,
+        bolt = bolt,
+        shaft = shaft,
         voltage = voltage,
         holdingTorque = holdingTorque,
         current = current,
         stepAngle = stepAngle,
-        shaft = shaft,
         mass = mass,
         centerOfMass = centerOfMass,
         specs = specs
@@ -60,12 +68,15 @@ data class KlaxonStepperMotor(
     companion object : KlaxonVitaminFrom<StepperMotor> {
 
         override fun fromVitamin(other: StepperMotor) = KlaxonStepperMotor(
-            nemaSize = other.nemaSize,
+            width = other.width,
+            height = other.height,
+            boltHoleSpacing = other.boltHoleSpacing,
+            bolt = other.bolt,
+            shaftType = ShaftTypeAdapter().typeFor(other.shaft::class),
             voltage = other.voltage,
             holdingTorque = other.holdingTorque,
             current = other.current,
             stepAngle = other.stepAngle,
-            shaftType = ShaftTypeAdapter().typeFor(other.shaft::class),
             shaft = other.shaft,
             mass = other.mass,
             centerOfMass = other.centerOfMass,
