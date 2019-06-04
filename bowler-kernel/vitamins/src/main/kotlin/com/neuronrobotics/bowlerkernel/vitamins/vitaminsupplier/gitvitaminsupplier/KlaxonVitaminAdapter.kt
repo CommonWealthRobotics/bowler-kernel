@@ -20,6 +20,7 @@ import com.beust.klaxon.TypeAdapter
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBallBearing
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBattery
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBolt
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultCapScrew
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonDCMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
@@ -33,11 +34,13 @@ import kotlin.reflect.KClass
  */
 class KlaxonVitaminAdapter : TypeAdapter<KlaxonVitaminTo> {
 
+    @SuppressWarnings("ComplexMethod")
     override fun classFor(type: Any): KClass<out KlaxonVitaminTo> {
         return when (type as String) {
             "DefaultBallBearing" -> DefaultBallBearing::class
             "DefaultBattery" -> DefaultBattery::class
             "DefaultBolt" -> DefaultBolt::class
+            "DefaultCapScrew" -> DefaultCapScrew::class
             "KlaxonDCMotor" -> KlaxonDCMotor::class
             "KlaxonServo" -> KlaxonServo::class
             "KlaxonShaft" -> KlaxonShaft::class

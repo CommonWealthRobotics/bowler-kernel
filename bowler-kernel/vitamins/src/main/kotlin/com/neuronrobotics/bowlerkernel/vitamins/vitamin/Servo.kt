@@ -30,6 +30,7 @@ import org.octogonapus.ktunits.quantities.Torque
  * Good things to put in [Vitamin.specs]:
  *  - Any supported feedback
  */
+@SuppressWarnings("ComplexInterface")
 interface Servo : Vitamin {
 
     /**

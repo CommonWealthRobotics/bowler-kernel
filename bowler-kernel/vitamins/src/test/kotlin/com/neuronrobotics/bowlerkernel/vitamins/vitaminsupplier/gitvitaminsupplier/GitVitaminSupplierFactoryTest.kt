@@ -21,10 +21,6 @@ import com.beust.klaxon.Klaxon
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.gitfs.GitFS
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonDCMotor
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonShaft
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonStepperMotor
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
@@ -46,17 +42,7 @@ internal class GitVitaminSupplierFactoryTest {
         fieldConverter(ConvertImmutableMap::class, immutableMapConverter())
     }
 
-    private val vitamins = with(Random) {
-        listOf(
-            randomBallBearing(),
-            randomBattery(),
-            randomBolt(),
-            KlaxonDCMotor.fromVitamin(randomDCMotor()),
-            KlaxonServo.fromVitamin(randomServo()),
-            KlaxonShaft.fromVitamin(randomShaft()),
-            KlaxonStepperMotor.fromVitamin(randomStepperMotor())
-        )
-    }
+    private val vitamins = with(Random) { allVitamins() }
 
     private val klaxonVitamins = vitamins.map {
         KlaxonGitVitamin.from(

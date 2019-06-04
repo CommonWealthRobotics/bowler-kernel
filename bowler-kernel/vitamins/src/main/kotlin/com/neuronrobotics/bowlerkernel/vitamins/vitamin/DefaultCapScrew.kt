@@ -17,6 +17,7 @@
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 import com.google.common.collect.ImmutableMap
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Mass
@@ -31,4 +32,7 @@ data class DefaultCapScrew(
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap
     override val specs: ImmutableMap<String, Any>
-) : CapScrew
+) : CapScrew, KlaxonVitaminTo {
+
+    override fun toVitamin() = this
+}

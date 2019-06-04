@@ -26,6 +26,10 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultDCMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultServo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultStepperMotor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonDCMotor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonShaft
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonStepperMotor
 import org.octogonapus.ktguava.collections.immutableMapOf
 import org.octogonapus.ktunits.quantities.ampere
 import org.octogonapus.ktunits.quantities.coulomb
@@ -38,13 +42,24 @@ import org.octogonapus.ktunits.quantities.volt
 import org.octogonapus.ktunits.quantities.watt
 import kotlin.random.Random
 
+internal fun Random.allVitamins() = listOf(
+    randomBallBearing(),
+    randomBattery(),
+    randomBolt(),
+    randomCapScrew(),
+    KlaxonDCMotor.fromVitamin(randomDCMotor()),
+    KlaxonServo.fromVitamin(randomServo()),
+    KlaxonShaft.fromVitamin(randomShaft()),
+    KlaxonStepperMotor.fromVitamin(randomStepperMotor())
+)
+
 internal fun Random.randomCenterOfMass() =
     CenterOfMass(nextDouble().inch, nextDouble().inch, nextDouble().inch)
 
 internal fun Random.randomMap(): ImmutableMap<String, Any> =
     immutableMapOf(nextDouble().toString() to nextDouble())
 
-internal fun Random.Default.randomBallBearing() = DefaultBallBearing(
+internal fun <T : Random> T.randomBallBearing() = DefaultBallBearing(
     nextDouble().inch,
     nextDouble().inch,
     nextDouble().inch,
@@ -53,7 +68,7 @@ internal fun Random.Default.randomBallBearing() = DefaultBallBearing(
     randomMap()
 )
 
-internal fun Random.Default.randomBattery() = DefaultBattery(
+internal fun <T : Random> T.randomBattery() = DefaultBattery(
     nextDouble().inch,
     nextDouble().inch,
     nextDouble().inch,
@@ -65,7 +80,7 @@ internal fun Random.Default.randomBattery() = DefaultBattery(
     randomMap()
 )
 
-internal fun Random.Default.randomBolt() = DefaultBolt(
+internal fun <T : Random> T.randomBolt() = DefaultBolt(
     nextDouble().inch,
     nextDouble().inch,
     nextDouble().gram,
@@ -73,7 +88,7 @@ internal fun Random.Default.randomBolt() = DefaultBolt(
     randomMap()
 )
 
-internal fun Random.Default.randomCapScrew() = DefaultCapScrew(
+internal fun <T : Random> T.randomCapScrew() = DefaultCapScrew(
     nextDouble().inch,
     nextDouble().inch,
     nextDouble().inch,
@@ -84,7 +99,7 @@ internal fun Random.Default.randomCapScrew() = DefaultCapScrew(
     randomMap()
 )
 
-internal fun Random.Default.randomDCMotor() = DefaultDCMotor(
+internal fun <T : Random> T.randomDCMotor() = DefaultDCMotor(
     nextDouble().inch,
     nextDouble().inch,
     nextDouble().volt,
@@ -106,7 +121,7 @@ internal fun Random.Default.randomDCMotor() = DefaultDCMotor(
     randomMap()
 )
 
-internal fun Random.Default.randomServo() = DefaultServo(
+internal fun <T : Random> T.randomServo() = DefaultServo(
     nextDouble().inch,
     nextDouble().inch,
     nextDouble().inch,
@@ -137,7 +152,7 @@ internal fun Random.Default.randomServo() = DefaultServo(
     randomMap()
 )
 
-internal fun Random.Default.randomShaft() = DefaultShaft.ServoHorn.Arm(
+internal fun <T : Random> T.randomShaft() = DefaultShaft.ServoHorn.Arm(
     nextDouble().inch,
     nextDouble().inch,
     nextDouble().inch,
@@ -149,7 +164,7 @@ internal fun Random.Default.randomShaft() = DefaultShaft.ServoHorn.Arm(
     randomMap()
 )
 
-internal fun Random.Default.randomStepperMotor() = DefaultStepperMotor(
+internal fun <T : Random> T.randomStepperMotor() = DefaultStepperMotor(
     nextInt(),
     nextDouble().volt,
     nextDouble().nM,

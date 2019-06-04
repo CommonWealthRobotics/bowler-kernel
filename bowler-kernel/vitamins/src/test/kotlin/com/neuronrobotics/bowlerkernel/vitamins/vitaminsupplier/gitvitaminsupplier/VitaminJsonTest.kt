@@ -16,20 +16,18 @@
  */
 package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier
 
+import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Klaxon
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBallBearing
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBattery
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBolt
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultCapScrew
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonDCMotor
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonStepperMotor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktguava.klaxon.immutableMapConverter
 import kotlin.random.Random
+import kotlin.reflect.KClass
 
 internal class VitaminJsonTest {
 
@@ -37,83 +35,32 @@ internal class VitaminJsonTest {
         fieldConverter(ConvertImmutableMap::class, immutableMapConverter())
     }
 
-    @Test
-    fun `test converting ball bearing`() {
+    private fun Klaxon.parse(json: String, clazz: KClass<*>): KlaxonVitaminTo {
+        val jsonObject = parser(clazz).parse(json.byteInputStream()) as JsonObject
+        val parsedObject = fromJsonObject(jsonObject, clazz.java, clazz)
+        return parsedObject as? KlaxonVitaminTo ?: fail {
+            "Could not cast $parsedObject to $clazz"
+        }
+    }
+
+    private fun testConversion(vitaminBefore: Vitamin, clazz: KClass<*>) {
         Random.apply {
-            val vitaminBefore = randomBallBearing()
             val jsonString = klaxon.toJsonString(vitaminBefore)
-            val vitaminAfter = klaxon.parse<DefaultBallBearing>(jsonString)
+            val vitaminAfter = klaxon.parse(jsonString, clazz)
             assertEquals(vitaminBefore, vitaminAfter)
         }
     }
 
-    @Test
-    fun `test converting battery`() {
-        Random.apply {
-            val vitaminBefore = randomBattery()
-            val jsonString = klaxon.toJsonString(vitaminBefore)
-            val vitaminAfter = klaxon.parse<DefaultBattery>(jsonString)
-            assertEquals(vitaminBefore, vitaminAfter)
-        }
+    @ParameterizedTest
+    @MethodSource("vitaminSource")
+    fun `test converting vitamins`(vitaminBefore: KlaxonVitaminTo) {
+        testConversion(vitaminBefore, vitaminBefore::class)
     }
 
-    @Test
-    fun `test converting bolt`() {
-        Random.apply {
-            val vitaminBefore = randomBolt()
-            val jsonString = klaxon.toJsonString(vitaminBefore)
-            val vitaminAfter = klaxon.parse<DefaultBolt>(jsonString)
-            assertEquals(vitaminBefore, vitaminAfter)
-        }
-    }
+    companion object {
 
-    @Test
-    fun `test converting cap screw`() {
-        Random.apply {
-            val vitaminBefore = randomCapScrew()
-            val jsonString = klaxon.toJsonString(vitaminBefore)
-            val vitaminAfter = klaxon.parse<DefaultCapScrew>(jsonString)
-            assertEquals(vitaminBefore, vitaminAfter)
-        }
-    }
-
-    @Test
-    fun `test converting dc motor`() {
-        Random.apply {
-            val vitaminBefore = randomDCMotor()
-            val jsonString = klaxon.toJsonString(KlaxonDCMotor.fromVitamin(vitaminBefore))
-            val vitaminAfter = klaxon.parse<KlaxonDCMotor>(jsonString)!!.toVitamin()
-            assertEquals(vitaminBefore, vitaminAfter)
-        }
-    }
-
-    @Test
-    fun `test converting servo`() {
-        Random.apply {
-            val vitaminBefore = randomServo()
-            val jsonString = klaxon.toJsonString(KlaxonServo.fromVitamin(vitaminBefore))
-            val vitaminAfter = klaxon.parse<KlaxonServo>(jsonString)!!.toVitamin()
-            assertEquals(vitaminBefore, vitaminAfter)
-        }
-    }
-
-    @Test
-    fun `test converting shaft`() {
-        Random.apply {
-            val vitaminBefore = randomShaft()
-            val jsonString = klaxon.toJsonString(vitaminBefore)
-            val vitaminAfter = klaxon.parse<DefaultShaft.ServoHorn.Arm>(jsonString)
-            assertEquals(vitaminBefore, vitaminAfter)
-        }
-    }
-
-    @Test
-    fun `test converting stepper motor`() {
-        Random.apply {
-            val vitaminBefore = randomStepperMotor()
-            val jsonString = klaxon.toJsonString(KlaxonStepperMotor.fromVitamin(vitaminBefore))
-            val vitaminAfter = klaxon.parse<KlaxonStepperMotor>(jsonString)!!.toVitamin()
-            assertEquals(vitaminBefore, vitaminAfter)
-        }
+        @JvmStatic
+        @Suppress("unused")
+        fun vitaminSource() = with(Random) { allVitamins() }
     }
 }
