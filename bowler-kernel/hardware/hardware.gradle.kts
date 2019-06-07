@@ -22,8 +22,6 @@ dependencies {
         version = property("kt-guava-core.version") as String
     )
 
-    implementation(project(":bowler-kernel:logging"))
-
     api(arrow("arrow-core-data"))
     api(arrow("arrow-core-extensions"))
     api(arrow("arrow-syntax"))
@@ -31,21 +29,23 @@ dependencies {
     api(arrow("arrow-extras-data"))
     api(arrow("arrow-extras-extensions"))
 
-    implementation(
+    api(
         group = "com.google.inject",
         name = "guice",
         version = property("guice.version") as String
     )
-    implementation(
+    api(
         group = "com.google.inject.extensions",
         name = "guice-assistedinject",
         version = "4.1.0"
     )
-    implementation(
+    api(
         group = "org.jlleitschuh.guice",
         name = "kotlin-guiced-core",
         version = property("kotlin-guiced-core.version") as String
     )
+
+    implementation(project(":bowler-kernel:logging"))
 
     testImplementation(
         group = "com.natpryce",
