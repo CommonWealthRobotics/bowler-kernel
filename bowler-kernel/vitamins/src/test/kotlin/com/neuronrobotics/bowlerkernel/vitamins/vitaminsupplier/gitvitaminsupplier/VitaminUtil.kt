@@ -22,6 +22,7 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBallBearing
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBattery
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBolt
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultCapScrew
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultCompressionSpring
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultDCMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultNut
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultServo
@@ -32,6 +33,7 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonStepperMotor
 import org.octogonapus.ktguava.collections.immutableMapOf
+import org.octogonapus.ktunits.quantities.Stiffness
 import org.octogonapus.ktunits.quantities.ampere
 import org.octogonapus.ktunits.quantities.coulomb
 import org.octogonapus.ktunits.quantities.degree
@@ -48,6 +50,7 @@ internal fun Random.allVitamins() = listOf(
     randomBattery(),
     randomBolt(),
     randomCapScrew(),
+    randomCompressionSpring(),
     randomNut(),
     KlaxonDCMotor.fromVitamin(randomDCMotor()),
     KlaxonServo.fromVitamin(randomServo()),
@@ -99,6 +102,17 @@ internal fun <T : Random> T.randomCapScrew() = DefaultCapScrew(
     nextDouble().inch,
     nextDouble().inch,
     nextDouble().inch,
+    nextDouble().gram,
+    randomCenterOfMass(),
+    randomMap()
+)
+
+internal fun <T : Random> T.randomCompressionSpring() = DefaultCompressionSpring(
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    Stiffness(nextDouble()),
+    nextDouble().gram,
     nextDouble().gram,
     randomCenterOfMass(),
     randomMap()

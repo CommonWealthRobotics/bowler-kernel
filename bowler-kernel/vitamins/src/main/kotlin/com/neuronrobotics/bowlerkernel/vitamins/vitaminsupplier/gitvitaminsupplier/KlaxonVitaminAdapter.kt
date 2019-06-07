@@ -21,6 +21,7 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBallBearing
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBattery
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBolt
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultCapScrew
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultCompressionSpring
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultNut
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonDCMotor
@@ -42,6 +43,7 @@ class KlaxonVitaminAdapter : TypeAdapter<KlaxonVitaminTo> {
             "DefaultBattery" -> DefaultBattery::class
             "DefaultBolt" -> DefaultBolt::class
             "DefaultCapScrew" -> DefaultCapScrew::class
+            "DefaultCompressionSpring" -> DefaultCompressionSpring::class
             "DefaultNut" -> DefaultNut::class
             "KlaxonDCMotor" -> KlaxonDCMotor::class
             "KlaxonServo" -> KlaxonServo::class
