@@ -23,8 +23,12 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cube
 import eu.mihosoft.vrl.v3d.Cylinder
+import org.octogonapus.ktunits.quantities.div
 import org.octogonapus.ktunits.quantities.millimeter
 import org.octogonapus.ktunits.quantities.minus
+import org.octogonapus.ktunits.quantities.sqrt
+import org.octogonapus.ktunits.quantities.squared
+import org.octogonapus.ktunits.quantities.times
 
 class ShaftGenerator(
     maxCacheSize: Long = 100
@@ -38,21 +42,45 @@ class ShaftGenerator(
             when (it) {
                 is DefaultShaft -> when (it) {
                     is DefaultShaft.SquareShaft -> makeSquareShaft(it)
-
+                    is DefaultShaft.RoundShaft -> makeRoundShaft(it)
+                    is DefaultShaft.DShaft -> makeDShaft(it)
                     is DefaultShaft.ServoHorn -> when (it) {
                         is DefaultShaft.ServoHorn.Arm -> makeArm(it)
                         is DefaultShaft.ServoHorn.Wheel -> makeWheel(it)
                     }
-
-                    else -> throw IllegalArgumentException()
                 }
 
-                else -> throw IllegalArgumentException()
+                else -> makeSquareShaft(it)
             }
         })
 
-    private fun makeSquareShaft(shaft: DefaultShaft.SquareShaft): CSG =
-        Cube(shaft.length.millimeter, shaft.length.millimeter, shaft.height.millimeter).toCSG().toZMin()
+    private fun makeSquareShaft(shaft: Shaft): CSG =
+        Cube(
+            shaft.width.millimeter,
+            shaft.length.millimeter,
+            shaft.height.millimeter
+        ).toCSG().toZMin()
+
+    private fun makeRoundShaft(shaft: DefaultShaft.RoundShaft): CSG =
+        Cylinder(shaft.diameter.millimeter / 2, shaft.height.millimeter).toCSG().toZMin()
+
+    private fun makeDShaft(shaft: DefaultShaft.DShaft): CSG {
+        val radius = shaft.diameter / 2
+        val mainShaft = Cylinder(radius.millimeter, shaft.height.millimeter).toCSG().toZMin()
+
+        // This could also make a shaft with key stock in it because we compute flatHeight
+        // correctly
+        val centerToFlat = shaft.flatToOppositeSide - radius
+        val flatWidth = 2 * (radius.squared() - centerToFlat.squared()).sqrt()
+        val flatHeight = shaft.diameter - shaft.flatToOppositeSide
+        val flat = Cube(
+            flatHeight.millimeter,
+            flatWidth.millimeter,
+            shaft.height.millimeter
+        ).toCSG().toZMin().toXMin().movex(centerToFlat.millimeter)
+
+        return mainShaft.difference(flat)
+    }
 
     private fun makeArm(arm: DefaultShaft.ServoHorn.Arm): CSG {
         val base = Cylinder(arm.baseDiameter.millimeter / 2, arm.thickness.millimeter).toCSG()

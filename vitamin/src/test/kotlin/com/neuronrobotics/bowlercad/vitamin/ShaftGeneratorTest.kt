@@ -35,6 +35,90 @@ internal class ShaftGeneratorTest {
     private val generator = ShaftGenerator()
 
     @Test
+    fun `test square shaft`() {
+        val shaft = DefaultShaft.SquareShaft(
+            width = 2.millimeter,
+            height = 10.millimeter,
+            mass = 0.1.gram,
+            centerOfMass = CenterOfMass(
+                0.inch,
+                0.inch,
+                0.inch
+            ),
+            specs = emptyImmutableMap()
+        )
+
+        val cad = generator.generateCAD(shaft)
+
+        assertAll(
+            { assertEquals(0.0, cad.bounds.center.x) },
+            { assertEquals(0.0, cad.bounds.center.y) },
+            { assertEquals(shaft.height.millimeter / 2, cad.bounds.center.z) },
+            { assertEquals(shaft.width.millimeter, cad.bounds.bounds.x) },
+            { assertEquals(shaft.width.millimeter, cad.bounds.bounds.y) },
+            { assertEquals(shaft.height.millimeter, cad.bounds.bounds.z) }
+        )
+    }
+
+    @Test
+    fun `test round shaft`() {
+        val shaft = DefaultShaft.RoundShaft(
+            diameter = 2.millimeter,
+            height = 10.millimeter,
+            mass = 0.1.gram,
+            centerOfMass = CenterOfMass(
+                0.inch,
+                0.inch,
+                0.inch
+            ),
+            specs = emptyImmutableMap()
+        )
+
+        val cad = generator.generateCAD(shaft)
+
+        assertAll(
+            { assertEquals(0.0, cad.bounds.center.x) },
+            { assertEquals(0.0, cad.bounds.center.y) },
+            { assertEquals(shaft.height.millimeter / 2, cad.bounds.center.z) },
+            { assertEquals(shaft.width.millimeter, cad.bounds.bounds.x) },
+            { assertEquals(shaft.width.millimeter, cad.bounds.bounds.y) },
+            { assertEquals(shaft.height.millimeter, cad.bounds.bounds.z) }
+        )
+    }
+
+    @Test
+    fun `test d shaft`() {
+        val shaft = DefaultShaft.DShaft(
+            diameter = 5.millimeter,
+            flatToOppositeSide = 4.millimeter,
+            height = 10.millimeter,
+            mass = 0.1.gram,
+            centerOfMass = CenterOfMass(
+                0.inch,
+                0.inch,
+                0.inch
+            ),
+            specs = emptyImmutableMap()
+        )
+
+        val cad = generator.generateCAD(shaft)
+
+        assertAll(
+            {
+                assertEquals(
+                    (shaft.flatToOppositeSide - shaft.diameter).millimeter / 2,
+                    cad.bounds.center.x
+                )
+            },
+            { assertEquals(0.0, cad.bounds.center.y) },
+            { assertEquals(shaft.height.millimeter / 2, cad.bounds.center.z) },
+            { assertEquals(shaft.flatToOppositeSide.millimeter, cad.bounds.bounds.x) },
+            { assertEquals(shaft.width.millimeter, cad.bounds.bounds.y) },
+            { assertEquals(shaft.height.millimeter, cad.bounds.bounds.z) }
+        )
+    }
+
+    @Test
     fun `test arm`() {
         val shaft = DefaultShaft.ServoHorn.Arm(
             baseDiameter = 8.millimeter,
