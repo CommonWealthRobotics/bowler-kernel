@@ -23,6 +23,7 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBattery
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBolt
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultCapScrew
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultDCMotor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultNut
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultServo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultStepperMotor
@@ -47,6 +48,7 @@ internal fun Random.allVitamins() = listOf(
     randomBattery(),
     randomBolt(),
     randomCapScrew(),
+    randomNut(),
     KlaxonDCMotor.fromVitamin(randomDCMotor()),
     KlaxonServo.fromVitamin(randomServo()),
     KlaxonShaft.fromVitamin(randomShaft()),
@@ -94,6 +96,15 @@ internal fun <T : Random> T.randomCapScrew() = DefaultCapScrew(
     nextInt(),
     nextDouble().inch,
     nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().gram,
+    randomCenterOfMass(),
+    randomMap()
+)
+
+internal fun <T : Random> T.randomNut() = DefaultNut(
     nextDouble().inch,
     nextDouble().inch,
     nextDouble().inch,
