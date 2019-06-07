@@ -23,6 +23,7 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.StepperMotor
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cube
+import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.millimeter
 
 class StepperGenerator(
@@ -60,4 +61,18 @@ class StepperGenerator(
         })
 
     override fun generateCAD(vitamin: StepperMotor): CSG = cache[vitamin]
+
+    /**
+     * Generates a stepper motor with bolt hole cylinders that can be used to cut out holes for the
+     * bolts.
+     *
+     * @param vitamin The vitamin.
+     * @param boltHoleDiameter The diameter of the bolt hole cylinders.
+     * @param boltHoleLength The length of the bolt hole cylinders.
+     */
+    fun generateCAD(
+        vitamin: StepperMotor,
+        boltHoleDiameter: Length,
+        boltHoleLength: Length
+    ): CSG = cache[vitamin]
 }

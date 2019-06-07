@@ -23,13 +23,14 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.RoundMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cylinder
+import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.degree
 import org.octogonapus.ktunits.quantities.millimeter
 import kotlin.math.truncate
 
 class RoundMotorGenerator(
     shaftGenerator: VitaminCadGenerator<Shaft>,
-    boltGenerator: VitaminCadGenerator<Bolt>,
+    private val boltGenerator: VitaminCadGenerator<Bolt>,
     maxCacheSize: Long = 100
 ) : VitaminCadGenerator<RoundMotor> {
 
@@ -62,7 +63,11 @@ class RoundMotorGenerator(
                 .movez(shaftSupport.totalZ)
                 .movex(it.gearboxShaftOffset.millimeter)
 
-            val bolts = getBolts(boltGenerator, it)
+            val startingBolt = boltGenerator.generateCAD(it.bolt)
+                .movex(it.boltCircleDiameter.millimeter / 2)
+                .rotz(it.boltCircleAngleOffset.degree)
+
+            val bolts = getBolts(it, startingBolt)
 
             gearbox.union(motor.movez(-gearbox.totalZ))
                 .union(encoder.movez(-gearbox.totalZ - motor.totalZ))
@@ -72,11 +77,7 @@ class RoundMotorGenerator(
                 .movex(-it.gearboxShaftOffset.millimeter)
         })
 
-    private fun getBolts(boltGenerator: VitaminCadGenerator<Bolt>, motor: RoundMotor): CSG {
-        val bolt = boltGenerator.generateCAD(motor.bolt)
-            .movex(motor.boltCircleDiameter.millimeter / 2)
-            .rotz(motor.boltCircleAngleOffset.degree)
-
+    private fun getBolts(motor: RoundMotor, bolt: CSG): CSG {
         val numberOfBolts = truncate(360 / motor.boltCircleAngleIncrement.degree).toInt()
         val allBolts = (1..numberOfBolts).map { i ->
             bolt.rotz(motor.boltCircleAngleIncrement.degree * i)
@@ -86,4 +87,30 @@ class RoundMotorGenerator(
     }
 
     override fun generateCAD(vitamin: RoundMotor): CSG = cache[vitamin]
+
+    /**
+     * Generates a round motor with bolt hole cylinders that can be used to cut out holes for the
+     * bolts.
+     *
+     * @param vitamin The vitamin.
+     * @param boltHoleDiameter The diameter of the bolt hole cylinders.
+     * @param boltHoleLength The length of the bolt hole cylinders.
+     */
+    fun generateCAD(
+        vitamin: RoundMotor,
+        boltHoleDiameter: Length,
+        boltHoleLength: Length
+    ): CSG {
+        val startingBolt = Cylinder(
+            boltHoleDiameter.millimeter / 2,
+            boltHoleLength.millimeter
+        ).toCSG().movex(vitamin.boltCircleDiameter.millimeter / 2)
+            .rotz(vitamin.boltCircleAngleOffset.degree)
+
+        val bolts = getBolts(
+            vitamin, startingBolt
+        ).movex(-vitamin.gearboxShaftOffset.millimeter)
+
+        return cache[vitamin].union(bolts.toZMin())
+    }
 }

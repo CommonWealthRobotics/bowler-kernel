@@ -67,12 +67,12 @@ class ServoGenerator(
     override fun generateCAD(vitamin: Servo): CSG = cache[vitamin]
 
     /**
-     * Generates a servo with screw hole cylinders that can be used to cut out holes for the
-     * screws.
+     * Generates a servo with bolt hole cylinders that can be used to cut out holes for the
+     * bolts.
      *
      * @param vitamin The vitamin.
-     * @param boltHoleDiameter The diameter of the screw hole cylinders.
-     * @param boltHoleLength The length of the screw hole cylinders.
+     * @param boltHoleDiameter The diameter of the bolt hole cylinders.
+     * @param boltHoleLength The length of the bolt hole cylinders.
      */
     fun generateCAD(vitamin: Servo, boltHoleDiameter: Length, boltHoleLength: Length): CSG {
         val boltHoles = getBoltHoles(vitamin, boltHoleDiameter, boltHoleLength)
