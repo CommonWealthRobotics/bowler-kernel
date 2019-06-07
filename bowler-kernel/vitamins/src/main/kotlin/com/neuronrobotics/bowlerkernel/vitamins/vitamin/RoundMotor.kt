@@ -27,6 +27,7 @@ import org.octogonapus.ktunits.quantities.Torque
 /**
  * A round motor (dc motor with a gearbox attached).
  */
+@SuppressWarnings("ComplexInterface")
 interface RoundMotor : Vitamin {
 
     /**
