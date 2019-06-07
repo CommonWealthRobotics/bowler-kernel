@@ -28,6 +28,7 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultNut
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultServo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultStepperMotor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultTimingBelt
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultTorsionSpring
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonDCMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
@@ -54,6 +55,7 @@ internal fun <T : Random> T.allVitamins() = listOf(
     randomCompressionSpring(),
     randomNut(),
     randomTorsionSpring(),
+    randomTimingBelt(),
     KlaxonDCMotor.fromVitamin(randomDCMotor()),
     KlaxonServo.fromVitamin(randomServo()),
     KlaxonShaft.fromVitamin(randomShaft()),
@@ -136,6 +138,16 @@ internal fun <T : Random> T.randomTorsionSpring() = DefaultTorsionSpring(
     nextDouble().inch,
     Stiffness(nextDouble()),
     nextDouble().gram,
+    nextDouble().gram,
+    randomCenterOfMass(),
+    randomMap()
+)
+
+internal fun <T : Random> T.randomTimingBelt() = DefaultTimingBelt(
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
     nextDouble().gram,
     randomCenterOfMass(),
     randomMap()
