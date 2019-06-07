@@ -27,6 +27,7 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultTimingBelt
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultTorsionSpring
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonDCMotor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonRoundMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonStepperMotor
@@ -56,7 +57,8 @@ class KlaxonVitaminAdapter : TypeAdapter<KlaxonVitaminTo> {
             KlaxonDCMotor::class,
             KlaxonServo::class,
             KlaxonShaft::class,
-            KlaxonStepperMotor::class
+            KlaxonStepperMotor::class,
+            KlaxonRoundMotor::class
         )
 
         private val classesMap = classesSet.map { it.simpleName!! to it }.toImmutableMap()

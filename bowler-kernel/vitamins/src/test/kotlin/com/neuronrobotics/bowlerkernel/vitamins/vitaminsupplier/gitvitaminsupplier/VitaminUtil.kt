@@ -25,12 +25,14 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultCapScrew
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultCompressionSpring
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultDCMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultNut
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultRoundMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultServo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultStepperMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultTimingBelt
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultTorsionSpring
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonDCMotor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonRoundMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonStepperMotor
@@ -59,7 +61,8 @@ internal fun <T : Random> T.allVitamins() = listOf(
     KlaxonDCMotor.fromVitamin(randomDCMotor()),
     KlaxonServo.fromVitamin(randomServo()),
     KlaxonShaft.fromVitamin(randomShaft()),
-    KlaxonStepperMotor.fromVitamin(randomStepperMotor())
+    KlaxonStepperMotor.fromVitamin(randomStepperMotor()),
+    KlaxonRoundMotor.fromVitamin(randomRoundMotor())
 )
 
 internal fun <T : Random> T.randomCenterOfMass() =
@@ -153,6 +156,31 @@ internal fun <T : Random> T.randomTimingBelt() = DefaultTimingBelt(
     randomMap()
 )
 
+internal fun <T : Random> T.randomRoundMotor() = DefaultRoundMotor(
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    nextDouble().inch,
+    randomShaft(),
+    randomBolt(),
+    nextDouble().inch,
+    nextDouble().degree,
+    nextDouble().degree,
+    nextDouble().volt,
+    nextDouble().radianPerMinute,
+    nextDouble().ampere,
+    nextDouble().nM,
+    nextDouble().ampere,
+    nextDouble().watt,
+    nextDouble().gram,
+    randomCenterOfMass(),
+    randomMap()
+)
+
 internal fun <T : Random> T.randomDCMotor() = DefaultDCMotor(
     nextDouble().inch,
     nextDouble().inch,
@@ -162,14 +190,7 @@ internal fun <T : Random> T.randomDCMotor() = DefaultDCMotor(
     nextDouble().nM,
     nextDouble().ampere,
     nextDouble().watt,
-    DefaultShaft.DShaft(
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().gram,
-        randomCenterOfMass(),
-        randomMap()
-    ),
+    randomShaft(),
     nextDouble().gram,
     randomCenterOfMass(),
     randomMap()
@@ -190,17 +211,7 @@ internal fun <T : Random> T.randomServo() = DefaultServo(
     nextDouble().volt,
     nextDouble().nM,
     nextDouble().radianPerMinute,
-    DefaultShaft.ServoHorn.Arm(
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().inch,
-        nextInt(),
-        nextDouble().gram,
-        randomCenterOfMass(),
-        randomMap()
-    ),
+    randomShaft(),
     nextDouble().gram,
     randomCenterOfMass(),
     randomMap()
@@ -223,14 +234,7 @@ internal fun <T : Random> T.randomStepperMotor() = DefaultStepperMotor(
     nextDouble().inch,
     nextDouble().inch,
     randomBolt(),
-    DefaultShaft.DShaft(
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().inch,
-        nextDouble().gram,
-        randomCenterOfMass(),
-        randomMap()
-    ),
+    randomShaft(),
     nextDouble().volt,
     nextDouble().nM,
     nextDouble().ampere,
