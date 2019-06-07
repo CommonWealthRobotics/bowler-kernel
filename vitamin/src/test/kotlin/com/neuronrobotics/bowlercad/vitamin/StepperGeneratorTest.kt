@@ -54,7 +54,7 @@ internal class StepperGeneratorTest {
 
     @Test
     fun `test servo`() {
-        val stepper = DefaultStepperMotor(
+        val motor = DefaultStepperMotor(
             width = 40.millimeter,
             height = 37.millimeter,
             boltHoleSpacing = 31.millimeter,
@@ -99,23 +99,23 @@ internal class StepperGeneratorTest {
             specs = emptyImmutableMap()
         )
 
-        val cad = generator.generateCAD(stepper)
+        val cad = generator.generateCAD(motor)
 
         assertAll(
             { assertEquals(0.0, cad.bounds.center.x) },
             { assertEquals(0.0, cad.bounds.center.y) },
             {
                 assertEquals(
-                    (stepper.shaft.height - stepper.height).millimeter / 2,
+                    (motor.shaft.height - motor.height).millimeter / 2,
                     cad.bounds.center.z,
                     tolerance
                 )
             },
-            { assertEquals(stepper.width.millimeter, cad.bounds.bounds.x) },
-            { assertEquals(stepper.width.millimeter, cad.bounds.bounds.y) },
+            { assertEquals(motor.width.millimeter, cad.bounds.bounds.x) },
+            { assertEquals(motor.width.millimeter, cad.bounds.bounds.y) },
             {
                 assertEquals(
-                    (stepper.height + stepper.shaft.height).millimeter,
+                    (motor.height + motor.shaft.height).millimeter,
                     cad.bounds.bounds.z
                 )
             }

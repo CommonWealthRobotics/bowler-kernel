@@ -96,11 +96,7 @@ class RoundMotorGenerator(
      * @param boltHoleDiameter The diameter of the bolt hole cylinders.
      * @param boltHoleLength The length of the bolt hole cylinders.
      */
-    fun generateCAD(
-        vitamin: RoundMotor,
-        boltHoleDiameter: Length,
-        boltHoleLength: Length
-    ): CSG {
+    fun generateCAD(vitamin: RoundMotor, boltHoleDiameter: Length, boltHoleLength: Length): CSG {
         val startingBolt = Cylinder(
             boltHoleDiameter.millimeter / 2,
             boltHoleLength.millimeter

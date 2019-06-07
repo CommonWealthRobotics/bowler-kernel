@@ -23,6 +23,7 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.StepperMotor
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cube
+import eu.mihosoft.vrl.v3d.Cylinder
 import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.millimeter
 
@@ -41,24 +42,24 @@ class StepperGenerator(
                 .toCSG()
                 .toZMax()
 
-            val bolt = boltGenerator.generateCAD(it.bolt).toZMax()
-            val bolts = CSG.unionAll(
-                mutableListOf(
-                    bolt.movex(it.boltHoleSpacing.millimeter / 2)
-                        .movey(it.boltHoleSpacing.millimeter / 2),
-                    bolt.movex(-it.boltHoleSpacing.millimeter / 2)
-                        .movey(it.boltHoleSpacing.millimeter / 2),
-                    bolt.movex(it.boltHoleSpacing.millimeter / 2)
-                        .movey(-it.boltHoleSpacing.millimeter / 2),
-                    bolt.movex(-it.boltHoleSpacing.millimeter / 2)
-                        .movey(-it.boltHoleSpacing.millimeter / 2)
-                )
-            )
+            val startingBolt = boltGenerator.generateCAD(it.bolt).toZMax()
+            val bolts = CSG.unionAll(getBolts(it, startingBolt))
 
             val shaft = shaftGenerator.generateCAD(it.shaft).toZMin()
 
             body.difference(bolts).union(shaft)
         })
+
+    private fun getBolts(motor: StepperMotor, bolt: CSG) = mutableListOf(
+        bolt.movex(motor.boltHoleSpacing.millimeter / 2)
+            .movey(motor.boltHoleSpacing.millimeter / 2),
+        bolt.movex(-motor.boltHoleSpacing.millimeter / 2)
+            .movey(motor.boltHoleSpacing.millimeter / 2),
+        bolt.movex(motor.boltHoleSpacing.millimeter / 2)
+            .movey(-motor.boltHoleSpacing.millimeter / 2),
+        bolt.movex(-motor.boltHoleSpacing.millimeter / 2)
+            .movey(-motor.boltHoleSpacing.millimeter / 2)
+    )
 
     override fun generateCAD(vitamin: StepperMotor): CSG = cache[vitamin]
 
@@ -70,9 +71,14 @@ class StepperGenerator(
      * @param boltHoleDiameter The diameter of the bolt hole cylinders.
      * @param boltHoleLength The length of the bolt hole cylinders.
      */
-    fun generateCAD(
-        vitamin: StepperMotor,
-        boltHoleDiameter: Length,
-        boltHoleLength: Length
-    ): CSG = cache[vitamin]
+    fun generateCAD(vitamin: StepperMotor, boltHoleDiameter: Length, boltHoleLength: Length): CSG {
+        val startingBolt = Cylinder(
+            boltHoleDiameter.millimeter / 2,
+            boltHoleLength.millimeter
+        ).toCSG().toZMax()
+
+        val bolts = getBolts(vitamin, startingBolt)
+
+        return cache[vitamin].union(CSG.unionAll(bolts).toZMin())
+    }
 }

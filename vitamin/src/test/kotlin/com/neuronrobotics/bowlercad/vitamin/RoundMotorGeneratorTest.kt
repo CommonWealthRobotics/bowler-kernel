@@ -98,11 +98,7 @@ internal class RoundMotorGeneratorTest {
             specs = emptyImmutableMap()
         )
 
-        val cad = generator.generateCAD(
-            vitamin = motor,
-            boltHoleDiameter = motor.bolt.headDiameter,
-            boltHoleLength = motor.bolt.headHeight + motor.bolt.bodyHeight
-        )
+        val cad = generator.generateCAD(motor)
 
         val totalHeight = motor.shaft.height + motor.shaftSupportHeight + motor.gearboxHeight +
             motor.motorHeight + motor.encoderAssemblyHeight
