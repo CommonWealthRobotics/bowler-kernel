@@ -77,7 +77,7 @@ allprojects {
         maven(url = "https://dl.bintray.com/octogonapus/maven-artifacts")
         maven(url = "https://dl.bintray.com/s1m0nw1/KtsRunner")
         maven(url = "https://oss.sonatype.org/content/repositories/staging/")
-        mavenLocal()
+//        mavenLocal()
     }
 
     // Configures the Jacoco tool version to be the same for all projects that have it applied.
@@ -402,8 +402,10 @@ configure(publishedProjects) {
     }
 
     bintray {
-        user = System.getenv("BINTRAY_USER")
-        key = System.getenv("BINTRAY_API_KEY")
+        val bintrayApiUser = properties["bintray.api.user"] ?: System.getenv("BINTRAY_USER")
+        val bintrayApiKey = properties["bintray.api.key"] ?: System.getenv("BINTRAY_API_KEY")
+        user = bintrayApiUser as String?
+        key = bintrayApiKey as String?
         setPublications(publicationName)
         with(pkg) {
             repo = "maven-artifacts"
