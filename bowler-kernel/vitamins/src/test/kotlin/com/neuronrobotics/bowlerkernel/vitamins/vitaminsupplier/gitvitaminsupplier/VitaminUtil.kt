@@ -46,7 +46,7 @@ import org.octogonapus.ktunits.quantities.volt
 import org.octogonapus.ktunits.quantities.watt
 import kotlin.random.Random
 
-internal fun Random.allVitamins() = listOf(
+internal fun <T : Random> T.allVitamins() = listOf(
     randomBallBearing(),
     randomBattery(),
     randomBolt(),
@@ -60,10 +60,10 @@ internal fun Random.allVitamins() = listOf(
     KlaxonStepperMotor.fromVitamin(randomStepperMotor())
 )
 
-internal fun Random.randomCenterOfMass() =
+internal fun <T : Random> T.randomCenterOfMass() =
     CenterOfMass(nextDouble().inch, nextDouble().inch, nextDouble().inch)
 
-internal fun Random.randomMap(): ImmutableMap<String, Any> =
+internal fun <T : Random> T.randomMap(): ImmutableMap<String, Any> =
     immutableMapOf(nextDouble().toString() to nextDouble())
 
 internal fun <T : Random> T.randomBallBearing() = DefaultBallBearing(

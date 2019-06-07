@@ -30,6 +30,7 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonStepperMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
+import org.octogonapus.ktguava.collections.toImmutableMap
 import kotlin.reflect.KClass
 
 /**
@@ -38,20 +39,24 @@ import kotlin.reflect.KClass
 class KlaxonVitaminAdapter : TypeAdapter<KlaxonVitaminTo> {
 
     @SuppressWarnings("ComplexMethod")
-    override fun classFor(type: Any): KClass<out KlaxonVitaminTo> {
-        return when (type as String) {
-            "DefaultBallBearing" -> DefaultBallBearing::class
-            "DefaultBattery" -> DefaultBattery::class
-            "DefaultBolt" -> DefaultBolt::class
-            "DefaultCapScrew" -> DefaultCapScrew::class
-            "DefaultCompressionSpring" -> DefaultCompressionSpring::class
-            "DefaultTorsionSpring" -> DefaultTorsionSpring::class
-            "DefaultNut" -> DefaultNut::class
-            "KlaxonDCMotor" -> KlaxonDCMotor::class
-            "KlaxonServo" -> KlaxonServo::class
-            "KlaxonShaft" -> KlaxonShaft::class
-            "KlaxonStepperMotor" -> KlaxonStepperMotor::class
-            else -> throw IllegalArgumentException("Unknown type: $type")
-        }
+    override fun classFor(type: Any): KClass<out KlaxonVitaminTo> =
+        classesMap[type as String] ?: throw IllegalArgumentException("Unknown type: $type")
+
+    companion object {
+        private val classesSet = setOf(
+            DefaultBallBearing::class,
+            DefaultBattery::class,
+            DefaultBolt::class,
+            DefaultCapScrew::class,
+            DefaultCompressionSpring::class,
+            DefaultTorsionSpring::class,
+            DefaultNut::class,
+            KlaxonDCMotor::class,
+            KlaxonServo::class,
+            KlaxonShaft::class,
+            KlaxonStepperMotor::class
+        )
+
+        private val classesMap = classesSet.map { it.simpleName!! to it }.toImmutableMap()
     }
 }
