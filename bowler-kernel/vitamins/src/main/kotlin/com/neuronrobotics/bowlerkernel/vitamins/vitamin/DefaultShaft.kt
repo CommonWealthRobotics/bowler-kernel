@@ -61,9 +61,9 @@ sealed class DefaultShaft(
         val diameter: Length,
 
         /**
-         * The width of the flat.
+         * The distance from the flat to the opposite side of the shaft.
          */
-        val flatWidth: Length,
+        val flatToOppositeSide: Length,
         override val height: Length,
         override val mass: Mass,
         override val centerOfMass: CenterOfMass,
