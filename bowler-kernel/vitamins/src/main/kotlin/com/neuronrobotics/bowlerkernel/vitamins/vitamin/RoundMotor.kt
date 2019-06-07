@@ -40,6 +40,11 @@ interface RoundMotor : Vitamin {
     val shaftSupportHeight: Length
 
     /**
+     * The offset distance from the center of the gearbox to the center of the shaft.
+     */
+    val gearboxShaftOffset: Length
+
+    /**
      * The diameter of the gearbox.
      */
     val gearboxDiameter: Length
@@ -70,7 +75,7 @@ interface RoundMotor : Vitamin {
     val encoderAssemblyHeight: Length
 
     /**
-     * The shaft type.
+     * The shaft type. The height of the shaft does not include the [shaftSupportHeight].
      */
     val shaft: DefaultShaft
 

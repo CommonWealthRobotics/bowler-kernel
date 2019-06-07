@@ -165,6 +165,7 @@ internal fun <T : Random> T.randomRoundMotor() = DefaultRoundMotor(
     nextDouble().inch,
     nextDouble().inch,
     nextDouble().inch,
+    nextDouble().inch,
     randomShaft(),
     randomBolt(),
     nextDouble().inch,

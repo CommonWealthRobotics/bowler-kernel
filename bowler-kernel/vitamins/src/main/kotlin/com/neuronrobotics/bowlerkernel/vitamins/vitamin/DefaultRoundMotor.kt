@@ -30,6 +30,7 @@ import org.octogonapus.ktunits.quantities.Torque
 data class DefaultRoundMotor(
     override val shaftSupportDiameter: Length,
     override val shaftSupportHeight: Length,
+    override val gearboxShaftOffset: Length,
     override val gearboxDiameter: Length,
     override val gearboxHeight: Length,
     override val motorDiameter: Length,

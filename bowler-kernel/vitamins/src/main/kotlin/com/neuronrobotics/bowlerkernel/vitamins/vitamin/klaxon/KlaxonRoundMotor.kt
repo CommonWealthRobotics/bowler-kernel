@@ -37,6 +37,7 @@ import org.octogonapus.ktunits.quantities.Torque
 data class KlaxonRoundMotor(
     override val shaftSupportDiameter: Length,
     override val shaftSupportHeight: Length,
+    override val gearboxShaftOffset: Length,
     override val gearboxDiameter: Length,
     override val gearboxHeight: Length,
     override val motorDiameter: Length,
@@ -65,6 +66,7 @@ data class KlaxonRoundMotor(
     override fun toVitamin() = DefaultRoundMotor(
         shaftSupportDiameter = shaftSupportDiameter,
         shaftSupportHeight = shaftSupportHeight,
+        gearboxShaftOffset = gearboxShaftOffset,
         gearboxDiameter = gearboxDiameter,
         gearboxHeight = gearboxHeight,
         motorDiameter = motorDiameter,
@@ -92,6 +94,7 @@ data class KlaxonRoundMotor(
         override fun fromVitamin(other: RoundMotor) = KlaxonRoundMotor(
             shaftSupportDiameter = other.shaftSupportDiameter,
             shaftSupportHeight = other.shaftSupportHeight,
+            gearboxShaftOffset = other.gearboxShaftOffset,
             gearboxDiameter = other.gearboxDiameter,
             gearboxHeight = other.gearboxHeight,
             motorDiameter = other.motorDiameter,
