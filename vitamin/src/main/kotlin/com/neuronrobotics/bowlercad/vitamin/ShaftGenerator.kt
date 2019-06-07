@@ -21,6 +21,7 @@ import com.google.common.cache.CacheLoader
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
 import eu.mihosoft.vrl.v3d.CSG
+import eu.mihosoft.vrl.v3d.Cube
 import eu.mihosoft.vrl.v3d.Cylinder
 import org.octogonapus.ktunits.quantities.millimeter
 import org.octogonapus.ktunits.quantities.minus
@@ -36,6 +37,8 @@ class ShaftGenerator(
 
             when (it) {
                 is DefaultShaft -> when (it) {
+                    is DefaultShaft.SquareShaft -> makeSquareShaft(it)
+
                     is DefaultShaft.ServoHorn -> when (it) {
                         is DefaultShaft.ServoHorn.Arm -> makeArm(it)
                         is DefaultShaft.ServoHorn.Wheel -> makeWheel(it)
@@ -47,6 +50,9 @@ class ShaftGenerator(
                 else -> throw IllegalArgumentException()
             }
         })
+
+    private fun makeSquareShaft(shaft: DefaultShaft.SquareShaft): CSG =
+        Cube(shaft.length.millimeter, shaft.length.millimeter, shaft.height.millimeter).toCSG().toZMin()
 
     private fun makeArm(arm: DefaultShaft.ServoHorn.Arm): CSG {
         val base = Cylinder(arm.baseDiameter.millimeter / 2, arm.thickness.millimeter).toCSG()
