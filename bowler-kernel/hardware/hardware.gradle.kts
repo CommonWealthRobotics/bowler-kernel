@@ -24,12 +24,12 @@ dependencies {
 
     implementation(project(":bowler-kernel:logging"))
 
-    implementation(arrow("arrow-core-data"))
-    implementation(arrow("arrow-core-extensions"))
-    implementation(arrow("arrow-syntax"))
-    implementation(arrow("arrow-typeclasses"))
-    implementation(arrow("arrow-extras-data"))
-    implementation(arrow("arrow-extras-extensions"))
+    api(arrow("arrow-core-data"))
+    api(arrow("arrow-core-extensions"))
+    api(arrow("arrow-syntax"))
+    api(arrow("arrow-typeclasses"))
+    api(arrow("arrow-extras-data"))
+    api(arrow("arrow-extras-extensions"))
 
     implementation(
         group = "com.google.inject",
