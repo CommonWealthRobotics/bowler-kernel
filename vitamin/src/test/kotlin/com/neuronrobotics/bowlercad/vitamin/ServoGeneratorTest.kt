@@ -106,4 +106,29 @@ internal class ServoGeneratorTest {
             { assertEquals((shaftLength + servo.height).millimeter, cad.bounds.bounds.z) }
         )
     }
+
+    @Test
+    fun `test generate bolts`() {
+        val diameter = 4
+        val height = 20.0
+        val cad = generator.generateBolts(servo, diameter.millimeter, height.millimeter)
+
+        val bodyTopToFlangeTop =
+            (servo.height - servo.flangeHeightFromBottomOfBody - servo.flangeHeight).millimeter
+
+        assertAll(
+            { assertEquals(servo.shaftCenterToTopOfBody.millimeter, cad.bounds.center.x) },
+            { assertEquals(0.0, cad.bounds.center.y) },
+            {
+                assertEquals(
+                    (height - bodyTopToFlangeTop * 2) / 2,
+                    cad.bounds.center.z,
+                    tolerance
+                )
+            },
+            { assertEquals(servo.boltWidthSeparation.millimeter + diameter, cad.bounds.bounds.x) },
+            { assertEquals(servo.boltDepthSeparation.millimeter + diameter, cad.bounds.bounds.y) },
+            { assertEquals(height, cad.bounds.bounds.z) }
+        )
+    }
 }
