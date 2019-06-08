@@ -29,11 +29,6 @@ interface Nut : Vitamin {
     val width: Length
 
     /**
-     * The diameter of the nut (the circle around the flat faces).
-     */
-    val diameter: Length
-
-    /**
      * The height of the nut.
      */
     val height: Length

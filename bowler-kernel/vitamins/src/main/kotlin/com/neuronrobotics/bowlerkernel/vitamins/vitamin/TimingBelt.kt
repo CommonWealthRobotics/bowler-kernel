@@ -21,7 +21,7 @@ import org.octogonapus.ktunits.quantities.Length
 interface TimingBelt : Vitamin {
 
     /**
-     * The thickness of the belt (not including the teeth).
+     * The total height of the belt.
      */
     val height: Length
 
@@ -31,7 +31,7 @@ interface TimingBelt : Vitamin {
     val width: Length
 
     /**
-     * The thickness of a tooth (including the section of belt it is on top of).
+     * The thickness of a tooth (not including the section of belt it is on top of).
      */
     val toothHeight: Length
 

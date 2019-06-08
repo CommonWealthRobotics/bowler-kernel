@@ -128,7 +128,6 @@ internal fun <T : Random> T.randomCompressionSpring() = DefaultCompressionSpring
 internal fun <T : Random> T.randomNut() = DefaultNut(
     nextDouble().inch,
     nextDouble().inch,
-    nextDouble().inch,
     nextDouble().gram,
     randomCenterOfMass(),
     randomMap()
@@ -137,6 +136,7 @@ internal fun <T : Random> T.randomNut() = DefaultNut(
 internal fun <T : Random> T.randomTorsionSpring() = DefaultTorsionSpring(
     nextDouble().inch,
     nextDouble().degree,
+    nextDouble().inch,
     nextDouble().inch,
     nextDouble().inch,
     Stiffness(nextDouble()),
@@ -185,13 +185,19 @@ internal fun <T : Random> T.randomRoundMotor() = DefaultRoundMotor(
 internal fun <T : Random> T.randomDCMotor() = DefaultDCMotor(
     nextDouble().inch,
     nextDouble().inch,
+    randomShaft(),
+    nextDouble().inch,
+    nextDouble().inch,
+    randomBolt(),
+    nextDouble().inch,
+    nextDouble().degree,
+    nextDouble().degree,
     nextDouble().volt,
     nextDouble().radianPerMinute,
     nextDouble().ampere,
     nextDouble().nM,
     nextDouble().ampere,
     nextDouble().watt,
-    randomShaft(),
     nextDouble().gram,
     randomCenterOfMass(),
     randomMap()

@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
+import org.octogonapus.ktunits.quantities.Angle
 import org.octogonapus.ktunits.quantities.AngularVelocity
 import org.octogonapus.ktunits.quantities.ElectricCurrent
 import org.octogonapus.ktunits.quantities.ElectricPotential
@@ -47,6 +48,41 @@ interface DCMotor : Vitamin {
     val height: Length
 
     /**
+     * The shaft type.
+     */
+    val shaft: DefaultShaft
+
+    /**
+     * The diameter of the shaft support.
+     */
+    val shaftSupportDiameter: Length
+
+    /**
+     * The height of the shaft support.
+     */
+    val shaftSupportHeight: Length
+
+    /**
+     * The bolt type.
+     */
+    val bolt: DefaultBolt
+
+    /**
+     * The diameter of the bolt circle.
+     */
+    val boltCircleDiameter: Length
+
+    /**
+     * The angle between bolt holes.
+     */
+    val boltCircleAngleIncrement: Angle
+
+    /**
+     * The angle from vertical to the first bolt hole.
+     */
+    val boltCircleAngleOffset: Angle
+
+    /**
      * The operating voltage.
      */
     val voltage: ElectricPotential
@@ -75,9 +111,4 @@ interface DCMotor : Vitamin {
      * The maximum power output.
      */
     val power: Power
-
-    /**
-     * The shaft type.
-     */
-    val shaft: DefaultShaft
 }

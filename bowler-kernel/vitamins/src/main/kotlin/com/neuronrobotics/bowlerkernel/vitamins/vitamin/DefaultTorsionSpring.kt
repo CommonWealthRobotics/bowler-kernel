@@ -29,6 +29,7 @@ data class DefaultTorsionSpring(
     override val freeAngle: Angle,
     override val outerDiameter: Length,
     override val wireDiameter: Length,
+    override val legLength: Length,
     override val springConstant: Stiffness,
     override val maximumLoad: Mass,
     override val mass: Mass,
