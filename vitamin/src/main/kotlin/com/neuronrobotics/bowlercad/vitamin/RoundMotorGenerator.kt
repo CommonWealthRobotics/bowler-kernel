@@ -31,6 +31,7 @@ import kotlin.math.truncate
 class RoundMotorGenerator(
     shaftGenerator: VitaminCadGenerator<Shaft>,
     private val boltGenerator: VitaminCadGenerator<Bolt>,
+    numSlices: Int = 16,
     maxCacheSize: Long = 100
 ) : VitaminCadGenerator<RoundMotor> {
 
@@ -41,22 +42,30 @@ class RoundMotorGenerator(
 
             val encoder = Cylinder(
                 it.encoderAssemblyDiameter.millimeter / 2,
-                it.encoderAssemblyHeight.millimeter
+                it.encoderAssemblyDiameter.millimeter / 2,
+                it.encoderAssemblyHeight.millimeter,
+                numSlices
             ).toCSG().toZMax()
 
             val motor = Cylinder(
                 it.motorDiameter.millimeter / 2,
-                it.motorHeight.millimeter
+                it.motorDiameter.millimeter / 2,
+                it.motorHeight.millimeter,
+                numSlices
             ).toCSG().toZMax()
 
             val gearbox = Cylinder(
                 it.gearboxDiameter.millimeter / 2,
-                it.gearboxHeight.millimeter
+                it.gearboxDiameter.millimeter / 2,
+                it.gearboxHeight.millimeter,
+                numSlices
             ).toCSG().toZMax()
 
             val shaftSupport = Cylinder(
                 it.shaftSupportDiameter.millimeter / 2,
-                it.shaftSupportHeight.millimeter
+                it.shaftSupportDiameter.millimeter / 2,
+                it.shaftSupportHeight.millimeter,
+                numSlices
             ).toCSG().toZMin().movex(it.gearboxShaftOffset.millimeter)
 
             val shaft = shaftGenerator.generateCAD(it.shaft).toZMin()

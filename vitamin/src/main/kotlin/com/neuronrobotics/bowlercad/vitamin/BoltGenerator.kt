@@ -24,6 +24,7 @@ import eu.mihosoft.vrl.v3d.Cylinder
 import org.octogonapus.ktunits.quantities.millimeter
 
 class BoltGenerator(
+    numSlices: Int = 16,
     maxCacheSize: Long = 100
 ) : VitaminCadGenerator<Bolt> {
 
@@ -32,13 +33,19 @@ class BoltGenerator(
         .build(CacheLoader.from<Bolt, CSG> {
             it!!
 
-            val head = Cylinder(it.headDiameter.millimeter / 2, it.headHeight.millimeter)
-                .toCSG()
-                .toZMin()
+            val head = Cylinder(
+                it.headDiameter.millimeter / 2,
+                it.headDiameter.millimeter / 2,
+                it.headHeight.millimeter,
+                numSlices
+            ).toCSG().toZMin()
 
-            val body = Cylinder(it.throughHoleDiameter.millimeter / 2, it.bodyHeight.millimeter)
-                .toCSG()
-                .toZMax()
+            val body = Cylinder(
+                it.throughHoleDiameter.millimeter / 2,
+                it.throughHoleDiameter.millimeter / 2,
+                it.bodyHeight.millimeter,
+                numSlices
+            ).toCSG().toZMax()
 
             body.union(head).toZMin()
         })

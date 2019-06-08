@@ -32,6 +32,7 @@ import org.octogonapus.ktunits.quantities.minus
  */
 class ServoGenerator(
     shaftGenerator: VitaminCadGenerator<Shaft>,
+    private val numSlices: Int = 16,
     maxCacheSize: Long = 100
 ) : VitaminCadGenerator<Servo> {
 
@@ -89,8 +90,12 @@ class ServoGenerator(
             .movez(-(vitamin.height - vitamin.flangeHeightFromBottomOfBody - vitamin.flangeHeight).millimeter)
 
     private fun getBoltHoles(servo: Servo, boltHoleDiameter: Length, boltHoleLength: Length): CSG {
-        val boltHole =
-            Cylinder(boltHoleDiameter.millimeter / 2, boltHoleLength.millimeter).toCSG()
+        val boltHole = Cylinder(
+            boltHoleDiameter.millimeter / 2,
+            boltHoleDiameter.millimeter / 2,
+            boltHoleLength.millimeter,
+            numSlices
+        ).toCSG()
 
         return boltHole.union(
             boltHole.movex(servo.boltWidthSeparation.millimeter),

@@ -27,7 +27,7 @@ import org.octogonapus.ktunits.quantities.millimeter
  * Generates [BallBearing] CAD.
  */
 class BallBearingGenerator(
-    resolution: Int = 24,
+    numSlices: Int = 16,
     maxCacheSize: Long = 100
 ) : VitaminCadGenerator<BallBearing> {
 
@@ -39,13 +39,13 @@ class BallBearingGenerator(
             val bearingOutside = Cylinder(
                 it.diameter.millimeter / 2,
                 it.width.millimeter,
-                resolution
+                numSlices
             ).toCSG()
 
             val bore = Cylinder(
                 it.bore.millimeter / 2,
                 it.width.millimeter,
-                resolution
+                numSlices
             ).toCSG()
 
             bearingOutside.difference(bore)

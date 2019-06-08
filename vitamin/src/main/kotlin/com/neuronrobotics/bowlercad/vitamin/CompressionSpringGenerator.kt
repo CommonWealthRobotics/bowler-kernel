@@ -25,6 +25,7 @@ import org.octogonapus.ktunits.quantities.millimeter
 import org.octogonapus.ktunits.quantities.minus
 
 class CompressionSpringGenerator(
+    numSlices: Int = 16,
     maxCacheSize: Long = 100
 ) : VitaminCadGenerator<CompressionSpring> {
 
@@ -35,12 +36,16 @@ class CompressionSpringGenerator(
 
             val outerCylinder = Cylinder(
                 it.outerDiameter.millimeter / 2,
-                it.uncompressedHeight.millimeter
+                it.outerDiameter.millimeter / 2,
+                it.uncompressedHeight.millimeter,
+                numSlices
             ).toCSG()
 
             val innerCylinder = Cylinder(
                 (it.outerDiameter - it.wireDiameter).millimeter / 2,
-                it.uncompressedHeight.millimeter
+                (it.outerDiameter - it.wireDiameter).millimeter / 2,
+                it.uncompressedHeight.millimeter,
+                numSlices
             ).toCSG()
 
             outerCylinder.difference(innerCylinder)

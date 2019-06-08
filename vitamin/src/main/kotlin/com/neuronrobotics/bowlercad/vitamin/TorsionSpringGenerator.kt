@@ -27,6 +27,7 @@ import org.octogonapus.ktunits.quantities.millimeter
 import org.octogonapus.ktunits.quantities.minus
 
 class TorsionSpringGenerator(
+    numSlices: Int = 16,
     maxCacheSize: Long = 100
 ) : VitaminCadGenerator<TorsionSpring> {
 
@@ -37,11 +38,15 @@ class TorsionSpringGenerator(
 
             val core = Cylinder(
                 it.outerDiameter.millimeter / 2,
-                it.freeLength.millimeter
+                it.outerDiameter.millimeter / 2,
+                it.freeLength.millimeter,
+                numSlices
             ).toCSG().difference(
                 Cylinder(
                     (it.outerDiameter - it.wireDiameter).millimeter / 2,
-                    it.freeLength.millimeter
+                    (it.outerDiameter - it.wireDiameter).millimeter / 2,
+                    it.freeLength.millimeter,
+                    numSlices
                 ).toCSG()
             )
 

@@ -31,6 +31,7 @@ import org.octogonapus.ktunits.quantities.squared
 import org.octogonapus.ktunits.quantities.times
 
 class ShaftGenerator(
+    private val numSlices: Int = 16,
     maxCacheSize: Long = 100
 ) : VitaminCadGenerator<Shaft> {
 
@@ -62,7 +63,12 @@ class ShaftGenerator(
         ).toCSG().toZMin()
 
     private fun makeRoundShaft(shaft: DefaultShaft.RoundShaft): CSG =
-        Cylinder(shaft.diameter.millimeter / 2, shaft.height.millimeter).toCSG().toZMin()
+        Cylinder(
+            shaft.diameter.millimeter / 2,
+            shaft.diameter.millimeter / 2,
+            shaft.height.millimeter,
+            numSlices
+        ).toCSG().toZMin()
 
     private fun makeDShaft(shaft: DefaultShaft.DShaft): CSG {
         val radius = shaft.diameter / 2
@@ -83,10 +89,27 @@ class ShaftGenerator(
     }
 
     private fun makeArm(arm: DefaultShaft.ServoHorn.Arm): CSG {
-        val base = Cylinder(arm.baseDiameter.millimeter / 2, arm.thickness.millimeter).toCSG()
-        val tip = Cylinder(arm.tipDiameter.millimeter / 2, arm.thickness.millimeter).toCSG()
-        val baseColumn =
-            Cylinder(arm.baseDiameter.millimeter / 2, arm.baseColumnThickness.millimeter).toCSG()
+        val base = Cylinder(
+            arm.baseDiameter.millimeter / 2,
+            arm.baseDiameter.millimeter / 2,
+            arm.thickness.millimeter,
+            numSlices
+        ).toCSG()
+
+        val tip = Cylinder(
+            arm.tipDiameter.millimeter / 2,
+            arm.tipDiameter.millimeter / 2,
+            arm.thickness.millimeter,
+            numSlices
+        ).toCSG()
+
+        val baseColumn = Cylinder(
+            arm.baseDiameter.millimeter / 2,
+            arm.baseDiameter.millimeter / 2,
+            arm.baseColumnThickness.millimeter,
+            numSlices
+        ).toCSG()
+
         val armCSG = baseColumn.toZMin().union(
             base.union(tip.movex(arm.baseCenterToTipCenterLength.millimeter))
                 .hull()
@@ -103,13 +126,23 @@ class ShaftGenerator(
     }
 
     private fun makeWheel(wheel: DefaultShaft.ServoHorn.Wheel): CSG {
-        val base = Cylinder(wheel.diameter.millimeter / 2, wheel.thickness.millimeter).toCSG()
+        val base = Cylinder(
+            wheel.diameter.millimeter / 2,
+            wheel.diameter.millimeter / 2,
+            wheel.thickness.millimeter,
+            numSlices
+        ).toCSG()
+
         val baseColumn = Cylinder(
             wheel.baseDiameter.millimeter / 2,
-            wheel.baseColumnThickness.millimeter
+            wheel.baseDiameter.millimeter / 2,
+            wheel.baseColumnThickness.millimeter,
+            numSlices
         ).toCSG()
-        return baseColumn.toZMin()
-            .union(base.movez((wheel.baseColumnThickness - wheel.thickness).millimeter))
+
+        return baseColumn.toZMin().union(
+            base.movez((wheel.baseColumnThickness - wheel.thickness).millimeter)
+        )
     }
 
     override fun generateCAD(vitamin: Shaft): CSG = cache[vitamin]

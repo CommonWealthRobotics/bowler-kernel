@@ -30,6 +30,7 @@ import org.octogonapus.ktunits.quantities.millimeter
 class StepperGenerator(
     boltGenerator: VitaminCadGenerator<Bolt>,
     shaftGenerator: VitaminCadGenerator<Shaft>,
+    private val numSlices: Int = 16,
     maxCacheSize: Long = 100
 ) : VitaminCadGenerator<StepperMotor> {
 
@@ -76,7 +77,9 @@ class StepperGenerator(
     ): CSG {
         val startingBolt = Cylinder(
             boltHoleDiameter.millimeter / 2,
-            boltHoleLength.millimeter
+            boltHoleDiameter.millimeter / 2,
+            boltHoleLength.millimeter,
+            numSlices
         ).toCSG()
 
         return getBolts(vitamin, startingBolt).toZMin()

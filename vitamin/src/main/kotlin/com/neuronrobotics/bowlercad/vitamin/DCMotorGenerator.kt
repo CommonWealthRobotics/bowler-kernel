@@ -31,6 +31,7 @@ import kotlin.math.truncate
 class DCMotorGenerator(
     shaftGenerator: VitaminCadGenerator<Shaft>,
     private val boltGenerator: VitaminCadGenerator<Bolt>,
+    numSlices: Int = 16,
     maxCacheSize: Long = 100
 ) : VitaminCadGenerator<DCMotor> {
 
@@ -41,12 +42,16 @@ class DCMotorGenerator(
 
             val case = Cylinder(
                 it.diameter.millimeter / 2,
-                it.height.millimeter
+                it.diameter.millimeter / 2,
+                it.height.millimeter,
+                numSlices
             ).toCSG().toZMax()
 
             val shaftSupport = Cylinder(
                 it.shaftSupportDiameter.millimeter / 2,
-                it.shaftSupportHeight.millimeter
+                it.shaftSupportDiameter.millimeter / 2,
+                it.shaftSupportHeight.millimeter,
+                numSlices
             ).toCSG().toZMax()
 
             val shaft = shaftGenerator.generateCAD(it.shaft).toZMin()
