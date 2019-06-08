@@ -35,13 +35,11 @@ class BoltGenerator(
 
             val head = Cylinder(
                 it.headDiameter.millimeter / 2,
-                it.headDiameter.millimeter / 2,
                 it.headHeight.millimeter,
                 numSlices
             ).toCSG().toZMin()
 
             val body = Cylinder(
-                it.throughHoleDiameter.millimeter / 2,
                 it.throughHoleDiameter.millimeter / 2,
                 it.bodyHeight.millimeter,
                 numSlices

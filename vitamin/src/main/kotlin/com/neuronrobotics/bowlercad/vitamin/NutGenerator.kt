@@ -39,7 +39,6 @@ class NutGenerator(
 
             Cylinder(
                 circumscribedRadius.millimeter,
-                circumscribedRadius.millimeter,
                 it.height.millimeter,
                 numPoints
             ).toCSG().toZMin()

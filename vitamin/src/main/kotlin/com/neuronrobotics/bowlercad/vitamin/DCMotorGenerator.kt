@@ -42,13 +42,11 @@ class DCMotorGenerator(
 
             val case = Cylinder(
                 it.diameter.millimeter / 2,
-                it.diameter.millimeter / 2,
                 it.height.millimeter,
                 numSlices
             ).toCSG().toZMax()
 
             val shaftSupport = Cylinder(
-                it.shaftSupportDiameter.millimeter / 2,
                 it.shaftSupportDiameter.millimeter / 2,
                 it.shaftSupportHeight.millimeter,
                 numSlices

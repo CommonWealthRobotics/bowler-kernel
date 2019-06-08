@@ -77,7 +77,6 @@ class StepperGenerator(
     ): CSG {
         val startingBolt = Cylinder(
             boltHoleDiameter.millimeter / 2,
-            boltHoleDiameter.millimeter / 2,
             boltHoleLength.millimeter,
             numSlices
         ).toCSG()

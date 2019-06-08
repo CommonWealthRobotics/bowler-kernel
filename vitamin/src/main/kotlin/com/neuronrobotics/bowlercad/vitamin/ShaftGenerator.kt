@@ -65,7 +65,6 @@ class ShaftGenerator(
     private fun makeRoundShaft(shaft: DefaultShaft.RoundShaft): CSG =
         Cylinder(
             shaft.diameter.millimeter / 2,
-            shaft.diameter.millimeter / 2,
             shaft.height.millimeter,
             numSlices
         ).toCSG().toZMin()
@@ -91,20 +90,17 @@ class ShaftGenerator(
     private fun makeArm(arm: DefaultShaft.ServoHorn.Arm): CSG {
         val base = Cylinder(
             arm.baseDiameter.millimeter / 2,
-            arm.baseDiameter.millimeter / 2,
             arm.thickness.millimeter,
             numSlices
         ).toCSG()
 
         val tip = Cylinder(
             arm.tipDiameter.millimeter / 2,
-            arm.tipDiameter.millimeter / 2,
             arm.thickness.millimeter,
             numSlices
         ).toCSG()
 
         val baseColumn = Cylinder(
-            arm.baseDiameter.millimeter / 2,
             arm.baseDiameter.millimeter / 2,
             arm.baseColumnThickness.millimeter,
             numSlices
@@ -128,13 +124,11 @@ class ShaftGenerator(
     private fun makeWheel(wheel: DefaultShaft.ServoHorn.Wheel): CSG {
         val base = Cylinder(
             wheel.diameter.millimeter / 2,
-            wheel.diameter.millimeter / 2,
             wheel.thickness.millimeter,
             numSlices
         ).toCSG()
 
         val baseColumn = Cylinder(
-            wheel.baseDiameter.millimeter / 2,
             wheel.baseDiameter.millimeter / 2,
             wheel.baseColumnThickness.millimeter,
             numSlices

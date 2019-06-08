@@ -36,13 +36,11 @@ class CompressionSpringGenerator(
 
             val outerCylinder = Cylinder(
                 it.outerDiameter.millimeter / 2,
-                it.outerDiameter.millimeter / 2,
                 it.uncompressedHeight.millimeter,
                 numSlices
             ).toCSG()
 
             val innerCylinder = Cylinder(
-                (it.outerDiameter - it.wireDiameter).millimeter / 2,
                 (it.outerDiameter - it.wireDiameter).millimeter / 2,
                 it.uncompressedHeight.millimeter,
                 numSlices

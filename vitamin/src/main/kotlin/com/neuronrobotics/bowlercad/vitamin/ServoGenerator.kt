@@ -92,7 +92,6 @@ class ServoGenerator(
     private fun getBoltHoles(servo: Servo, boltHoleDiameter: Length, boltHoleLength: Length): CSG {
         val boltHole = Cylinder(
             boltHoleDiameter.millimeter / 2,
-            boltHoleDiameter.millimeter / 2,
             boltHoleLength.millimeter,
             numSlices
         ).toCSG()

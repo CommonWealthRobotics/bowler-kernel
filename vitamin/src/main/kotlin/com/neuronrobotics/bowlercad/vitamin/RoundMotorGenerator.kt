@@ -42,13 +42,11 @@ class RoundMotorGenerator(
 
             val encoder = Cylinder(
                 it.encoderAssemblyDiameter.millimeter / 2,
-                it.encoderAssemblyDiameter.millimeter / 2,
                 it.encoderAssemblyHeight.millimeter,
                 numSlices
             ).toCSG().toZMax()
 
             val motor = Cylinder(
-                it.motorDiameter.millimeter / 2,
                 it.motorDiameter.millimeter / 2,
                 it.motorHeight.millimeter,
                 numSlices
@@ -56,13 +54,11 @@ class RoundMotorGenerator(
 
             val gearbox = Cylinder(
                 it.gearboxDiameter.millimeter / 2,
-                it.gearboxDiameter.millimeter / 2,
                 it.gearboxHeight.millimeter,
                 numSlices
             ).toCSG().toZMax()
 
             val shaftSupport = Cylinder(
-                it.shaftSupportDiameter.millimeter / 2,
                 it.shaftSupportDiameter.millimeter / 2,
                 it.shaftSupportHeight.millimeter,
                 numSlices

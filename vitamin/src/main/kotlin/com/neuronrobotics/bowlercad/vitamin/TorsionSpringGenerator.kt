@@ -38,12 +38,10 @@ class TorsionSpringGenerator(
 
             val core = Cylinder(
                 it.outerDiameter.millimeter / 2,
-                it.outerDiameter.millimeter / 2,
                 it.freeLength.millimeter,
                 numSlices
             ).toCSG().difference(
                 Cylinder(
-                    (it.outerDiameter - it.wireDiameter).millimeter / 2,
                     (it.outerDiameter - it.wireDiameter).millimeter / 2,
                     it.freeLength.millimeter,
                     numSlices
