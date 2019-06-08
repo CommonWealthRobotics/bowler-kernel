@@ -35,6 +35,7 @@ import org.octogonapus.ktunits.quantities.Torque
  *  - Peak efficiency RPM
  *  - Mounting holes (Vitamin for the screws and a bolt circle diameter)
  */
+@SuppressWarnings("ComplexInterface")
 interface DCMotor : Vitamin {
 
     /**
