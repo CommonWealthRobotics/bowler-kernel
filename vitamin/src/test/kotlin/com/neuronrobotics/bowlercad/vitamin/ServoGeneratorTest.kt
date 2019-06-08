@@ -19,9 +19,6 @@ package com.neuronrobotics.bowlercad.vitamin
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultServo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
-import eu.mihosoft.vrl.v3d.CSG
-import eu.mihosoft.vrl.v3d.Cylinder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -40,13 +37,8 @@ import org.octogonapus.ktunits.quantities.volt
 internal class ServoGeneratorTest {
 
     private val tolerance = 1e-6
-    private val shaftLength = 7.1.millimeter
 
-    private val generator = ServoGenerator(shaftGenerator = object :
-        VitaminCadGenerator<Shaft> {
-        override fun generateCAD(vitamin: Shaft): CSG =
-            Cylinder(3.0, shaftLength.millimeter).toCSG()
-    })
+    private val generator = ServoGenerator(ShaftGenerator())
 
     private val servo = DefaultServo(
         width = 40.millimeter,
@@ -63,13 +55,9 @@ internal class ServoGeneratorTest {
         voltage = 7.4.volt,
         stallTorque = 22.8.kgfCm,
         speed = 60.degree / 0.11.second,
-        shaft = DefaultShaft.ServoHorn.Arm(
-            baseDiameter = 8.millimeter,
-            tipDiameter = 3.millimeter,
-            baseCenterToTipCenterLength = 22.5.millimeter,
-            thickness = 2.millimeter,
-            baseColumnThickness = 5.4.millimeter,
-            points = 1,
+        shaft = DefaultShaft.RoundShaft(
+            diameter = 4.millimeter,
+            height = 7.1.millimeter,
             mass = 0.1.gram,
             centerOfMass = CenterOfMass(
                 0.inch,
@@ -96,14 +84,14 @@ internal class ServoGeneratorTest {
             { assertEquals(0.0, cad.bounds.center.y) },
             {
                 assertEquals(
-                    (shaftLength - (servo.height + shaftLength) / 2).millimeter,
+                    (servo.shaft.height - (servo.height + servo.shaft.height) / 2).millimeter,
                     cad.bounds.center.z,
                     tolerance
                 )
             },
             { assertEquals(servo.flangeWidth.millimeter, cad.bounds.bounds.x) },
             { assertEquals(servo.flangeDepth.millimeter, cad.bounds.bounds.y) },
-            { assertEquals((shaftLength + servo.height).millimeter, cad.bounds.bounds.z) }
+            { assertEquals((servo.shaft.height + servo.height).millimeter, cad.bounds.bounds.z) }
         )
     }
 
