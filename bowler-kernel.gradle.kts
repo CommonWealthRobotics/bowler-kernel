@@ -20,7 +20,7 @@ plugins {
     checkstyle
 }
 
-val bowlerKernelVersion = "0.1.8"
+val bowlerKernelVersion = "0.1.9"
 val ktlintVersion = "0.29.0"
 val junitJupiterVersion = "5.4.0"
 val jacocoToolVersion = "0.8.3"
