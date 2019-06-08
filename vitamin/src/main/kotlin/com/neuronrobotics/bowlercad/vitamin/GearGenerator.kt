@@ -21,6 +21,7 @@ import eu.mihosoft.vrl.v3d.Cube
 import eu.mihosoft.vrl.v3d.Cylinder
 import org.octogonapus.ktunits.quantities.Angle
 import org.octogonapus.ktunits.quantities.Length
+import org.octogonapus.ktunits.quantities.compareTo
 import org.octogonapus.ktunits.quantities.degree
 import org.octogonapus.ktunits.quantities.div
 import org.octogonapus.ktunits.quantities.inch
@@ -29,8 +30,8 @@ import org.octogonapus.ktunits.quantities.minus
 import org.octogonapus.ktunits.quantities.plus
 import org.octogonapus.ktunits.quantities.radian
 import org.octogonapus.ktunits.quantities.times
+import org.octogonapus.ktunits.quantities.unaryMinus
 import java.lang.Math.cos
-import java.lang.Math.toDegrees
 import kotlin.math.PI
 import kotlin.math.acos
 import kotlin.math.pow
@@ -70,7 +71,7 @@ class GearGenerator {
             .scaley(0.4)
             .toZMax()
             .movez(thickness.millimeter * 1.5)
-            .rotx(if (bevelAngle.degree < 90) 0.0 else helical.millimeter)
+            .rotx(if (bevelAngle < 90.degree) 0.0 else helical.millimeter)
             .movex(-toothDepth.millimeter)
             .roty(90 - bevelAngle.degree)
             .movez(totalThickness.millimeter)
@@ -80,7 +81,9 @@ class GearGenerator {
                 val cutterOffset = toothAngle * angleScale
 
                 // Form a wedge shape
-                it.rotz(-cutterOffset.degree).union(it.rotz(cutterOffset.degree)).hull()
+                it.rotz(-cutterOffset.degree)
+                    .union(it.rotz(cutterOffset.degree))
+                    .hull()
             }
 
         val upperSection = Cylinder(
@@ -105,7 +108,8 @@ class GearGenerator {
 
         val pinRadius = ((3 / 16).inch / 2 + 0.1.millimeter).millimeter
         val pinLength = 2.5.inch.millimeter
-        val hole = Cylinder(pinRadius, pinRadius, pinLength, 30).toCSG().movez(-pinLength / 2)
+        val hole = Cylinder(pinRadius, pinRadius, pinLength, 30).toCSG()
+            .movez(-pinLength / 2)
 
         return listOf(
             blank.difference(hole).rotz(180),
@@ -115,6 +119,9 @@ class GearGenerator {
         )
     }
 
+    private fun lawOfCosines(a: Double, b: Double, bigC: Double) =
+        sqrt(a.pow(2) + b.pow(2) - 2 * a * b * cos(bigC))
+
     @SuppressWarnings("LongParameterList", "LongMethod")
     fun makeBevelBox(
         numDriveTeeth: Int,
@@ -123,36 +130,34 @@ class GearGenerator {
         toothBaseArchLen: Length,
         axelAngleIn: Angle = 90.degree,
         helical: Length = 0.millimeter,
-        meshInterferenceIn: Length? = null
+        meshInterference: Length = toothBaseArchLen * 1.5 / PI
     ): List<Any> {
-        var axelAngle = axelAngleIn
-        var meshInterference = meshInterferenceIn
-
-        if (axelAngle.degree > 90) {
-            axelAngle = 90.degree
-        }
-        if (axelAngle.degree < 0) {
-            axelAngle = 0.degree
+        val axelAngle = when {
+            axelAngleIn > 90.degree -> 90.degree
+            axelAngleIn < 0.degree -> 0.degree
+            else -> axelAngleIn
         }
 
         val baseThickness = toothBaseArchLen / PI
         val bevelTriangleAngle = PI.radian - axelAngle
-        val lengthOfBevelCenter = sqrt(
-            numDriveTeeth.pow(2) + numDrivenTeeth.pow(2) - 2 *
-                numDrivenTeeth * numDriveTeeth * cos(bevelTriangleAngle.radian)
+        val lengthOfBevelCenter = lawOfCosines(
+            numDriveTeeth.toDouble(),
+            numDrivenTeeth.toDouble(),
+            bevelTriangleAngle.radian
         )
+
         val kValue = numDrivenTeeth * numDriveTeeth * sin(bevelTriangleAngle.radian) / 2
         val height = 2 * kValue / lengthOfBevelCenter
 
-        val bevelAngle = acos(height / numDrivenTeeth)
-        val bevelAngleB = acos(height / numDriveTeeth)
-        val face = (thickness - baseThickness) / sin(bevelAngle)
-        val otherThick = face * sin(bevelAngleB) + baseThickness
+        val bevelAngle = acos(height / numDrivenTeeth).radian
+        val bevelAngleB = acos(height / numDriveTeeth).radian
+        val face = (thickness - baseThickness) / sin(bevelAngle.radian)
+        val otherThick = face * sin(bevelAngleB.radian) + baseThickness
 
         val gearA = makeGear(
             numDriveTeeth,
             thickness,
-            toDegrees(bevelAngle).degree,
+            bevelAngle,
             toothBaseArchLen,
             face,
             helical
@@ -161,15 +166,11 @@ class GearGenerator {
         val gearB = makeGear(
             numDrivenTeeth,
             otherThick,
-            toDegrees(bevelAngleB).degree,
+            bevelAngleB,
             toothBaseArchLen,
             face,
-            -1 * helical
+            -helical
         )
-
-        if (meshInterference == null) {
-            meshInterference = gearA[3] as Length * cos(axelAngle.radian) * 0.75 + 0.1.millimeter
-        }
 
         val aDiam =
             gearB[1] as Length * cos(axelAngle.radian) + gearA[1] as Length - meshInterference
@@ -184,7 +185,7 @@ class GearGenerator {
             .rotz(180)
         val gearAFinal = gearA[0] as CSG
         val ratio =
-            (gearA[1] as Length - meshInterference).millimeter / (gearB[1] as Length - meshInterference).millimeter
+            (gearA[1] as Length - meshInterference) / (gearB[1] as Length - meshInterference)
 
         return listOf(
             gearAFinal,
@@ -194,7 +195,7 @@ class GearGenerator {
             bevelAngle,
             face,
             otherThick,
-            ratio,
+            ratio.value,
             gearA[2],
             gearB[2]
         )
@@ -203,5 +204,3 @@ class GearGenerator {
     fun computeGearPitch(diameterAtCrown: Length, numberOfTeeth: Int): Length =
         (diameterAtCrown.millimeter / 2 * (360.0 / numberOfTeeth) * Math.PI / 180).millimeter
 }
-
-private fun Int.pow(i: Int): Double = toDouble().pow(i)
