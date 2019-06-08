@@ -30,7 +30,7 @@ import org.octogonapus.ktunits.quantities.degree
 import org.octogonapus.ktunits.quantities.div
 import org.octogonapus.ktunits.quantities.gram
 import org.octogonapus.ktunits.quantities.inch
-import org.octogonapus.ktunits.quantities.kgFCm
+import org.octogonapus.ktunits.quantities.kgfCm
 import org.octogonapus.ktunits.quantities.millimeter
 import org.octogonapus.ktunits.quantities.minus
 import org.octogonapus.ktunits.quantities.plus
@@ -63,7 +63,7 @@ internal class ServoGeneratorTest {
             boltDepthSeparation = 2.millimeter,
             boltHoleDiameter = 5.millimeter,
             voltage = 7.4.volt,
-            stallTorque = 22.8.kgFCm,
+            stallTorque = 22.8.kgfCm,
             speed = 60.degree / 0.11.second,
             shaft = DefaultShaft.ServoHorn.Arm(
                 baseDiameter = 8.millimeter,
