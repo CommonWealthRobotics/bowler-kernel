@@ -50,11 +50,7 @@ class DCMotorGenerator(
 
             val shaft = shaftGenerator.generateCAD(it.shaft).toZMin()
 
-            val startingBolt = boltGenerator.generateCAD(it.bolt).toZMax()
-                .movex(it.boltCircleDiameter.millimeter / 2)
-                .rotz(it.boltCircleAngleOffset.degree)
-
-            val bolts = getBolts(it, startingBolt).toZMax()
+            val bolts = getBolts(it, boltGenerator.generateCAD(it.bolt)).toZMax()
 
             case.difference(bolts)
                 .movez(-shaftSupport.totalZ)
@@ -63,9 +59,13 @@ class DCMotorGenerator(
         })
 
     private fun getBolts(motor: DCMotor, bolt: CSG): CSG {
+        val startingBolt = bolt.toZMax()
+            .movex(motor.boltCircleDiameter.millimeter / 2)
+            .rotz(motor.boltCircleAngleOffset.degree)
+
         val numberOfBolts = truncate(360 / motor.boltCircleAngleIncrement.degree).toInt()
         val allBolts = (1..numberOfBolts).map { i ->
-            bolt.rotz(motor.boltCircleAngleIncrement.degree * i)
+            startingBolt.rotz(motor.boltCircleAngleIncrement.degree * i)
         }
 
         return CSG.unionAll(allBolts).toZMax()

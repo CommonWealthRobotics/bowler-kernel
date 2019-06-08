@@ -63,11 +63,7 @@ class RoundMotorGenerator(
                 .movez(shaftSupport.totalZ)
                 .movex(it.gearboxShaftOffset.millimeter)
 
-            val startingBolt = boltGenerator.generateCAD(it.bolt)
-                .movex(it.boltCircleDiameter.millimeter / 2)
-                .rotz(it.boltCircleAngleOffset.degree)
-
-            val bolts = getBolts(it, startingBolt)
+            val bolts = getBolts(it, boltGenerator.generateCAD(it.bolt))
 
             gearbox.union(motor.movez(-gearbox.totalZ))
                 .union(encoder.movez(-gearbox.totalZ - motor.totalZ))
@@ -78,9 +74,13 @@ class RoundMotorGenerator(
         })
 
     private fun getBolts(motor: RoundMotor, bolt: CSG): CSG {
+        val startingBolt = bolt.toZMax()
+            .movex(motor.boltCircleDiameter.millimeter / 2)
+            .rotz(motor.boltCircleAngleOffset.degree)
+
         val numberOfBolts = truncate(360 / motor.boltCircleAngleIncrement.degree).toInt()
         val allBolts = (1..numberOfBolts).map { i ->
-            bolt.rotz(motor.boltCircleAngleIncrement.degree * i)
+            startingBolt.rotz(motor.boltCircleAngleIncrement.degree * i)
         }
 
         return CSG.unionAll(allBolts).toZMax()

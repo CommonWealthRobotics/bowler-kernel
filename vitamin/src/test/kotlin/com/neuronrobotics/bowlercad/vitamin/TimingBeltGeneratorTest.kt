@@ -48,7 +48,6 @@ internal class TimingBeltGeneratorTest {
 
         val length = 40.millimeter
         val cad = generator.generateCAD(belt, length)
-        writeSTLToFile(cad, "belt")
 
         assertAll(
             { assertEquals(length.millimeter / 2, cad.bounds.center.x) },
