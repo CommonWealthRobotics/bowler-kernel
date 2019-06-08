@@ -18,6 +18,7 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 import com.google.common.collect.ImmutableMap
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
+import org.octogonapus.ktunits.quantities.Angle
 import org.octogonapus.ktunits.quantities.AngularVelocity
 import org.octogonapus.ktunits.quantities.ElectricCurrent
 import org.octogonapus.ktunits.quantities.ElectricPotential
@@ -29,13 +30,19 @@ import org.octogonapus.ktunits.quantities.Torque
 data class DefaultDCMotor(
     override val diameter: Length,
     override val height: Length,
+    override val shaft: DefaultShaft,
+    override val shaftSupportDiameter: Length,
+    override val shaftSupportHeight: Length,
+    override val bolt: DefaultBolt,
+    override val boltCircleDiameter: Length,
+    override val boltCircleAngleIncrement: Angle,
+    override val boltCircleAngleOffset: Angle,
     override val voltage: ElectricPotential,
     override val freeSpeed: AngularVelocity,
     override val freeCurrent: ElectricCurrent,
     override val stallTorque: Torque,
     override val stallCurrent: ElectricCurrent,
     override val power: Power,
-    override val shaft: DefaultShaft,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap

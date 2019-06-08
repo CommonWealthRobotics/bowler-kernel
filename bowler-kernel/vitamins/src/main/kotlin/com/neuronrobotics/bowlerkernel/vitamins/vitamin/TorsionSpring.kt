@@ -47,6 +47,11 @@ interface TorsionSpring : Vitamin {
     val wireDiameter: Length
 
     /**
+     * The length of a leg.
+     */
+    val legLength: Length
+
+    /**
      * The spring constant.
      */
     val springConstant: Stiffness

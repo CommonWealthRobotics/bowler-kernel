@@ -20,10 +20,12 @@ import com.beust.klaxon.TypeFor
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DCMotor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBolt
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultDCMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.ShaftTypeAdapter
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
+import org.octogonapus.ktunits.quantities.Angle
 import org.octogonapus.ktunits.quantities.AngularVelocity
 import org.octogonapus.ktunits.quantities.ElectricCurrent
 import org.octogonapus.ktunits.quantities.ElectricPotential
@@ -35,15 +37,21 @@ import org.octogonapus.ktunits.quantities.Torque
 data class KlaxonDCMotor(
     override val diameter: Length,
     override val height: Length,
+    @TypeFor(field = "shaft", adapter = ShaftTypeAdapter::class)
+    val shaftType: Int,
+    override val shaft: DefaultShaft,
+    override val shaftSupportDiameter: Length,
+    override val shaftSupportHeight: Length,
+    override val bolt: DefaultBolt,
+    override val boltCircleDiameter: Length,
+    override val boltCircleAngleIncrement: Angle,
+    override val boltCircleAngleOffset: Angle,
     override val voltage: ElectricPotential,
     override val freeSpeed: AngularVelocity,
     override val freeCurrent: ElectricCurrent,
     override val stallTorque: Torque,
     override val stallCurrent: ElectricCurrent,
     override val power: Power,
-    @TypeFor(field = "shaft", adapter = ShaftTypeAdapter::class)
-    val shaftType: Int,
-    override val shaft: DefaultShaft,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap
@@ -53,13 +61,19 @@ data class KlaxonDCMotor(
     override fun toVitamin() = DefaultDCMotor(
         diameter = diameter,
         height = height,
+        shaft = shaft,
+        shaftSupportDiameter = shaftSupportDiameter,
+        shaftSupportHeight = shaftSupportHeight,
+        bolt = bolt,
+        boltCircleDiameter = boltCircleDiameter,
+        boltCircleAngleIncrement = boltCircleAngleIncrement,
+        boltCircleAngleOffset = boltCircleAngleOffset,
         voltage = voltage,
         freeSpeed = freeSpeed,
         freeCurrent = freeCurrent,
         stallTorque = stallTorque,
         stallCurrent = stallCurrent,
         power = power,
-        shaft = shaft,
         mass = mass,
         centerOfMass = centerOfMass,
         specs = specs
@@ -70,14 +84,20 @@ data class KlaxonDCMotor(
         override fun fromVitamin(other: DCMotor) = KlaxonDCMotor(
             diameter = other.diameter,
             height = other.height,
+            shaftType = ShaftTypeAdapter().typeFor(other.shaft::class),
+            shaft = other.shaft,
+            shaftSupportDiameter = other.shaftSupportDiameter,
+            shaftSupportHeight = other.shaftSupportHeight,
+            bolt = other.bolt,
+            boltCircleDiameter = other.boltCircleDiameter,
+            boltCircleAngleIncrement = other.boltCircleAngleIncrement,
+            boltCircleAngleOffset = other.boltCircleAngleOffset,
             voltage = other.voltage,
             freeSpeed = other.freeSpeed,
             freeCurrent = other.freeCurrent,
             stallTorque = other.stallTorque,
             stallCurrent = other.stallCurrent,
             power = other.power,
-            shaftType = ShaftTypeAdapter().typeFor(other.shaft::class),
-            shaft = other.shaft,
             mass = other.mass,
             centerOfMass = other.centerOfMass,
             specs = other.specs
