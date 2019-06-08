@@ -24,7 +24,6 @@ import org.octogonapus.ktunits.quantities.Mass
 
 data class DefaultNut(
     override val width: Length,
-    override val diameter: Length,
     override val height: Length,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,

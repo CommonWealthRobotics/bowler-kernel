@@ -128,7 +128,6 @@ internal fun <T : Random> T.randomCompressionSpring() = DefaultCompressionSpring
 internal fun <T : Random> T.randomNut() = DefaultNut(
     nextDouble().inch,
     nextDouble().inch,
-    nextDouble().inch,
     nextDouble().gram,
     randomCenterOfMass(),
     randomMap()
