@@ -52,53 +52,53 @@ internal class StepperGeneratorTest {
         }
     )
 
-    @Test
-    fun `test servo`() {
-        val motor = DefaultStepperMotor(
-            width = 40.millimeter,
-            height = 37.millimeter,
-            boltHoleSpacing = 31.millimeter,
-            bolt = DefaultBolt(
-                headDiameter = 5.35.millimeter,
-                headHeight = 2.93.millimeter,
-                throughHoleDiameter = 2.93.millimeter,
-                bodyHeight = 15.millimeter,
-                mass = 10.gram,
-                centerOfMass = CenterOfMass(
-                    0.inch,
-                    0.inch,
-                    0.inch
-                ),
-                specs = emptyImmutableMap()
-            ),
-            shaft = DefaultShaft.ServoHorn.Arm(
-                baseDiameter = 8.millimeter,
-                tipDiameter = 3.millimeter,
-                baseCenterToTipCenterLength = 22.5.millimeter,
-                thickness = 2.millimeter,
-                baseColumnThickness = 5.4.millimeter,
-                points = 1,
-                mass = 0.1.gram,
-                centerOfMass = CenterOfMass(
-                    0.inch,
-                    0.inch,
-                    0.inch
-                ),
-                specs = emptyImmutableMap()
-            ),
-            voltage = 12.volt,
-            holdingTorque = 15.8.nM,
-            current = 0.31.ampere,
-            stepAngle = 1.8.degree,
-            mass = 58.gram,
+    private val motor = DefaultStepperMotor(
+        width = 40.millimeter,
+        height = 37.millimeter,
+        boltHoleSpacing = 31.millimeter,
+        bolt = DefaultBolt(
+            headDiameter = 5.35.millimeter,
+            headHeight = 2.93.millimeter,
+            throughHoleDiameter = 2.93.millimeter,
+            bodyHeight = 15.millimeter,
+            mass = 10.gram,
             centerOfMass = CenterOfMass(
                 0.inch,
                 0.inch,
                 0.inch
             ),
             specs = emptyImmutableMap()
-        )
+        ),
+        shaft = DefaultShaft.ServoHorn.Arm(
+            baseDiameter = 8.millimeter,
+            tipDiameter = 3.millimeter,
+            baseCenterToTipCenterLength = 22.5.millimeter,
+            thickness = 2.millimeter,
+            baseColumnThickness = 5.4.millimeter,
+            points = 1,
+            mass = 0.1.gram,
+            centerOfMass = CenterOfMass(
+                0.inch,
+                0.inch,
+                0.inch
+            ),
+            specs = emptyImmutableMap()
+        ),
+        voltage = 12.volt,
+        holdingTorque = 15.8.nM,
+        current = 0.31.ampere,
+        stepAngle = 1.8.degree,
+        mass = 58.gram,
+        centerOfMass = CenterOfMass(
+            0.inch,
+            0.inch,
+            0.inch
+        ),
+        specs = emptyImmutableMap()
+    )
 
+    @Test
+    fun `test stepper`() {
         val cad = generator.generateCAD(motor)
 
         assertAll(
@@ -119,6 +119,22 @@ internal class StepperGeneratorTest {
                     cad.bounds.bounds.z
                 )
             }
+        )
+    }
+
+    @Test
+    fun `test generate bolts`() {
+        val diameter = 4
+        val height = 20.0
+        val cad = generator.generateBolts(motor, diameter.millimeter, height.millimeter)
+
+        assertAll(
+            { assertEquals(0.0, cad.bounds.center.x) },
+            { assertEquals(0.0, cad.bounds.center.y) },
+            { assertEquals(height / 2, cad.bounds.center.z) },
+            { assertEquals(motor.boltHoleSpacing.millimeter + diameter, cad.bounds.bounds.x) },
+            { assertEquals(motor.boltHoleSpacing.millimeter + diameter, cad.bounds.bounds.y) },
+            { assertEquals(height, cad.bounds.bounds.z) }
         )
     }
 }
