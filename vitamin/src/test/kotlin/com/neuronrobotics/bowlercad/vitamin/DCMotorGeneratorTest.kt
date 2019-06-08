@@ -42,58 +42,57 @@ internal class DCMotorGeneratorTest {
 
     private val generator = DCMotorGenerator(ShaftGenerator(), BoltGenerator())
 
-    @Test
-    fun `test dc motor`() {
-        val motor = DefaultDCMotor(
-            diameter = 25.millimeter,
-            height = 30.millimeter,
-            shaft = DefaultShaft.DShaft(
-                diameter = 5.millimeter,
-                flatToOppositeSide = 4.millimeter,
-                height = 10.millimeter,
-                mass = 0.1.gram,
-                centerOfMass = CenterOfMass(
-                    0.inch,
-                    0.inch,
-                    0.inch
-                ),
-                specs = emptyImmutableMap()
-            ),
-            shaftSupportDiameter = 10.millimeter,
-            shaftSupportHeight = 5.millimeter,
-            bolt = DefaultBolt(
-                headDiameter = 2.millimeter,
-                headHeight = 0.01.millimeter,
-                throughHoleDiameter = 2.millimeter,
-                bodyHeight = 5.millimeter,
-                mass = 1.gram,
-                centerOfMass = CenterOfMass(
-                    0.inch,
-                    0.inch,
-                    0.inch
-                ),
-                specs = emptyImmutableMap()
-            ),
-            boltCircleDiameter = 20.millimeter,
-            boltCircleAngleIncrement = 180.degree,
-            boltCircleAngleOffset = 90.degree,
-            voltage = 7.4.volt,
-            freeSpeed = 10.radianPerMinute,
-            freeCurrent = 1.ampere,
-            stallTorque = 22.8.kgfCm,
-            power = 10.watt,
-            stallCurrent = 2.ampere,
-            mass = 58.gram,
+    private val motor = DefaultDCMotor(
+        diameter = 25.millimeter,
+        height = 30.millimeter,
+        shaft = DefaultShaft.DShaft(
+            diameter = 5.millimeter,
+            flatToOppositeSide = 4.millimeter,
+            height = 10.millimeter,
+            mass = 0.1.gram,
             centerOfMass = CenterOfMass(
                 0.inch,
                 0.inch,
                 0.inch
             ),
             specs = emptyImmutableMap()
-        )
+        ),
+        shaftSupportDiameter = 10.millimeter,
+        shaftSupportHeight = 5.millimeter,
+        bolt = DefaultBolt(
+            headDiameter = 2.millimeter,
+            headHeight = 0.01.millimeter,
+            throughHoleDiameter = 2.millimeter,
+            bodyHeight = 5.millimeter,
+            mass = 1.gram,
+            centerOfMass = CenterOfMass(
+                0.inch,
+                0.inch,
+                0.inch
+            ),
+            specs = emptyImmutableMap()
+        ),
+        boltCircleDiameter = 20.millimeter,
+        boltCircleAngleIncrement = 180.degree,
+        boltCircleAngleOffset = 90.degree,
+        voltage = 7.4.volt,
+        freeSpeed = 10.radianPerMinute,
+        freeCurrent = 1.ampere,
+        stallTorque = 22.8.kgfCm,
+        power = 10.watt,
+        stallCurrent = 2.ampere,
+        mass = 58.gram,
+        centerOfMass = CenterOfMass(
+            0.inch,
+            0.inch,
+            0.inch
+        ),
+        specs = emptyImmutableMap()
+    )
 
+    @Test
+    fun `test dc motor`() {
         val cad = generator.generateCAD(motor)
-        writeSTLToFile(cad, "motor")
 
         assertAll(
             { assertEquals(0.0, cad.bounds.center.x) },
@@ -110,6 +109,33 @@ internal class DCMotorGeneratorTest {
             {
                 assertEquals(
                     (motor.height + motor.shaftSupportHeight + motor.shaft.height).millimeter,
+                    cad.bounds.bounds.z
+                )
+            }
+        )
+    }
+
+    @Test
+    fun `test generate bolts`() {
+        val diameter = 4.0
+        val height = 20.0
+        val cad = generator.generateBolts(motor, diameter.millimeter, height.millimeter)
+
+        assertAll(
+            { assertEquals(0.0, cad.bounds.center.x, tolerance) },
+            { assertEquals(0.0, cad.bounds.center.y) },
+            {
+                assertEquals(
+                    (height - motor.shaftSupportHeight.millimeter * 2) / 2,
+                    cad.bounds.center.z,
+                    tolerance
+                )
+            },
+            { assertEquals(diameter, cad.bounds.bounds.x, tolerance) },
+            { assertEquals(motor.boltCircleDiameter.millimeter + diameter, cad.bounds.bounds.y) },
+            {
+                assertEquals(
+                    height,
                     cad.bounds.bounds.z
                 )
             }

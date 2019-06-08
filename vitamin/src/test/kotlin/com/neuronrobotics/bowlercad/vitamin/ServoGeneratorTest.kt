@@ -48,47 +48,47 @@ internal class ServoGeneratorTest {
             Cylinder(3.0, shaftLength.millimeter).toCSG()
     })
 
-    @Test
-    fun `test servo`() {
-        val servo = DefaultServo(
-            width = 40.millimeter,
-            depth = 20.millimeter,
-            height = 37.millimeter,
-            shaftCenterToTopOfBody = (40 - 29.9).millimeter,
-            flangeWidth = 54.5.millimeter,
-            flangeDepth = 20.0.millimeter,
-            flangeHeight = 2.5.millimeter,
-            flangeHeightFromBottomOfBody = 28.7.millimeter,
-            boltWidthSeparation = 49.5.millimeter,
-            boltDepthSeparation = 2.millimeter,
-            boltHoleDiameter = 5.millimeter,
-            voltage = 7.4.volt,
-            stallTorque = 22.8.kgfCm,
-            speed = 60.degree / 0.11.second,
-            shaft = DefaultShaft.ServoHorn.Arm(
-                baseDiameter = 8.millimeter,
-                tipDiameter = 3.millimeter,
-                baseCenterToTipCenterLength = 22.5.millimeter,
-                thickness = 2.millimeter,
-                baseColumnThickness = 5.4.millimeter,
-                points = 1,
-                mass = 0.1.gram,
-                centerOfMass = CenterOfMass(
-                    0.inch,
-                    0.inch,
-                    0.inch
-                ),
-                specs = emptyImmutableMap()
-            ),
-            mass = 58.gram,
+    private val servo = DefaultServo(
+        width = 40.millimeter,
+        depth = 20.millimeter,
+        height = 37.millimeter,
+        shaftCenterToTopOfBody = (40 - 29.9).millimeter,
+        flangeWidth = 54.5.millimeter,
+        flangeDepth = 20.0.millimeter,
+        flangeHeight = 2.5.millimeter,
+        flangeHeightFromBottomOfBody = 28.7.millimeter,
+        boltWidthSeparation = 49.5.millimeter,
+        boltDepthSeparation = 2.millimeter,
+        boltHoleDiameter = 5.millimeter,
+        voltage = 7.4.volt,
+        stallTorque = 22.8.kgfCm,
+        speed = 60.degree / 0.11.second,
+        shaft = DefaultShaft.ServoHorn.Arm(
+            baseDiameter = 8.millimeter,
+            tipDiameter = 3.millimeter,
+            baseCenterToTipCenterLength = 22.5.millimeter,
+            thickness = 2.millimeter,
+            baseColumnThickness = 5.4.millimeter,
+            points = 1,
+            mass = 0.1.gram,
             centerOfMass = CenterOfMass(
                 0.inch,
                 0.inch,
                 0.inch
             ),
             specs = emptyImmutableMap()
-        )
+        ),
+        mass = 58.gram,
+        centerOfMass = CenterOfMass(
+            0.inch,
+            0.inch,
+            0.inch
+        ),
+        specs = emptyImmutableMap()
+    )
 
+    @Test
+    fun `test servo`() {
         val cad = generator.generateCAD(servo)
 
         assertAll(
