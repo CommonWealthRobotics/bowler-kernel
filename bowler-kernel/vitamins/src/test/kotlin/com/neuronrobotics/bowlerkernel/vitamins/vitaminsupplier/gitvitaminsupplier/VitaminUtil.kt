@@ -31,11 +31,18 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultStepperMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultTimingBelt
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultTorsionSpring
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexAngle
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexCChannel
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexMetal
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexPlate
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultVexWheel
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonDCMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonRoundMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonStepperMotor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVexWheel
+import org.junit.jupiter.api.Assertions.fail
 import org.octogonapus.ktguava.collections.immutableMapOf
 import org.octogonapus.ktunits.quantities.Stiffness
 import org.octogonapus.ktunits.quantities.ampere
@@ -58,11 +65,15 @@ internal fun <T : Random> T.allVitamins() = listOf(
     randomNut(),
     randomTorsionSpring(),
     randomTimingBelt(),
+    randomVexCChannel(),
+    randomVexPlate(),
+    randomVexAngle(),
     KlaxonDCMotor.fromVitamin(randomDCMotor()),
     KlaxonServo.fromVitamin(randomServo()),
     KlaxonShaft.fromVitamin(randomShaft()),
     KlaxonStepperMotor.fromVitamin(randomStepperMotor()),
-    KlaxonRoundMotor.fromVitamin(randomRoundMotor())
+    KlaxonRoundMotor.fromVitamin(randomRoundMotor()),
+    KlaxonVexWheel.fromVitamin(randomVexWheel())
 )
 
 internal fun <T : Random> T.randomCenterOfMass() =
@@ -70,6 +81,9 @@ internal fun <T : Random> T.randomCenterOfMass() =
 
 internal fun <T : Random> T.randomMap(): ImmutableMap<String, Any> =
     immutableMapOf(nextDouble().toString() to nextDouble())
+
+internal fun <T : Random> T.randomVexMetal() =
+    if (nextBoolean()) VexMetal.ALUMINUM else VexMetal.STEEL
 
 internal fun <T : Random> T.randomBallBearing() = DefaultBallBearing(
     nextDouble().inch,
@@ -250,3 +264,53 @@ internal fun <T : Random> T.randomStepperMotor() = DefaultStepperMotor(
     randomCenterOfMass(),
     randomMap()
 )
+
+internal fun <T : Random> T.randomVexCChannel() = VexCChannel(
+    randomVexMetal(),
+    nextInt(),
+    nextInt(),
+    nextDouble().gram,
+    randomCenterOfMass(),
+    randomMap()
+)
+
+internal fun <T : Random> T.randomVexPlate() = VexPlate(
+    randomVexMetal(),
+    nextInt(),
+    nextInt(),
+    nextDouble().gram,
+    randomCenterOfMass(),
+    randomMap()
+)
+
+internal fun <T : Random> T.randomVexAngle() = VexAngle(
+    randomVexMetal(),
+    nextInt(),
+    nextInt(),
+    nextDouble().gram,
+    randomCenterOfMass(),
+    randomMap()
+)
+
+internal fun <T : Random> T.randomVexWheel(): DefaultVexWheel =
+    when (nextInt(5)) {
+        0 -> when (nextInt(3)) {
+            0 -> DefaultVexWheel.OmniWheel.Omni275
+            1 -> DefaultVexWheel.OmniWheel.Omni325
+            2 -> DefaultVexWheel.OmniWheel.Omni4
+            else -> fail { "" }
+        }
+
+        1 -> when (nextInt(4)) {
+            0 -> DefaultVexWheel.TractionWheel.Wheel275
+            1 -> DefaultVexWheel.TractionWheel.Wheel325
+            2 -> DefaultVexWheel.TractionWheel.Wheel4
+            3 -> DefaultVexWheel.TractionWheel.Wheel5
+            else -> fail { "" }
+        }
+
+        2 -> DefaultVexWheel.HighTraction
+        3 -> DefaultVexWheel.Mecanum
+        4 -> DefaultVexWheel.WheelLeg
+        else -> fail { "" }
+    }
