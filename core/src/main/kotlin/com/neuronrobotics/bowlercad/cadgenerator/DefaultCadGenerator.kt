@@ -79,13 +79,17 @@ class DefaultCadGenerator(
                 thread(name = "Update Limb CAD (${limb.id})", isDaemon = true) {
                     val linkTransforms =
                         limb.links.map { it.dhParam.frameTransformation }.toImmutableList()
+
                     val limbAngleBuffer = MutableList(limb.jointAngleControllers.size) {
                         FrameTransformation.identity
                     }
 
+                    val baseTransform = base.limbBaseTransforms[limb.id]!!
+
                     while (!Thread.currentThread().isInterrupted) {
                         updateLimb(
                             limbCad,
+                            baseTransform,
                             linkTransforms,
                             limb.jointAngleControllers.map(limbAngleBuffer) {
                                 FrameTransformation.fromRotation(it.getCurrentAngle(), 0, 0)
@@ -122,16 +126,21 @@ class DefaultCadGenerator(
          */
         internal fun updateLimb(
             cad: ImmutableSet<ImmutableSet<CSG>>,
+            baseTransform: FrameTransformation,
             linkTransforms: List<FrameTransformation>,
             frameTransforms: List<FrameTransformation>
         ) {
             val dhTransformList = mutableListOf<FrameTransformation>()
-            var transform = FrameTransformation.identity
+            // Start at the base transform (where the limb attaches to the base)
+            var transform = baseTransform
             for (i in 0 until linkTransforms.size) {
-                val dhTransform = if (i == 0)
+                val dhTransform = if (i == 0) {
+                    // First link has no transform relative to the base (it is the base)
                     FrameTransformation.identity
-                else
+                } else {
+                    // First link has no transform relative to the base (it is the base)
                     linkTransforms[i - 1]
+                }
 
                 transform *= dhTransform * frameTransforms[i]
                 dhTransformList.add(transform)
