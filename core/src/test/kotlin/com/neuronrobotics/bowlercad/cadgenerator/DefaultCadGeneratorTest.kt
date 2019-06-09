@@ -102,6 +102,7 @@ internal class DefaultCadGeneratorTest {
 
         DefaultCadGenerator.updateLimb(
             result,
+            base.limbBaseTransforms[base.limbs.first().id]!!,
             base.limbs.first().links.map { it.dhParam.frameTransformation },
             List(6) { FrameTransformation.identity }
         )
