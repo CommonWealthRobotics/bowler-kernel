@@ -29,7 +29,6 @@ import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cube
 import eu.mihosoft.vrl.v3d.Extrude
 import javafx.scene.paint.Color
-import org.octogonapus.ktguava.collections.emptyImmutableSet
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableSetOf
 import org.octogonapus.ktguava.collections.plus
@@ -66,13 +65,7 @@ class DefaultCadGenerator(
     @SuppressWarnings("ComplexMethod", "SwallowedException")
     override fun generateLimbs(base: KinematicBase): ImmutableSetMultimap<LimbId, ImmutableSet<CSG>> {
         return base.limbs.map { limb ->
-            val limbCad = limb.links.mapIndexed { index, link ->
-                if (index < 1) {
-                    getCadForLink(link)
-                } else {
-                    emptyImmutableSet()
-                }
-            }.toImmutableSet()
+            val limbCad = limb.links.map { getCadForLink(it) }.toImmutableSet()
 
             updateCadThreads.add(
                 thread(name = "Update Limb CAD (${limb.id})", isDaemon = true) {
@@ -159,8 +152,8 @@ class DefaultCadGenerator(
      * @return A CSG showing theta.
      */
     private fun getThetaViz(link: Link): ImmutableSet<CSG> {
-        val thetaProfile = Cube(1.0, fanRadius, 1.0).toCSG()
-            .toYMin()
+        val thetaProfile = Cube(fanRadius, 1.0, 1.0).toCSG()
+            .toXMin()
             .toZMin()
 
         val start = Cube(fanRadius, 1.0, 1.0)
@@ -173,7 +166,7 @@ class DefaultCadGenerator(
             .toCSG()
             .toXMin()
             .toZMin()
-            .rotz(-link.dhParam.theta)
+            .rotz(link.dhParam.theta)
             .apply { color = Color.BLACK }
 
         val theta = if (link.dhParam.theta.absoluteValue > 10) {
@@ -184,8 +177,7 @@ class DefaultCadGenerator(
 
         return immutableSetOf(
             theta
-                .let { if (link.dhParam.theta > 0) it.rotz(-link.dhParam.theta) else it }
-                .rotz(90)
+                .let { if (link.dhParam.theta < 0) it.rotz(link.dhParam.theta) else it }
                 .difference(start) // So they dont overlap with the fan
                 .difference(end)   // So they dont overlap with the fan
                 .apply { color = Color.AQUA },
@@ -272,7 +264,7 @@ class DefaultCadGenerator(
         val start = Cube(fanRadius, 1.0, 1.0)
             .toCSG()
             .toXMin()
-            .rotz(link.dhParam.theta - link.jointLimits.maximum)
+            .rotz(link.dhParam.theta + link.jointLimits.maximum)
             .toZMax() // Other side compared to the theta fan so they dont intersect
             .apply { color = Color.WHITE }
 
@@ -280,7 +272,7 @@ class DefaultCadGenerator(
         val end = Cube(fanRadius, 1.0, 1.0)
             .toCSG()
             .toXMin()
-            .rotz(link.dhParam.theta - link.jointLimits.minimum)
+            .rotz(link.dhParam.theta + link.jointLimits.minimum)
             .toZMax() // Other side compared to the theta fan so they dont intersect
             .apply { color = Color.BLACK }
 
@@ -299,7 +291,7 @@ class DefaultCadGenerator(
 
         return immutableSetOf(
             limits
-                .rotz(link.dhParam.theta - link.jointLimits.maximum)
+                .rotz(link.dhParam.theta + link.jointLimits.minimum)
                 .difference(start) // So they dont overlap with the fan
                 .difference(end)   // So they dont overlap with the fan
                 .apply { color = Color.LIGHTGREEN },
