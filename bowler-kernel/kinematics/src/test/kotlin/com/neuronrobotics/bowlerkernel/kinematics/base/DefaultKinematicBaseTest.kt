@@ -35,7 +35,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInertialStateEstima
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanGenerator
-import com.neuronrobotics.bowlerkernel.util.Limits
+import com.neuronrobotics.bowlerkernel.util.JointLimits
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -54,19 +54,19 @@ internal class DefaultKinematicBaseTest {
         DefaultLink(
             LinkType.Rotary,
             DhParam(135, 0, 0, -90),
-            Limits(180, -180),
+            JointLimits(180, -180),
             NoopInertialStateEstimator
         ),
         DefaultLink(
             LinkType.Rotary,
             DhParam(0, 0, 175, 0),
-            Limits(180, -180),
+            JointLimits(180, -180),
             NoopInertialStateEstimator
         ),
         DefaultLink(
             LinkType.Rotary,
             DhParam(0, 90, 169.28, 0),
-            Limits(180, -180),
+            JointLimits(180, -180),
             NoopInertialStateEstimator
         )
     )
