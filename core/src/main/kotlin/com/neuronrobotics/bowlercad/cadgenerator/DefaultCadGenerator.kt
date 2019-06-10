@@ -166,7 +166,7 @@ class DefaultCadGenerator(
             .toCSG()
             .toXMin()
             .toZMin()
-            .rotz(link.dhParam.theta)
+            .rotz(link.dhParam.theta) // Rotate to the end
             .apply { color = Color.BLACK }
 
         val theta = if (link.dhParam.theta.absoluteValue > 10) {
@@ -177,6 +177,7 @@ class DefaultCadGenerator(
 
         return immutableSetOf(
             theta
+                // The fan extends into positive theta already
                 .let { if (link.dhParam.theta < 0) it.rotz(link.dhParam.theta) else it }
                 .difference(start) // So they dont overlap with the fan
                 .difference(end)   // So they dont overlap with the fan
@@ -217,7 +218,7 @@ class DefaultCadGenerator(
         val start = Cube(fanRadius, 1.0, 1.0)
             .toCSG()
             .toXMin()
-            .roty(90)
+            .roty(90) // Rotate to be vertical
             .rotx(link.dhParam.alpha) // Rotate back to the start (alpha=0)
             .moveByDhParam(immutableListOf(link.dhParam), false)
             .apply { color = Color.WHITE }
@@ -225,7 +226,7 @@ class DefaultCadGenerator(
         val end = Cube(fanRadius, 1.0, 1.0)
             .toCSG()
             .toXMin()
-            .roty(90)
+            .roty(90) // Rotate to be vertical
             .moveByDhParam(immutableListOf(link.dhParam), false)
             .apply { color = Color.BLACK }
 
@@ -237,7 +238,8 @@ class DefaultCadGenerator(
 
         return immutableSetOf(
             alpha
-                .roty(90)
+                .roty(90) // Rotate to be vertical
+                // The fan extends into negative alpha already
                 .let { if (link.dhParam.alpha > 0) it.rotx(link.dhParam.alpha) else it }
                 .moveByDhParam(immutableListOf(link.dhParam), false)
                 .difference(start) // So they dont overlap with the fan
@@ -264,6 +266,7 @@ class DefaultCadGenerator(
         val start = Cube(fanRadius, 1.0, 1.0)
             .toCSG()
             .toXMin()
+            // Rotate to the maximum
             .rotz(link.dhParam.theta + link.jointLimits.maximum)
             .toZMax() // Other side compared to the theta fan so they dont intersect
             .apply { color = Color.WHITE }
@@ -272,6 +275,7 @@ class DefaultCadGenerator(
         val end = Cube(fanRadius, 1.0, 1.0)
             .toCSG()
             .toXMin()
+            // Rotate to the minimum
             .rotz(link.dhParam.theta + link.jointLimits.minimum)
             .toZMax() // Other side compared to the theta fan so they dont intersect
             .apply { color = Color.BLACK }
@@ -291,6 +295,7 @@ class DefaultCadGenerator(
 
         return immutableSetOf(
             limits
+                // Rotate to the minimum (the fan extends to the maximum)
                 .rotz(link.dhParam.theta + link.jointLimits.minimum)
                 .difference(start) // So they dont overlap with the fan
                 .difference(end)   // So they dont overlap with the fan
