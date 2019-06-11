@@ -36,7 +36,7 @@ dependencies {
         version = "2.0.0"
     )
 
-    testImplementation(group = "com.neuronrobotics", name = "BowlerScriptingKernel", version = "0.32.4") {
+    testImplementation(group = "com.neuronrobotics", name = "BowlerScriptingKernel", version = "0.37.2") {
         exclude(group = "org.slf4j", module = "slf4j-simple")
         exclude(group = "com.google.guava")
         exclude(group = "org.mockito")

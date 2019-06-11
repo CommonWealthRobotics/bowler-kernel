@@ -29,6 +29,7 @@ import com.neuronrobotics.kinematicschef.util.modulus
 import com.neuronrobotics.kinematicschef.util.step
 import com.neuronrobotics.kinematicschef.util.toTransformNR
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
+import com.neuronrobotics.sdk.addons.kinematics.MobileBase
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Disabled
@@ -76,9 +77,9 @@ class InverseKinematicsEngineIntegrationTest {
             "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
             "InputArmBase_copy.xml",
             null
-        ) as? MobileBaseLoader ?: fail { "The script did not return a MobileBaseLoader." }
+        ) as MobileBase
 
-        val chain = cmmInputArm.base.appendages[0].chain
+        val chain = cmmInputArm.appendages[0].chain
         val params = chain.toDhParams()
 
         val engine = InverseKinematicsEngine.getInstance()
@@ -140,9 +141,9 @@ class InverseKinematicsEngineIntegrationTest {
             "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
             "InputArmBase_copy.xml",
             null
-        ) as? MobileBaseLoader ?: fail { "The script did not return a MobileBaseLoader." }
+        ) as MobileBase
 
-        val chain = cmmInputArm.base.appendages[0].chain
+        val chain = cmmInputArm.appendages[0].chain
         val params = chain.toDhParams()
 
         val engine = InverseKinematicsEngine.getInstance()
@@ -186,9 +187,9 @@ class InverseKinematicsEngineIntegrationTest {
             "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
             "InputArmBase_copy.xml",
             null
-        ) as? MobileBaseLoader ?: fail { "The script did not return a MobileBaseLoader." }
+        ) as MobileBase
 
-        val chain = cmmInputArm.base.appendages[0].chain
+        val chain = cmmInputArm.appendages[0].chain
         val params = chain.toDhParams()
 
         val engine = InverseKinematicsEngine.getInstance()
