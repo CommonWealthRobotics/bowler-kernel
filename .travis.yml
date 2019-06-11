@@ -1,3 +1,4 @@
+dist: xenial
 language: java
 
 matrix:
@@ -7,20 +8,21 @@ matrix:
       jdk: openjdk8
     - os: osx
       osx_image: xcode8.3
-
 env:
   - TERM=dumb
 
-addons:
-  apt:
-    packages:
-      - openjfx
+before_install:
+  - echo $TRAVIS_OS_NAME
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt update; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt install -y openjfx; fi
+install:
+  - ./gradlew assemble --stacktrace
 
 script:
   - ./gradlew check jacocoTestReport --stacktrace -PlogTests -Pheadless
 
 after_success:
-   - bash <(curl -s https://codecov.io/bash)
+  - bash <(curl -s https://codecov.io/bash)
 
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
