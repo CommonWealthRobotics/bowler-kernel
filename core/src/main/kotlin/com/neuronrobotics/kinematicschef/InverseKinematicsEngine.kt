@@ -348,8 +348,8 @@ internal fun ImmutableList<DhParam>.computeTheta23(
     // vectors between joints
     val originTo2 = subList(0, 1).forwardKinematics(doubleArrayOf(0.0)).getTranslation()
 
-    val joint2To3 = (subList(0, 2).forwardKinematics(doubleArrayOf(0.0, 0.0))
-        - subList(0, 1).forwardKinematics(doubleArrayOf(0.0))).getTranslation()
+    val joint2To3 = (subList(0, 2).forwardKinematics(doubleArrayOf(0.0, 0.0)) -
+        subList(0, 1).forwardKinematics(doubleArrayOf(0.0))).getTranslation()
 
     val joint3ToWristCenter = (subList(0, 4).forwardKinematics(
         doubleArrayOf(0.0, 0.0, 0.0, 0.0)
@@ -453,8 +453,8 @@ internal fun ImmutableList<DhParam>.computeTheta23(
 
     val r = sqrt(projectedWristCenter[0].pow(2) + projectedWristCenter[1].pow(2))
     val s = projectedWristCenter[2]
-    val bigD = (r.pow(2) + s.pow(2) - projected2To3.length().pow(2)
-        - projected3ToCenter.length().pow(2)) /
+    val bigD = (r.pow(2) + s.pow(2) - projected2To3.length().pow(2) -
+        projected3ToCenter.length().pow(2)) /
         (2 * projected2To3.length() * projected3ToCenter.length())
 
     val thetas3 = immutableListOf(
