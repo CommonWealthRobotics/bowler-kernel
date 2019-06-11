@@ -16,11 +16,9 @@
  */
 package com.neuronrobotics.kinematicschef
 
-import com.neuronrobotics.bowlerstudio.creature.MobileBaseLoader
-import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine
+import com.neuronrobotics.kinematicschef.TestUtil.cmmInputArmDhParams
+import com.neuronrobotics.kinematicschef.TestUtil.pumaArmDhParams
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
-import com.neuronrobotics.kinematicschef.dhparam.toDHLinks
-import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.kinematicschef.dhparam.toFrameTransformation
 import com.neuronrobotics.kinematicschef.util.getFrameTranslationMatrix
 import com.neuronrobotics.kinematicschef.util.getTranslation
@@ -28,14 +26,11 @@ import com.neuronrobotics.kinematicschef.util.length
 import com.neuronrobotics.kinematicschef.util.modulus
 import com.neuronrobotics.kinematicschef.util.step
 import com.neuronrobotics.kinematicschef.util.toTransformNR
-import com.neuronrobotics.sdk.addons.kinematics.DHLink
-import com.neuronrobotics.sdk.addons.kinematics.MobileBase
-import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
+import org.ejml.simple.SimpleMatrix
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.immutableListOf
 import java.lang.Math.toRadians
 import kotlin.math.PI
@@ -50,56 +45,54 @@ class InverseKinematicsEngineIntegrationTest {
     private val equalityTolerance = 1e-8
 
     @Test
-    @Disabled
+    @Disabled("computeTheta23 can't handle only 3 params")
     fun `one invalid spherical wrist`() {
-        val chain = TestUtil.makeMockChain(
-            arrayListOf(
-                DHLink(10.0, 0.0, 0.0, -90.0),
-                DHLink(0.0, 0.0, 0.0, 90.0),
-                DHLink(10.0, 0.0, 0.0, 0.0)
-            )
+        val params = immutableListOf(
+            DhParam(10.0, 0.0, 0.0, -90.0),
+            DhParam(0.0, 0.0, 0.0, 90.0),
+            DhParam(10.0, 0.0, 0.0, 0.0)
         )
 
         val engine = InverseKinematicsEngine.getInstance()
 
         assertThrows<NotImplementedError> {
             engine.inverseKinematics(
-                TransformNR(),
+                SimpleMatrix.identity(4),
                 DoubleArray(3) { 0.0 },
-                chain
+                params
             )
         }
     }
 
     @Test
     fun `test cmm input arm global zero`() {
-        val cmmInputArm = ScriptingEngine.gitScriptRun(
-            "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
-            "InputArmBase_copy.xml",
-            null
-        ) as MobileBase
-
-        val chain = cmmInputArm.appendages[0].chain
-        val params = chain.toDhParams()
-
         val engine = InverseKinematicsEngine.getInstance()
 
-        val target = params.forwardKinematics(arrayOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0).toDoubleArray())
+        val target = cmmInputArmDhParams.forwardKinematics(
+            arrayOf(
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ).toDoubleArray()
+        )
 
         val jointAngles = engine.inverseKinematics(
             target,
             DoubleArray(6) { 0.0 },
-            chain
+            cmmInputArmDhParams
         )
 
-        val fkTip = params.forwardKinematics(
+        val fkTip = cmmInputArmDhParams.forwardKinematics(
             arrayOf(
-                (jointAngles[0] + params[0].theta) * PI / 180,
-                (jointAngles[1] + params[1].theta) * PI / 180,
-                (jointAngles[2] + params[2].theta) * PI / 180,
-                (jointAngles[3] + params[3].theta) * PI / 180,
-                (jointAngles[4] + params[4].theta) * PI / 180,
-                (jointAngles[5] + params[5].theta) * PI / 180
+                (jointAngles[0] + cmmInputArmDhParams[0].theta) * PI / 180,
+                (jointAngles[1] + cmmInputArmDhParams[1].theta) * PI / 180,
+                (jointAngles[2] + cmmInputArmDhParams[2].theta) * PI / 180,
+                (jointAngles[3] + cmmInputArmDhParams[3].theta) * PI / 180,
+                (jointAngles[4] + cmmInputArmDhParams[4].theta) * PI / 180,
+                (jointAngles[5] + cmmInputArmDhParams[5].theta) * PI / 180
             ).toDoubleArray()
         )
 
@@ -115,19 +108,19 @@ class InverseKinematicsEngineIntegrationTest {
         val engine = InverseKinematicsEngine.getInstance()
         val thetaIncrement = 2 * PI / 4
         for (i in (0.0..2 * PI).step(thetaIncrement)) {
-            val target = TestUtil.cmmInputArmDhParams.forwardKinematics(
+            val target = cmmInputArmDhParams.forwardKinematics(
                 DoubleArray(6) { i }
             )
 
             val thetasFromIk = engine.inverseKinematics(
                 target,
                 DoubleArray(6) { 0.0 },
-                TestUtil.makeMockChain(TestUtil.cmmInputArmDhParams.toDHLinks())
+                cmmInputArmDhParams
             )
 
-            val targetUsingThetasFromIk = TestUtil.cmmInputArmDhParams.forwardKinematics(
+            val targetUsingThetasFromIk = cmmInputArmDhParams.forwardKinematics(
                 thetasFromIk.mapIndexed { index, theta ->
-                    toRadians(theta + TestUtil.cmmInputArmDhParams[index].theta)
+                    toRadians(theta + cmmInputArmDhParams[index].theta)
                 }.toDoubleArray()
             )
 
@@ -137,41 +130,32 @@ class InverseKinematicsEngineIntegrationTest {
 
     @Test
     fun `test cmm input arm home`() {
-        val cmmInputArm = ScriptingEngine.gitScriptRun(
-            "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
-            "InputArmBase_copy.xml",
-            null
-        ) as MobileBase
-
-        val chain = cmmInputArm.appendages[0].chain
-        val params = chain.toDhParams()
-
         val engine = InverseKinematicsEngine.getInstance()
-        val target = params.forwardKinematics(
+        val target = cmmInputArmDhParams.forwardKinematics(
             arrayOf(
-                params[0].theta * PI / 180,
-                params[1].theta * PI / 180,
-                params[2].theta * PI / 180,
-                params[3].theta * PI / 180,
-                params[4].theta * PI / 180,
-                params[5].theta * PI / 180
+                cmmInputArmDhParams[0].theta * PI / 180,
+                cmmInputArmDhParams[1].theta * PI / 180,
+                cmmInputArmDhParams[2].theta * PI / 180,
+                cmmInputArmDhParams[3].theta * PI / 180,
+                cmmInputArmDhParams[4].theta * PI / 180,
+                cmmInputArmDhParams[5].theta * PI / 180
             ).toDoubleArray()
         )
 
         val jointAngles = engine.inverseKinematics(
             target,
             DoubleArray(6) { 0.0 },
-            chain
+            cmmInputArmDhParams
         )
 
-        val fkTip = params.forwardKinematics(
+        val fkTip = cmmInputArmDhParams.forwardKinematics(
             arrayOf(
-                (jointAngles[0] + params[0].theta) * PI / 180,
-                (jointAngles[1] + params[1].theta) * PI / 180,
-                (jointAngles[2] + params[2].theta) * PI / 180,
-                (jointAngles[3] + params[3].theta) * PI / 180,
-                (jointAngles[4] + params[4].theta) * PI / 180,
-                (jointAngles[5] + params[5].theta) * PI / 180
+                (jointAngles[0] + cmmInputArmDhParams[0].theta) * PI / 180,
+                (jointAngles[1] + cmmInputArmDhParams[1].theta) * PI / 180,
+                (jointAngles[2] + cmmInputArmDhParams[2].theta) * PI / 180,
+                (jointAngles[3] + cmmInputArmDhParams[3].theta) * PI / 180,
+                (jointAngles[4] + cmmInputArmDhParams[4].theta) * PI / 180,
+                (jointAngles[5] + cmmInputArmDhParams[5].theta) * PI / 180
             ).toDoubleArray()
         )
 
@@ -183,20 +167,11 @@ class InverseKinematicsEngineIntegrationTest {
 
     @Test
     fun `test cmm input arm old`() {
-        val cmmInputArm = ScriptingEngine.gitScriptRun(
-            "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
-            "InputArmBase_copy.xml",
-            null
-        ) as MobileBase
-
-        val chain = cmmInputArm.appendages[0].chain
-        val params = chain.toDhParams()
-
         val engine = InverseKinematicsEngine.getInstance()
 
         fun testTheta1OnRadius(targetRadius: Double) {
             for (i in -180.0..180.0 step 0.1) {
-                val targetHeight = params.toFrameTransformation().getTranslation()[2]
+                val targetHeight = cmmInputArmDhParams.toFrameTransformation().getTranslation()[2]
                 val target = getFrameTranslationMatrix(
                     targetRadius * cos(toRadians(i)),
                     targetRadius * sin(toRadians(i)),
@@ -206,10 +181,10 @@ class InverseKinematicsEngineIntegrationTest {
                 val jointAngles = engine.inverseKinematics(
                     target,
                     DoubleArray(6) { 0.0 },
-                    chain
+                    cmmInputArmDhParams
                 )
 
-                val chainWithAngles = params.mapIndexed { index, elem ->
+                val chainWithAngles = cmmInputArmDhParams.mapIndexed { index, elem ->
                     // Offset theta by the joint angle because the joint angle is offset back by theta
                     elem.copy(theta = (elem.theta + jointAngles[index]).let {
                         if (it > 360 || it < -360)
@@ -230,18 +205,18 @@ class InverseKinematicsEngineIntegrationTest {
 
         fun testThetasHomed() {
             val jointAngles = engine.inverseKinematics(
-                params.toFrameTransformation(),
+                cmmInputArmDhParams.toFrameTransformation(),
                 DoubleArray(6) { 0.0 },
-                chain
+                cmmInputArmDhParams
             )
 
-            val chainWithAngles = params.mapIndexed { index, elem ->
+            val chainWithAngles = cmmInputArmDhParams.mapIndexed { index, elem ->
                 // Offset theta by the joint angle because the joint angle is offset back by theta
                 elem.copy(theta = elem.theta + jointAngles[index])
             }
 
             assertTrue(
-                params.toFrameTransformation().isIdentical(
+                cmmInputArmDhParams.toFrameTransformation().isIdentical(
                     chainWithAngles.toFrameTransformation(),
                     equalityTolerance
                 )
@@ -250,8 +225,8 @@ class InverseKinematicsEngineIntegrationTest {
 
         fun testTheta1OnXAxis() {
             for (sign in listOf(-1, 1)) {
-                val targetHeight = params.toFrameTransformation().getTranslation()[2]
-                val tipHome = params.toFrameTransformation().getTranslation()
+                val targetHeight = cmmInputArmDhParams.toFrameTransformation().getTranslation()[2]
+                val tipHome = cmmInputArmDhParams.toFrameTransformation().getTranslation()
                 val targetFrame = getFrameTranslationMatrix(
                     sign * sqrt(tipHome[0].pow(2) + tipHome[1].pow(2)),
                     0,
@@ -261,10 +236,10 @@ class InverseKinematicsEngineIntegrationTest {
                 val jointAngles = engine.inverseKinematics(
                     targetFrame,
                     DoubleArray(6) { 0.0 },
-                    chain
+                    cmmInputArmDhParams
                 )
 
-                val chainWithAngles = params.mapIndexed { index, elem ->
+                val chainWithAngles = cmmInputArmDhParams.mapIndexed { index, elem ->
                     // Offset theta by the joint angle because the joint angle is offset back by theta
                     elem.copy(theta = (elem.theta + jointAngles[index]).let {
                         if (it > 360 || it < -360)
@@ -286,7 +261,7 @@ class InverseKinematicsEngineIntegrationTest {
 
         fun testThetasAlongXAxis() {
             for (i in -10..10) {
-                val targetHeight = params.toFrameTransformation().getTranslation()[2]
+                val targetHeight = cmmInputArmDhParams.toFrameTransformation().getTranslation()[2]
                 val targetFrame = getFrameTranslationMatrix(
                     i,
                     0,
@@ -296,10 +271,10 @@ class InverseKinematicsEngineIntegrationTest {
                 val jointAngles = engine.inverseKinematics(
                     targetFrame,
                     DoubleArray(6) { 0.0 },
-                    chain
+                    cmmInputArmDhParams
                 )
 
-                val chainWithAngles = params.mapIndexed { index, elem ->
+                val chainWithAngles = cmmInputArmDhParams.mapIndexed { index, elem ->
                     // Offset theta by the joint angle because the joint angle is offset back by theta
                     elem.copy(theta = (elem.theta + jointAngles[index]).let {
                         if (it > 360 || it < -360)
@@ -319,7 +294,7 @@ class InverseKinematicsEngineIntegrationTest {
             }
         }
 
-        val tipHome = params.toFrameTransformation().getTranslation()
+        val tipHome = cmmInputArmDhParams.toFrameTransformation().getTranslation()
         val lengthToTip = sqrt(tipHome[0].pow(2) + tipHome[1].pow(2))
 
         testTheta1OnRadius(lengthToTip) // The radius for the home position
@@ -338,27 +313,20 @@ class InverseKinematicsEngineIntegrationTest {
                 259.0
             ),
             DoubleArray(6) { 0.0 },
-            chain
+            cmmInputArmDhParams
         )
 
         val jointAngles = engine.inverseKinematics(
-            params.toFrameTransformation(),
+            cmmInputArmDhParams.toFrameTransformation(),
             DoubleArray(6) { 0.0 },
-            chain
+            cmmInputArmDhParams
         )
     }
 
     @Test
     @Disabled
     fun `test puma arm`() {
-        val pumaArm = ScriptingEngine.gitScriptRun(
-            "https://gist.github.com/NotOctogonapus/c3fc39308a506d4cb1cd7297193c41e7",
-            "InputArmBase_copy.xml",
-            null
-        ) as? MobileBaseLoader ?: fail { "The script did not return a MobileBaseLoader." }
-
-        val chain = pumaArm.base.appendages[1].chain
-        val homeTarget = chain.toDhParams().toFrameTransformation()
+        val homeTarget = pumaArmDhParams.toFrameTransformation()
 
         val tempTarget = immutableListOf(
             DhParam(0, 18.24, 0, -90),
@@ -372,9 +340,9 @@ class InverseKinematicsEngineIntegrationTest {
         val engine = InverseKinematicsEngine.getInstance()
 
         val jointAngles = engine.inverseKinematics(
-            chain.toDhParams().toFrameTransformation().toTransformNR(),
+            homeTarget,
             DoubleArray(6) { 0.0 },
-            chain
+            pumaArmDhParams
         )
 
         println(jointAngles.joinToString())

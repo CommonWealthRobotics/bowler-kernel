@@ -84,14 +84,13 @@ class InverseKinematicsEngine
         target: TransformNR,
         jointSpaceVector: DoubleArray,
         chain: DHChain
-    ): DoubleArray = inverseKinematics(target.toSimpleMatrix(), jointSpaceVector, chain)
+    ) = inverseKinematics(target.toSimpleMatrix(), jointSpaceVector, chain.toDhParams())
 
     fun inverseKinematics(
         target: SimpleMatrix,
         jointSpaceVector: DoubleArray,
-        chain: DHChain
+        dhParams: ImmutableList<DhParam>
     ): DoubleArray {
-        val dhParams = chain.toDhParams()
         val chainElements = chainIdentifier.identifyChain(dhParams)
 
         val eulerAngles = chainElements

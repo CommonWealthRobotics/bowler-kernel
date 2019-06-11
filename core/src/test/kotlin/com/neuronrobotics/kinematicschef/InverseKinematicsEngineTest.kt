@@ -22,12 +22,10 @@ import com.neuronrobotics.kinematicschef.classifier.ClassifierError
 import com.neuronrobotics.kinematicschef.classifier.DhClassifier
 import com.neuronrobotics.kinematicschef.dhparam.DhChainElement
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
-import com.neuronrobotics.kinematicschef.dhparam.toDHLinks
-import com.neuronrobotics.kinematicschef.dhparam.toDhParams
-import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
+import org.ejml.simple.SimpleMatrix
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.octogonapus.ktguava.collections.immutableListOf
@@ -36,13 +34,13 @@ internal class InverseKinematicsEngineTest {
 
     @Test
     fun `test for error when validating euler angles`() {
-        val chain = TestUtil.makeMockChain(TestUtil.randomDhParamList(6).toDHLinks())
+        val dhParams = TestUtil.randomDhParamList(6)
 
         // Use random dh params because we don't care about their values
         val wrist1 = SphericalWrist(TestUtil.randomDhParamList(3))
         val wrist2 = SphericalWrist(TestUtil.randomDhParamList(3))
         val mockChainIdentifier = mock<ChainIdentifier> {
-            on { identifyChain(chain.toDhParams()) } doReturn
+            on { identifyChain(dhParams) } doReturn
                 immutableListOf<DhChainElement>(wrist1, wrist2)
         }
 
@@ -60,9 +58,9 @@ internal class InverseKinematicsEngineTest {
 
         assertThrows<NotImplementedError> {
             engine.inverseKinematics(
-                TransformNR(),
+                SimpleMatrix.identity(4),
                 listOf(0.0, 0.0, 0.0).toDoubleArray(),
-                chain
+                dhParams
             )
         }
     }

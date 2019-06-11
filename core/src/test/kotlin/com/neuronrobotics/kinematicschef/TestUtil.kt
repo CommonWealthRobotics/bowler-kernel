@@ -17,14 +17,7 @@
 package com.neuronrobotics.kinematicschef
 
 import com.neuronrobotics.kinematicschef.dhparam.DhParam
-import com.neuronrobotics.sdk.addons.kinematics.AbstractLink
-import com.neuronrobotics.sdk.addons.kinematics.DHChain
-import com.neuronrobotics.sdk.addons.kinematics.DHLink
-import com.neuronrobotics.sdk.addons.kinematics.LinkConfiguration
-import com.neuronrobotics.sdk.addons.kinematics.LinkFactory
-import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.eq
-import com.nhaarman.mockitokotlin2.mock
 import org.mockito.AdditionalMatchers
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.toImmutableList
@@ -49,48 +42,6 @@ internal object TestUtil {
         (0 until listSize).toList().map {
             randomDhParam(upperBound)
         }.toImmutableList()
-
-    fun makeMockChain(links: Collection<DHLink>) = makeMockChain(ArrayList(links))
-
-    internal fun makeMockChain(links: ArrayList<DHLink>) = mock<DHChain> {
-        on { getLinks() } doReturn links
-        on { factory } doReturn object : LinkFactory() {
-            override fun getLink(c: LinkConfiguration?) = makeMockAbstractLink()
-
-            override fun getLinkConfigurations() =
-                ArrayList(links.map { makeMockAbstractLink().linkConfiguration })
-        }
-    }
-
-    internal fun makeMockAbstractLink(
-        upperBound: Double = 180.0,
-        lowerBound: Double = -180.0
-    ) = object : AbstractLink(LinkConfiguration()) {
-
-        override fun getMaxEngineeringUnits() = upperBound
-
-        override fun getMinEngineeringUnits() = lowerBound
-
-        override fun getCurrentPosition(): Double {
-            TODO("not implemented")
-        }
-
-        override fun cacheTargetValueDevice() {
-            TODO("not implemented")
-        }
-
-        override fun flushAllDevice(p0: Double) {
-            TODO("not implemented")
-        }
-
-        override fun flushDevice(p0: Double) {
-            TODO("not implemented")
-        }
-    }
-
-    @SuppressWarnings("UnnecessaryApply")
-    internal fun makeFullMockChain(links: ArrayList<DHLink>) =
-        DHChain(null).apply { setLinks(links) }
 
     internal val cmmInputArmDhParams = immutableListOf(
         DhParam(13, 180, 32, -90),
