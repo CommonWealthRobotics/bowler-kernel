@@ -265,9 +265,6 @@ configure(kotlinProjects) {
             name = "kotlinx-coroutines-core",
             version = "1.0.0"
         )
-
-        "testCompile"(kotlin("test", kotlinVersion))
-        "testCompile"(kotlin("test-junit", kotlinVersion))
     }
 
     tasks.withType<KotlinCompile> {

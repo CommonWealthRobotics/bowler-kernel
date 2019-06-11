@@ -34,10 +34,10 @@ import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZXY
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZXZ
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZYX
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleZYZ
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import org.octogonapus.ktguava.collections.toImmutableList
-import kotlin.test.assertTrue
 
 class DefaultDhClassifierTest {
 

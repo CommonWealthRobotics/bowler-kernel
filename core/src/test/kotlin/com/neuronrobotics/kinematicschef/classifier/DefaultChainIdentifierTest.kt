@@ -28,10 +28,10 @@ import com.neuronrobotics.kinematicschef.not
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import org.ejml.simple.SimpleMatrix
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.plus
-import kotlin.test.assertEquals
 
 internal class DefaultChainIdentifierTest {
 
