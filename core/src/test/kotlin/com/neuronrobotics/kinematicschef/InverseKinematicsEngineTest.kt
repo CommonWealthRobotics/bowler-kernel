@@ -25,9 +25,9 @@ import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.dhparam.toDHLinks
 import com.neuronrobotics.kinematicschef.dhparam.toDhParams
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.octogonapus.ktguava.collections.immutableListOf
@@ -35,7 +35,6 @@ import org.octogonapus.ktguava.collections.immutableListOf
 internal class InverseKinematicsEngineTest {
 
     @Test
-    @Disabled
     fun `test for error when validating euler angles`() {
         val chain = TestUtil.makeMockChain(TestUtil.randomDhParamList(6).toDHLinks())
 
@@ -48,11 +47,12 @@ internal class InverseKinematicsEngineTest {
         }
 
         val mockDhClassifier = mock<DhClassifier> {
-            on { deriveEulerAngles(wrist1) } doReturn Either.left(
-                ClassifierError("Wrist 1 invalid.")
+            on { deriveEulerAngles(any()) } doReturn Either.left(
+                ClassifierError("Invalid.")
             )
-            on { deriveEulerAngles(wrist2) } doReturn Either.left(
-                ClassifierError("Wrist 2 invalid.")
+
+            on { deriveEulerAngles(any(), any(), any()) } doReturn Either.left(
+                ClassifierError("Invalid.")
             )
         }
 
