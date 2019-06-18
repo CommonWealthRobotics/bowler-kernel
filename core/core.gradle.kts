@@ -52,7 +52,6 @@ dependencies {
         name = "kotlin-guiced-core",
         version = property("kotlin-guiced.version") as String
     )
-    implementation(group = "com.google.code.findbugs", name = "annotations", version = "3.0.1")
     implementation(
         group = "com.natpryce",
         name = "hamkrest",
