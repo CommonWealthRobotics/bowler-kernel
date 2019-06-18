@@ -17,6 +17,7 @@
 package com.neuronrobotics.kinematicschef.dhparam
 
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import org.octogonapus.ktguava.collections.toImmutableList
 

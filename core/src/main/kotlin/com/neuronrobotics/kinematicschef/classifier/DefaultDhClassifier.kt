@@ -20,8 +20,8 @@ package com.neuronrobotics.kinematicschef.classifier
 
 import arrow.core.Either
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.DhChainElement
-import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngle
 import com.neuronrobotics.kinematicschef.eulerangle.EulerAngleXYX
@@ -40,8 +40,7 @@ import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableMapOf
 import org.octogonapus.ktguava.collections.toImmutableList
 
-class DefaultDhClassifier
-internal constructor() : DhClassifier {
+class DefaultDhClassifier : DhClassifier {
 
     /**
      * Determine the Euler angles for a [SphericalWrist].
@@ -49,9 +48,7 @@ internal constructor() : DhClassifier {
      * @param wrist The wrist to classify. The thetas must be specified as offsets.
      * @return The Euler angles or an error.
      */
-    override fun deriveEulerAngles(
-        wrist: SphericalWrist
-    ): Either<ClassifierError, EulerAngle> {
+    override fun deriveEulerAngles(wrist: SphericalWrist): Either<String, EulerAngle> {
         fun validateAlpha(alpha: Double) = alpha == 0.0 || alpha == 90.0 || alpha == -90.0
         fun validateTheta(theta: Double) = theta == 0.0 || theta == 90.0 || theta == -90.0
 
@@ -78,7 +75,7 @@ internal constructor() : DhClassifier {
         wrist: SphericalWrist,
         priorChain: ImmutableList<DhChainElement>,
         followingChain: ImmutableList<DhChainElement>
-    ): Either<ClassifierError, EulerAngle> {
+    ): Either<String, EulerAngle> {
         return deriveEulerAngles(wrist).fold(
             {
                 if (followingChain.isEmpty()) {
@@ -127,7 +124,7 @@ internal constructor() : DhClassifier {
         link1: DhParam,
         link2: DhParam,
         link3: DhParam
-    ): Either<ClassifierError, EulerAngle> {
+    ): Either<String, EulerAngle> {
         /**
          * Map the wrist into the [eulerAngleMap] format.
          */
@@ -151,12 +148,10 @@ internal constructor() : DhClassifier {
      */
     private fun failDerivation(params: ImmutableList<DhParam>) =
         Either.left(
-            ClassifierError(
-                """
-                |The wrist does not have Euler angles:
-                |${params.joinToString("\n")}
-                """.trimMargin()
-            )
+            """
+            |The wrist does not have Euler angles:
+            |${params.joinToString("\n")}
+            """.trimMargin()
         )
 
     companion object {
@@ -182,7 +177,5 @@ internal constructor() : DhClassifier {
             immutableListOf(90, -90, 90, -90, -90, 0) to EulerAngleXYZ,
             immutableListOf(90, -90, -90, 0, -90, 0) to EulerAngleXZY
         )
-
-        fun create() = DefaultDhClassifier()
     }
 }

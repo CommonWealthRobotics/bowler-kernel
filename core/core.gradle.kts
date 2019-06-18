@@ -13,9 +13,9 @@ object Versions {
 dependencies {
     api(group = "com.neuronrobotics", name = "java-bowler", version = "3.26.2")
     api(group = "org.apache.commons", name = "commons-math3", version = "3.6.1")
-    api(group = "org.ejml", name = "ejml-all", version = "0.36")
 
     api(group = "io.arrow-kt", name = "arrow-core", version = arrow_version)
+    api("com.neuronrobotics:bowler-kernel-kinematics:0.1.10")
 
     implementation(group = "org.octogonapus", name = "kt-guava-core", version = "0.0.5")
 

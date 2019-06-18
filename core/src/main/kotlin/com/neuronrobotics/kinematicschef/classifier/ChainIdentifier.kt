@@ -17,8 +17,8 @@
 package com.neuronrobotics.kinematicschef.classifier
 
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.DhChainElement
-import com.neuronrobotics.kinematicschef.dhparam.DhParam
 
 interface ChainIdentifier {
 

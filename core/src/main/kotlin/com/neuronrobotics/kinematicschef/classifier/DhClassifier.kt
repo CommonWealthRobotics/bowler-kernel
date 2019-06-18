@@ -30,7 +30,7 @@ interface DhClassifier {
      * @param wrist The wrist to classify. The thetas must be specified as offsets.
      * @return The Euler angles or an error.
      */
-    fun deriveEulerAngles(wrist: SphericalWrist): Either<ClassifierError, EulerAngle>
+    fun deriveEulerAngles(wrist: SphericalWrist): Either<String, EulerAngle>
 
     /**
      * Determine the Euler angles for a [SphericalWrist].
@@ -44,5 +44,5 @@ interface DhClassifier {
         wrist: SphericalWrist,
         priorChain: ImmutableList<DhChainElement>,
         followingChain: ImmutableList<DhChainElement>
-    ): Either<ClassifierError, EulerAngle>
+    ): Either<String, EulerAngle>
 }

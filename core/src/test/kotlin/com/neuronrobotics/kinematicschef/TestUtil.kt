@@ -16,7 +16,7 @@
  */
 package com.neuronrobotics.kinematicschef
 
-import com.neuronrobotics.kinematicschef.dhparam.DhParam
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.nhaarman.mockitokotlin2.eq
 import org.mockito.AdditionalMatchers
 import org.octogonapus.ktguava.collections.immutableListOf
