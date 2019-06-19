@@ -27,16 +27,10 @@ import com.neuronrobotics.kinematicschef.solver.ThreeDofSolver
  */
 class GeneralInverseKinematicsSolver(
     private val links: ImmutableList<Link>
-) {
+) : InverseKinematicsSolver {
 
-    private val solver: InverseKinematicsSolver
-
-    init {
-        solver = when (links.size) {
-            3 -> ThreeDofSolver()
-            else -> TODO("Unsupported number of links.")
-        }
-    }
+    @Suppress("MemberVisibilityCanBePrivate")
+    val solver: InverseKinematicsSolver = identifySolver(links)
 
     /**
      * Solve the system to produce new joint angles. Uses the links from the constructor.
@@ -49,4 +43,16 @@ class GeneralInverseKinematicsSolver(
         currentJointAngles: ImmutableList<Double>,
         targetFrameTransform: FrameTransformation
     ) = solver.solveChain(links, currentJointAngles, targetFrameTransform)
+
+    override fun solveChain(
+        links: ImmutableList<Link>,
+        currentJointAngles: ImmutableList<Double>,
+        targetFrameTransform: FrameTransformation
+    ) = identifySolver(links).solveChain(links, currentJointAngles, targetFrameTransform)
+
+    private fun identifySolver(links: ImmutableList<Link>) =
+        when (links.size) {
+            3 -> ThreeDofSolver()
+            else -> TODO("Unsupported number of links.")
+        }
 }
