@@ -40,6 +40,9 @@ import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableMapOf
 import org.octogonapus.ktguava.collections.toImmutableList
 
+/**
+ * Derives Euler angles for a [SphericalWrist].
+ */
 class DefaultDhClassifier : DhClassifier {
 
     /**

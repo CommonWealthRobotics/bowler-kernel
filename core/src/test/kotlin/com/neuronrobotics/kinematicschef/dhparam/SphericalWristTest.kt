@@ -18,11 +18,13 @@ package com.neuronrobotics.kinematicschef.dhparam
 
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
+import com.neuronrobotics.kinematicschef.TestUtil.randomDhParam
 import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertThrows
 import org.octogonapus.ktguava.collections.immutableListOf
 
 internal class SphericalWristTest {
@@ -55,5 +57,31 @@ internal class SphericalWristTest {
             { assertEquals(-2.0, wristCenter[1, 0], delta) },
             { assertEquals(1.0, wristCenter[2, 0], delta) }
         )
+    }
+
+    @Test
+    fun `make wrist with 2 params`() {
+        assertThrows<IllegalArgumentException> {
+            SphericalWrist(immutableListOf(randomDhParam(), randomDhParam()))
+        }
+    }
+
+    @Test
+    fun `make wrist with 3 params`() {
+        SphericalWrist(immutableListOf(randomDhParam(), randomDhParam(), randomDhParam()))
+    }
+
+    @Test
+    fun `make wrist with 4 params`() {
+        assertThrows<IllegalArgumentException> {
+            SphericalWrist(
+                immutableListOf(
+                    randomDhParam(),
+                    randomDhParam(),
+                    randomDhParam(),
+                    randomDhParam()
+                )
+            )
+        }
     }
 }

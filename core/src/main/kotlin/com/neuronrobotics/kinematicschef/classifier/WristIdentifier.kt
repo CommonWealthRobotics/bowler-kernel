@@ -22,6 +22,9 @@ import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 
+/**
+ * Detects if a wrist is spherical.
+ */
 interface WristIdentifier {
 
     /**

@@ -14,23 +14,21 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with kinematics-chef.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.kinematicschef.classifier
+package com.neuronrobotics.kinematicschef
 
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
-import com.neuronrobotics.kinematicschef.dhparam.DhChainElement
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.toFrameTransformation
+import com.neuronrobotics.bowlerkernel.kinematics.motion.ForwardKinematicsSolver
+import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 
-/**
- * Segments a list of [DhParam] into a list of [DhChainElement] by identifying abstract members of
- * the chain.
- */
-interface ChainIdentifier {
+class GeneralForwardKinematicsSolver : ForwardKinematicsSolver {
 
-    /**
-     * Identify the input [chain] by categorizing its DH params into chain elements.
-     *
-     * @param chain The DH chain to identify.
-     * @return The elements that form the chain.
-     */
-    fun identifyChain(chain: ImmutableList<DhParam>): ImmutableList<DhChainElement>
+    override fun solveChain(
+        links: ImmutableList<Link>,
+        currentJointAngles: ImmutableList<Double>
+    ): FrameTransformation =
+        links.mapIndexed { index, link ->
+            link.dhParam.copy(theta = currentJointAngles[index] + link.dhParam.theta)
+        }.toFrameTransformation()
 }

@@ -30,6 +30,7 @@ import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.plus
 
@@ -174,22 +175,9 @@ internal class DefaultChainIdentifierTest {
                 chain: ImmutableList<DhParam>,
                 priorChain: ImmutableList<DhParam>,
                 inverseTipTransform: FrameTransformation
-            ): Either<String, ImmutableList<DhParam>> {
-                TODO("not implemented")
-            }
+            ): Either<String, ImmutableList<DhParam>> =
+                fail { "Tried to call wrong isSphericalWrist method." }
         }
-
-        // argThat doesn't work currently
-        /*
-        val mockWristIdentifier = mock<WristIdentifier> {
-            on { isSphericalWrist(or(wrist, wrist2)) } doReturn Option.empty()
-            on {
-                isSphericalWrist(argThat {
-                    !(equals(wrist) && equals(wrist2))
-                })
-            } doReturn Option.just(ClassifierError(""))
-        }
-        */
 
         val identifier = DefaultChainIdentifier(mockWristIdentifier)
 

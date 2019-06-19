@@ -16,7 +16,13 @@
  */
 package com.neuronrobotics.kinematicschef
 
+import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DefaultLink
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
+import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInertialStateEstimator
+import com.neuronrobotics.bowlerkernel.util.Limits
 import com.nhaarman.mockitokotlin2.eq
 import org.mockito.AdditionalMatchers
 import org.octogonapus.ktguava.collections.immutableListOf
@@ -76,6 +82,15 @@ internal object TestUtil {
         DhParam(0, 0, 0, 90),
         DhParam(5.6, 0, 0, 0)
     )
+
+    internal val hephaestusArmLinks: ImmutableList<Link> = hephaestusArmDhParams.map {
+        DefaultLink(
+            LinkType.Rotary,
+            it,
+            Limits(180, -180),
+            NoopInertialStateEstimator
+        )
+    }.toImmutableList()
 }
 
 /**

@@ -25,6 +25,9 @@ import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.toImmutableList
 import javax.inject.Inject
 
+/**
+ * A [ChainIdentifier] that can segment revolute joints and spherical wrists.
+ */
 class DefaultChainIdentifier
 @Inject internal constructor(
     private val wristIdentifier: WristIdentifier

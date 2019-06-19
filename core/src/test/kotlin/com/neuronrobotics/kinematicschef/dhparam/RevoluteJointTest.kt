@@ -16,27 +16,30 @@
  */
 package com.neuronrobotics.kinematicschef.dhparam
 
-import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
+import com.neuronrobotics.kinematicschef.TestUtil.randomDhParam
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.octogonapus.ktguava.collections.emptyImmutableList
-import org.octogonapus.ktguava.collections.toImmutableList
+import org.octogonapus.ktguava.collections.immutableListOf
 
-/**
- * A member of an open chain.
- */
-interface DhChainElement {
+internal class RevoluteJointTest {
 
-    /**
-     * The DH params that make up this chain element. Could be one (revolute) or multiple
-     * (spherical wrist).
-     */
-    val params: ImmutableList<DhParam>
-}
-
-/**
- * Collects the [DhChainElement.params] in this collection into one list.
- */
-fun Collection<DhChainElement>.toDhParamList(): ImmutableList<DhParam> =
-    fold(emptyImmutableList()) { acc, element ->
-        (acc + element.params).toImmutableList()
+    @Test
+    fun `make revolute joint with 0 params`() {
+        assertThrows<IllegalArgumentException> {
+            RevoluteJoint(emptyImmutableList())
+        }
     }
+
+    @Test
+    fun `make revolute joint with 1 param`() {
+        RevoluteJoint(immutableListOf(randomDhParam()))
+    }
+
+    @Test
+    fun `make revolute joint with 2 params`() {
+        assertThrows<IllegalArgumentException> {
+            RevoluteJoint(immutableListOf(randomDhParam(), randomDhParam()))
+        }
+    }
+}
