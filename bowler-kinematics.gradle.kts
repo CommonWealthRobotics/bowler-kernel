@@ -2,7 +2,6 @@ import Bowler_kinematics_gradle.Strings.spotlessLicenseHeaderDelimiter
 import Bowler_kinematics_gradle.Versions.bowlerKinematicsVersion
 import Bowler_kinematics_gradle.Versions.ktlintVersion
 import com.adarshr.gradle.testlogger.theme.ThemeType
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.spotbugs.SpotBugsTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
@@ -336,7 +335,6 @@ configure(publishedProjects) {
         plugin("com.jfrog.bintray")
         plugin("maven-publish")
         plugin("java-library")
-        plugin("com.github.johnrengelman.shadow")
     }
 
     task<Jar>("sourcesJar") {
@@ -351,12 +349,6 @@ configure(publishedProjects) {
         baseName = "bowler-kinematics-${this@configure.name.toLowerCase()}"
     }
 
-    tasks {
-        "shadowJar"(ShadowJar::class) {
-            baseName = "bowler-kinematics-${this@configure.name.toLowerCase()}"
-        }
-    }
-
     val publicationName = "publication-bowler-kinematics-${name.toLowerCase()}"
 
     publishing {
@@ -366,14 +358,15 @@ configure(publishedProjects) {
                 from(components["java"])
                 artifact(tasks["sourcesJar"])
                 artifact(tasks["javadocJar"])
-                artifact(tasks["shadowJar"])
             }
         }
     }
 
     bintray {
-        user = System.getenv("BINTRAY_USER")
-        key = System.getenv("BINTRAY_API_KEY")
+        val bintrayApiUser = properties["bintray.api.user"] ?: System.getenv("BINTRAY_USER")
+        val bintrayApiKey = properties["bintray.api.key"] ?: System.getenv("BINTRAY_API_KEY")
+        user = bintrayApiUser as String?
+        key = bintrayApiKey as String?
         setPublications(publicationName)
         with(pkg) {
             repo = "maven-artifacts"
