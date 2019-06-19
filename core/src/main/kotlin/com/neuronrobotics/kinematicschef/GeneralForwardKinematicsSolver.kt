@@ -22,6 +22,9 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.link.toFrameTransformatio
 import com.neuronrobotics.bowlerkernel.kinematics.motion.ForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 
+/**
+ * Implements forward kinematics by chaining the DH param's frame transformations.
+ */
 class GeneralForwardKinematicsSolver : ForwardKinematicsSolver {
 
     override fun solveChain(
