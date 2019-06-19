@@ -25,7 +25,7 @@ plugins {
 
 object Versions {
     const val ktlintVersion = "0.29.0"
-    const val bowlerKinematicsVersion = "0.0.16"
+    const val bowlerKinematicsVersion = "0.1.0"
 }
 
 allprojects {
