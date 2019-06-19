@@ -19,17 +19,18 @@ package com.neuronrobotics.kinematicschef.classifier
 import arrow.core.Either
 import arrow.core.Option
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
+import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.kinematicschef.TestUtil
 import com.neuronrobotics.kinematicschef.dhparam.DhChainElement
-import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.RevoluteJoint
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
 import com.neuronrobotics.kinematicschef.not
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
-import org.ejml.simple.SimpleMatrix
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.plus
 
@@ -40,7 +41,7 @@ internal class DefaultChainIdentifierTest {
         val chain = TestUtil.randomDhParamList(1)
 
         val mockWristIdentifier = mock<WristIdentifier> {
-            on { isSphericalWrist(chain) } doReturn Option.just(ClassifierError(""))
+            on { isSphericalWrist(chain) } doReturn Option.just("")
         }
 
         val identifier = DefaultChainIdentifier(mockWristIdentifier)
@@ -58,7 +59,7 @@ internal class DefaultChainIdentifierTest {
         val chain = pin1 + pin2
 
         val mockWristIdentifier = mock<WristIdentifier> {
-            on { isSphericalWrist(chain) } doReturn Option.just(ClassifierError(""))
+            on { isSphericalWrist(chain) } doReturn Option.just("")
         }
 
         val identifier = DefaultChainIdentifier(mockWristIdentifier)
@@ -93,7 +94,7 @@ internal class DefaultChainIdentifierTest {
 
         val mockWristIdentifier = mock<WristIdentifier> {
             on { isSphericalWrist(wrist) } doReturn Option.empty()
-            on { isSphericalWrist(not(wrist)) } doReturn Option.just(ClassifierError(""))
+            on { isSphericalWrist(not(wrist)) } doReturn Option.just("")
         }
 
         val identifier = DefaultChainIdentifier(mockWristIdentifier)
@@ -113,7 +114,7 @@ internal class DefaultChainIdentifierTest {
 
         val mockWristIdentifier = mock<WristIdentifier> {
             on { isSphericalWrist(wrist) } doReturn Option.empty()
-            on { isSphericalWrist(not(wrist)) } doReturn Option.just(ClassifierError(""))
+            on { isSphericalWrist(not(wrist)) } doReturn Option.just("")
         }
 
         val identifier = DefaultChainIdentifier(mockWristIdentifier)
@@ -138,7 +139,7 @@ internal class DefaultChainIdentifierTest {
 
         val mockWristIdentifier = mock<WristIdentifier> {
             on { isSphericalWrist(wrist) } doReturn Option.empty()
-            on { isSphericalWrist(not(wrist)) } doReturn Option.just(ClassifierError(""))
+            on { isSphericalWrist(not(wrist)) } doReturn Option.just("")
         }
 
         val identifier = DefaultChainIdentifier(mockWristIdentifier)
@@ -162,34 +163,21 @@ internal class DefaultChainIdentifierTest {
         val chain = wrist + pin + wrist2
 
         val mockWristIdentifier = object : WristIdentifier {
-            override fun isSphericalWrist(chain: ImmutableList<DhParam>): Option<ClassifierError> {
+            override fun isSphericalWrist(chain: ImmutableList<DhParam>): Option<String> {
                 return if (chain == wrist || chain == wrist2) {
                     Option.empty()
                 } else {
-                    Option.just(ClassifierError(""))
+                    Option.just("")
                 }
             }
 
             override fun isSphericalWrist(
                 chain: ImmutableList<DhParam>,
                 priorChain: ImmutableList<DhParam>,
-                inverseTipTransform: SimpleMatrix
-            ): Either<ClassifierError, ImmutableList<DhParam>> {
-                TODO("not implemented")
-            }
+                inverseTipTransform: FrameTransformation
+            ): Either<String, ImmutableList<DhParam>> =
+                fail { "Tried to call wrong isSphericalWrist method." }
         }
-
-        // argThat doesn't work currently
-        /*
-        val mockWristIdentifier = mock<WristIdentifier> {
-            on { isSphericalWrist(or(wrist, wrist2)) } doReturn Option.empty()
-            on {
-                isSphericalWrist(argThat {
-                    !(equals(wrist) && equals(wrist2))
-                })
-            } doReturn Option.just(ClassifierError(""))
-        }
-        */
 
         val identifier = DefaultChainIdentifier(mockWristIdentifier)
 

@@ -17,11 +17,10 @@
 package com.neuronrobotics.kinematicschef.classifier
 
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
+import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.kinematicschef.TestUtil
-import com.neuronrobotics.kinematicschef.dhparam.DhParam
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
-import com.neuronrobotics.kinematicschef.util.toTranslation
-import org.ejml.simple.SimpleMatrix
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -335,7 +334,9 @@ internal class DefaultWristIdentifierTest {
         val result = identifier.isSphericalWrist(
             chain,
             priorParams,
-            SphericalWrist(chain).centerHomed(priorParams).toTranslation().invert()
+            FrameTransformation.fromTranslation(
+                SphericalWrist(chain).centerHomed(priorParams)
+            ).inverse
         )
 
         assertAll(
@@ -356,10 +357,12 @@ internal class DefaultWristIdentifierTest {
         val result = identifier.isSphericalWrist(
             chain,
             priorParams,
-            if (chain.size == 3)
-                SphericalWrist(chain).centerHomed(priorParams).toTranslation().invert()
-            else
-                SimpleMatrix.identity(4)
+//            if (chain.size == 3)
+//                FrameTransformation.fromTranslation(
+//                    SphericalWrist(chain).centerHomed(priorParams)
+//                ).inverse
+//            else
+            FrameTransformation.identity
         )
         assertTrue(result.isLeft())
     }

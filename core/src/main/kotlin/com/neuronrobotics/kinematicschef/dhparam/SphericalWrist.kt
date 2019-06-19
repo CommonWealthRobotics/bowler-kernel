@@ -16,10 +16,11 @@
  */
 package com.neuronrobotics.kinematicschef.dhparam
 
+import Jama.Matrix
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.kinematicschef.util.getRotation
-import com.neuronrobotics.kinematicschef.util.getTranslation
-import org.ejml.simple.SimpleMatrix
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.toFrameTransformation
+import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 
 /**
  * A spherical wrist. Has three DH params.
@@ -37,18 +38,15 @@ data class SphericalWrist(override val params: ImmutableList<DhParam>) : DhChain
      * @param target The target position of the end effector.
      * @return A 3x1 position matrix.
      */
-    fun center(target: SimpleMatrix): SimpleMatrix {
-        require(target.numRows() == 4)
-        require(target.numCols() == 4)
-
-        val wristCenter = SimpleMatrix(3, 1)
+    fun center(target: FrameTransformation): Matrix {
+        val wristCenter = Matrix(3, 1)
         val boneLength = params[1].r + params[2].d
-        val translation = target.getTranslation()
-        val rotation = target.getRotation()
+        val translation = target.translation
+        val rotation = target.rotation
 
-        wristCenter[0] = translation[0] - boneLength * rotation[0, 2]
-        wristCenter[1] = translation[1] - boneLength * rotation[1, 2]
-        wristCenter[2] = translation[2] - boneLength * rotation[2, 2]
+        wristCenter[0, 0] = translation[0, 0] - boneLength * rotation[0, 2]
+        wristCenter[1, 0] = translation[1, 0] - boneLength * rotation[1, 2]
+        wristCenter[2, 0] = translation[2, 0] - boneLength * rotation[2, 2]
 
         return wristCenter
     }
@@ -60,7 +58,6 @@ data class SphericalWrist(override val params: ImmutableList<DhParam>) : DhChain
      * @return A 3x1 position matrix.
      */
     fun centerHomed(priorLinks: ImmutableList<DhParam>) =
-        priorLinks.toFrameTransformation().mult(
-            params.subList(0, 2).toFrameTransformation()
-        ).getTranslation()
+        (priorLinks.toFrameTransformation() *
+            params.subList(0, 2).toFrameTransformation()).translation
 }

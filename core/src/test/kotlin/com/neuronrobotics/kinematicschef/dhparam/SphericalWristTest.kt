@@ -16,18 +16,20 @@
  */
 package com.neuronrobotics.kinematicschef.dhparam
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
+import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
+import com.neuronrobotics.kinematicschef.TestUtil.randomDhParam
 import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
-import org.ejml.simple.SimpleMatrix
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertThrows
 import org.octogonapus.ktguava.collections.immutableListOf
 
 internal class SphericalWristTest {
 
-    private val delta = 0.00001
+    private val delta = 1e-5
 
     @Test
     fun `test wrist center`() {
@@ -39,21 +41,14 @@ internal class SphericalWristTest {
             )
         )
 
-        // target frame transformation
-        val target = SimpleMatrix(4, 4)
-
-        val rotationMatrix = Rotation(
-            RotationOrder.ZYX,
-            RotationConvention.FRAME_TRANSFORM,
-            0.0,
-            0.0,
-            Math.PI * 0.5
-        ).matrix
-
-        target.setRow(0, 0, *rotationMatrix[0] + 2.0)
-        target.setRow(1, 0, *rotationMatrix[1] + 0.0)
-        target.setRow(2, 0, *rotationMatrix[2] + 1.0)
-        target[3, 3] = 1.0
+        val target = FrameTransformation.fromTranslation(2, 0, 1) *
+            FrameTransformation.fromRotation(
+                0,
+                0,
+                90,
+                RotationOrder.ZYX,
+                RotationConvention.FRAME_TRANSFORM
+            )
 
         val wristCenter = wrist.center(target)
 
@@ -62,5 +57,31 @@ internal class SphericalWristTest {
             { assertEquals(-2.0, wristCenter[1, 0], delta) },
             { assertEquals(1.0, wristCenter[2, 0], delta) }
         )
+    }
+
+    @Test
+    fun `make wrist with 2 params`() {
+        assertThrows<IllegalArgumentException> {
+            SphericalWrist(immutableListOf(randomDhParam(), randomDhParam()))
+        }
+    }
+
+    @Test
+    fun `make wrist with 3 params`() {
+        SphericalWrist(immutableListOf(randomDhParam(), randomDhParam(), randomDhParam()))
+    }
+
+    @Test
+    fun `make wrist with 4 params`() {
+        assertThrows<IllegalArgumentException> {
+            SphericalWrist(
+                immutableListOf(
+                    randomDhParam(),
+                    randomDhParam(),
+                    randomDhParam(),
+                    randomDhParam()
+                )
+            )
+        }
     }
 }

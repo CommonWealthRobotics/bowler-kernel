@@ -16,7 +16,7 @@
  */
 package com.neuronrobotics.kinematicschef.eulerangle
 
-import com.neuronrobotics.kinematicschef.dhparam.DhParam
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
 
 /**

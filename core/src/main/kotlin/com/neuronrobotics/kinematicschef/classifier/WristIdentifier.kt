@@ -19,9 +19,12 @@ package com.neuronrobotics.kinematicschef.classifier
 import arrow.core.Either
 import arrow.core.Option
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.kinematicschef.dhparam.DhParam
-import org.ejml.simple.SimpleMatrix
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
+import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 
+/**
+ * Detects if a wrist is spherical.
+ */
 interface WristIdentifier {
 
     /**
@@ -30,7 +33,7 @@ interface WristIdentifier {
      * @param chain The chain to analyze.
      * @return True if the [chain] forms a spherical wrist, false otherwise.
      */
-    fun isSphericalWrist(chain: ImmutableList<DhParam>): Option<ClassifierError>
+    fun isSphericalWrist(chain: ImmutableList<DhParam>): Option<String>
 
     /**
      * Computes whether the [chain] is a spherical wrist which is solvable with Euler angles.
@@ -46,6 +49,6 @@ interface WristIdentifier {
     fun isSphericalWrist(
         chain: ImmutableList<DhParam>,
         priorChain: ImmutableList<DhParam>,
-        inverseTipTransform: SimpleMatrix
-    ): Either<ClassifierError, ImmutableList<DhParam>>
+        inverseTipTransform: FrameTransformation
+    ): Either<String, ImmutableList<DhParam>>
 }

@@ -19,22 +19,17 @@ package com.neuronrobotics.kinematicschef.classifier
 import arrow.core.Either
 import arrow.core.Option
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.kinematicschef.dhparam.DhParam
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
+import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.kinematicschef.dhparam.SphericalWrist
-import com.neuronrobotics.kinematicschef.util.toTranslation
-import com.neuronrobotics.kinematicschef.util.getTranslation
-import org.ejml.simple.SimpleMatrix
 
-class DefaultWristIdentifier
-internal constructor() : WristIdentifier {
+/**
+ * Identifies common spherical wrist configurations.
+ */
+@SuppressWarnings("ComplexMethod")
+class DefaultWristIdentifier : WristIdentifier {
 
-    /**
-     * Computes whether the [chain] is a spherical wrist which is solvable with Euler angles.
-     *
-     * @param chain The chain to analyze.
-     * @return True if the [chain] forms a spherical wrist, false otherwise.
-     */
-    override fun isSphericalWrist(chain: ImmutableList<DhParam>): Option<ClassifierError> {
+    override fun isSphericalWrist(chain: ImmutableList<DhParam>): Option<String> {
         return if (chain.size == 3) {
             fun config1() = chain[0].alpha == -90.0 && chain[1].alpha == 90.0
             fun config2() = chain[0].alpha == 90.0 && chain[1].alpha == -90.0
@@ -46,60 +41,44 @@ internal constructor() : WristIdentifier {
 
             fun centerLinkNoOffset() = chain[1].r == 0.0 && chain[1].d == 0.0
 
+            @SuppressWarnings("ComplexCondition")
             if ((config1() || config2() || config3() || config4()) && centerLinkNoOffset()) {
                 Option.empty()
             } else {
-                Option.just(ClassifierError("Not spherical."))
+                Option.just("Not spherical.")
             }
         } else {
             Option.just(
-                ClassifierError(
-                    "A chain of ${chain.size} links cannot form a spherical wrist"
-                )
+                "A chain of ${chain.size} links cannot form a spherical wrist"
             )
         }
     }
 
-    /**
-     * Computes whether the [chain] is a spherical wrist which is solvable with Euler angles.
-     * Attempts to fix the DH parameters if they do not form a spherical wrist.
-     *
-     * @param chain The chain to analyze.
-     * @param priorChain The part of the chain that lies before [chain].
-     * @param inverseTipTransform The inverse of the tip frame transformation.
-     * @return Left if the [chain] does not form a spherical wrist, right if the [chain] does
-     * form a spherical wrist. If right, the DH parameters could be different than the input
-     * parameters (they have been fixed to form a traditionally specified spherical wrist).
-     */
     override fun isSphericalWrist(
         chain: ImmutableList<DhParam>,
         priorChain: ImmutableList<DhParam>,
-        inverseTipTransform: SimpleMatrix
-    ): Either<ClassifierError, ImmutableList<DhParam>> {
+        inverseTipTransform: FrameTransformation
+    ): Either<String, ImmutableList<DhParam>> {
         return if (chain.size == 3) {
             isSphericalWrist(chain).fold(
                 { Either.right(chain) },
                 {
-                    val wristCenter = SphericalWrist(chain).centerHomed(priorChain).toTranslation()
-                    val position = wristCenter.mult(inverseTipTransform).getTranslation()
-                    position.print()
-                    if (position[1, 0] == 0.0 && position[2, 0] == 0.0) {
+                    val wristCenter = FrameTransformation.fromTranslation(
+                        SphericalWrist(chain).centerHomed(priorChain)
+                    )
+
+                    val position = wristCenter * inverseTipTransform
+                    if (position.translationY == 0.0 && position.translationZ == 0.0) {
                         // The center of the wrist lies on the x-axis so it is spherical
                         TODO("Not implemented")
                     } else {
                         // The center of the wrist does not lie on the x-axis so it cannot be spherical
-                        Either.left(ClassifierError("Not spherical."))
+                        Either.left("Not spherical.")
                     }
                 }
             )
         } else {
-            Either.left(
-                ClassifierError("A chain of ${chain.size} links cannot form a spherical wrist")
-            )
+            Either.left("A chain of ${chain.size} links cannot form a spherical wrist")
         }
-    }
-
-    companion object {
-        fun create() = DefaultWristIdentifier()
     }
 }

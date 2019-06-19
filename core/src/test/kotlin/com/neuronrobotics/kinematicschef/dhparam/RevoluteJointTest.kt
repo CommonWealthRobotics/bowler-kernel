@@ -16,16 +16,30 @@
  */
 package com.neuronrobotics.kinematicschef.dhparam
 
-import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
+import com.neuronrobotics.kinematicschef.TestUtil.randomDhParam
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.octogonapus.ktguava.collections.emptyImmutableList
+import org.octogonapus.ktguava.collections.immutableListOf
 
-/**
- * A revolute joint (pin joint). Has one DH param.
- */
-data class RevoluteJoint(override val params: ImmutableList<DhParam>) : DhChainElement {
-    init {
-        require(params.size == 1) {
-            "A revolute joint must have exactly 1 DH param, got ${params.size}."
+internal class RevoluteJointTest {
+
+    @Test
+    fun `make revolute joint with 0 params`() {
+        assertThrows<IllegalArgumentException> {
+            RevoluteJoint(emptyImmutableList())
+        }
+    }
+
+    @Test
+    fun `make revolute joint with 1 param`() {
+        RevoluteJoint(immutableListOf(randomDhParam()))
+    }
+
+    @Test
+    fun `make revolute joint with 2 params`() {
+        assertThrows<IllegalArgumentException> {
+            RevoluteJoint(immutableListOf(randomDhParam(), randomDhParam()))
         }
     }
 }
