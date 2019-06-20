@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
 import org.octogonapus.ktguava.collections.emptyImmutableMap
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.inch
@@ -24,7 +25,7 @@ import org.octogonapus.ktunits.quantities.lbM
 /**
  * VEX EDR brand wheels.
  */
-sealed class DefaultVexWheel : VexWheel {
+sealed class DefaultVexWheel : VexWheel, KlaxonVitaminTo {
 
     sealed class OmniWheel : DefaultVexWheel() {
         /**
@@ -35,6 +36,8 @@ sealed class DefaultVexWheel : VexWheel {
             override val centerOfMass = CenterOfMass(0.inch, 0.inch, 0.inch)
             @ConvertImmutableMap
             override val specs = emptyImmutableMap<String, Any>()
+
+            override fun toVitamin() = this
         }
 
         /**
@@ -45,6 +48,8 @@ sealed class DefaultVexWheel : VexWheel {
             override val centerOfMass = CenterOfMass(0.inch, 0.inch, 0.inch)
             @ConvertImmutableMap
             override val specs = emptyImmutableMap<String, Any>()
+
+            override fun toVitamin() = this
         }
 
         /**
@@ -55,6 +60,8 @@ sealed class DefaultVexWheel : VexWheel {
             override val centerOfMass = CenterOfMass(0.inch, 0.inch, 0.inch)
             @ConvertImmutableMap
             override val specs = emptyImmutableMap<String, Any>()
+
+            override fun toVitamin() = this
         }
     }
 
@@ -67,6 +74,8 @@ sealed class DefaultVexWheel : VexWheel {
             override val centerOfMass = CenterOfMass(0.inch, 0.inch, 0.inch)
             @ConvertImmutableMap
             override val specs = emptyImmutableMap<String, Any>()
+
+            override fun toVitamin() = this
         }
 
         /**
@@ -77,6 +86,8 @@ sealed class DefaultVexWheel : VexWheel {
             override val centerOfMass = CenterOfMass(0.inch, 0.inch, 0.inch)
             @ConvertImmutableMap
             override val specs = emptyImmutableMap<String, Any>()
+
+            override fun toVitamin() = this
         }
 
         /**
@@ -87,6 +98,8 @@ sealed class DefaultVexWheel : VexWheel {
             override val centerOfMass = CenterOfMass(0.inch, 0.inch, 0.inch)
             @ConvertImmutableMap
             override val specs = emptyImmutableMap<String, Any>()
+
+            override fun toVitamin() = this
         }
 
         /**
@@ -97,6 +110,8 @@ sealed class DefaultVexWheel : VexWheel {
             override val centerOfMass = CenterOfMass(0.inch, 0.inch, 0.inch)
             @ConvertImmutableMap
             override val specs = emptyImmutableMap<String, Any>()
+
+            override fun toVitamin() = this
         }
     }
 
@@ -108,6 +123,8 @@ sealed class DefaultVexWheel : VexWheel {
         override val centerOfMass = CenterOfMass(0.inch, 0.inch, 0.inch)
         @ConvertImmutableMap
         override val specs = emptyImmutableMap<String, Any>()
+
+        override fun toVitamin() = this
     }
 
     /**
@@ -118,6 +135,8 @@ sealed class DefaultVexWheel : VexWheel {
         override val centerOfMass = CenterOfMass(0.inch, 0.inch, 0.inch)
         @ConvertImmutableMap
         override val specs = emptyImmutableMap<String, Any>()
+
+        override fun toVitamin() = this
     }
 
     /**
@@ -128,5 +147,7 @@ sealed class DefaultVexWheel : VexWheel {
         override val centerOfMass = CenterOfMass(0.inch, 0.inch, 0.inch)
         @ConvertImmutableMap
         override val specs = emptyImmutableMap<String, Any>()
+
+        override fun toVitamin() = this
     }
 }

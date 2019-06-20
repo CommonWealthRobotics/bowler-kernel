@@ -18,10 +18,10 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 import com.beust.klaxon.TypeAdapter
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.allNestedSubclasses
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.plus
 import kotlin.reflect.KClass
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVexWheel
 
 /**
  * A Klaxon [TypeAdapter] for [DefaultShaft]. Reflectively reads all [DefaultVexWheel] nested
@@ -46,10 +46,4 @@ class VexWheelAdapter : TypeAdapter<DefaultVexWheel> {
         wheelTypes.indexOf(wheelClass).also {
             require(it >= 0)
         }
-
-    private fun <T : DefaultVexWheel> allNestedSubclasses(parent: KClass<T>): List<KClass<out T>> {
-        @Suppress("UNCHECKED_CAST")
-        val nestedClasses = parent.nestedClasses as Collection<KClass<T>>
-        return nestedClasses + nestedClasses.flatMap { allNestedSubclasses(it) }
-    }
 }

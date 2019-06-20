@@ -18,8 +18,10 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsuppl
 
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Klaxon
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultVexWheel
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.NestedObjectConverter
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.fail
 import org.junit.jupiter.params.ParameterizedTest
@@ -33,6 +35,7 @@ internal class VitaminJsonTest {
 
     private val klaxon = Klaxon().apply {
         fieldConverter(ConvertImmutableMap::class, immutableMapConverter())
+        converter(NestedObjectConverter(DefaultVexWheel::class))
     }
 
     private fun Klaxon.parse(json: String, clazz: KClass<*>): KlaxonVitaminTo {

@@ -25,6 +25,7 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultCompressionSpring
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultNut
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultTimingBelt
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultTorsionSpring
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultVexWheel
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexAngle
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexCChannel
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexPlate
@@ -34,7 +35,6 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonRoundMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonStepperMotor
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVexWheel
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
 import org.octogonapus.ktguava.collections.toImmutableMap
 import kotlin.reflect.KClass
@@ -58,6 +58,19 @@ class KlaxonVitaminAdapter : TypeAdapter<KlaxonVitaminTo> {
             DefaultTorsionSpring::class,
             DefaultNut::class,
             DefaultTimingBelt::class,
+            DefaultVexWheel::class,
+            DefaultVexWheel.OmniWheel::class,
+            DefaultVexWheel.OmniWheel.Omni275::class,
+            DefaultVexWheel.OmniWheel.Omni325::class,
+            DefaultVexWheel.OmniWheel.Omni4::class,
+            DefaultVexWheel.TractionWheel::class,
+            DefaultVexWheel.TractionWheel.Wheel275::class,
+            DefaultVexWheel.TractionWheel.Wheel325::class,
+            DefaultVexWheel.TractionWheel.Wheel4::class,
+            DefaultVexWheel.TractionWheel.Wheel5::class,
+            DefaultVexWheel.HighTraction::class,
+            DefaultVexWheel.Mecanum::class,
+            DefaultVexWheel.WheelLeg::class,
             VexAngle::class,
             VexCChannel::class,
             VexPlate::class,
@@ -65,8 +78,7 @@ class KlaxonVitaminAdapter : TypeAdapter<KlaxonVitaminTo> {
             KlaxonServo::class,
             KlaxonShaft::class,
             KlaxonStepperMotor::class,
-            KlaxonRoundMotor::class,
-            KlaxonVexWheel::class
+            KlaxonRoundMotor::class
         )
 
         private val classesMap = classesSet.map { it.simpleName!! to it }.toImmutableMap()

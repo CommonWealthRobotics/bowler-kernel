@@ -41,7 +41,6 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonRoundMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonStepperMotor
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVexWheel
 import org.junit.jupiter.api.Assertions.fail
 import org.octogonapus.ktguava.collections.immutableMapOf
 import org.octogonapus.ktunits.quantities.Stiffness
@@ -57,6 +56,7 @@ import org.octogonapus.ktunits.quantities.watt
 import kotlin.random.Random
 
 internal fun <T : Random> T.allVitamins() = listOf(
+    randomVexWheel(),
     randomBallBearing(),
     randomBattery(),
     randomBolt(),
@@ -72,8 +72,7 @@ internal fun <T : Random> T.allVitamins() = listOf(
     KlaxonServo.fromVitamin(randomServo()),
     KlaxonShaft.fromVitamin(randomShaft()),
     KlaxonStepperMotor.fromVitamin(randomStepperMotor()),
-    KlaxonRoundMotor.fromVitamin(randomRoundMotor()),
-    KlaxonVexWheel.fromVitamin(randomVexWheel())
+    KlaxonRoundMotor.fromVitamin(randomRoundMotor())
 )
 
 internal fun <T : Random> T.randomCenterOfMass() =

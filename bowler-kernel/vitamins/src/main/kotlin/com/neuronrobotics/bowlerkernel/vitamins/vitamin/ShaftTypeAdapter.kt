@@ -18,10 +18,11 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 import com.beust.klaxon.TypeAdapter
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.allNestedSubclasses
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.plus
 import kotlin.reflect.KClass
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
 
 /**
  * A Klaxon [TypeAdapter] for [DefaultShaft]. Reflectively reads all [DefaultShaft] nested subclasses to
@@ -46,10 +47,4 @@ class ShaftTypeAdapter : TypeAdapter<DefaultShaft> {
         shaftTypes.indexOf(shaftClass).also {
             require(it >= 0)
         }
-
-    private fun <T : DefaultShaft> allNestedSubclasses(parent: KClass<T>): List<KClass<out T>> {
-        @Suppress("UNCHECKED_CAST")
-        val nestedClasses = parent.nestedClasses as Collection<KClass<T>>
-        return nestedClasses + nestedClasses.flatMap { allNestedSubclasses(it) }
-    }
 }

@@ -16,10 +16,18 @@
  */
 package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier
 
+import com.beust.klaxon.Converter
+import com.beust.klaxon.JsonValue
+import com.beust.klaxon.Klaxon
 import com.beust.klaxon.TypeFor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultVexWheel
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.NestedObjectConverter
+import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
+import org.octogonapus.ktguava.klaxon.immutableMapConverter
 
-data class KlaxonGitVitamin(
+data class KlaxonGitVitamin
+private constructor(
     /**
      * The type of this vitamin, used by Klaxon to handle polymorphism.
      */
@@ -42,7 +50,13 @@ data class KlaxonGitVitamin(
     val price: Double
 ) {
 
-    companion object {
+    companion object : Converter {
+
+        // We can't have the KlaxonGitVitamin converter applied to this instance
+        private val klaxon = Klaxon().apply {
+            fieldConverter(ConvertImmutableMap::class, immutableMapConverter())
+            converter(NestedObjectConverter(DefaultVexWheel::class))
+        }
 
         fun from(other: KlaxonVitaminTo, partNumber: String, price: Double) =
             KlaxonGitVitamin(
@@ -51,5 +65,41 @@ data class KlaxonGitVitamin(
                 partNumber = partNumber,
                 price = price
             )
+
+        override fun canConvert(cls: Class<*>) = cls == KlaxonGitVitamin::class.java
+
+        override fun fromJson(jv: JsonValue): Any? {
+            with(jv.obj!!) {
+                val vitaminObj = obj("vitamin")!!
+                val vitaminObjName = vitaminObj["name"] as String?
+                val vitamin =
+                    if (vitaminObjName?.contains(DefaultVexWheel::class.simpleName!!) == true) {
+                        klaxon.parseFromJsonObject<DefaultVexWheel>(vitaminObj)!!
+                    } else {
+                        // We need to use the type adapter so do a full re-parse. This is fine
+                        // because now we know that the vitamin is not a DefaultVexWheel
+                        return klaxon.parseFromJsonObject<KlaxonGitVitamin>(this)!!
+                    }
+
+                return KlaxonGitVitamin(
+                    string("type")!!,
+                    vitamin,
+                    string("partNumber")!!,
+                    double("price")!!
+                )
+            }
+        }
+
+        override fun toJson(value: Any): String {
+            require(value is KlaxonGitVitamin)
+            return """
+                {
+                    "type": "${value.type}",
+                    "vitamin": ${klaxon.toJsonString(value.vitamin)},
+                    "partNumber": "${value.partNumber}",
+                    "price": ${value.price}
+                }
+            """.trimIndent()
+        }
     }
 }
