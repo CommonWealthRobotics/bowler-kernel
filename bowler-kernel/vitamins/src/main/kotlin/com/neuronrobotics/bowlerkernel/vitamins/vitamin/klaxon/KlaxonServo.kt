@@ -22,7 +22,6 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultServo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Servo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.ShaftTypeAdapter
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.AngularVelocity
 import org.octogonapus.ktunits.quantities.ElectricPotential

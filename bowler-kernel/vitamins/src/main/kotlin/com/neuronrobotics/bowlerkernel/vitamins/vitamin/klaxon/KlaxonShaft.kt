@@ -18,7 +18,6 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 
 import com.beust.klaxon.TypeFor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.ShaftTypeAdapter
 
 data class KlaxonShaft(
     @TypeFor(field = "shaft", adapter = ShaftTypeAdapter::class)

@@ -14,12 +14,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins.vitamin
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 
 import com.beust.klaxon.TypeAdapter
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.allNestedSubclasses
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.plus
 import kotlin.reflect.KClass
@@ -31,7 +31,8 @@ import kotlin.reflect.KClass
 class ShaftTypeAdapter : TypeAdapter<DefaultShaft> {
 
     private val shaftTypes: ImmutableList<KClass<out DefaultShaft>> by lazy {
-        immutableListOf(DefaultShaft::class) + allNestedSubclasses(DefaultShaft::class)
+        immutableListOf(DefaultShaft::class) + allNestedSubclasses(
+            DefaultShaft::class)
     }
 
     override fun classFor(type: Any): KClass<out DefaultShaft> {
