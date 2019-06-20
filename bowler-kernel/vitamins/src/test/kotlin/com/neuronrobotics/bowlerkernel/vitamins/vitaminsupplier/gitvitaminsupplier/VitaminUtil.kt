@@ -31,11 +31,11 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultStepperMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultTimingBelt
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultTorsionSpring
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultVexWheel
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexAngle
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexCChannel
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexMetal
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexPlate
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultVexWheel
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonDCMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonRoundMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
@@ -292,6 +292,7 @@ internal fun <T : Random> T.randomVexAngle() = VexAngle(
     randomMap()
 )
 
+@SuppressWarnings("ComplexMethod")
 internal fun <T : Random> T.randomVexWheel(): DefaultVexWheel =
     when (nextInt(5)) {
         0 -> when (nextInt(3)) {
