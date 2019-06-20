@@ -11,3 +11,11 @@
 The heart of the Bowler stack. Software-defined, composable robotics made accessible at the hobbyist level and powerful at the research level.
 
 Currently, issue tracking is done with ZenHub, so users without ZenHub will see some empty and possibly confusing issues.
+
+## Use bowler-kernel
+
+Get the artifacts [here](https://bintray.com/commonwealthrobotics/maven-artifacts/bowler-kernel/_latestVersion). Additional repositories:
+```kotlin
+maven(url = "https://dl.bintray.com/s1m0nw1/KtsRunner")
+maven(url = "https://dl.bintray.com/octogonapus/maven-artifacts")
+```

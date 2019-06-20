@@ -18,7 +18,7 @@ package com.neuronrobotics.bowlerkernel.kinematics.limb.link
 
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialStateEstimator
-import com.neuronrobotics.bowlerkernel.util.Limits
+import com.neuronrobotics.bowlerkernel.util.JointLimits
 
 /**
  * A link which can form the chain of a [Limb].
@@ -39,7 +39,7 @@ interface Link {
      * The movement limits of this link. This can represent angle for a rotary link or length for
      * a prismatic link.
      */
-    val jointLimits: Limits
+    val jointLimits: JointLimits
 
     /**
      * The [InertialStateEstimator].

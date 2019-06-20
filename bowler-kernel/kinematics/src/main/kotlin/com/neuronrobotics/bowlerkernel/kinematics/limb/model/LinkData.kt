@@ -18,12 +18,12 @@ package com.neuronrobotics.bowlerkernel.kinematics.limb.model
 
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
-import com.neuronrobotics.bowlerkernel.util.Limits
+import com.neuronrobotics.bowlerkernel.util.JointLimits
 
 data class LinkData(
     val type: LinkType,
     val dhParamData: DhParamData,
-    val jointLimits: Limits,
+    val jointLimits: JointLimits,
     val jointAngleController: GitFile,
     val inertialStateEstimator: GitFile
 )

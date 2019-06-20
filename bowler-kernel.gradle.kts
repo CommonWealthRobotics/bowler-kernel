@@ -393,8 +393,10 @@ configure(publishedProjects) {
     }
 
     bintray {
-        user = System.getenv("BINTRAY_USER")
-        key = System.getenv("BINTRAY_API_KEY")
+        val bintrayApiUser = properties["bintray.api.user"] ?: System.getenv("BINTRAY_USER")
+        val bintrayApiKey = properties["bintray.api.key"] ?: System.getenv("BINTRAY_API_KEY")
+        user = bintrayApiUser as String?
+        key = bintrayApiKey as String?
         setPublications(publicationName)
         with(pkg) {
             repo = "maven-artifacts"

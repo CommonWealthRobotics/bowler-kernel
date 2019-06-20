@@ -17,14 +17,14 @@
 package com.neuronrobotics.bowlerkernel.kinematics.limb.link
 
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialStateEstimator
-import com.neuronrobotics.bowlerkernel.util.Limits
+import com.neuronrobotics.bowlerkernel.util.JointLimits
 
 class DefaultLinkFactory : LinkFactory {
 
     override fun createLink(
         type: LinkType,
         dhParam: DhParam,
-        jointLimits: Limits,
+        jointLimits: JointLimits,
         inertialStateEstimator: InertialStateEstimator
     ) = DefaultLink(
         type,

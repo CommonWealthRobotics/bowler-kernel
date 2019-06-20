@@ -25,14 +25,14 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.model.DhParamData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LinkData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
-import com.neuronrobotics.bowlerkernel.util.Limits
+import com.neuronrobotics.bowlerkernel.util.JointLimits
 import org.octogonapus.ktguava.collections.immutableListOf
 
 @SuppressWarnings("LongParameterList")
 fun createMockLinkData(
     type: LinkType = LinkType.Rotary,
     dhParamData: DhParamData = DhParamData(0.0, 0.0, 0.0, 0.0),
-    jointLimits: Limits = Limits(1, 0),
+    jointLimits: JointLimits = JointLimits(1, 0),
     jointAngleControllerGistId: String = "jacGistId",
     jointAngleControllerFilename: String = "jacFilename",
     inertialStateEstimatorGistId: String = "iseGistId",
