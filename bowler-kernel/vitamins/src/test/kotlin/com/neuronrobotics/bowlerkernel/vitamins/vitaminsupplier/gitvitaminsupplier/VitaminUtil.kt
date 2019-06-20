@@ -56,7 +56,6 @@ import org.octogonapus.ktunits.quantities.watt
 import kotlin.random.Random
 
 internal fun <T : Random> T.allVitamins() = listOf(
-    randomVexWheel(),
     randomBallBearing(),
     randomBattery(),
     randomBolt(),
@@ -70,10 +69,9 @@ internal fun <T : Random> T.allVitamins() = listOf(
     randomVexAngle(),
     KlaxonDCMotor.fromVitamin(randomDCMotor()),
     KlaxonServo.fromVitamin(randomServo()),
-    KlaxonShaft.fromVitamin(randomShaft()),
     KlaxonStepperMotor.fromVitamin(randomStepperMotor()),
     KlaxonRoundMotor.fromVitamin(randomRoundMotor())
-)
+) + allVexWheels() + allShafts().map { KlaxonShaft.fromVitamin(it) }
 
 internal fun <T : Random> T.randomCenterOfMass() =
     CenterOfMass(nextDouble().inch, nextDouble().inch, nextDouble().inch)
@@ -237,6 +235,51 @@ internal fun <T : Random> T.randomServo() = DefaultServo(
     randomMap()
 )
 
+internal fun <T : Random> T.allShafts() = listOf(
+    DefaultShaft.SquareShaft(
+        nextDouble().inch,
+        nextDouble().inch,
+        nextDouble().gram,
+        randomCenterOfMass(),
+        randomMap()
+    ),
+    DefaultShaft.RoundShaft(
+        nextDouble().inch,
+        nextDouble().inch,
+        nextDouble().gram,
+        randomCenterOfMass(),
+        randomMap()
+    ),
+    DefaultShaft.DShaft(
+        nextDouble().inch,
+        nextDouble().inch,
+        nextDouble().inch,
+        nextDouble().gram,
+        randomCenterOfMass(),
+        randomMap()
+    ),
+    DefaultShaft.ServoHorn.Arm(
+        nextDouble().inch,
+        nextDouble().inch,
+        nextDouble().inch,
+        nextDouble().inch,
+        nextDouble().inch,
+        nextInt(),
+        nextDouble().gram,
+        randomCenterOfMass(),
+        randomMap()
+    ),
+    DefaultShaft.ServoHorn.Wheel(
+        nextDouble().inch,
+        nextDouble().inch,
+        nextDouble().inch,
+        nextDouble().inch,
+        nextDouble().gram,
+        randomCenterOfMass(),
+        randomMap()
+    )
+)
+
 internal fun <T : Random> T.randomShaft() = DefaultShaft.ServoHorn.Arm(
     nextDouble().inch,
     nextDouble().inch,
@@ -289,6 +332,19 @@ internal fun <T : Random> T.randomVexAngle() = VexAngle(
     nextDouble().gram,
     randomCenterOfMass(),
     randomMap()
+)
+
+internal fun allVexWheels(): List<DefaultVexWheel> = listOf(
+    DefaultVexWheel.OmniWheel.Omni275,
+    DefaultVexWheel.OmniWheel.Omni325,
+    DefaultVexWheel.OmniWheel.Omni4,
+    DefaultVexWheel.TractionWheel.Wheel275,
+    DefaultVexWheel.TractionWheel.Wheel325,
+    DefaultVexWheel.TractionWheel.Wheel4,
+    DefaultVexWheel.TractionWheel.Wheel5,
+    DefaultVexWheel.HighTraction,
+    DefaultVexWheel.Mecanum,
+    DefaultVexWheel.WheelLeg
 )
 
 @SuppressWarnings("ComplexMethod")

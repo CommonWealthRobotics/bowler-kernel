@@ -24,7 +24,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import kotlin.reflect.KClass
 
-internal class DefaultVexWheelConverterTest {
+internal class NestedObjectConverterTest {
 
     private val converter = NestedObjectConverter(DefaultVexWheel::class)
 
