@@ -19,19 +19,22 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 import com.beust.klaxon.Converter
 import com.beust.klaxon.JsonValue
 import kotlin.reflect.KClass
+import kotlin.reflect.full.isSubclassOf
 
 /**
- * Converter for objects in nested, sealed hierarchies.
+ * Converter sealed hierarchies of sealed classes and objects.
  *
- * @param cls The top-level class forming the hierarchy.
+ * @param kls The top-level class forming the hierarchy.
  */
-class NestedObjectConverter(cls: KClass<*>) : Converter {
+class SealedObjectHierarchyConverter(private val kls: KClass<*>) : Converter {
 
-    private val allClasses by lazy {
-        allNestedSubclasses(cls) + cls
+    init {
+        require(isSealedAndContainsOnlySealedClassesOrObjects(kls))
     }
 
-    override fun canConvert(cls: Class<*>) = allClasses.map { it.java }.contains(cls)
+    private val allClasses by lazy { allSealedSubclasses(kls) }
+
+    override fun canConvert(cls: Class<*>) = cls.kotlin.isSubclassOf(kls)
 
     override fun fromJson(jv: JsonValue): Any? {
         val objectName = jv.objString("name")
@@ -39,7 +42,14 @@ class NestedObjectConverter(cls: KClass<*>) : Converter {
     }
 
     override fun toJson(value: Any): String {
-        require(value::class in allClasses)
         return """{"name": "${value::class.qualifiedName}"}"""
     }
+
+    private fun isSealedAndContainsOnlySealedClassesOrObjects(cls: KClass<*>): Boolean =
+        (cls.isSealed && cls.sealedSubclasses.map {
+            isSealedAndContainsOnlySealedClassesOrObjects(it)
+        }.fold(true, Boolean::and)) || cls.objectInstance != null
+
+    private fun allSealedSubclasses(cls: KClass<*>): List<KClass<*>> =
+        cls.sealedSubclasses + cls.sealedSubclasses.flatMap { allSealedSubclasses(it) }
 }

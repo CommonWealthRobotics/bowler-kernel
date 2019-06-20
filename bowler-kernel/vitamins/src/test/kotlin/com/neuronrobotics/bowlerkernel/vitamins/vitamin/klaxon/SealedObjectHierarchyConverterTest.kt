@@ -19,35 +19,48 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 import com.beust.klaxon.Klaxon
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultVexWheel
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import kotlin.reflect.KClass
 
-internal class NestedObjectConverterTest {
-
-    private val converter = NestedObjectConverter(DefaultVexWheel::class)
+internal class SealedObjectHierarchyConverterTest {
 
     @ParameterizedTest
-    @MethodSource("canConvertSource")
-    fun `test canConvert`(cls: Class<*>, expected: Boolean) {
-        assertEquals(expected, converter.canConvert(cls))
+    @MethodSource("canConvertVexWheelSource")
+    fun `test canConvert vex wheel`(cls: Class<*>, expected: Boolean) {
+        assertEquals(expected, SealedObjectHierarchyConverter(cls.kotlin).canConvert(cls))
     }
 
     @ParameterizedTest
-    @MethodSource("allConvertibleClasses")
+    @MethodSource("canConvertFooSource")
+    fun `test canConvert foo`(cls: Class<*>, expected: Boolean) {
+        assertEquals(expected, SealedObjectHierarchyConverter(cls.kotlin).canConvert(cls))
+    }
+
+    @Test
+    fun `test canConvert broken foo`() {
+        assertThrows<IllegalArgumentException> {
+            SealedObjectHierarchyConverter(BrokenFoo::class)
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("allVexWheelClasses")
     fun `test toJson`(cls: KClass<*>) {
         val expected = """
             {"name": "${cls.qualifiedName}"}
         """.trimIndent().trimStart().trimEnd()
-        assertEquals(expected, converter.toJson(cls.objectInstance!!))
+        assertEquals(expected, SealedObjectHierarchyConverter(cls).toJson(cls.objectInstance!!))
     }
 
     @ParameterizedTest
-    @MethodSource("allConvertibleClasses")
+    @MethodSource("allVexWheelClasses")
     fun `test fromJson`(cls: KClass<*>) {
+        val converter = SealedObjectHierarchyConverter(DefaultVexWheel::class)
         val expected = cls.objectInstance!!
-
         val result = Klaxon()
             .converter(converter)
             .parse<DefaultVexWheel>(converter.toJson(expected))
@@ -57,8 +70,30 @@ internal class NestedObjectConverterTest {
 
     companion object {
 
+        sealed class Foo {
+            sealed class Bar : Foo() {
+                object BarA : Bar()
+                object BarB : Bar()
+            }
+
+            sealed class Empty : Foo()
+
+            object FooA : Foo()
+        }
+
+        @Suppress("unused")
+        sealed class BrokenFoo {
+
+            sealed class Empty : BrokenFoo()
+
+            object FooA : BrokenFoo()
+
+            @Suppress("CanSealedSubClassBeObject")
+            class Bar : BrokenFoo()
+        }
+
         @JvmStatic
-        fun allConvertibleClasses() = listOf(
+        fun allVexWheelClasses() = listOf(
             DefaultVexWheel.OmniWheel.Omni275::class,
             DefaultVexWheel.OmniWheel.Omni325::class,
             DefaultVexWheel.OmniWheel.Omni4::class,
@@ -73,8 +108,19 @@ internal class NestedObjectConverterTest {
 
         @Suppress("unused")
         @JvmStatic
-        fun canConvertSource() = allConvertibleClasses().map {
+        fun canConvertVexWheelSource() = allVexWheelClasses().map {
             Arguments.of(it.java, true)
-        } + Arguments.of(Int::class.java, false)
+        }
+
+        @Suppress("unused")
+        @JvmStatic
+        fun canConvertFooSource() = listOf(
+            Arguments.of(Foo::class.java, true),
+            Arguments.of(Foo.Bar::class.java, true),
+            Arguments.of(Foo.Bar.BarA::class.java, true),
+            Arguments.of(Foo.Bar.BarB::class.java, true),
+            Arguments.of(Foo.Empty::class.java, true),
+            Arguments.of(Foo.FooA::class.java, true)
+        )
     }
 }

@@ -43,6 +43,6 @@ fun <B : Any, T : B> allNestedSubclasses(parent: KClass<T>): List<KClass<out T>>
  */
 fun getConfiguredKlaxon() = Klaxon().apply {
     fieldConverter(ConvertImmutableMap::class, immutableMapConverter())
-    converter(NestedObjectConverter(DefaultVexWheel::class))
+    converter(SealedObjectHierarchyConverter(DefaultVexWheel::class))
     converter(KlaxonGitVitamin)
 }

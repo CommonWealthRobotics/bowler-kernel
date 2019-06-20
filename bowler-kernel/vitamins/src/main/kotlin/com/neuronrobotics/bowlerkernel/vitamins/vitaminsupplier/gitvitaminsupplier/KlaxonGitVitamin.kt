@@ -22,7 +22,7 @@ import com.beust.klaxon.Klaxon
 import com.beust.klaxon.TypeFor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultVexWheel
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.NestedObjectConverter
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.SealedObjectHierarchyConverter
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktguava.klaxon.immutableMapConverter
 
@@ -55,7 +55,7 @@ private constructor(
         // We can't have the KlaxonGitVitamin converter applied to this instance
         private val klaxon = Klaxon().apply {
             fieldConverter(ConvertImmutableMap::class, immutableMapConverter())
-            converter(NestedObjectConverter(DefaultVexWheel::class))
+            converter(SealedObjectHierarchyConverter(DefaultVexWheel::class))
         }
 
         fun from(other: KlaxonVitaminTo, partNumber: String, price: Double) =
