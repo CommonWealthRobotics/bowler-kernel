@@ -14,29 +14,31 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins.vitamin
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin
 
 import com.google.common.collect.ImmutableMap
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.StepperMotor
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
-import org.octogonapus.ktunits.quantities.ElectricCharge
+import org.octogonapus.ktunits.quantities.Angle
 import org.octogonapus.ktunits.quantities.ElectricCurrent
 import org.octogonapus.ktunits.quantities.ElectricPotential
 import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Mass
+import org.octogonapus.ktunits.quantities.Torque
 
-data class DefaultBattery(
+data class DefaultStepperMotor(
     override val width: Length,
-    override val length: Length,
     override val height: Length,
+    override val boltHoleSpacing: Length,
+    override val bolt: DefaultBolt,
+    override val shaft: DefaultShaft,
     override val voltage: ElectricPotential,
+    override val holdingTorque: Torque,
     override val current: ElectricCurrent,
-    override val capacity: ElectricCharge,
+    override val stepAngle: Angle,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap
     override val specs: ImmutableMap<String, Any>
-) : Battery, KlaxonVitaminTo {
-
-    override fun toVitamin() = this
-}
+) : StepperMotor

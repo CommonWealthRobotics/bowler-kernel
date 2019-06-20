@@ -16,6 +16,8 @@
  */
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBolt
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultShaft
 import org.octogonapus.ktunits.quantities.Angle
 import org.octogonapus.ktunits.quantities.AngularVelocity
 import org.octogonapus.ktunits.quantities.ElectricCurrent

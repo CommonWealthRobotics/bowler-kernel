@@ -14,23 +14,31 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins.vitamin
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin
 
 import com.google.common.collect.ImmutableMap
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.TorsionSpring
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
+import org.octogonapus.ktunits.quantities.Angle
 import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Mass
+import org.octogonapus.ktunits.quantities.Stiffness
 
-data class DefaultBallBearing(
-    override val width: Length,
-    override val diameter: Length,
-    override val bore: Length,
+data class DefaultTorsionSpring(
+    override val freeLength: Length,
+    override val freeAngle: Angle,
+    override val outerDiameter: Length,
+    override val wireDiameter: Length,
+    override val legLength: Length,
+    override val springConstant: Stiffness,
+    override val maximumLoad: Mass,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap
     override val specs: ImmutableMap<String, Any>
-) : BallBearing, KlaxonVitaminTo {
+) : TorsionSpring, KlaxonVitaminTo {
 
     override fun toVitamin() = this
 }

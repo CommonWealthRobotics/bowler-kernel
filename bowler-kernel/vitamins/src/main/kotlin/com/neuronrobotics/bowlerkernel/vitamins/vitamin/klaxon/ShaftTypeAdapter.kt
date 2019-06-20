@@ -18,7 +18,7 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 
 import com.beust.klaxon.TypeAdapter
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.plus

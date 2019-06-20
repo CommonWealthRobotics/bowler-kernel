@@ -20,7 +20,7 @@ import com.beust.klaxon.Converter
 import com.beust.klaxon.JsonValue
 import com.beust.klaxon.Klaxon
 import com.beust.klaxon.TypeFor
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultVexWheel
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultVexWheel
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.NestedObjectConverter
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap

@@ -19,9 +19,9 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 import com.beust.klaxon.TypeFor
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBolt
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultStepperMotor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBolt
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultShaft
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultStepperMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.StepperMotor
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.Angle
@@ -49,20 +49,21 @@ data class KlaxonStepperMotor(
     override val specs: ImmutableMap<String, Any>
 ) : StepperMotor, KlaxonVitaminTo {
 
-    override fun toVitamin() = DefaultStepperMotor(
-        width = width,
-        height = height,
-        boltHoleSpacing = boltHoleSpacing,
-        bolt = bolt,
-        shaft = shaft,
-        voltage = voltage,
-        holdingTorque = holdingTorque,
-        current = current,
-        stepAngle = stepAngle,
-        mass = mass,
-        centerOfMass = centerOfMass,
-        specs = specs
-    )
+    override fun toVitamin() =
+        DefaultStepperMotor(
+            width = width,
+            height = height,
+            boltHoleSpacing = boltHoleSpacing,
+            bolt = bolt,
+            shaft = shaft,
+            voltage = voltage,
+            holdingTorque = holdingTorque,
+            current = current,
+            stepAngle = stepAngle,
+            mass = mass,
+            centerOfMass = centerOfMass,
+            specs = specs
+        )
 
     companion object : KlaxonVitaminFrom<StepperMotor> {
 

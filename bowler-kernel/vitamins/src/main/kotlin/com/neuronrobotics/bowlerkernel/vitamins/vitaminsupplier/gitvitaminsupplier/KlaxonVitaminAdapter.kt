@@ -17,15 +17,15 @@
 package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier
 
 import com.beust.klaxon.TypeAdapter
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBallBearing
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBattery
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBolt
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultCapScrew
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultCompressionSpring
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultNut
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultTimingBelt
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultTorsionSpring
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultVexWheel
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBallBearing
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBattery
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBolt
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultCapScrew
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultCompressionSpring
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultNut
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultTimingBelt
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultTorsionSpring
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultVexWheel
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexAngle
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexCChannel
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexPlate

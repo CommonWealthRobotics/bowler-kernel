@@ -17,7 +17,7 @@
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 
 import com.beust.klaxon.Klaxon
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultVexWheel
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultVexWheel
 import com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier.KlaxonGitVitamin
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktguava.klaxon.immutableMapConverter

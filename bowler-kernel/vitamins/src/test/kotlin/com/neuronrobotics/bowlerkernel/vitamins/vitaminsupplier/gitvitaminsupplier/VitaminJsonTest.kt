@@ -18,7 +18,7 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsuppl
 
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Klaxon
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultVexWheel
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultVexWheel
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.NestedObjectConverter

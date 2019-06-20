@@ -14,42 +14,37 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins.vitamin
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin
 
 import com.google.common.collect.ImmutableMap
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Servo
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
-import org.octogonapus.ktunits.quantities.Angle
 import org.octogonapus.ktunits.quantities.AngularVelocity
-import org.octogonapus.ktunits.quantities.ElectricCurrent
 import org.octogonapus.ktunits.quantities.ElectricPotential
 import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Mass
-import org.octogonapus.ktunits.quantities.Power
 import org.octogonapus.ktunits.quantities.Torque
 
-data class DefaultRoundMotor(
-    override val shaftSupportDiameter: Length,
-    override val shaftSupportHeight: Length,
-    override val gearboxShaftOffset: Length,
-    override val gearboxDiameter: Length,
-    override val gearboxHeight: Length,
-    override val motorDiameter: Length,
-    override val motorHeight: Length,
-    override val encoderAssemblyDiameter: Length,
-    override val encoderAssemblyHeight: Length,
-    override val shaft: DefaultShaft,
-    override val bolt: DefaultBolt,
-    override val boltCircleDiameter: Length,
-    override val boltCircleAngleIncrement: Angle,
-    override val boltCircleAngleOffset: Angle,
+data class DefaultServo(
+    override val width: Length,
+    override val depth: Length,
+    override val height: Length,
+    override val shaftCenterToTopOfBody: Length,
+    override val flangeWidth: Length,
+    override val flangeDepth: Length,
+    override val flangeHeight: Length,
+    override val flangeHeightFromBottomOfBody: Length,
+    override val boltWidthSeparation: Length,
+    override val boltDepthSeparation: Length,
+    override val boltHoleDiameter: Length,
     override val voltage: ElectricPotential,
-    override val freeSpeed: AngularVelocity,
-    override val freeCurrent: ElectricCurrent,
     override val stallTorque: Torque,
-    override val stallCurrent: ElectricCurrent,
-    override val power: Power,
+    override val speed: AngularVelocity,
+    override val shaft: Shaft,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap
     override val specs: ImmutableMap<String, Any>
-) : RoundMotor
+) : Servo

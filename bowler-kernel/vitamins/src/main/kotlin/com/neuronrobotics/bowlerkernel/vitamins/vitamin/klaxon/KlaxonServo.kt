@@ -19,7 +19,7 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 import com.beust.klaxon.TypeFor
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultServo
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultServo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Servo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
@@ -53,26 +53,27 @@ data class KlaxonServo(
     override val specs: ImmutableMap<String, Any>
 ) : Servo, KlaxonVitaminTo {
 
-    override fun toVitamin() = DefaultServo(
-        width = width,
-        depth = depth,
-        height = height,
-        shaftCenterToTopOfBody = shaftCenterToTopOfBody,
-        flangeWidth = flangeWidth,
-        flangeDepth = flangeDepth,
-        flangeHeight = flangeHeight,
-        flangeHeightFromBottomOfBody = flangeHeightFromBottomOfBody,
-        boltWidthSeparation = boltWidthSeparation,
-        boltDepthSeparation = boltDepthSeparation,
-        boltHoleDiameter = boltHoleDiameter,
-        voltage = voltage,
-        stallTorque = stallTorque,
-        speed = speed,
-        shaft = shaft,
-        mass = mass,
-        centerOfMass = centerOfMass,
-        specs = specs
-    )
+    override fun toVitamin() =
+        DefaultServo(
+            width = width,
+            depth = depth,
+            height = height,
+            shaftCenterToTopOfBody = shaftCenterToTopOfBody,
+            flangeWidth = flangeWidth,
+            flangeDepth = flangeDepth,
+            flangeHeight = flangeHeight,
+            flangeHeightFromBottomOfBody = flangeHeightFromBottomOfBody,
+            boltWidthSeparation = boltWidthSeparation,
+            boltDepthSeparation = boltDepthSeparation,
+            boltHoleDiameter = boltHoleDiameter,
+            voltage = voltage,
+            stallTorque = stallTorque,
+            speed = speed,
+            shaft = shaft,
+            mass = mass,
+            centerOfMass = centerOfMass,
+            specs = specs
+        )
 
     companion object : KlaxonVitaminFrom<Servo> {
 

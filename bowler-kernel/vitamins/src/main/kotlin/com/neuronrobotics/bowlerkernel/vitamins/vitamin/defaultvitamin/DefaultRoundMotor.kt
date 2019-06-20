@@ -14,9 +14,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins.vitamin
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin
 
 import com.google.common.collect.ImmutableMap
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.RoundMotor
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.Angle
 import org.octogonapus.ktunits.quantities.AngularVelocity
@@ -27,12 +29,17 @@ import org.octogonapus.ktunits.quantities.Mass
 import org.octogonapus.ktunits.quantities.Power
 import org.octogonapus.ktunits.quantities.Torque
 
-data class DefaultDCMotor(
-    override val diameter: Length,
-    override val height: Length,
-    override val shaft: DefaultShaft,
+data class DefaultRoundMotor(
     override val shaftSupportDiameter: Length,
     override val shaftSupportHeight: Length,
+    override val gearboxShaftOffset: Length,
+    override val gearboxDiameter: Length,
+    override val gearboxHeight: Length,
+    override val motorDiameter: Length,
+    override val motorHeight: Length,
+    override val encoderAssemblyDiameter: Length,
+    override val encoderAssemblyHeight: Length,
+    override val shaft: DefaultShaft,
     override val bolt: DefaultBolt,
     override val boltCircleDiameter: Length,
     override val boltCircleAngleIncrement: Angle,
@@ -47,4 +54,4 @@ data class DefaultDCMotor(
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap
     override val specs: ImmutableMap<String, Any>
-) : DCMotor
+) : RoundMotor

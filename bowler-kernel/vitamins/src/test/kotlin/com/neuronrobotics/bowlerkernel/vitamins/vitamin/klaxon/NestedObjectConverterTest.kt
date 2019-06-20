@@ -17,7 +17,7 @@
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 
 import com.beust.klaxon.Klaxon
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultVexWheel
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultVexWheel
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
