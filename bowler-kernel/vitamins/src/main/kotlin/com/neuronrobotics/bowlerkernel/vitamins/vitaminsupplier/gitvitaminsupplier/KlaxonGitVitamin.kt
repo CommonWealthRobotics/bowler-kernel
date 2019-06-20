@@ -52,15 +52,21 @@ private constructor(
 
     companion object : Converter {
 
+        private val sealedObjectHierarchies = listOf(
+            DefaultVexWheel::class
+        )
+
         // We can't have the KlaxonGitVitamin converter applied to this instance
         private val klaxon = Klaxon().apply {
             fieldConverter(ConvertImmutableMap::class, immutableMapConverter())
-            converter(SealedObjectHierarchyConverter(DefaultVexWheel::class))
+            sealedObjectHierarchies.forEach {
+                converter(SealedObjectHierarchyConverter(it))
+            }
         }
 
         fun from(other: KlaxonVitaminTo, partNumber: String, price: Double) =
             KlaxonGitVitamin(
-                type = other::class.simpleName!!,
+                type = other::class.qualifiedName!!,
                 vitamin = other,
                 partNumber = partNumber,
                 price = price
@@ -72,14 +78,16 @@ private constructor(
             with(jv.obj!!) {
                 val vitaminObj = obj("vitamin")!!
                 val vitaminObjName = vitaminObj["name"] as String?
-                val vitamin =
-                    if (vitaminObjName?.contains(DefaultVexWheel::class.simpleName!!) == true) {
-                        klaxon.parseFromJsonObject<DefaultVexWheel>(vitaminObj)!!
+
+                // Check if any of the known hierarchies is correct and pick the first correct one.
+                // If none are correct, parse using the default converter.
+                val vitamin = sealedObjectHierarchies.mapNotNull {
+                    if (vitaminObjName?.contains(it.qualifiedName!!) == true) {
+                        klaxon.fromJsonObject(vitaminObj, it.java, it) as KlaxonVitaminTo
                     } else {
-                        // We need to use the type adapter so do a full re-parse. This is fine
-                        // because now we know that the vitamin is not a DefaultVexWheel
-                        return klaxon.parseFromJsonObject<KlaxonGitVitamin>(this)!!
+                        null
                     }
+                }.firstOrNull() ?: return klaxon.parseFromJsonObject<KlaxonGitVitamin>(this)!!
 
                 return KlaxonGitVitamin(
                     string("type")!!,

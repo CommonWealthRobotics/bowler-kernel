@@ -17,6 +17,10 @@
 package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier
 
 import com.beust.klaxon.TypeAdapter
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexAngle
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexCChannel
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexPlate
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBallBearing
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBattery
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBolt
@@ -26,10 +30,6 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultNu
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultTimingBelt
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultTorsionSpring
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultVexWheel
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexAngle
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexCChannel
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexPlate
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonDCMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonRoundMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
@@ -81,6 +81,6 @@ class KlaxonVitaminAdapter : TypeAdapter<KlaxonVitaminTo> {
             KlaxonRoundMotor::class
         )
 
-        private val classesMap = classesSet.map { it.simpleName!! to it }.toImmutableMap()
+        private val classesMap = classesSet.map { it.qualifiedName!! to it }.toImmutableMap()
     }
 }
