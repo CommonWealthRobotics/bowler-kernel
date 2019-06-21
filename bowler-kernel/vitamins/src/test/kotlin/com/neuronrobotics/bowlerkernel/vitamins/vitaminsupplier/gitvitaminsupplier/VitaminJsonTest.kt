@@ -19,24 +19,18 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsuppl
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Klaxon
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultVexWheel
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.SealedObjectHierarchyConverter
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.getConfiguredKlaxon
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.fail
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
-import org.octogonapus.ktguava.klaxon.immutableMapConverter
 import kotlin.random.Random
 import kotlin.reflect.KClass
 
 internal class VitaminJsonTest {
 
-    private val klaxon = Klaxon().apply {
-        fieldConverter(ConvertImmutableMap::class, immutableMapConverter())
-        converter(SealedObjectHierarchyConverter(DefaultVexWheel::class))
-    }
+    private val klaxon = getConfiguredKlaxon()
 
     private fun Klaxon.parse(json: String, clazz: KClass<*>): KlaxonVitaminTo {
         val jsonObject = parser(clazz).parse(json.byteInputStream()) as JsonObject

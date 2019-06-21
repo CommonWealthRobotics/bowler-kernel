@@ -17,8 +17,10 @@
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 
 import com.beust.klaxon.Klaxon
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexEDRMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultVexWheel
 import com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier.KlaxonGitVitamin
+import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktguava.klaxon.immutableMapConverter
 import kotlin.reflect.KClass
@@ -41,8 +43,34 @@ fun <B : Any, T : B> allNestedSubclasses(parent: KClass<T>): List<KClass<out T>>
 /**
  * Creates and configures a [Klaxon] instance with the default converters.
  */
-fun getConfiguredKlaxon() = Klaxon().apply {
-    fieldConverter(ConvertImmutableMap::class, immutableMapConverter())
-    converter(SealedObjectHierarchyConverter(DefaultVexWheel::class))
+fun getConfiguredKlaxon() = getConfiguredKlaxonWithoutGitVitaminConverter().apply {
     converter(KlaxonGitVitamin)
+}
+
+/**
+ * Creates and configures a [Klaxon] instance with the default converters and without the
+ * [KlaxonGitVitamin] converter.
+ */
+fun getConfiguredKlaxonWithoutGitVitaminConverter() = Klaxon().apply {
+    fieldConverter(ConvertImmutableMap::class, immutableMapConverter())
+    addSealedObjectHierarchyConverters()
+}
+
+/**
+ * All sealed object hierarchies that [Klaxon] needs to parse into.
+ */
+val sealedObjectHierarchies = immutableListOf(
+    DefaultVexWheel::class,
+    VexEDRMotor::class
+)
+
+/**
+ * Adds a converter for the [sealedObjectHierarchies].
+ *
+ * @receiver The [Klaxon] instance to add the converters to.
+ */
+fun Klaxon.addSealedObjectHierarchyConverters() = apply {
+    sealedObjectHierarchies.forEach {
+        converter(SealedObjectHierarchyConverter(it))
+    }
 }

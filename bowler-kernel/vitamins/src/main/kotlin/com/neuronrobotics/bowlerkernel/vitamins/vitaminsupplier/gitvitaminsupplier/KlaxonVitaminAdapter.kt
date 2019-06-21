@@ -19,6 +19,7 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsuppl
 import com.beust.klaxon.TypeAdapter
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexAngle
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexCChannel
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexEDRMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexPlate
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBallBearing
@@ -73,6 +74,9 @@ class KlaxonVitaminAdapter : TypeAdapter<KlaxonVitaminTo> {
             DefaultVexWheel.WheelLeg::class,
             VexAngle::class,
             VexCChannel::class,
+            VexEDRMotor::class,
+            VexEDRMotor.VexMotor393::class,
+            VexEDRMotor.VexMotor269::class,
             VexPlate::class,
             KlaxonDCMotor::class,
             KlaxonServo::class,

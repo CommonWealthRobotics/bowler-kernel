@@ -18,6 +18,11 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsuppl
 
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexAngle
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexCChannel
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexEDRMotor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexMetal
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexPlate
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBallBearing
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBattery
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBolt
@@ -32,10 +37,6 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultSt
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultTimingBelt
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultTorsionSpring
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultVexWheel
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexAngle
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexCChannel
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexMetal
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexPlate
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonDCMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonRoundMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
@@ -71,7 +72,8 @@ internal fun <T : Random> T.allVitamins() = listOf(
     KlaxonServo.fromVitamin(randomServo()),
     KlaxonStepperMotor.fromVitamin(randomStepperMotor()),
     KlaxonRoundMotor.fromVitamin(randomRoundMotor())
-) + allVexWheels() + allShafts().map { KlaxonShaft.fromVitamin(it) }
+) + allVexWheels() + allShafts().map { KlaxonShaft.fromVitamin(it) } +
+    allVexMotors()
 
 internal fun <T : Random> T.randomCenterOfMass() =
     CenterOfMass(nextDouble().inch, nextDouble().inch, nextDouble().inch)
@@ -382,3 +384,8 @@ internal fun <T : Random> T.randomVexWheel(): DefaultVexWheel =
         4 -> DefaultVexWheel.WheelLeg
         else -> fail { "" }
     }
+
+internal fun allVexMotors(): List<VexEDRMotor> = listOf(
+    VexEDRMotor.VexMotor393,
+    VexEDRMotor.VexMotor269
+)
