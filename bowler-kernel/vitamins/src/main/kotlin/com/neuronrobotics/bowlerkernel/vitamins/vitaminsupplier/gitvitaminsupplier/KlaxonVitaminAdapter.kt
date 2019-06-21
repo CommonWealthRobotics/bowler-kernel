@@ -17,15 +17,19 @@
 package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier
 
 import com.beust.klaxon.TypeAdapter
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBallBearing
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBattery
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBolt
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultCapScrew
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultCompressionSpring
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultNut
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultTimingBelt
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultTorsionSpring
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexAngle
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexCChannel
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexEDRMotor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexPlate
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBallBearing
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBattery
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBolt
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultCapScrew
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultCompressionSpring
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultNut
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultTimingBelt
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultTorsionSpring
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultVexWheel
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonDCMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonRoundMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
@@ -36,7 +40,7 @@ import org.octogonapus.ktguava.collections.toImmutableMap
 import kotlin.reflect.KClass
 
 /**
- * Adapts [Vitamin] and [KlaxonGitVitamin] so Klaxon can handle polymorphism.
+ * Adapts [KlaxonVitaminTo] for [KlaxonGitVitamin.type] so Klaxon can handle polymorphism.
  */
 class KlaxonVitaminAdapter : TypeAdapter<KlaxonVitaminTo> {
 
@@ -54,6 +58,25 @@ class KlaxonVitaminAdapter : TypeAdapter<KlaxonVitaminTo> {
             DefaultTorsionSpring::class,
             DefaultNut::class,
             DefaultTimingBelt::class,
+            DefaultVexWheel::class,
+            DefaultVexWheel.OmniWheel::class,
+            DefaultVexWheel.OmniWheel.Omni275::class,
+            DefaultVexWheel.OmniWheel.Omni325::class,
+            DefaultVexWheel.OmniWheel.Omni4::class,
+            DefaultVexWheel.TractionWheel::class,
+            DefaultVexWheel.TractionWheel.Wheel275::class,
+            DefaultVexWheel.TractionWheel.Wheel325::class,
+            DefaultVexWheel.TractionWheel.Wheel4::class,
+            DefaultVexWheel.TractionWheel.Wheel5::class,
+            DefaultVexWheel.HighTraction::class,
+            DefaultVexWheel.Mecanum::class,
+            DefaultVexWheel.WheelLeg::class,
+            VexAngle::class,
+            VexCChannel::class,
+            VexEDRMotor::class,
+            VexEDRMotor.VexMotor393::class,
+            VexEDRMotor.VexMotor269::class,
+            VexPlate::class,
             KlaxonDCMotor::class,
             KlaxonServo::class,
             KlaxonShaft::class,
@@ -61,6 +84,6 @@ class KlaxonVitaminAdapter : TypeAdapter<KlaxonVitaminTo> {
             KlaxonRoundMotor::class
         )
 
-        private val classesMap = classesSet.map { it.simpleName!! to it }.toImmutableMap()
+        private val classesMap = classesSet.map { it.qualifiedName!! to it }.toImmutableMap()
     }
 }

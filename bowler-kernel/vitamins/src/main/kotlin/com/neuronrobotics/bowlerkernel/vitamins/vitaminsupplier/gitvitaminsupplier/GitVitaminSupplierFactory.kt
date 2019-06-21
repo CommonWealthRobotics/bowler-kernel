@@ -19,14 +19,12 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsuppl
 import arrow.core.extensions.`try`.monadThrow.bindingCatch
 import arrow.core.getOrElse
 import com.beust.klaxon.JsonObject
-import com.beust.klaxon.Klaxon
 import com.neuronrobotics.bowlerkernel.gitfs.GitFS
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.getConfiguredKlaxon
 import com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.VitaminSupplierFactory
 import org.octogonapus.ktguava.collections.toImmutableMap
 import org.octogonapus.ktguava.collections.toImmutableSet
-import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
-import org.octogonapus.ktguava.klaxon.immutableMapConverter
 import java.io.FileReader
 import kotlin.reflect.KClass
 
@@ -41,9 +39,7 @@ class GitVitaminSupplierFactory(
     private val vitaminType: KClass<out KlaxonGitVitamin> = KlaxonGitVitamin::class
 ) : VitaminSupplierFactory<GitVitaminSupplier> {
 
-    private val klaxon = Klaxon().apply {
-        fieldConverter(ConvertImmutableMap::class, immutableMapConverter())
-    }
+    private val klaxon = getConfiguredKlaxon()
 
     override fun createVitaminSupplier(vitaminSupplierFile: GitFile): GitVitaminSupplier {
         val allVitaminsFromGit = bindingCatch {

@@ -14,23 +14,21 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins.vitamin
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 
 import com.beust.klaxon.TypeAdapter
-import com.google.common.collect.ImmutableList
-import org.octogonapus.ktguava.collections.immutableListOf
-import org.octogonapus.ktguava.collections.plus
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultShaft
 import kotlin.reflect.KClass
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
 
 /**
- * A Klaxon [TypeAdapter] for [DefaultShaft]. Reflectively reads all [DefaultShaft] nested subclasses to
- * generate the [KlaxonServo.shaftType] number.
+ * A Klaxon [TypeAdapter] for [DefaultShaft]. Reflectively reads all [DefaultShaft] nested
+ * subclasses to generate the [KlaxonServo.shaftType] number.
  */
 class ShaftTypeAdapter : TypeAdapter<DefaultShaft> {
 
-    private val shaftTypes: ImmutableList<KClass<out DefaultShaft>> by lazy {
-        immutableListOf(DefaultShaft::class) + allNestedSubclasses(DefaultShaft::class)
+    private val shaftTypes: List<KClass<out DefaultShaft>> by lazy {
+        allNestedSubclasses(DefaultShaft::class)
     }
 
     override fun classFor(type: Any): KClass<out DefaultShaft> {
@@ -46,10 +44,4 @@ class ShaftTypeAdapter : TypeAdapter<DefaultShaft> {
         shaftTypes.indexOf(shaftClass).also {
             require(it >= 0)
         }
-
-    private fun <T : DefaultShaft> allNestedSubclasses(parent: KClass<T>): List<KClass<out T>> {
-        @Suppress("UNCHECKED_CAST")
-        val nestedClasses = parent.nestedClasses as Collection<KClass<T>>
-        return nestedClasses + nestedClasses.flatMap { allNestedSubclasses(it) }
-    }
 }

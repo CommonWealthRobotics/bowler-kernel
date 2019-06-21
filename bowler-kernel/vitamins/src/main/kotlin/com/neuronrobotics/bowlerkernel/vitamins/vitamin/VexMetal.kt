@@ -14,24 +14,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
-import com.beust.klaxon.TypeFor
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
+import org.octogonapus.ktunits.quantities.Length
+import org.octogonapus.ktunits.quantities.inch
 
-data class KlaxonShaft(
-    @TypeFor(field = "shaft", adapter = ShaftTypeAdapter::class)
-    val shaftType: Int,
-    val shaft: Shaft
-) : Shaft by shaft, KlaxonVitaminTo {
-
-    override fun toVitamin() = shaft
-
-    companion object : KlaxonVitaminFrom<Shaft> {
-
-        override fun fromVitamin(other: Shaft) = KlaxonShaft(
-            ShaftTypeAdapter().typeFor(other::class),
-            other
-        )
-    }
+/**
+ * The types of VEX metal.
+ */
+enum class VexMetal(val thickness: Length) {
+    STEEL(1.1684.inch),
+    ALUMINUM(1.6002.inch)
 }

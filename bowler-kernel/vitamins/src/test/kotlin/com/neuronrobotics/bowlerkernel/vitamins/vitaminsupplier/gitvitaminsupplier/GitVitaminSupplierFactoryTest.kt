@@ -17,10 +17,10 @@
 package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier
 
 import arrow.core.Try
-import com.beust.klaxon.Klaxon
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.gitfs.GitFS
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.getConfiguredKlaxon
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
@@ -31,16 +31,12 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.plus
-import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
-import org.octogonapus.ktguava.klaxon.immutableMapConverter
 import java.io.File
 import kotlin.random.Random
 
 internal class GitVitaminSupplierFactoryTest {
 
-    private val klaxon = Klaxon().apply {
-        fieldConverter(ConvertImmutableMap::class, immutableMapConverter())
-    }
+    private val klaxon = getConfiguredKlaxon()
 
     private val vitamins = with(Random) { allVitamins() }
 
@@ -64,6 +60,12 @@ internal class GitVitaminSupplierFactoryTest {
 
     @Test
     fun `test loading vitamins`(@TempDir tempDir: File) {
+        // Generate unique file names so that vitamins with the same class don't overwrite each
+        // other
+        val fileNames = klaxonVitamins.map {
+            it to Random.nextBytes(32).joinToString(separator = "")
+        }.toMap()
+
         val mockGitFS = makeMockGitFS(
             immutableListOf(
                 File(tempDir, supplierFile.filename).apply {
@@ -73,7 +75,7 @@ internal class GitVitaminSupplierFactoryTest {
                               "name": "$supplierName",
                               "files": [
                                 ${klaxonVitamins.joinToString(",") {
-                            "\"${it.vitamin::class}.json\""
+                            "\"${fileNames[it]}.json\""
                         }}
                               ]
                             }
@@ -81,7 +83,7 @@ internal class GitVitaminSupplierFactoryTest {
                     )
                 }
             ) + klaxonVitamins.map {
-                File(tempDir, "${it.vitamin::class}.json").apply {
+                File(tempDir, "${fileNames[it]}.json").apply {
                     writeText(klaxon.toJsonString(it))
                 }
             }

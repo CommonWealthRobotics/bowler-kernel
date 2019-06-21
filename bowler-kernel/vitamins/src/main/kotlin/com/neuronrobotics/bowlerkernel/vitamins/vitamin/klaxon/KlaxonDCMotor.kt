@@ -20,10 +20,9 @@ import com.beust.klaxon.TypeFor
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DCMotor
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBolt
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultDCMotor
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.ShaftTypeAdapter
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBolt
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultDCMotor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultShaft
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.Angle
 import org.octogonapus.ktunits.quantities.AngularVelocity
@@ -58,26 +57,27 @@ data class KlaxonDCMotor(
     override val specs: ImmutableMap<String, Any>
 ) : DCMotor, KlaxonVitaminTo {
 
-    override fun toVitamin() = DefaultDCMotor(
-        diameter = diameter,
-        height = height,
-        shaft = shaft,
-        shaftSupportDiameter = shaftSupportDiameter,
-        shaftSupportHeight = shaftSupportHeight,
-        bolt = bolt,
-        boltCircleDiameter = boltCircleDiameter,
-        boltCircleAngleIncrement = boltCircleAngleIncrement,
-        boltCircleAngleOffset = boltCircleAngleOffset,
-        voltage = voltage,
-        freeSpeed = freeSpeed,
-        freeCurrent = freeCurrent,
-        stallTorque = stallTorque,
-        stallCurrent = stallCurrent,
-        power = power,
-        mass = mass,
-        centerOfMass = centerOfMass,
-        specs = specs
-    )
+    override fun toVitamin() =
+        DefaultDCMotor(
+            diameter = diameter,
+            height = height,
+            shaft = shaft,
+            shaftSupportDiameter = shaftSupportDiameter,
+            shaftSupportHeight = shaftSupportHeight,
+            bolt = bolt,
+            boltCircleDiameter = boltCircleDiameter,
+            boltCircleAngleIncrement = boltCircleAngleIncrement,
+            boltCircleAngleOffset = boltCircleAngleOffset,
+            voltage = voltage,
+            freeSpeed = freeSpeed,
+            freeCurrent = freeCurrent,
+            stallTorque = stallTorque,
+            stallCurrent = stallCurrent,
+            power = power,
+            mass = mass,
+            centerOfMass = centerOfMass,
+            specs = specs
+        )
 
     companion object : KlaxonVitaminFrom<DCMotor> {
 

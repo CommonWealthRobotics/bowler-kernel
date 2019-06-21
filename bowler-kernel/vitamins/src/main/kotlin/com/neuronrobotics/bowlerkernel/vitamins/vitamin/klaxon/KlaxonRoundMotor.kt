@@ -19,11 +19,10 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 import com.beust.klaxon.TypeFor
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBolt
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultRoundMotor
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBolt
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultRoundMotor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.RoundMotor
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.ShaftTypeAdapter
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.Angle
 import org.octogonapus.ktunits.quantities.AngularVelocity
@@ -63,31 +62,32 @@ data class KlaxonRoundMotor(
     override val specs: ImmutableMap<String, Any>
 ) : RoundMotor, KlaxonVitaminTo {
 
-    override fun toVitamin() = DefaultRoundMotor(
-        shaftSupportDiameter = shaftSupportDiameter,
-        shaftSupportHeight = shaftSupportHeight,
-        gearboxShaftOffset = gearboxShaftOffset,
-        gearboxDiameter = gearboxDiameter,
-        gearboxHeight = gearboxHeight,
-        motorDiameter = motorDiameter,
-        motorHeight = motorHeight,
-        encoderAssemblyDiameter = encoderAssemblyDiameter,
-        encoderAssemblyHeight = encoderAssemblyHeight,
-        shaft = shaft,
-        bolt = bolt,
-        boltCircleDiameter = boltCircleDiameter,
-        boltCircleAngleIncrement = boltCircleAngleIncrement,
-        boltCircleAngleOffset = boltCircleAngleOffset,
-        voltage = voltage,
-        freeSpeed = freeSpeed,
-        freeCurrent = freeCurrent,
-        stallTorque = stallTorque,
-        stallCurrent = stallCurrent,
-        power = power,
-        mass = mass,
-        centerOfMass = centerOfMass,
-        specs = specs
-    )
+    override fun toVitamin() =
+        DefaultRoundMotor(
+            shaftSupportDiameter = shaftSupportDiameter,
+            shaftSupportHeight = shaftSupportHeight,
+            gearboxShaftOffset = gearboxShaftOffset,
+            gearboxDiameter = gearboxDiameter,
+            gearboxHeight = gearboxHeight,
+            motorDiameter = motorDiameter,
+            motorHeight = motorHeight,
+            encoderAssemblyDiameter = encoderAssemblyDiameter,
+            encoderAssemblyHeight = encoderAssemblyHeight,
+            shaft = shaft,
+            bolt = bolt,
+            boltCircleDiameter = boltCircleDiameter,
+            boltCircleAngleIncrement = boltCircleAngleIncrement,
+            boltCircleAngleOffset = boltCircleAngleOffset,
+            voltage = voltage,
+            freeSpeed = freeSpeed,
+            freeCurrent = freeCurrent,
+            stallTorque = stallTorque,
+            stallCurrent = stallCurrent,
+            power = power,
+            mass = mass,
+            centerOfMass = centerOfMass,
+            specs = specs
+        )
 
     companion object : KlaxonVitaminFrom<RoundMotor> {
 

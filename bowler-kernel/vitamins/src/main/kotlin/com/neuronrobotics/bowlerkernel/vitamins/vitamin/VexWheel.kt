@@ -16,20 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
-import com.google.common.collect.ImmutableMap
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
-import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
-import org.octogonapus.ktunits.quantities.Length
-import org.octogonapus.ktunits.quantities.Mass
-
-data class DefaultNut(
-    override val width: Length,
-    override val height: Length,
-    override val mass: Mass,
-    override val centerOfMass: CenterOfMass,
-    @ConvertImmutableMap
-    override val specs: ImmutableMap<String, Any>
-) : Nut, KlaxonVitaminTo {
-
-    override fun toVitamin() = this
-}
+/**
+ * A VEX brand wheel.
+ */
+interface VexWheel : Vitamin

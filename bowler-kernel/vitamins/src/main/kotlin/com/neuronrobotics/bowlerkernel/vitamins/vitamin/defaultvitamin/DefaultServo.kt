@@ -14,9 +14,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.vitamins.vitamin
+package com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin
 
 import com.google.common.collect.ImmutableMap
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Servo
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.AngularVelocity
 import org.octogonapus.ktunits.quantities.ElectricPotential

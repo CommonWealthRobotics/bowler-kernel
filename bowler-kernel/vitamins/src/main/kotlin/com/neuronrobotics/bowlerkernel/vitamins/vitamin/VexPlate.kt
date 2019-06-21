@@ -19,21 +19,24 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
-import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Mass
 
-data class DefaultCapScrew(
-    override val keySize: Int,
-    override val keyDepth: Length,
-    override val headDiameter: Length,
-    override val headHeight: Length,
-    override val throughHoleDiameter: Length,
-    override val bodyHeight: Length,
+/**
+ * VEX brand plate.
+ *
+ * @param type The type of the metal.
+ * @param width The width in holes (typically 1 or 5).
+ * @param length The length in holes (typically 15 or 25).
+ */
+data class VexPlate(
+    val type: VexMetal,
+    val width: Int,
+    val length: Int,
     override val mass: Mass,
     override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap
     override val specs: ImmutableMap<String, Any>
-) : CapScrew, KlaxonVitaminTo {
+) : Vitamin, KlaxonVitaminTo {
 
     override fun toVitamin() = this
 }

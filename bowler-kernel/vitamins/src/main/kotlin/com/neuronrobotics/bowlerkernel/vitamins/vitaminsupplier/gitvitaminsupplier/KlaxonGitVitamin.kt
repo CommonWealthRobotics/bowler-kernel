@@ -16,40 +16,85 @@
  */
 package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier
 
+import com.beust.klaxon.Converter
+import com.beust.klaxon.JsonValue
 import com.beust.klaxon.TypeFor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.getConfiguredKlaxonWithoutGitVitaminConverter
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.sealedObjectHierarchies
 
-data class KlaxonGitVitamin(
-    /**
-     * The type of this vitamin, used by Klaxon to handle polymorphism.
-     */
+/**
+ * A vitamin that Klaxon can parse.
+ *
+ * @param type The type of this vitamin, used by Klaxon to handle polymorphism.
+ * @param vitamin The vitamin.
+ * @param partNumber The part number.
+ * @param price The price for ne unit.
+ */
+data class KlaxonGitVitamin
+private constructor(
     @TypeFor(field = "vitamin", adapter = KlaxonVitaminAdapter::class)
     val type: String,
-
-    /**
-     * The vitamin.
-     */
     val vitamin: KlaxonVitaminTo,
-
-    /**
-     * The part number.
-     */
     val partNumber: String,
-
-    /**
-     * The price for one unit.
-     */
     val price: Double
 ) {
 
-    companion object {
+    companion object : Converter {
 
         fun from(other: KlaxonVitaminTo, partNumber: String, price: Double) =
             KlaxonGitVitamin(
-                type = other::class.simpleName!!,
+                type = other::class.qualifiedName!!,
                 vitamin = other,
                 partNumber = partNumber,
                 price = price
             )
+
+        override fun canConvert(cls: Class<*>) = cls == KlaxonGitVitamin::class.java
+
+        override fun fromJson(jv: JsonValue): Any? {
+            with(jv.obj!!) {
+                val vitaminObj = obj("vitamin")!!
+                val vitaminObjName = vitaminObj["name"] as String?
+
+                // We can't have the KlaxonGitVitamin converter applied to this instance because it would
+                // cause infinite converter recursion.
+                val klaxon = getConfiguredKlaxonWithoutGitVitaminConverter()
+
+                // Check if any of the known hierarchies is correct and pick the first correct one.
+                // If none are correct, parse using the default converter.
+                val vitamin = sealedObjectHierarchies.mapNotNull {
+                    if (vitaminObjName?.contains(it.qualifiedName!!) == true) {
+                        klaxon.fromJsonObject(vitaminObj, it.java, it) as KlaxonVitaminTo
+                    } else {
+                        null
+                    }
+                }.firstOrNull() ?: return klaxon.parseFromJsonObject<KlaxonGitVitamin>(this)!!
+
+                return KlaxonGitVitamin(
+                    string("type")!!,
+                    vitamin,
+                    string("partNumber")!!,
+                    double("price")!!
+                )
+            }
+        }
+
+        override fun toJson(value: Any): String {
+            require(value is KlaxonGitVitamin)
+
+            // We can't have the KlaxonGitVitamin converter applied to this instance because it would
+            // cause infinite converter recursion.
+            val klaxon = getConfiguredKlaxonWithoutGitVitaminConverter()
+
+            return """
+                {
+                    "type": "${value.type}",
+                    "vitamin": ${klaxon.toJsonString(value.vitamin)},
+                    "partNumber": "${value.partNumber}",
+                    "price": ${value.price}
+                }
+            """.trimIndent()
+        }
     }
 }
