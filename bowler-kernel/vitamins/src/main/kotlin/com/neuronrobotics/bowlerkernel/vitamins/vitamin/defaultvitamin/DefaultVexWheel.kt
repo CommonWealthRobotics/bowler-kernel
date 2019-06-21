@@ -26,6 +26,8 @@ import org.octogonapus.ktunits.quantities.lbM
 
 /**
  * VEX EDR brand wheels.
+ *
+ * TODO: Find the real CoM
  */
 sealed class DefaultVexWheel : VexWheel, KlaxonVitaminTo {
 

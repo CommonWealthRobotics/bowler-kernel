@@ -44,6 +44,8 @@ import org.octogonapus.ktunits.quantities.watt
 /**
  * A Vex EDR motor.
  *
+ * TODO: Find the real power and CoM
+ *
  * @param width The width of the body (between the face the wire attaches on and the opposite face).
  * @param depth The depth of the body (between the two large rectangular sides).
  * @param height The height of the body (between the face the shaft is on and the opposite face).
@@ -103,7 +105,7 @@ sealed class VexEDRMotor(
         freeCurrent = 0.37.ampere,
         stallTorque = 1.67.nM,
         stallCurrent = 4.8.ampere,
-        power = 1.watt,
+        power = 0.watt,
         mass = 0.192.lbM,
         centerOfMass = CenterOfMass(0.inch, 0.inch, (-0.5).inch),
         specs = emptyImmutableMap()
@@ -132,7 +134,7 @@ sealed class VexEDRMotor(
         freeCurrent = 0.18.ampere,
         stallTorque = 8.6.lbFIn,
         stallCurrent = 2.6.ampere,
-        power = 1.watt,
+        power = 0.watt,
         mass = 0.134.lbM,
         centerOfMass = CenterOfMass(0.inch, 0.inch, (-0.5).inch),
         specs = emptyImmutableMap()

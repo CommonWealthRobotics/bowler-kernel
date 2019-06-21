@@ -25,6 +25,9 @@ import org.octogonapus.ktunits.quantities.Mass
 import org.octogonapus.ktunits.quantities.div
 import org.octogonapus.ktunits.quantities.plus
 
+/**
+ * TODO: Find the real CoM
+ */
 sealed class DefaultShaft(
     override val width: Length,
     override val length: Length,
@@ -35,6 +38,9 @@ sealed class DefaultShaft(
     override val specs: ImmutableMap<String, Any>
 ) : Shaft {
 
+    /**
+     * A shaft with a square profile.
+     */
     data class SquareShaft(
         override val width: Length,
         override val height: Length,
@@ -44,6 +50,9 @@ sealed class DefaultShaft(
         override val specs: ImmutableMap<String, Any>
     ) : DefaultShaft(width, width, height, mass, centerOfMass, specs)
 
+    /**
+     * A circular shaft.
+     */
     data class RoundShaft(
         /**
          * The diameter of the shaft.
@@ -56,6 +65,9 @@ sealed class DefaultShaft(
         override val specs: ImmutableMap<String, Any>
     ) : DefaultShaft(diameter, diameter, height, mass, centerOfMass, specs)
 
+    /**
+     * A circular shaft with a flat.
+     */
     data class DShaft(
         /**
          * The diameter of the shaft.
