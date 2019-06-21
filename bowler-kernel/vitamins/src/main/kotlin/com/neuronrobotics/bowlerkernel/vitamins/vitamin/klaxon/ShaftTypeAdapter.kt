@@ -17,22 +17,18 @@
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 
 import com.beust.klaxon.TypeAdapter
-import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
-import org.octogonapus.ktguava.collections.immutableListOf
-import org.octogonapus.ktguava.collections.plus
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultShaft
 import kotlin.reflect.KClass
 
 /**
- * A Klaxon [TypeAdapter] for [DefaultShaft]. Reflectively reads all [DefaultShaft] nested subclasses to
- * generate the [KlaxonServo.shaftType] number.
+ * A Klaxon [TypeAdapter] for [DefaultShaft]. Reflectively reads all [DefaultShaft] nested
+ * subclasses to generate the [KlaxonServo.shaftType] number.
  */
 class ShaftTypeAdapter : TypeAdapter<DefaultShaft> {
 
-    private val shaftTypes: ImmutableList<KClass<out DefaultShaft>> by lazy {
-        immutableListOf(DefaultShaft::class) + allNestedSubclasses(
-            DefaultShaft::class)
+    private val shaftTypes: List<KClass<out DefaultShaft>> by lazy {
+        allNestedSubclasses(DefaultShaft::class)
     }
 
     override fun classFor(type: Any): KClass<out DefaultShaft> {

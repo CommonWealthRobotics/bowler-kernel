@@ -21,7 +21,6 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexAngle
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexCChannel
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexEDRMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexPlate
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBallBearing
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBattery
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBolt
@@ -41,7 +40,7 @@ import org.octogonapus.ktguava.collections.toImmutableMap
 import kotlin.reflect.KClass
 
 /**
- * Adapts [Vitamin] and [KlaxonGitVitamin] so Klaxon can handle polymorphism.
+ * Adapts [KlaxonVitaminTo] for [KlaxonGitVitamin.type] so Klaxon can handle polymorphism.
  */
 class KlaxonVitaminAdapter : TypeAdapter<KlaxonVitaminTo> {
 

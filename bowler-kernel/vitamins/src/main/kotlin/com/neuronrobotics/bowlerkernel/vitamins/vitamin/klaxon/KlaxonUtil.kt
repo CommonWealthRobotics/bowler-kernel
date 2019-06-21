@@ -65,7 +65,7 @@ val sealedObjectHierarchies = immutableListOf(
 )
 
 /**
- * Adds a converter for the [sealedObjectHierarchies].
+ * Adds a converter for each of the [sealedObjectHierarchies].
  *
  * @receiver The [Klaxon] instance to add the converters to.
  */

@@ -23,35 +23,24 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.getConfiguredKlaxonWithoutGitVitaminConverter
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.sealedObjectHierarchies
 
+/**
+ * A vitamin that Klaxon can parse.
+ *
+ * @param type The type of this vitamin, used by Klaxon to handle polymorphism.
+ * @param vitamin The vitamin.
+ * @param partNumber The part number.
+ * @param price The price for ne unit.
+ */
 data class KlaxonGitVitamin
 private constructor(
-    /**
-     * The type of this vitamin, used by Klaxon to handle polymorphism.
-     */
     @TypeFor(field = "vitamin", adapter = KlaxonVitaminAdapter::class)
     val type: String,
-
-    /**
-     * The vitamin.
-     */
     val vitamin: KlaxonVitaminTo,
-
-    /**
-     * The part number.
-     */
     val partNumber: String,
-
-    /**
-     * The price for one unit.
-     */
     val price: Double
 ) {
 
     companion object : Converter {
-
-        // We can't have the KlaxonGitVitamin converter applied to this instance because it would
-        // cause infinite converter recursion.
-        private val klaxon = getConfiguredKlaxonWithoutGitVitaminConverter()
 
         fun from(other: KlaxonVitaminTo, partNumber: String, price: Double) =
             KlaxonGitVitamin(
@@ -67,6 +56,10 @@ private constructor(
             with(jv.obj!!) {
                 val vitaminObj = obj("vitamin")!!
                 val vitaminObjName = vitaminObj["name"] as String?
+
+                // We can't have the KlaxonGitVitamin converter applied to this instance because it would
+                // cause infinite converter recursion.
+                val klaxon = getConfiguredKlaxonWithoutGitVitaminConverter()
 
                 // Check if any of the known hierarchies is correct and pick the first correct one.
                 // If none are correct, parse using the default converter.
@@ -89,6 +82,11 @@ private constructor(
 
         override fun toJson(value: Any): String {
             require(value is KlaxonGitVitamin)
+
+            // We can't have the KlaxonGitVitamin converter applied to this instance because it would
+            // cause infinite converter recursion.
+            val klaxon = getConfiguredKlaxonWithoutGitVitaminConverter()
+
             return """
                 {
                     "type": "${value.type}",
