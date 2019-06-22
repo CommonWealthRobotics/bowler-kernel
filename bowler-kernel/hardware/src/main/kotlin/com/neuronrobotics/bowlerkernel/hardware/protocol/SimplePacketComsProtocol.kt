@@ -32,10 +32,10 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongr
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceType
-import com.neuronrobotics.bowlerkernel.internal.logging.LoggerUtilities
 import com.neuronrobotics.bowlerkernel.internal.logging.LoggerUtilities.Companion.joinWithIndent
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
 import edu.wpi.SimplePacketComs.BytePacketType
+import mu.KotlinLogging
 import org.octogonapus.ktguava.collections.toImmutableList
 import java.nio.ByteBuffer
 import java.util.concurrent.CountDownLatch
@@ -132,7 +132,7 @@ open class SimplePacketComsProtocol(
 
         val payloadWithHeader = byteArrayOf(operation) + payload
 
-        LOGGER.fine {
+        LOGGER.debug {
             """
             |Sent discovery payload:
             |${payload.joinToString()}
@@ -144,7 +144,7 @@ open class SimplePacketComsProtocol(
         discoveryPacket.oneShotMode()
         discoveryLatch.await()
 
-        LOGGER.fine {
+        LOGGER.debug {
             """
             |Discovery response:
             |${discoveryData.joinToString()}
@@ -262,7 +262,7 @@ open class SimplePacketComsProtocol(
         isPolling: Boolean,
         configureTimeoutBehavior: (BytePacketType) -> Unit
     ): Either<String, Unit> {
-        LOGGER.fine {
+        LOGGER.debug {
             """
             |Adding group:
             |resourceIds:
@@ -400,7 +400,7 @@ open class SimplePacketComsProtocol(
         isPolling: Boolean = false,
         configureTimeoutBehavior: (BytePacketType) -> Unit
     ): Either<String, Unit> {
-        LOGGER.fine {
+        LOGGER.debug {
             """
             |Adding resource:
             |resourceId: $resourceId
@@ -1072,8 +1072,7 @@ open class SimplePacketComsProtocol(
         const val STATUS_DISCARD_IN_PROGRESS = 10.toByte()
         const val STATUS_DISCARD_COMPLETE = 11.toByte()
 
-        private val LOGGER =
-            LoggerUtilities.getLogger(SimplePacketComsProtocol::class.java.simpleName)
+        private val LOGGER = KotlinLogging.logger { }
 
         /**
          * Computes whether the [testNumber] is outside the range of a unsigned byte.
