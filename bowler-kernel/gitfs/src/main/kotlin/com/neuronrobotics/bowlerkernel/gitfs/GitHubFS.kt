@@ -21,11 +21,11 @@ import arrow.core.Try.Companion.raiseError
 import arrow.core.handleErrorWith
 import com.google.common.base.Throwables
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.internal.logging.LoggerUtilities
 import com.neuronrobotics.bowlerkernel.settings.BOWLERKERNEL_DIRECTORY
 import com.neuronrobotics.bowlerkernel.settings.BOWLER_DIRECTORY
 import com.neuronrobotics.bowlerkernel.settings.GITHUB_CACHE_DIRECTORY
 import com.neuronrobotics.bowlerkernel.settings.GIT_CACHE_DIRECTORY
+import mu.KotlinLogging
 import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
@@ -53,7 +53,7 @@ class GitHubFS(
         gitUrl: String,
         branch: String
     ): Try<File> {
-        LOGGER.fine {
+        LOGGER.debug {
             """
             |Cloning repository:
             |gitUrl: $gitUrl
@@ -153,7 +153,7 @@ class GitHubFS(
                 ).toFile()
             )
         } catch (e: IOException) {
-            LOGGER.severe {
+            LOGGER.error {
                 """
                 |Unable to delete the GitHub cache.
                 |${Throwables.getStackTraceAsString(e)}
@@ -171,7 +171,7 @@ class GitHubFS(
     private fun forkRepo(
         githubRepo: GitHubRepo
     ): Try<GHObject> {
-        LOGGER.fine {
+        LOGGER.debug {
             """
             |Forking repository:
             |$githubRepo
@@ -191,7 +191,7 @@ class GitHubFS(
     }
 
     companion object {
-        private val LOGGER = LoggerUtilities.getLogger(GitHubFS::class.java.simpleName)
+        private val LOGGER = KotlinLogging.logger { }
 
         /**
          * Maps a file in a gist to its file on disk. Fails if the file is not on disk.

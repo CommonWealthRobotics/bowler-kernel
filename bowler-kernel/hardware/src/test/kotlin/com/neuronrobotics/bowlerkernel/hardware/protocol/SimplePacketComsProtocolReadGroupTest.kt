@@ -315,10 +315,12 @@ internal class SimplePacketComsProtocolReadGroupTest {
             }
         }
 
+        (1..254).map {
+            discoverGroupWithId(it.toByte())
+        }
+
         assertThrows<IllegalStateException> {
-            (1..300).map {
-                discoverGroupWithId(it.toByte())
-            }
+            discoverGroupWithId(255.toByte())
         }
     }
 
