@@ -19,7 +19,6 @@ package com.neuronrobotics.bowlerkernel.gitfs
 import arrow.core.Try
 import arrow.core.Try.Companion.raiseError
 import arrow.core.handleErrorWith
-import com.google.common.base.Throwables
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.settings.BOWLERKERNEL_DIRECTORY
 import com.neuronrobotics.bowlerkernel.settings.BOWLER_DIRECTORY
@@ -153,11 +152,8 @@ class GitHubFS(
                 ).toFile()
             )
         } catch (e: IOException) {
-            LOGGER.error {
-                """
-                |Unable to delete the GitHub cache.
-                |${Throwables.getStackTraceAsString(e)}
-                """.trimMargin()
+            LOGGER.error(e) {
+                "Unable to delete the GitHub cache."
             }
         }
     }
