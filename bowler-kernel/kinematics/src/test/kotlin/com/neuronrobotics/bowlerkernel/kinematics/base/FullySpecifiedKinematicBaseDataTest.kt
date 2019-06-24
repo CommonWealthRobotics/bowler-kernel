@@ -16,4 +16,17 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.base
 
-typealias KinematicBaseCreationError = String
+import com.beust.klaxon.Klaxon
+import com.neuronrobotics.bowlerkernel.kinematics.createMockKinematicBaseData
+import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
+import com.neuronrobotics.bowlerkernel.kinematics.testJsonConversion
+import org.junit.jupiter.api.Test
+
+internal class FullySpecifiedKinematicBaseDataTest {
+
+    @Test
+    fun `test json conversion`() {
+        Klaxon().converter(FrameTransformation.converter)
+            .testJsonConversion(createMockKinematicBaseData())
+    }
+}

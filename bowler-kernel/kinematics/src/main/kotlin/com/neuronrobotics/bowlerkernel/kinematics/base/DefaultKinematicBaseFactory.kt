@@ -20,7 +20,8 @@ import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
-import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseData
+import com.neuronrobotics.bowlerkernel.kinematics.base.model.FullySpecifiedKinematicBaseData
+import com.neuronrobotics.bowlerkernel.kinematics.base.model.PartiallySpecifiedKinematicBaseData
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.LimbFactory
 import com.neuronrobotics.bowlerkernel.scripting.factory.GitScriptFactory
@@ -36,22 +37,29 @@ class DefaultKinematicBaseFactory
 ) : KinematicBaseFactory {
 
     override fun create(
-        kinematicBaseData: KinematicBaseData
-    ): Either<KinematicBaseCreationError, KinematicBase> {
-        val limbs = kinematicBaseData.limbs.map {
+        fullySpecifiedKinematicBaseData: FullySpecifiedKinematicBaseData
+    ): Either<String, KinematicBase> {
+        val bodyController = scriptFactory.getInstanceFromGit<BodyController>(
+            fullySpecifiedKinematicBaseData.bodyController
+        ).fold({ return it.left() }, { it })
+
+        return create(fullySpecifiedKinematicBaseData.partialData, bodyController)
+    }
+
+    override fun create(
+        partiallySpecifiedKinematicBaseData: PartiallySpecifiedKinematicBaseData,
+        bodyController: BodyController
+    ): Either<String, KinematicBase> {
+        val limbs = partiallySpecifiedKinematicBaseData.limbs.map {
             limbFactory.createLimb(it).fold({ return it.left() }, { it })
         }.toImmutableList()
 
         val limbTransforms = limbs.map { it.id }
-            .zip(kinematicBaseData.limbTransforms)
+            .zip(partiallySpecifiedKinematicBaseData.limbTransforms)
             .toImmutableMap()
 
-        val bodyController = scriptFactory.getInstanceFromGit<BodyController>(
-            kinematicBaseData.bodyController
-        ).fold({ return it.left() }, { it })
-
         return DefaultKinematicBase(
-            SimpleKinematicBaseId(kinematicBaseData.id),
+            SimpleKinematicBaseId(partiallySpecifiedKinematicBaseData.id),
             limbs,
             limbTransforms,
             bodyController

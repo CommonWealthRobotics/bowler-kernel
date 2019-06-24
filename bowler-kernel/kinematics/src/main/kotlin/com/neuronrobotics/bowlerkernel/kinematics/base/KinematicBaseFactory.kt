@@ -17,17 +17,31 @@
 package com.neuronrobotics.bowlerkernel.kinematics.base
 
 import arrow.core.Either
-import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseData
+import com.neuronrobotics.bowlerkernel.kinematics.base.model.FullySpecifiedKinematicBaseData
+import com.neuronrobotics.bowlerkernel.kinematics.base.model.PartiallySpecifiedKinematicBaseData
+import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
 
 interface KinematicBaseFactory {
 
     /**
-     * Creates a new kinematic base from the [kinematicBaseData].
+     * Creates a new kinematic base from the [fullySpecifiedKinematicBaseData].
      *
-     * @param kinematicBaseData The data to construct the base from.
+     * @param fullySpecifiedKinematicBaseData The data to construct the base from.
      * @return A new kinematic base.
      */
     fun create(
-        kinematicBaseData: KinematicBaseData
-    ): Either<KinematicBaseCreationError, KinematicBase>
+        fullySpecifiedKinematicBaseData: FullySpecifiedKinematicBaseData
+    ): Either<String, KinematicBase>
+
+    /**
+     * Creates a new kinematic base from the [partiallySpecifiedKinematicBaseData].
+     *
+     * @param partiallySpecifiedKinematicBaseData The data to construct the base from.
+     * @param bodyController The body controller to use.
+     * @return A new kinematic base.
+     */
+    fun create(
+        partiallySpecifiedKinematicBaseData: PartiallySpecifiedKinematicBaseData,
+        bodyController: BodyController
+    ): Either<String, KinematicBase>
 }

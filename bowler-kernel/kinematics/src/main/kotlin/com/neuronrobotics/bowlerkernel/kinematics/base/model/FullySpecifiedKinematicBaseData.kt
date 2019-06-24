@@ -17,12 +17,12 @@
 package com.neuronrobotics.bowlerkernel.kinematics.base.model
 
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbData
-import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
+import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBase
 
-data class KinematicBaseData(
-    val id: String,
-    val limbs: List<LimbData>,
-    val limbTransforms: List<FrameTransformation>,
+/**
+ * Everything needed to instantiate a [KinematicBase].
+ */
+data class FullySpecifiedKinematicBaseData(
+    val partialData: PartiallySpecifiedKinematicBaseData,
     val bodyController: GitFile
 )

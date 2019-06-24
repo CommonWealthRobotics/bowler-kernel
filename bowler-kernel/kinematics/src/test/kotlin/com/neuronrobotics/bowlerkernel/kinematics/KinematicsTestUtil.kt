@@ -18,7 +18,8 @@ package com.neuronrobotics.bowlerkernel.kinematics
 
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
-import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseData
+import com.neuronrobotics.bowlerkernel.kinematics.base.model.FullySpecifiedKinematicBaseData
+import com.neuronrobotics.bowlerkernel.kinematics.base.model.PartiallySpecifiedKinematicBaseData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.DhParamData
@@ -79,9 +80,11 @@ fun createMockKinematicBaseData(
     limbTransforms: List<FrameTransformation> = immutableListOf(FrameTransformation.identity),
     bodyControllerGistId: String = "bcGistId",
     bodyControllerFilename: String = "bcFilename"
-) = KinematicBaseData(
-    id.id,
-    limbs,
-    limbTransforms,
+) = FullySpecifiedKinematicBaseData(
+    PartiallySpecifiedKinematicBaseData(
+        id.id,
+        limbs,
+        limbTransforms
+    ),
     GitFile(bodyControllerGistId, bodyControllerFilename)
 )
