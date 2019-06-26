@@ -92,5 +92,9 @@ data class ControllerSpecification(
             is Either.Left -> ControllerSpecification(gitFile = either.a)
             is Either.Right -> ControllerSpecification(fullClassData = either.b)
         }
+
+        fun fromGitFile(gitFile: GitFile) = ControllerSpecification(gitFile, null)
+
+        fun fromClassData(classData: ClassData) = ControllerSpecification(null, classData)
     }
 }

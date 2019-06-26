@@ -25,5 +25,5 @@ internal fun createMotionConstraints(duration: Number) = BasicMotionConstraints(
 )
 
 internal inline fun <reified T> Klaxon.testJsonConversion(input: T) {
-    assertEquals(input, parse<T>(toJsonString(input)))
+    assertEquals(input, parse<T>(toJsonString(input).also { println(it) }))
 }

@@ -18,9 +18,9 @@ package com.neuronrobotics.bowlerkernel.kinematics.base.model
 
 import com.beust.klaxon.Klaxon
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkConfigurationData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.DhParamData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbConfigurationData
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkConfigurationData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.testJsonConversion
 import org.junit.jupiter.api.Test
@@ -28,13 +28,13 @@ import org.junit.jupiter.api.Test
 internal class KinematicBaseConfigurationDataTest {
 
     @Test
-    fun `test json conversion`() {
+    fun `test json`() {
         Klaxon().converter(FrameTransformation).testJsonConversion(
             KinematicBaseConfigurationData(
-                "idA",
+                "base id",
                 listOf(
                     LimbConfigurationData(
-                        "idA1",
+                        "limb 1 id",
                         listOf(
                             LinkConfigurationData(
                                 LinkType.Rotary,

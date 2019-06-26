@@ -16,10 +16,21 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.motion.model
 
+import com.beust.klaxon.Klaxon
+
 /**
  * All the data needed to instantiate a class.
  */
 data class ClassData(
     val fullClassName: String,
     val data: String
-)
+) {
+
+    companion object {
+
+        fun fromInstance(instance: Any, klaxon: Klaxon) = ClassData(
+            instance::class.qualifiedName!!,
+            klaxon.toJsonString(instance)
+        )
+    }
+}
