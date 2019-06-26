@@ -16,7 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.gitfs
 
-import arrow.core.Try
+import arrow.effects.IO
 import com.google.common.collect.ImmutableList
 import java.io.File
 
@@ -34,7 +34,7 @@ interface GitFS {
      * @param branch The branch to checkout.
      * @return The directory of the cloned repository.
      */
-    fun cloneRepo(gitUrl: String, branch: String = "HEAD"): Try<File>
+    fun cloneRepo(gitUrl: String, branch: String = "HEAD"): IO<File>
 
     /**
      * Clones a repository and returns the files in it, excluding the `.git` files.
@@ -45,7 +45,7 @@ interface GitFS {
      * @param branch The branch to checkout.
      * @return The files in the repository.
      */
-    fun cloneRepoAndGetFiles(gitUrl: String, branch: String = "HEAD"): Try<ImmutableList<File>>
+    fun cloneRepoAndGetFiles(gitUrl: String, branch: String = "HEAD"): IO<ImmutableList<File>>
 
     /**
      * Forks a repository.
@@ -55,7 +55,7 @@ interface GitFS {
      * `https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git`.
      * @return The git URL of the fork.
      */
-    fun forkRepo(gitUrl: String): Try<String>
+    fun forkRepo(gitUrl: String): IO<String>
 
     /**
      * Forks a repository and clones the fork.
@@ -66,7 +66,7 @@ interface GitFS {
      * @param branch The branch to checkout.
      * @return The directory of the cloned repository.
      */
-    fun forkAndCloneRepo(gitUrl: String, branch: String = "HEAD"): Try<File>
+    fun forkAndCloneRepo(gitUrl: String, branch: String = "HEAD"): IO<File>
 
     /**
      * Forks a repository, clones the fork, and returns the files in it, excluding the `.git`
@@ -81,14 +81,14 @@ interface GitFS {
     fun forkAndCloneRepoAndGetFiles(
         gitUrl: String,
         branch: String = "HEAD"
-    ): Try<ImmutableList<File>>
+    ): IO<ImmutableList<File>>
 
     /**
      * Returns whether the authenticated user has push access to the Git resource at [gitUrl].
      *
      * @param gitUrl
      */
-    fun isOwner(gitUrl: String): Try<Boolean>
+    fun isOwner(gitUrl: String): IO<Boolean>
 
     /**
      * Clears the local Git cache.

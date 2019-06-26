@@ -16,8 +16,8 @@
  */
 package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier
 
-import arrow.core.extensions.`try`.monadThrow.bindingCatch
-import arrow.core.getOrElse
+import arrow.core.getOrHandle
+import arrow.effects.extensions.io.monadDefer.bindingCatch
 import com.beust.klaxon.JsonObject
 import com.neuronrobotics.bowlerkernel.gitfs.GitFS
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
@@ -79,15 +79,17 @@ class GitVitaminSupplierFactory(
             }
         }
 
-        val (nameFromGit, vitaminsFromGit) = allVitaminsFromGit.getOrElse {
-            throw IllegalStateException(
-                """
-                |Unable to load vitamins from git file:
-                |$vitaminSupplierFile
-                """.trimMargin(),
-                it
-            )
-        }
+        val (nameFromGit, vitaminsFromGit) = allVitaminsFromGit.attempt()
+            .unsafeRunSync()
+            .getOrHandle {
+                throw IllegalStateException(
+                    """
+                    |Unable to load vitamins from git file:
+                    |$vitaminSupplierFile
+                    """.trimMargin(),
+                    it
+                )
+            }
 
         val convertedVitaminsFromGit =
             vitaminsFromGit.map { it.vitamin.toVitamin() }.toImmutableSet()

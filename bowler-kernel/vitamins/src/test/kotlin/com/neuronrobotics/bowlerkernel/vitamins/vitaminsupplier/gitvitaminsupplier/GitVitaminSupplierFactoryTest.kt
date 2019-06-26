@@ -16,7 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier
 
-import arrow.core.Try
+import arrow.effects.IO
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.gitfs.GitFS
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
@@ -56,7 +56,7 @@ internal class GitVitaminSupplierFactoryTest {
     )
 
     private fun makeMockGitFS(files: ImmutableList<File>) =
-        mock<GitFS> { on { cloneRepoAndGetFiles(supplierFile.gitUrl) } doReturn Try { files } }
+        mock<GitFS> { on { cloneRepoAndGetFiles(supplierFile.gitUrl) } doReturn IO.just(files) }
 
     @Test
     fun `test loading vitamins`(@TempDir tempDir: File) {
@@ -112,9 +112,9 @@ internal class GitVitaminSupplierFactoryTest {
     @Test
     fun `test unable to clone repo`() {
         val mockGitFS = mock<GitFS> {
-            on { cloneRepoAndGetFiles(any(), any()) } doReturn Try {
-                throw IllegalStateException("Oops!")
-            }
+            on {
+                cloneRepoAndGetFiles(any(), any())
+            } doReturn IO.raiseError(IllegalStateException("Oops!"))
         }
 
         assertThrows<IllegalStateException> {
