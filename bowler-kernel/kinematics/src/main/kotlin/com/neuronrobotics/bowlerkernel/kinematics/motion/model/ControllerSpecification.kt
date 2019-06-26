@@ -27,14 +27,6 @@ import com.neuronrobotics.bowlerkernel.scripting.factory.GitScriptFactory
 import com.neuronrobotics.bowlerkernel.scripting.factory.getInstanceFromGit
 
 /**
- * All the data needed to instantiate a class.
- */
-data class ClassData(
-    val fullClassName: String,
-    val data: String
-)
-
-/**
  * A specification that can be resolved into a controller. Either a [GitFile] or a [ClassData] that
  * can be parsed into a class.
  */
