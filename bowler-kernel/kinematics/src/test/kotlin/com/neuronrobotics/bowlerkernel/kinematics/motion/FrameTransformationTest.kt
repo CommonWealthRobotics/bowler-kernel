@@ -20,6 +20,7 @@ package com.neuronrobotics.bowlerkernel.kinematics.motion
 
 import Jama.Matrix
 import com.beust.klaxon.Klaxon
+import com.neuronrobotics.bowlerkernel.kinematics.testJsonConversion
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -316,7 +317,7 @@ internal class FrameTransformationTest {
     @Test
     fun `test json round trip`() {
         val expected = FrameTransformation.fromTranslation(1, 2, 3)
-        val klaxon = Klaxon().converter(FrameTransformation.converter)
+        val klaxon = Klaxon().converter(FrameTransformation)
         val json = klaxon.toJsonString(expected)
         val ftFromJson = klaxon.parse<FrameTransformation>(json)
         assertEquals(expected, ftFromJson)
@@ -444,5 +445,11 @@ internal class FrameTransformationTest {
             9.0,
             FrameTransformation.fromTranslation(0, 0, 9).translationZ
         )
+    }
+
+    @Test
+    fun `test json`() {
+        Klaxon().converter(FrameTransformation)
+            .testJsonConversion(FrameTransformation.fromTranslation(10, 20, 30))
     }
 }

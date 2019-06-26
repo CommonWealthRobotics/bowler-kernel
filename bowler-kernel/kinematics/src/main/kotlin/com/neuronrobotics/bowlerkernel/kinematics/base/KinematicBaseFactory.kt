@@ -17,31 +17,20 @@
 package com.neuronrobotics.bowlerkernel.kinematics.base
 
 import arrow.core.Either
-import com.neuronrobotics.bowlerkernel.kinematics.base.model.FullySpecifiedKinematicBaseData
-import com.neuronrobotics.bowlerkernel.kinematics.base.model.PartiallySpecifiedKinematicBaseData
-import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
+import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseConfigurationData
+import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseScriptData
 
 interface KinematicBaseFactory {
 
     /**
-     * Creates a new kinematic base from the [fullySpecifiedKinematicBaseData].
+     * Creates a new kinematic base.
      *
-     * @param fullySpecifiedKinematicBaseData The data to construct the base from.
+     * @param kinematicBaseConfigurationData The configuration data.
+     * @param kinematicBaseScriptData The script data.
      * @return A new kinematic base.
      */
     fun create(
-        fullySpecifiedKinematicBaseData: FullySpecifiedKinematicBaseData
-    ): Either<String, KinematicBase>
-
-    /**
-     * Creates a new kinematic base from the [partiallySpecifiedKinematicBaseData].
-     *
-     * @param partiallySpecifiedKinematicBaseData The data to construct the base from.
-     * @param bodyController The body controller to use.
-     * @return A new kinematic base.
-     */
-    fun create(
-        partiallySpecifiedKinematicBaseData: PartiallySpecifiedKinematicBaseData,
-        bodyController: BodyController
+        kinematicBaseConfigurationData: KinematicBaseConfigurationData,
+        kinematicBaseScriptData: KinematicBaseScriptData
     ): Either<String, KinematicBase>
 }

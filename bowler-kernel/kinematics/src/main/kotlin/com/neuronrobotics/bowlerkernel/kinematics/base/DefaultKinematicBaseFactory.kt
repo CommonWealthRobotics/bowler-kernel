@@ -19,13 +19,13 @@ package com.neuronrobotics.bowlerkernel.kinematics.base
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
+import com.beust.klaxon.Klaxon
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
-import com.neuronrobotics.bowlerkernel.kinematics.base.model.FullySpecifiedKinematicBaseData
-import com.neuronrobotics.bowlerkernel.kinematics.base.model.PartiallySpecifiedKinematicBaseData
+import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseConfigurationData
+import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.LimbFactory
 import com.neuronrobotics.bowlerkernel.scripting.factory.GitScriptFactory
-import com.neuronrobotics.bowlerkernel.scripting.factory.getInstanceFromGit
 import org.octogonapus.ktguava.collections.toImmutableList
 import org.octogonapus.ktguava.collections.toImmutableMap
 import javax.inject.Inject
@@ -33,33 +33,30 @@ import javax.inject.Inject
 class DefaultKinematicBaseFactory
 @Inject constructor(
     private val scriptFactory: GitScriptFactory,
-    private val limbFactory: LimbFactory
+    private val limbFactory: LimbFactory,
+    private val klaxon: Klaxon = Klaxon()
 ) : KinematicBaseFactory {
 
     override fun create(
-        fullySpecifiedKinematicBaseData: FullySpecifiedKinematicBaseData
+        kinematicBaseConfigurationData: KinematicBaseConfigurationData,
+        kinematicBaseScriptData: KinematicBaseScriptData
     ): Either<String, KinematicBase> {
-        val bodyController = scriptFactory.getInstanceFromGit<BodyController>(
-            fullySpecifiedKinematicBaseData.bodyController
-        ).fold({ return it.left() }, { it })
+        val bodyController = kinematicBaseScriptData.bodyController
+            .createInstance<BodyController>(scriptFactory, klaxon)
+            .fold({ return it.left() }, { it })
 
-        return create(fullySpecifiedKinematicBaseData.partialData, bodyController)
-    }
-
-    override fun create(
-        partiallySpecifiedKinematicBaseData: PartiallySpecifiedKinematicBaseData,
-        bodyController: BodyController
-    ): Either<String, KinematicBase> {
-        val limbs = partiallySpecifiedKinematicBaseData.limbs.map {
-            limbFactory.createLimb(it).fold({ return it.left() }, { it })
-        }.toImmutableList()
+        val limbs = kinematicBaseConfigurationData.limbConfigurations
+            .zip(kinematicBaseScriptData.limbScripts)
+            .map {
+                limbFactory.createLimb(it.first, it.second).fold({ return it.left() }, { it })
+            }.toImmutableList()
 
         val limbTransforms = limbs.map { it.id }
-            .zip(partiallySpecifiedKinematicBaseData.limbTransforms)
+            .zip(kinematicBaseConfigurationData.limbTransforms)
             .toImmutableMap()
 
         return DefaultKinematicBase(
-            SimpleKinematicBaseId(partiallySpecifiedKinematicBaseData.id),
+            SimpleKinematicBaseId(kinematicBaseConfigurationData.id),
             limbs,
             limbTransforms,
             bodyController

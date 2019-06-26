@@ -14,17 +14,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics.base.model
+package com.neuronrobotics.bowlerkernel.kinematics.limb.model
 
-import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBase
-import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbData
-import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
 
-/**
- * Everything needed to instantiate a [KinematicBase] except for the controllers.
- */
-data class PartiallySpecifiedKinematicBaseData(
-    val id: String,
-    val limbs: List<LimbData>,
-    val limbTransforms: List<FrameTransformation>
+data class LinkConfigurationData(
+    val type: LinkType,
+    val dhParamData: DhParamData
 )
