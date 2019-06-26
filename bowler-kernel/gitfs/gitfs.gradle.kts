@@ -28,7 +28,9 @@ dependencies {
     api(arrow("arrow-typeclasses"))
     api(arrow("arrow-extras-data"))
     api(arrow("arrow-extras-extensions"))
+    api(arrow("arrow-effects-data"))
     api(arrow("arrow-effects-extensions"))
+    api(arrow("arrow-effects-io-extensions"))
 
     implementation(
         group = "org.eclipse.jgit",

@@ -28,6 +28,7 @@ import com.neuronrobotics.bowlerkernel.settings.GIT_CACHE_DIRECTORY
 import mu.KotlinLogging
 import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.errors.RepositoryNotFoundException
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.kohsuke.github.GHGist
 import org.kohsuke.github.GHGistFile
@@ -53,6 +54,51 @@ class GitHubFS(
         gitUrl: String,
         branch: String
     ): IO<File> {
+        return freshClone(gitUrl, branch).handleErrorWith {
+            val directory = gitUrlToDirectory(gitUrl)
+
+            IO {
+                // The repo was already on disk, so directory exists, so pull
+                LOGGER.info { "Pulling repository in directory $directory" }
+                Git.open(directory).use { it.pull().call() }
+            }.handleErrorWith {
+                if (it is RepositoryNotFoundException) {
+                    IO.defer {
+                        // The directory was not a valid repo
+                        LOGGER.catching(it)
+                        LOGGER.warn {
+                            "Failed to pull from repo in $directory. Deleting directory."
+                        }
+
+                        if (!directory.deleteRecursively()) {
+                            LOGGER.error { "Failed to delete $directory" }
+                            throw IllegalStateException("Failed to delete $directory")
+                        }
+
+                        // After deleting the directory, try to clone again
+                        freshClone(gitUrl, branch)
+                    }
+                } else {
+                    IO.raiseError(it)
+                }
+            }.map { directory }
+        }
+    }
+
+    /**
+     * Tries to clone the repo assuming it is not on disk. Fails if any part of the repo is on
+     * disk.
+     *
+     * @param gitUrl The `.git` URL to clone from, i.e.
+     * `https://github.com/CommonWealthRobotics/BowlerBuilder.git` or
+     * `https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git`.
+     * @param branch The branch to checkout.
+     * @return The directory of the cloned repository.
+     */
+    private fun freshClone(
+        gitUrl: String,
+        branch: String
+    ): IO<File> {
         LOGGER.info {
             """
             |Cloning repository:
@@ -63,7 +109,7 @@ class GitHubFS(
 
         return if (isValidHttpGitURL(gitUrl)) {
             val directory = gitUrlToDirectory(gitUrl)
-            if (directory.mkdirs()) {
+            val result = if (directory.mkdirs()) {
                 IO {
                     Git.cloneRepository()
                         .setURI(gitUrl)
@@ -82,10 +128,10 @@ class GitHubFS(
                         }
                 }.map { directory }
             } else {
-                IO {
-                    Git.open(directory).use { it.pull().call() }
-                }.map { directory }
+                IO.raiseError(IllegalStateException("Directory $directory already exists."))
             }
+
+            result
         } else {
             IO.raiseError(
                 IllegalArgumentException(
@@ -111,11 +157,9 @@ class GitHubFS(
     override fun forkAndCloneRepo(
         gitUrl: String,
         branch: String
-    ): IO<File> = IO {
-        forkRepo(parseRepo(gitUrl)).flatMap {
-            cloneRepo(it.url.toExternalForm(), branch)
-        }
-    }.flatMap { it }
+    ): IO<File> = forkRepo(parseRepo(gitUrl)).flatMap {
+        cloneRepo(it.gitUrl, branch)
+    }
 
     override fun forkAndCloneRepoAndGetFiles(
         gitUrl: String,
@@ -294,7 +338,7 @@ class GitHubFS(
         @SuppressWarnings("SpreadOperator")
         private fun gitUrlToDirectory(gitUrl: String): File {
             require(isRepoUrl(gitUrl) || isGistUrl(gitUrl)) {
-                "The supplied Git URL was not a valid repository or Gist URL."
+                "The supplied Git URL ($gitUrl) was not a valid repository or Gist URL."
             }
 
             val subDirs = stripUrlCharactersFromGitUrl(gitUrl).split("/")
@@ -308,5 +352,7 @@ class GitHubFS(
                 * subDirs.toTypedArray()
             ).toFile()
         }
+
+        private val GHObject.gitUrl get() = "${htmlUrl.toExternalForm()}.git"
     }
 }
