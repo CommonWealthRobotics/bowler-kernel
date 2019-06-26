@@ -32,7 +32,6 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.DefaultLimbMotionP
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlan
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanGenerator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanStep
-import com.neuronrobotics.bowlerkernel.util.JointLimits
 import com.nhaarman.mockitokotlin2.mock
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -53,7 +52,8 @@ internal class DefaultLimbIntegrationTest {
         val links = immutableListOf(
             DefaultLink(
                 LinkType.Rotary, DhParam.zero,
-                JointLimits(0.0, 0.0), mock {})
+                mock {}
+            )
         )
 
         val controller = MockJointAngleController()

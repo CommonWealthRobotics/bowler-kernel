@@ -56,7 +56,6 @@ class DefaultLimbFactory
                     linkFactory.createLink(
                         it.first.type,
                         it.first.dhParamData.toDhParam(),
-                        it.first.jointLimits,
                         estimator
                     )
                 }.toImmutableList()
