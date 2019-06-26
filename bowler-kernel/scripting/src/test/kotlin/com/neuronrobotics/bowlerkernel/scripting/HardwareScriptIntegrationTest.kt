@@ -27,6 +27,7 @@ import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDigitalOutGroupFactory
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedServoFactory
+import com.neuronrobotics.bowlerkernel.util.ServoLimits
 import org.jlleitschuh.guice.key
 import org.junit.jupiter.api.Test
 import org.octogonapus.ktguava.collections.emptyImmutableList
@@ -86,7 +87,8 @@ internal class HardwareScriptIntegrationTest {
 
                 val (servo1) = servoFactory.makeUnprovisionedServo(
                     device,
-                    DefaultAttachmentPoints.Pin(3)
+                    DefaultAttachmentPoints.Pin(3),
+                    ServoLimits(100, 0, 50, 1)
                 )
 
                 device.add(servo1).bind()

@@ -22,6 +22,8 @@ dependencies {
         version = property("kt-guava-core.version") as String
     )
 
+    api(project(":bowler-kernel:util"))
+
     api(arrow("arrow-core-data"))
     api(arrow("arrow-core-extensions"))
     api(arrow("arrow-syntax"))

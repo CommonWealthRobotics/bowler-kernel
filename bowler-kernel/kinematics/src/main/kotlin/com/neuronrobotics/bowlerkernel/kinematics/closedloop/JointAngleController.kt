@@ -27,7 +27,7 @@ interface JointAngleController {
     /**
      * The limits of this joint in degrees.
      */
-    val jointLimits: JointLimits
+    var jointLimits: JointLimits
 
     /**
      * Move to the target [angle].

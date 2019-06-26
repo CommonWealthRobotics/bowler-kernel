@@ -26,9 +26,5 @@ internal constructor(
     override val resourceId: ResourceId
 ) : UnprovisionedDeviceResource<GenericAnalogIn> {
 
-    override fun provision() =
-        GenericAnalogIn(
-            device,
-            resourceId
-        )
+    override fun provision() = GenericAnalogIn(device, resourceId)
 }

@@ -18,11 +18,13 @@ package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nong
 
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import com.neuronrobotics.bowlerkernel.util.ServoLimits
 
 class GenericServo
 internal constructor(
     override val device: BowlerDevice,
-    override val resourceId: ResourceId
+    override val resourceId: ResourceId,
+    override val limits: ServoLimits
 ) : Servo {
 
     private var lastWrite = 0.0

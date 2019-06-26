@@ -16,7 +16,14 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup
 
+import com.neuronrobotics.bowlerkernel.util.ServoLimits
+
 interface Servo : ProvisionedDeviceResource {
+
+    /**
+     * The limits of this servo.
+     */
+    val limits: ServoLimits
 
     /**
      * Sets the angle of the servo. On a continuous rotation servo, this will set the speed

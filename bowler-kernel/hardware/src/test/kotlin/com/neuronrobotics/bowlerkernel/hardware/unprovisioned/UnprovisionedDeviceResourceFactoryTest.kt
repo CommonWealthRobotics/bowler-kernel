@@ -31,6 +31,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.non
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResourceFactory
 import com.neuronrobotics.bowlerkernel.hardware.registry.BaseHardwareRegistry
 import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
+import com.neuronrobotics.bowlerkernel.util.ServoLimits
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -146,7 +147,7 @@ class UnprovisionedDeviceResourceFactoryTest {
         DefaultAttachmentPoints.Pin(1).let {
             testRegistry(
                 ResourceId(DefaultResourceTypes.Servo, it)
-            ) { device -> makeUnprovisionedServo(device, it) }
+            ) { device -> makeUnprovisionedServo(device, it, ServoLimits(100, 0, 50, 1)) }
         }
     }
 

@@ -17,7 +17,7 @@
 package com.neuronrobotics.bowlerkernel.util
 
 /**
- * Contains the two servo limits.
+ * Contains the servo limits.
  *
  * @param maximum The absolute maximum servo angle in servo units.
  * @param minimum The absolute minimum servo angle in servo units.
