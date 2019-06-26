@@ -23,7 +23,7 @@ import com.neuronrobotics.bowlerkernel.scripting.parser.ScriptLanguageParser
 import javax.inject.Inject
 
 class DefaultScriptFactory
-@Inject internal constructor(
+@Inject constructor(
     private val scriptLanguageParser: ScriptLanguageParser
 ) : TextScriptFactory {
 

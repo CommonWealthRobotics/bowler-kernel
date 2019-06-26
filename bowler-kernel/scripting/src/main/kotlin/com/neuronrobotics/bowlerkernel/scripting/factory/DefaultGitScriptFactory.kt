@@ -27,7 +27,7 @@ import com.neuronrobotics.bowlerkernel.scripting.parser.ScriptLanguageParser
 import javax.inject.Inject
 
 class DefaultGitScriptFactory
-@Inject internal constructor(
+@Inject constructor(
     @Assisted private val gitFS: GitFS,
     private val scriptLanguageParser: ScriptLanguageParser
 ) : GitScriptFactory {

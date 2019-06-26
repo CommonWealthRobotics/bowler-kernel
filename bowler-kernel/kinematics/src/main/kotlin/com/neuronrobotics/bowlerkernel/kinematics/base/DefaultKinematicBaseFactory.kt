@@ -24,6 +24,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseConfig
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.LimbFactory
+import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.scripting.factory.GitScriptFactory
 import org.octogonapus.ktguava.collections.toImmutableList
 import org.octogonapus.ktguava.collections.toImmutableMap
@@ -33,7 +34,7 @@ class DefaultKinematicBaseFactory
 @Inject constructor(
     private val scriptFactory: GitScriptFactory,
     private val limbFactory: LimbFactory,
-    private val klaxon: Klaxon = Klaxon()
+    private val klaxon: Klaxon = Klaxon().converter(FrameTransformation)
 ) : KinematicBaseFactory {
 
     override fun create(
