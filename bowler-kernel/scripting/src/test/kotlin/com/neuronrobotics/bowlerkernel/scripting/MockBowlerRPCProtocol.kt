@@ -81,11 +81,9 @@ class MockBowlerRPCProtocol : BowlerRPCProtocol {
     }
 
     override fun analogWrite(resourceId: ResourceId, value: Short) {
-        fail { "Not implemented" }
     }
 
     override fun analogWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Short>>) {
-        fail { "Not implemented" }
     }
 
     override fun buttonRead(resourceId: ResourceId): Boolean {
@@ -105,11 +103,9 @@ class MockBowlerRPCProtocol : BowlerRPCProtocol {
     }
 
     override fun digitalWrite(resourceId: ResourceId, value: DigitalState) {
-        fail { "Not implemented" }
     }
 
     override fun digitalWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, DigitalState>>) {
-        fail { "Not implemented" }
     }
 
     override fun encoderRead(resourceId: ResourceId): Long {
@@ -121,15 +117,12 @@ class MockBowlerRPCProtocol : BowlerRPCProtocol {
     }
 
     override fun toneWrite(resourceId: ResourceId, frequency: Int) {
-        fail { "Not implemented" }
     }
 
     override fun toneWrite(resourceId: ResourceId, frequency: Int, duration: Long) {
-        fail { "Not implemented" }
     }
 
     override fun serialWrite(resourceId: ResourceId, message: String) {
-        fail { "Not implemented" }
     }
 
     override fun serialRead(resourceId: ResourceId): String {
@@ -137,19 +130,15 @@ class MockBowlerRPCProtocol : BowlerRPCProtocol {
     }
 
     override fun servoWrite(resourceId: ResourceId, angle: Double) {
-        fail { "Not implemented" }
     }
 
     override fun servoWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Double>>) {
-        fail { "Not implemented" }
     }
 
     override fun stepperWrite(resourceId: ResourceId, steps: Int, speed: Int) {
-        fail { "Not implemented" }
     }
 
     override fun stepperWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Pair<Int, Int>>>) {
-        fail { "Not implemented" }
     }
 
     override fun ultrasonicRead(resourceId: ResourceId): Long {
