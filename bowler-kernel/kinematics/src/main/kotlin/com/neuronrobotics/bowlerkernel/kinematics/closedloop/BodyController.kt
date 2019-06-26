@@ -22,7 +22,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialState
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
 
 /**
- * A closed-loop controller that can coordinate the fullySpecifiedLimbs of a [KinematicBase].
+ * A closed-loop controller that can coordinate the limbs of a [KinematicBase].
  */
 interface BodyController {
 
