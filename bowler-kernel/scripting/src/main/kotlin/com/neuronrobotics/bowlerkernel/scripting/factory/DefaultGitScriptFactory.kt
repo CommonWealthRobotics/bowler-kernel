@@ -41,11 +41,8 @@ class DefaultGitScriptFactory
     override fun createScriptFromGit(gitFile: GitFile): Either<String, Script> =
         gitFS.cloneRepoAndGetFiles(gitFile.gitUrl).map {
             val file = it.first { it.name == gitFile.filename }
-            val language = scriptLanguageParser.parse(file.extension)
-            language.map {
-                DefaultScript(it, file.readText())
-            }
-        }.toEither { it.localizedMessage }.flatMap { it }
+            scriptLanguageParser.parse(file.extension).map { DefaultScript(it, file.readText()) }
+        }.attempt().unsafeRunSync().mapLeft { it.localizedMessage }.flatMap { it }
 
     interface Factory {
         fun create(gitFS: GitFS): DefaultGitScriptFactory
