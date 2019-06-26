@@ -21,7 +21,14 @@ dependencies {
 
     api(project(":bowler-kernel:config"))
     api(project(":bowler-kernel:logging"))
+
     api(arrow("arrow-core-data"))
+    api(arrow("arrow-core-extensions"))
+    api(arrow("arrow-syntax"))
+    api(arrow("arrow-typeclasses"))
+    api(arrow("arrow-extras-data"))
+    api(arrow("arrow-extras-extensions"))
+    api(arrow("arrow-effects-extensions"))
 
     implementation(
         group = "org.eclipse.jgit",
