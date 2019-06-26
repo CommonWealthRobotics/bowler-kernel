@@ -30,5 +30,5 @@ interface ScriptLanguageParser {
      * @param language The language string.
      * @return The script language.
      */
-    fun parse(language: String): Either<ScriptLanguageParseError, ScriptLanguage>
+    fun parse(language: String): Either<String, ScriptLanguage>
 }

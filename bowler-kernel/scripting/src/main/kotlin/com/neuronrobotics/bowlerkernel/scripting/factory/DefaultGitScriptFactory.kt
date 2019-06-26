@@ -16,8 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.scripting.factory
 
-import arrow.core.Either
-import arrow.core.flatMap
+import arrow.effects.IO
 import com.google.inject.assistedinject.Assisted
 import com.neuronrobotics.bowlerkernel.gitfs.GitFS
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
@@ -38,12 +37,16 @@ class DefaultGitScriptFactory
      * @param gitFile The Git file.
      * @return A [DefaultScript] on success, a [String] on error.
      */
-    override fun createScriptFromGit(gitFile: GitFile): Either<String, Script> =
-        gitFS.cloneRepoAndGetFiles(gitFile.gitUrl).map {
+    override fun createScriptFromGit(gitFile: GitFile): IO<Script> =
+        gitFS.cloneRepoAndGetFiles(gitFile.gitUrl).flatMap {
             val file = it.first { it.name == gitFile.filename }
-            scriptLanguageParser.parse(file.extension).map { DefaultScript(it, file.readText()) }
-        }.attempt().unsafeRunSync().mapLeft { it.localizedMessage }.flatMap { it }
+            scriptLanguageParser.parse(file.extension).fold(
+                { IO.raiseError<Script>(IllegalStateException(it)) },
+                { IO.just(DefaultScript(it, file.readText())) }
+            )
+        }
 
+    @Suppress("unused")
     interface Factory {
         fun create(gitFS: GitFS): DefaultGitScriptFactory
     }

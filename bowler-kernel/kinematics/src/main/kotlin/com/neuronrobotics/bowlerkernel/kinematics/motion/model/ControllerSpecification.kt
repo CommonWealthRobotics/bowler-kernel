@@ -76,7 +76,7 @@ data class ControllerSpecification(
         klaxon: Klaxon
     ): Either<String, T> {
         return when (val either = toEither()) {
-            is Either.Left -> scriptFactory.getInstanceFromGit(either.a)
+            is Either.Left -> scriptFactory.getInstanceFromGit<T>(either.a).unsafeRunSync()
             is Either.Right -> Try { loadClass<T>(klaxon) }.toEither {
                 Throwables.getStackTraceAsString(it)
             }
