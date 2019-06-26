@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.limb.model
 
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.model.ControllerSpecification
 
 data class LimbScriptData(

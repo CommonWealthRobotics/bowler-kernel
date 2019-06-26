@@ -16,6 +16,8 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.limb.model
 
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkConfigurationData
+
 data class LimbConfigurationData(
     val id: String,
     val linkConfigurations: List<LinkConfigurationData>

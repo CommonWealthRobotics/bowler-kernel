@@ -20,7 +20,7 @@ import com.beust.klaxon.Klaxon
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.DhParamData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbConfigurationData
-import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LinkConfigurationData
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkConfigurationData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.testJsonConversion
 import org.junit.jupiter.api.Test
