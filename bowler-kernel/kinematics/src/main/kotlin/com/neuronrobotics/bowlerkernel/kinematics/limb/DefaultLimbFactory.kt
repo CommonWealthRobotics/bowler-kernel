@@ -45,48 +45,46 @@ class DefaultLimbFactory
     override fun createLimb(
         limbConfigurationData: LimbConfigurationData,
         limbScriptData: LimbScriptData
-    ): Either<String, Limb> {
-        return binding {
-            val links = limbConfigurationData.linkConfigurations
-                .zip(limbScriptData.linkScripts)
-                .map { linkFactory.createLink(it.first, it.second).bind() }
-                .toImmutableList()
+    ): Either<String, Limb> = binding {
+        val links = limbConfigurationData.linkConfigurations
+            .zip(limbScriptData.linkScripts)
+            .map { linkFactory.createLink(it.first, it.second).bind() }
+            .toImmutableList()
 
-            val (fkSolver) = limbScriptData.forwardKinematicsSolver
-                .createInstance<ForwardKinematicsSolver>(scriptFactory, klaxon)
+        val (fkSolver) = limbScriptData.forwardKinematicsSolver
+            .createInstance<ForwardKinematicsSolver>(scriptFactory, klaxon)
 
-            val (ikSolver) = limbScriptData.inverseKinematicsSolver
-                .createInstance<InverseKinematicsSolver>(scriptFactory, klaxon)
+        val (ikSolver) = limbScriptData.inverseKinematicsSolver
+            .createInstance<InverseKinematicsSolver>(scriptFactory, klaxon)
 
-            val (reachabilityCalculator) = limbScriptData.reachabilityCalculator
-                .createInstance<ReachabilityCalculator>(scriptFactory, klaxon)
+        val (reachabilityCalculator) = limbScriptData.reachabilityCalculator
+            .createInstance<ReachabilityCalculator>(scriptFactory, klaxon)
 
-            val (limbMotionPlanGenerator) = limbScriptData.limbMotionPlanGenerator
-                .createInstance<LimbMotionPlanGenerator>(scriptFactory, klaxon)
+        val (limbMotionPlanGenerator) = limbScriptData.limbMotionPlanGenerator
+            .createInstance<LimbMotionPlanGenerator>(scriptFactory, klaxon)
 
-            val (limbMotionPlanFollower) = limbScriptData.limbMotionPlanFollower
-                .createInstance<LimbMotionPlanFollower>(scriptFactory, klaxon)
+        val (limbMotionPlanFollower) = limbScriptData.limbMotionPlanFollower
+            .createInstance<LimbMotionPlanFollower>(scriptFactory, klaxon)
 
-            val jointAngleControllers = limbScriptData.linkScripts.map {
-                it.jointAngleController
-                    .createInstance<JointAngleController>(scriptFactory, klaxon)
-                    .bind()
-            }.toImmutableList()
+        val jointAngleControllers = limbScriptData.linkScripts.map {
+            it.jointAngleController
+                .createInstance<JointAngleController>(scriptFactory, klaxon)
+                .bind()
+        }.toImmutableList()
 
-            val (inertialStateEstimator) = limbScriptData.inertialStateEstimator
-                .createInstance<InertialStateEstimator>(scriptFactory, klaxon)
+        val (inertialStateEstimator) = limbScriptData.inertialStateEstimator
+            .createInstance<InertialStateEstimator>(scriptFactory, klaxon)
 
-            DefaultLimb(
-                SimpleLimbId(limbConfigurationData.id),
-                links,
-                fkSolver,
-                ikSolver,
-                reachabilityCalculator,
-                limbMotionPlanGenerator,
-                limbMotionPlanFollower,
-                jointAngleControllers,
-                inertialStateEstimator
-            )
-        }
+        DefaultLimb(
+            SimpleLimbId(limbConfigurationData.id),
+            links,
+            fkSolver,
+            ikSolver,
+            reachabilityCalculator,
+            limbMotionPlanGenerator,
+            limbMotionPlanFollower,
+            jointAngleControllers,
+            inertialStateEstimator
+        )
     }
 }

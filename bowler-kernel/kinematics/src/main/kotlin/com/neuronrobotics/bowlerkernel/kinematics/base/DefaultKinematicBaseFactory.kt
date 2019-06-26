@@ -17,8 +17,7 @@
 package com.neuronrobotics.bowlerkernel.kinematics.base
 
 import arrow.core.Either
-import arrow.core.left
-import arrow.core.right
+import arrow.core.extensions.either.monad.binding
 import com.beust.klaxon.Klaxon
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseConfigurationData
@@ -40,26 +39,24 @@ class DefaultKinematicBaseFactory
     override fun create(
         kinematicBaseConfigurationData: KinematicBaseConfigurationData,
         kinematicBaseScriptData: KinematicBaseScriptData
-    ): Either<String, KinematicBase> {
-        val bodyController = kinematicBaseScriptData.bodyController
+    ): Either<String, KinematicBase> = binding {
+        val (bodyController) = kinematicBaseScriptData.bodyController
             .createInstance<BodyController>(scriptFactory, klaxon)
-            .fold({ return it.left() }, { it })
 
         val limbs = kinematicBaseConfigurationData.limbConfigurations
             .zip(kinematicBaseScriptData.limbScripts)
-            .map {
-                limbFactory.createLimb(it.first, it.second).fold({ return it.left() }, { it })
-            }.toImmutableList()
+            .map { limbFactory.createLimb(it.first, it.second).bind() }
+            .toImmutableList()
 
         val limbTransforms = limbs.map { it.id }
             .zip(kinematicBaseConfigurationData.limbTransforms)
             .toImmutableMap()
 
-        return DefaultKinematicBase(
+        DefaultKinematicBase(
             SimpleKinematicBaseId(kinematicBaseConfigurationData.id),
             limbs,
             limbTransforms,
             bodyController
-        ).right()
+        )
     }
 }
