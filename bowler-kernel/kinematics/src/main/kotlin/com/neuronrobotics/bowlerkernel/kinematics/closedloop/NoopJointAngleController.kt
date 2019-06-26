@@ -17,11 +17,14 @@
 package com.neuronrobotics.bowlerkernel.kinematics.closedloop
 
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
+import com.neuronrobotics.bowlerkernel.util.JointLimits
 
 /**
  * A [JointAngleController] which does nothing.
  */
 object NoopJointAngleController : JointAngleController {
+
+    override val jointLimits: JointLimits = JointLimits(-180, 180)
 
     override fun setTargetAngle(angle: Double, motionConstraints: MotionConstraints) {
     }
