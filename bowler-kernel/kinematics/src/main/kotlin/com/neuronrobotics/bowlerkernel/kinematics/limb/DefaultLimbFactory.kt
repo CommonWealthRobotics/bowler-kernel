@@ -45,20 +45,12 @@ class DefaultLimbFactory
     override fun createLimb(
         limbConfigurationData: LimbConfigurationData,
         limbScriptData: LimbScriptData
-    ): Either<LimbCreationError, Limb> {
+    ): Either<String, Limb> {
         return binding {
             val links = limbConfigurationData.linkConfigurations
                 .zip(limbScriptData.linkScripts)
-                .map {
-                    val (estimator) = it.second.inertialStateEstimator
-                        .createInstance<InertialStateEstimator>(scriptFactory, klaxon)
-
-                    linkFactory.createLink(
-                        it.first.type,
-                        it.first.dhParamData.toDhParam(),
-                        estimator
-                    )
-                }.toImmutableList()
+                .map { linkFactory.createLink(it.first, it.second).bind() }
+                .toImmutableList()
 
             val (fkSolver) = limbScriptData.forwardKinematicsSolver
                 .createInstance<ForwardKinematicsSolver>(scriptFactory, klaxon)

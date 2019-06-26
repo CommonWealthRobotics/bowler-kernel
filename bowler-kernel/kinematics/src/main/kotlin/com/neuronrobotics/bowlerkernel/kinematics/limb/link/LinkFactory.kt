@@ -16,16 +16,21 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.limb.link
 
-import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialStateEstimator
+import arrow.core.Either
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkConfigurationData
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkScriptData
 
 interface LinkFactory {
 
     /**
-     * Creates a [Link].
+     * Creates a new link.
+     *
+     * @param linkConfigurationData The configuration data.
+     * @param linkScriptData The script data.
+     * @return A new link.
      */
     fun createLink(
-        type: LinkType,
-        dhParam: DhParam,
-        inertialStateEstimator: InertialStateEstimator
-    ): Link
+        linkConfigurationData: LinkConfigurationData,
+        linkScriptData: LinkScriptData
+    ): Either<String, Link>
 }

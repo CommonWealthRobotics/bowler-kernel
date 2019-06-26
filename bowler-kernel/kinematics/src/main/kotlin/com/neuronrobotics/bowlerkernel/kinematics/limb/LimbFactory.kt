@@ -32,5 +32,5 @@ interface LimbFactory {
     fun createLimb(
         limbConfigurationData: LimbConfigurationData,
         limbScriptData: LimbScriptData
-    ): Either<LimbCreationError, Limb>
+    ): Either<String, Limb>
 }
