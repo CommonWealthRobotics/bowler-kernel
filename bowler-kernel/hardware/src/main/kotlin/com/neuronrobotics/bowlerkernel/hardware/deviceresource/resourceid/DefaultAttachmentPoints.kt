@@ -16,6 +16,8 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid
 
+import java.nio.ByteBuffer
+
 /**
  * The attachment points Bowler supports out-of-the-box. Uses a continuous range of bytes from
  * [getLowestTypeNumber] through [getHighestTypeNumber]. Any numbers outside that range are
@@ -31,10 +33,8 @@ sealed class DefaultAttachmentPoints(
      *
      * @param pinNumber The pin number.
      */
-    data class Pin(val pinNumber: Byte) : DefaultAttachmentPoints(
-        1,
-        byteArrayOf(pinNumber)
-    )
+    data class Pin(val pinNumber: Byte) :
+        DefaultAttachmentPoints(1, byteArrayOf(pinNumber))
 
     /**
      * A group of pins. The data is the number of pins followed by the pin numbers.
@@ -42,10 +42,7 @@ sealed class DefaultAttachmentPoints(
      * @param pinNumbers The pin numbers.
      */
     data class PinGroup(val pinNumbers: ByteArray) :
-        DefaultAttachmentPoints(
-            2,
-            byteArrayOf(pinNumbers.size.toByte()) + pinNumbers
-        ) {
+        DefaultAttachmentPoints(2, byteArrayOf(pinNumbers.size.toByte()) + pinNumbers) {
 
         init {
             require(pinNumbers.size < 58)
@@ -74,6 +71,19 @@ sealed class DefaultAttachmentPoints(
         DefaultAttachmentPoints(3, byteArrayOf(portNumber))
 
     /**
+     * A pin with a specific duty cycle, meant to be used to set a servo's duty cycle.
+     *
+     * @param pinNumber The pin number.
+     * @param usLow The number of microseconds LOW.
+     * @param usHigh The number of microseconds HIGH.
+     */
+    data class PwmPin(val pinNumber: Byte, val usLow: Short, val usHigh: Short) :
+        DefaultAttachmentPoints(
+            4,
+            byteArrayOf(pinNumber) + usLow.asByteArray() + usHigh.asByteArray()
+        )
+
+    /**
      * The lowest used type number.
      */
     @SuppressWarnings("FunctionOnlyReturningConstant")
@@ -83,5 +93,8 @@ sealed class DefaultAttachmentPoints(
      * The highest used type number.
      */
     @SuppressWarnings("FunctionOnlyReturningConstant")
-    fun getHighestTypeNumber(): Byte = 3
+    fun getHighestTypeNumber(): Byte = 4
 }
+
+private fun Short.asByteArray(): ByteArray =
+    ByteBuffer.allocate(Short.SIZE_BYTES).putShort(this).array()

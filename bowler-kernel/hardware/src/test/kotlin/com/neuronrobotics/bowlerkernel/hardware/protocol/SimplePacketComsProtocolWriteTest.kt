@@ -95,6 +95,29 @@ internal class SimplePacketComsProtocolWriteTest {
         }
     }
 
+    @Test
+    fun `test writing servo with pwm pin`() {
+        protocolTest(protocol, device) {
+            operation {
+                val result = it.addWrite(
+                    ResourceId(
+                        DefaultResourceTypes.Servo,
+                        DefaultAttachmentPoints.PwmPin(1, 544, 2400)
+                    )
+                )
+                assertTrue(result.isRight())
+            } pcSends {
+                immutableListOf(
+                    getPayload(1, 2, 6, 4, 1, 2, 32, 9, 96)
+                )
+            } deviceResponds {
+                immutableListOf(
+                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                )
+            }
+        }
+    }
+
     private fun setupWrite() {
         protocolTest(protocol, device) {
             operation {

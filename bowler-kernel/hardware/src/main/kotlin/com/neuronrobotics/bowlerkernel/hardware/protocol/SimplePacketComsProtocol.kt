@@ -868,7 +868,7 @@ open class SimplePacketComsProtocol(
 
     @Suppress("UNUSED_PARAMETER")
     protected fun parseAnalogReadPayload(payload: ByteArray, start: Int, end: Int): Double {
-        val buffer = ByteBuffer.allocate(2)
+        val buffer = ByteBuffer.allocate(Short.SIZE_BYTES)
         buffer.put(payload[start])
         buffer.put(payload[start + 1])
         buffer.rewind()
@@ -883,7 +883,7 @@ open class SimplePacketComsProtocol(
 
     @Suppress("MemberVisibilityCanBePrivate")
     protected fun makeAnalogWritePayload(value: Short): ByteArray {
-        val buffer = ByteBuffer.allocate(2)
+        val buffer = ByteBuffer.allocate(Short.SIZE_BYTES)
         buffer.putShort(value)
         return buffer.array()
     }
@@ -971,8 +971,8 @@ open class SimplePacketComsProtocol(
 
     @Suppress("UNUSED_PARAMETER")
     protected fun makeServoWritePayload(angle: Double): ByteArray {
-        val buffer = ByteBuffer.allocate(1)
-        buffer.put(angle.toByte())
+        val buffer = ByteBuffer.allocate(Short.SIZE_BYTES)
+        buffer.putShort(angle.toShort())
         return buffer.array()
     }
 
