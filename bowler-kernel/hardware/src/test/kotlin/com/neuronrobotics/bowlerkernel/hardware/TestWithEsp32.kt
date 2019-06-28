@@ -33,7 +33,7 @@ import java.net.InetAddress
 internal class TestWithEsp32 {
 
     @Test
-    @Disabled
+    @Disabled("Needs real hardware")
     fun `test esp32`() {
         val led1 = ResourceId(
             DefaultResourceTypes.DigitalOut,
@@ -90,5 +90,76 @@ internal class TestWithEsp32 {
         }
 
         println(rpc.disconnect())
+    }
+
+    @Test
+    @Disabled("Needs real hardware")
+    fun `test 17 servos at the same time`() {
+        val servos = listOf(
+            2, 4, 5, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27
+        ).map {
+            ResourceId(
+                DefaultResourceTypes.Servo,
+                DefaultAttachmentPoints.Pin(it.toByte())
+            )
+        }
+
+        val rpc = SimplePacketComsProtocol(
+            comms = object :
+                UdpDevice(
+                    InetAddress.getByAddress(
+                        listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
+                    )
+                ) {
+            },
+            resourceIdValidator = DefaultResourceIdValidator()
+        )
+
+        rpc.connect().mapLeft {
+            fail { it }
+        }
+
+        servos.forEach {
+            rpc.addWrite(it)
+            Thread.sleep(100)
+        }
+
+        println(rpc.disconnect())
+    }
+
+    @Test
+    @Disabled("Needs real hardware")
+    fun `test 17 servos in a row with a discard in between each`() {
+        val servos = listOf(
+            2, 4, 5, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27
+        ).map {
+            ResourceId(
+                DefaultResourceTypes.Servo,
+                DefaultAttachmentPoints.Pin(it.toByte())
+            )
+        }
+
+        val rpc = SimplePacketComsProtocol(
+            comms = object :
+                UdpDevice(
+                    InetAddress.getByAddress(
+                        listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
+                    )
+                ) {
+            },
+            resourceIdValidator = DefaultResourceIdValidator()
+        )
+
+        servos.forEach {
+            rpc.connect().mapLeft {
+                fail { it }
+            }
+
+            rpc.addWrite(it)
+
+            println(rpc.disconnect())
+
+            Thread.sleep(100)
+        }
     }
 }
