@@ -102,13 +102,13 @@ internal class SimplePacketComsProtocolWriteTest {
                 val result = it.addWrite(
                     ResourceId(
                         DefaultResourceTypes.Servo,
-                        DefaultAttachmentPoints.PwmPin(1, 544, 2400)
+                        DefaultAttachmentPoints.PwmPin(1, 544, 2400, 16)
                     )
                 )
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
-                    getPayload(1, 2, 6, 4, 1, 2, 32, 9, 96)
+                    getPayload(1, 2, 6, 4, 1, 2, 32, 9, 96, 16)
                 )
             } deviceResponds {
                 immutableListOf(

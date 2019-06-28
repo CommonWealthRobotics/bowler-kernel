@@ -71,16 +71,22 @@ sealed class DefaultAttachmentPoints(
         DefaultAttachmentPoints(3, byteArrayOf(portNumber))
 
     /**
-     * A pin with a specific duty cycle, meant to be used to set a servo's duty cycle.
+     * A pin with specific duty cycle limits, meant to be used to set a servo's duty cycle limits.
      *
      * @param pinNumber The pin number.
-     * @param usLow The number of microseconds LOW.
-     * @param usHigh The number of microseconds HIGH.
+     * @param minUsLow The minimum microseconds LOW.
+     * @param maxUsHigh The maximum microseconds HIGH.
+     * @param timerWidth The timer width in bits.
      */
-    data class PwmPin(val pinNumber: Byte, val usLow: Short, val usHigh: Short) :
+    data class PwmPin(
+        val pinNumber: Byte,
+        val minUsLow: Short,
+        val maxUsHigh: Short,
+        val timerWidth: Byte
+    ) :
         DefaultAttachmentPoints(
             4,
-            byteArrayOf(pinNumber) + usLow.asByteArray() + usHigh.asByteArray()
+            byteArrayOf(pinNumber) + minUsLow.asByteArray() + maxUsHigh.asByteArray() + timerWidth
         )
 
     /**
