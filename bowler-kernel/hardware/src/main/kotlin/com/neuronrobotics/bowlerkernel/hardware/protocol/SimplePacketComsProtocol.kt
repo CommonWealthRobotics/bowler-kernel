@@ -134,8 +134,8 @@ open class SimplePacketComsProtocol(
 
         LOGGER.debug {
             """
-            |Sent discovery payload:
-            |${payload.joinToString()}
+            |Sent discovery packet:
+            |${payloadWithHeader.joinToString()}
             """.trimMargin()
         }
 
