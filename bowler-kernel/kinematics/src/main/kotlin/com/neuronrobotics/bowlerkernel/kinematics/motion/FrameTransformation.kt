@@ -25,6 +25,7 @@ import com.google.common.math.DoubleMath
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation
 import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
+import java.lang.Math.toDegrees
 import java.lang.Math.toRadians
 import java.util.Arrays
 import kotlin.math.pow
@@ -124,6 +125,58 @@ private constructor(private val mat: Matrix) {
 
     operator fun times(other: FrameTransformation) =
         FrameTransformation(mat * other.mat)
+
+    /**
+     * Scales this frame transform by [t].
+     *
+     * @param t The scale.
+     * @param threshold The convergence threshold for the iterative orthogonality correction.
+     * @return A new, scaled frame transform
+     */
+    fun scale(t: Number, threshold: Double = 1e-6) = scale(t.toDouble(), threshold)
+
+    /**
+     * Scales this frame transform by [t].
+     *
+     * @param t The scale.
+     * @param threshold The convergence threshold for the iterative orthogonality correction.
+     * @return A new, scaled frame transform
+     */
+    fun scale(t: Double, threshold: Double = 1e-6): FrameTransformation {
+        require(t > 0)
+        require(t < 1)
+
+        val angles = getRotationAngles(
+            RotationOrder.ZYX,
+            RotationConvention.VECTOR_OPERATOR,
+            threshold
+        )
+
+        return fromTranslation(translation * t) * fromRotation(
+            angles[0] * t,
+            angles[1] * t,
+            angles[2] * t,
+            RotationOrder.ZYX,
+            RotationConvention.VECTOR_OPERATOR
+        )
+    }
+
+    /**
+     * Derives the rotation angles from the [rotation] submatrix.
+     *
+     * @param order The rotation order.
+     * @param convention The rotation convention.
+     * @param threshold The convergence threshold for the iterative orthogonality correction.
+     * @return The rotation angles in the [order] in degrees.
+     */
+    fun getRotationAngles(
+        order: RotationOrder = RotationOrder.ZYX,
+        convention: RotationConvention = RotationConvention.VECTOR_OPERATOR,
+        threshold: Double = 1e-6
+    ): List<Double> =
+        Rotation(rotation.array, threshold)
+            .getAngles(order, convention)
+            .map { toDegrees(it) }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -375,3 +428,5 @@ fun Matrix.approxEquals(other: Array<DoubleArray>, equalityTolerance: Double): B
 
     return true
 }
+
+fun Matrix.joinToString(): String = array.joinToString(separator = "\n") { it.joinToString() }

@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertThrows
 import java.lang.Math.toDegrees
 import kotlin.math.PI
 import kotlin.math.cos
@@ -443,6 +444,36 @@ internal class FrameTransformationTest {
         assertEquals(
             9.0,
             FrameTransformation.fromTranslation(0, 0, 9).translationZ
+        )
+    }
+
+    @Test
+    fun `test scale with 0`() {
+        assertThrows<IllegalArgumentException> {
+            FrameTransformation.identity.scale(0)
+        }
+    }
+
+    @Test
+    fun `test scale with 1`() {
+        assertThrows<IllegalArgumentException> {
+            FrameTransformation.identity.scale(1)
+        }
+    }
+
+    @Test
+    fun `test scale with 0_5`() {
+        val threshold = 1e-6
+        val actual = (FrameTransformation.fromTranslation(10, 5, 2) *
+            FrameTransformation.fromRotation(90, 60, 20)).scale(0.5, threshold)
+
+        assertAll(
+            { assertEquals(5.0, actual.translationX, threshold) },
+            { assertEquals(2.5, actual.translationY, threshold) },
+            { assertEquals(1.0, actual.translationZ, threshold) },
+            { assertEquals(45.0, actual.getRotationAngles()[0], threshold) },
+            { assertEquals(30.0, actual.getRotationAngles()[1], threshold) },
+            { assertEquals(10.0, actual.getRotationAngles()[2], threshold) }
         )
     }
 }
