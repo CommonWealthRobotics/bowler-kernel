@@ -16,8 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.scripting.factory
 
-import arrow.core.Either
-import arrow.core.flatMap
+import arrow.effects.IO
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 import com.neuronrobotics.bowlerkernel.hardware.Script
@@ -31,7 +30,7 @@ interface GitScriptFactory {
      * @param gitFile The Git file.
      * @return A [Script] on success, a [String] on error.
      */
-    fun createScriptFromGit(gitFile: GitFile): Either<String, Script>
+    fun createScriptFromGit(gitFile: GitFile): IO<Script>
 }
 
 /**
@@ -44,9 +43,8 @@ interface GitScriptFactory {
 inline fun <reified T> GitScriptFactory.getInstanceFromGit(
     gitFile: GitFile,
     args: ImmutableList<Any?> = emptyImmutableList()
-) =
-    createScriptFromGit(gitFile).flatMap { script ->
-        script.startScript(args).map { it as T }.also {
-            script.stopAndCleanUp()
-        }
+) = createScriptFromGit(gitFile).map { script ->
+    script.startScript(args).map { it as T }.also {
+        script.stopAndCleanUp()
     }
+}

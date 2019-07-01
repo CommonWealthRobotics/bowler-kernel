@@ -20,8 +20,7 @@ import arrow.core.left
 import arrow.core.right
 import com.neuronrobotics.bowlerkernel.scripting.ScriptLanguage
 
-class DefaultScriptLanguageParser :
-    ScriptLanguageParser {
+class DefaultScriptLanguageParser : ScriptLanguageParser {
 
     override fun parse(language: String) =
         when (language.toLowerCase()) {

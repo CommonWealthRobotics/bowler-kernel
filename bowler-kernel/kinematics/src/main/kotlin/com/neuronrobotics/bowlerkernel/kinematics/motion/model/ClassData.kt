@@ -14,15 +14,23 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics.base.model
+package com.neuronrobotics.bowlerkernel.kinematics.motion.model
 
-import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbData
-import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
+import com.beust.klaxon.Klaxon
 
-data class KinematicBaseData(
-    val id: String,
-    val limbs: List<LimbData>,
-    val limbTransforms: List<FrameTransformation>,
-    val bodyController: GitFile
-)
+/**
+ * All the data needed to instantiate a class.
+ */
+data class ClassData(
+    val fullClassName: String,
+    val data: String
+) {
+
+    companion object {
+
+        fun fromInstance(instance: Any, klaxon: Klaxon) = ClassData(
+            instance::class.qualifiedName!!,
+            klaxon.toJsonString(instance)
+        )
+    }
+}

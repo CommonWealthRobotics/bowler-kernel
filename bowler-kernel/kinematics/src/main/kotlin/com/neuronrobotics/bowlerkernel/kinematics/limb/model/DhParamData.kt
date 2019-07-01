@@ -24,5 +24,12 @@ data class DhParamData(
     val r: Double,
     val alpha: Double
 ) {
+    constructor(d: Number, theta: Number, r: Number, alpha: Number) : this(
+        d.toDouble(),
+        theta.toDouble(),
+        r.toDouble(),
+        alpha.toDouble()
+    )
+
     fun toDhParam() = DhParam(d, theta, r, alpha)
 }

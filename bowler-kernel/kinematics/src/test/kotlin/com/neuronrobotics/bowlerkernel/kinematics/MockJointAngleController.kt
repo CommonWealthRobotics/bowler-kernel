@@ -18,11 +18,14 @@ package com.neuronrobotics.bowlerkernel.kinematics
 
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.JointAngleController
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
+import com.neuronrobotics.bowlerkernel.util.JointLimits
 
 internal class MockJointAngleController : JointAngleController {
 
     internal val times = mutableListOf<Long>()
     internal val targets = mutableListOf<Double>()
+
+    override var jointLimits: JointLimits = JointLimits(180, -180)
 
     override fun setTargetAngle(angle: Double, motionConstraints: MotionConstraints) {
         times.add(System.currentTimeMillis())

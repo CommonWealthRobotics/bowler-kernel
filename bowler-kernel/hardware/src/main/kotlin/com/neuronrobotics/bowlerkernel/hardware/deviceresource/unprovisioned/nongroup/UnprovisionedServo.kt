@@ -19,12 +19,18 @@ package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.no
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.GenericServo
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import com.neuronrobotics.bowlerkernel.util.ServoLimits
 
 data class UnprovisionedServo
 internal constructor(
     override val device: BowlerDevice,
-    override val resourceId: ResourceId
+    override val resourceId: ResourceId,
+    private val limits: ServoLimits
 ) : UnprovisionedDeviceResource<GenericServo> {
 
-    override fun provision() = GenericServo(device, resourceId)
+    override fun provision() =
+        GenericServo(device, resourceId, limits).also {
+            // Write the zero position first so it doesn't start at some weird position
+            it.write(limits.zero * limits.scale)
+        }
 }

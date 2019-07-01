@@ -207,7 +207,7 @@ private constructor(private val mat: Matrix) {
         return true
     }
 
-    companion object {
+    companion object : Converter {
 
         /**
          * The identity frame transformation.
@@ -316,43 +316,38 @@ private constructor(private val mat: Matrix) {
             return FrameTransformation(matrix)
         }
 
-        /**
-         * A Klaxon JSON converter.
-         */
-        val converter = object : Converter {
-            override fun canConvert(cls: Class<*>) = cls == FrameTransformation::class.java
+        override fun canConvert(cls: Class<*>) = cls == FrameTransformation::class.java
 
-            override fun toJson(value: Any): String {
-                value as FrameTransformation
-                return """
+        override fun toJson(value: Any): String {
+            value as FrameTransformation
+            return """
                     |{
                     |   "rows": ${value.mat.rowDimension},
                     |   "cols": ${value.mat.columnDimension},
                     |   "data": [${value.internalData.joinToString(",")}]
                     |}
                 """.trimMargin()
-            }
+        }
 
-            override fun fromJson(jv: JsonValue): Any? {
-                return jv.obj!!.let {
-                    val rows = it.int("rows")!!
-                    val cols = it.int("cols")!!
-                    val data = it.array<Double>("data")!!.toDoubleArray()
+        override fun fromJson(jv: JsonValue): Any? {
+            return jv.obj!!.let {
+                val rows = it.int("rows")!!
+                val cols = it.int("cols")!!
+                val data = it.array<Double>("data")!!.toDoubleArray()
 
-                    require(rows == 4)
-                    require(cols == 4)
-                    require(data.size == 16)
+                require(rows == 4)
+                require(cols == 4)
+                require(data.size == 16)
 
-                    FrameTransformation(
-                        Matrix(
-                            Array(4) { row ->
-                                DoubleArray(4) { col ->
-                                    data[col + row * 4]
-                                }
+                FrameTransformation(
+                    Matrix(
+                        Array(4) { row ->
+                            DoubleArray(4) { col ->
+                                data[col + row * 4]
                             }
-                        )
+                        }
                     )
-                }
+                )
             }
         }
     }

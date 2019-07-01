@@ -17,11 +17,17 @@
 package com.neuronrobotics.bowlerkernel.kinematics.closedloop
 
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
+import com.neuronrobotics.bowlerkernel.util.JointLimits
 
 /**
  * A closed-loop joint angle controller.
  */
 interface JointAngleController {
+
+    /**
+     * The limits of this joint in degrees.
+     */
+    var jointLimits: JointLimits
 
     /**
      * Move to the target [angle].

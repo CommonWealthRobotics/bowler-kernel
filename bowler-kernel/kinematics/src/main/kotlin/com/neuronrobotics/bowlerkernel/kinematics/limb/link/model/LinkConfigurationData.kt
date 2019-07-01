@@ -14,17 +14,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics.limb.model
+package com.neuronrobotics.bowlerkernel.kinematics.limb.link.model
 
-import com.neuronrobotics.bowlerkernel.gitfs.GitFile
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
+import com.neuronrobotics.bowlerkernel.kinematics.limb.model.DhParamData
 
-data class LimbData(
-    val id: String,
-    val links: List<LinkData>,
-    val forwardKinematicsSolver: GitFile,
-    val inverseKinematicsSolver: GitFile,
-    val reachabilityCalculator: GitFile,
-    val limbMotionPlanGenerator: GitFile,
-    val limbMotionPlanFollower: GitFile,
-    val inertialStateEstimator: GitFile
+data class LinkConfigurationData(
+    val type: LinkType,
+    val dhParamData: DhParamData
 )

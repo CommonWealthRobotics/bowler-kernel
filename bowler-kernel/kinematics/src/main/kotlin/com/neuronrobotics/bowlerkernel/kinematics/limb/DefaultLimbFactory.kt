@@ -18,10 +18,12 @@ package com.neuronrobotics.bowlerkernel.kinematics.limb
 
 import arrow.core.Either
 import arrow.core.extensions.either.monad.binding
+import com.beust.klaxon.Klaxon
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.JointAngleController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkFactory
-import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbData
+import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbConfigurationData
+import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.ForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialStateEstimator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InverseKinematicsSolver
@@ -29,69 +31,60 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.ReachabilityCalculator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanGenerator
 import com.neuronrobotics.bowlerkernel.scripting.factory.GitScriptFactory
-import com.neuronrobotics.bowlerkernel.scripting.factory.getInstanceFromGit
 import org.octogonapus.ktguava.collections.toImmutableList
 import javax.inject.Inject
 
 class DefaultLimbFactory
 @Inject constructor(
     private val scriptFactory: GitScriptFactory,
-    private val linkFactory: LinkFactory
+    private val linkFactory: LinkFactory,
+    private val klaxon: Klaxon = Klaxon()
 ) : LimbFactory {
 
     @SuppressWarnings("ReturnCount")
-    override fun createLimb(limbData: LimbData): Either<LimbCreationError, Limb> {
-        return binding {
-            val links = limbData.links.map {
-                val (estimator) = scriptFactory.getInstanceFromGit<InertialStateEstimator>(
-                    it.inertialStateEstimator
-                )
+    override fun createLimb(
+        limbConfigurationData: LimbConfigurationData,
+        limbScriptData: LimbScriptData
+    ): Either<String, Limb> = binding {
+        val links = limbConfigurationData.linkConfigurations
+            .zip(limbScriptData.linkScripts)
+            .map { linkFactory.createLink(it.first, it.second).bind() }
+            .toImmutableList()
 
-                linkFactory.createLink(
-                    it.type,
-                    it.dhParamData.toDhParam(),
-                    it.jointLimits,
-                    estimator
-                )
-            }.toImmutableList()
+        val (fkSolver) = limbScriptData.forwardKinematicsSolver
+            .createInstance<ForwardKinematicsSolver>(scriptFactory, klaxon)
 
-            val (fkSolver) = scriptFactory.getInstanceFromGit<ForwardKinematicsSolver>(
-                limbData.forwardKinematicsSolver
-            )
+        val (ikSolver) = limbScriptData.inverseKinematicsSolver
+            .createInstance<InverseKinematicsSolver>(scriptFactory, klaxon)
 
-            val (ikSolver) = scriptFactory.getInstanceFromGit<InverseKinematicsSolver>(
-                limbData.inverseKinematicsSolver
-            )
+        val (reachabilityCalculator) = limbScriptData.reachabilityCalculator
+            .createInstance<ReachabilityCalculator>(scriptFactory, klaxon)
 
-            val (reachabilityCalculator) = scriptFactory
-                .getInstanceFromGit<ReachabilityCalculator>(limbData.reachabilityCalculator)
+        val (limbMotionPlanGenerator) = limbScriptData.limbMotionPlanGenerator
+            .createInstance<LimbMotionPlanGenerator>(scriptFactory, klaxon)
 
-            val (limbMotionPlanGenerator) = scriptFactory
-                .getInstanceFromGit<LimbMotionPlanGenerator>(limbData.limbMotionPlanGenerator)
+        val (limbMotionPlanFollower) = limbScriptData.limbMotionPlanFollower
+            .createInstance<LimbMotionPlanFollower>(scriptFactory, klaxon)
 
-            val (limbMotionPlanFollower) = scriptFactory
-                .getInstanceFromGit<LimbMotionPlanFollower>(limbData.limbMotionPlanFollower)
+        val jointAngleControllers = limbScriptData.linkScripts.map {
+            it.jointAngleController
+                .createInstance<JointAngleController>(scriptFactory, klaxon)
+                .bind()
+        }.toImmutableList()
 
-            val jointAngleControllers = limbData.links.map {
-                scriptFactory.getInstanceFromGit<JointAngleController>(
-                    it.jointAngleController
-                ).bind()
-            }.toImmutableList()
+        val (inertialStateEstimator) = limbScriptData.inertialStateEstimator
+            .createInstance<InertialStateEstimator>(scriptFactory, klaxon)
 
-            val (inertialStateEstimator) = scriptFactory
-                .getInstanceFromGit<InertialStateEstimator>(limbData.inertialStateEstimator)
-
-            DefaultLimb(
-                SimpleLimbId(limbData.id),
-                links,
-                fkSolver,
-                ikSolver,
-                reachabilityCalculator,
-                limbMotionPlanGenerator,
-                limbMotionPlanFollower,
-                jointAngleControllers,
-                inertialStateEstimator
-            )
-        }
+        DefaultLimb(
+            SimpleLimbId(limbConfigurationData.id),
+            links,
+            fkSolver,
+            ikSolver,
+            reachabilityCalculator,
+            limbMotionPlanGenerator,
+            limbMotionPlanFollower,
+            jointAngleControllers,
+            inertialStateEstimator
+        )
     }
 }

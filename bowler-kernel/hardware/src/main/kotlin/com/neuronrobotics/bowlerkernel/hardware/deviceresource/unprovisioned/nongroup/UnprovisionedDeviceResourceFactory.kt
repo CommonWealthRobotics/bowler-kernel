@@ -25,6 +25,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.DigitalOutGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.ProvisionedDeviceResourceGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.ProvisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.Servo
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
@@ -37,6 +38,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.gro
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDigitalOutGroupFactory
 import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistry
 import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
+import com.neuronrobotics.bowlerkernel.util.ServoLimits
 import org.jlleitschuh.guice.module
 import org.octogonapus.ktguava.collections.toImmutableList
 import javax.inject.Inject
@@ -196,14 +198,15 @@ class UnprovisionedDeviceResourceFactory
 
     override fun makeUnprovisionedServo(
         device: BowlerDevice,
-        attachmentPoint: AttachmentPoint
-    ): Either<RegisterError, UnprovisionedServo> =
+        attachmentPoint: AttachmentPoint,
+        limits: ServoLimits
+    ): Either<RegisterError, UnprovisionedDeviceResource<Servo>> =
         makeUnprovisionedResource(
             device,
             ResourceId(DefaultResourceTypes.Servo, attachmentPoint),
             "Servo"
         ) { registeredDevice, resourceId ->
-            UnprovisionedServo(registeredDevice, resourceId)
+            UnprovisionedServo(registeredDevice, resourceId, limits)
         }
 
     override fun makeUnprovisionedStepper(

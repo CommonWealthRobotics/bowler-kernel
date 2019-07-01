@@ -17,15 +17,20 @@
 package com.neuronrobotics.bowlerkernel.kinematics.limb
 
 import arrow.core.Either
-import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbData
+import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbConfigurationData
+import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbScriptData
 
 interface LimbFactory {
 
     /**
-     * Creates a new limb from the [limbData].
+     * Creates a new limb.
      *
-     * @param limbData The data to construct the limb from.
+     * @param limbConfigurationData The configuration data.
+     * @param limbScriptData The script data.
      * @return A new limb.
      */
-    fun createLimb(limbData: LimbData): Either<LimbCreationError, Limb>
+    fun createLimb(
+        limbConfigurationData: LimbConfigurationData,
+        limbScriptData: LimbScriptData
+    ): Either<String, Limb>
 }

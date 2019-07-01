@@ -14,17 +14,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics.limb
+package com.neuronrobotics.bowlerkernel.kinematics.base.model
 
-import com.beust.klaxon.Klaxon
-import com.neuronrobotics.bowlerkernel.kinematics.createMockLimbData
-import com.neuronrobotics.bowlerkernel.kinematics.testJsonConversion
-import org.junit.jupiter.api.Test
+import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbConfigurationData
+import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 
-internal class LimbDataTest {
-
-    @Test
-    fun `test json conversion`() {
-        Klaxon().testJsonConversion(createMockLimbData())
-    }
-}
+data class KinematicBaseConfigurationData(
+    val id: String,
+    val limbConfigurations: List<LimbConfigurationData>,
+    val limbTransforms: List<FrameTransformation>
+)

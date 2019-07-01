@@ -17,14 +17,15 @@
 package com.neuronrobotics.bowlerkernel.kinematics.base
 
 import arrow.core.Either
-import arrow.core.left
-import arrow.core.right
+import arrow.core.extensions.either.monad.binding
+import com.beust.klaxon.Klaxon
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
-import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseData
+import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseConfigurationData
+import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.LimbFactory
+import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.scripting.factory.GitScriptFactory
-import com.neuronrobotics.bowlerkernel.scripting.factory.getInstanceFromGit
 import org.octogonapus.ktguava.collections.toImmutableList
 import org.octogonapus.ktguava.collections.toImmutableMap
 import javax.inject.Inject
@@ -32,29 +33,31 @@ import javax.inject.Inject
 class DefaultKinematicBaseFactory
 @Inject constructor(
     private val scriptFactory: GitScriptFactory,
-    private val limbFactory: LimbFactory
+    private val limbFactory: LimbFactory,
+    private val klaxon: Klaxon = Klaxon().converter(FrameTransformation)
 ) : KinematicBaseFactory {
 
     override fun create(
-        kinematicBaseData: KinematicBaseData
-    ): Either<KinematicBaseCreationError, KinematicBase> {
-        val limbs = kinematicBaseData.limbs.map {
-            limbFactory.createLimb(it).fold({ return it.left() }, { it })
-        }.toImmutableList()
+        kinematicBaseConfigurationData: KinematicBaseConfigurationData,
+        kinematicBaseScriptData: KinematicBaseScriptData
+    ): Either<String, KinematicBase> = binding {
+        val (bodyController) = kinematicBaseScriptData.bodyController
+            .createInstance<BodyController>(scriptFactory, klaxon)
+
+        val limbs = kinematicBaseConfigurationData.limbConfigurations
+            .zip(kinematicBaseScriptData.limbScripts)
+            .map { limbFactory.createLimb(it.first, it.second).bind() }
+            .toImmutableList()
 
         val limbTransforms = limbs.map { it.id }
-            .zip(kinematicBaseData.limbTransforms)
+            .zip(kinematicBaseConfigurationData.limbTransforms)
             .toImmutableMap()
 
-        val bodyController = scriptFactory.getInstanceFromGit<BodyController>(
-            kinematicBaseData.bodyController
-        ).fold({ return it.left() }, { it })
-
-        return DefaultKinematicBase(
-            SimpleKinematicBaseId(kinematicBaseData.id),
+        DefaultKinematicBase(
+            SimpleKinematicBaseId(kinematicBaseConfigurationData.id),
             limbs,
             limbTransforms,
             bodyController
-        ).right()
+        )
     }
 }

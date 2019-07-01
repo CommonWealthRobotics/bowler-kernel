@@ -16,20 +16,32 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.limb.link
 
+import arrow.core.Either
+import arrow.core.extensions.either.monad.binding
+import com.beust.klaxon.Klaxon
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkConfigurationData
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialStateEstimator
-import com.neuronrobotics.bowlerkernel.util.JointLimits
+import com.neuronrobotics.bowlerkernel.scripting.factory.GitScriptFactory
+import javax.inject.Inject
 
-class DefaultLinkFactory : LinkFactory {
+class DefaultLinkFactory
+@Inject constructor(
+    private val scriptFactory: GitScriptFactory,
+    private val klaxon: Klaxon = Klaxon()
+) : LinkFactory {
 
     override fun createLink(
-        type: LinkType,
-        dhParam: DhParam,
-        jointLimits: JointLimits,
-        inertialStateEstimator: InertialStateEstimator
-    ) = DefaultLink(
-        type,
-        dhParam,
-        jointLimits,
-        inertialStateEstimator
-    )
+        linkConfigurationData: LinkConfigurationData,
+        linkScriptData: LinkScriptData
+    ): Either<String, Link> = binding {
+        val (estimator) = linkScriptData.inertialStateEstimator
+            .createInstance<InertialStateEstimator>(scriptFactory, klaxon)
+
+        DefaultLink(
+            linkConfigurationData.type,
+            linkConfigurationData.dhParamData.toDhParam(),
+            estimator
+        )
+    }
 }

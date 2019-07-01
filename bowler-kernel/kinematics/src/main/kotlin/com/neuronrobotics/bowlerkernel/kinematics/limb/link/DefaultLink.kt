@@ -17,11 +17,9 @@
 package com.neuronrobotics.bowlerkernel.kinematics.limb.link
 
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialStateEstimator
-import com.neuronrobotics.bowlerkernel.util.JointLimits
 
 data class DefaultLink(
     override val type: LinkType,
     override val dhParam: DhParam,
-    override val jointLimits: JointLimits,
     override val inertialStateEstimator: InertialStateEstimator
 ) : Link

@@ -21,6 +21,7 @@ import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.Servo
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
 import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
+import com.neuronrobotics.bowlerkernel.util.ServoLimits
 
 interface UnprovisionedServoFactory {
 
@@ -29,10 +30,12 @@ interface UnprovisionedServoFactory {
      *
      * @param device The device this servo is attached to.
      * @param attachmentPoint The attachment point.
+     * @param limits The hardware limits.
      * @return An unprovisioned [Servo] on success, a [RegisterError] on failure.
      */
     fun makeUnprovisionedServo(
         device: BowlerDevice,
-        attachmentPoint: AttachmentPoint
+        attachmentPoint: AttachmentPoint,
+        limits: ServoLimits
     ): Either<RegisterError, UnprovisionedDeviceResource<Servo>>
 }

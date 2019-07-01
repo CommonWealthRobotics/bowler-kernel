@@ -20,7 +20,6 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DefaultLink
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
-import com.neuronrobotics.bowlerkernel.util.JointLimits
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -36,7 +35,6 @@ internal class LengthBasedReachabilityCalculatorTest {
             DefaultLink(
                 LinkType.Rotary,
                 DhParam(0, 0, 15, 0),
-                JointLimits(180.0, -180.0),
                 NoopInertialStateEstimator
             ) as Link
         )
@@ -54,7 +52,6 @@ internal class LengthBasedReachabilityCalculatorTest {
             DefaultLink(
                 LinkType.Rotary,
                 DhParam(0, 0, 10, 0),
-                JointLimits(180.0, -180.0),
                 NoopInertialStateEstimator
             ) as Link
         )
@@ -70,7 +67,6 @@ internal class LengthBasedReachabilityCalculatorTest {
             DefaultLink(
                 LinkType.Rotary,
                 DhParam(0, 0, 10, 0),
-                JointLimits(180.0, -180.0),
                 NoopInertialStateEstimator
             ) as Link
         )

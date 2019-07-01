@@ -14,6 +14,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.scripting.parser
+package com.neuronrobotics.bowlerkernel.kinematics.limb.model
 
-typealias ScriptLanguageParseError = String
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkScriptData
+import com.neuronrobotics.bowlerkernel.kinematics.motion.model.ControllerSpecification
+
+data class LimbScriptData(
+    val forwardKinematicsSolver: ControllerSpecification,
+    val inverseKinematicsSolver: ControllerSpecification,
+    val reachabilityCalculator: ControllerSpecification,
+    val limbMotionPlanGenerator: ControllerSpecification,
+    val limbMotionPlanFollower: ControllerSpecification,
+    val inertialStateEstimator: ControllerSpecification,
+    val linkScripts: List<LinkScriptData>
+)

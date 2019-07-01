@@ -17,17 +17,20 @@
 package com.neuronrobotics.bowlerkernel.kinematics.base
 
 import arrow.core.Either
-import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseData
+import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseConfigurationData
+import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseScriptData
 
 interface KinematicBaseFactory {
 
     /**
-     * Creates a new kinematic base from the [kinematicBaseData].
+     * Creates a new kinematic base.
      *
-     * @param kinematicBaseData The data to construct the base from.
+     * @param kinematicBaseConfigurationData The configuration data.
+     * @param kinematicBaseScriptData The script data.
      * @return A new kinematic base.
      */
     fun create(
-        kinematicBaseData: KinematicBaseData
-    ): Either<KinematicBaseCreationError, KinematicBase>
+        kinematicBaseConfigurationData: KinematicBaseConfigurationData,
+        kinematicBaseScriptData: KinematicBaseScriptData
+    ): Either<String, KinematicBase>
 }
