@@ -16,7 +16,9 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid
 
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints.Pin
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints.PinGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints.PwmPin
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes.Companion.getHighestTypeNumber
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes.Companion.getLowestTypeNumber
 
@@ -44,12 +46,12 @@ sealed class DefaultResourceTypes(
     /**
      * A generic analog input.
      */
-    object AnalogIn : DefaultResourceTypes(3, 0, 2)
+    object AnalogIn : DefaultResourceTypes(3, 0, Short.SIZE_BYTES.toByte())
 
     /**
      * A generic analog output.
      */
-    object AnalogOut : DefaultResourceTypes(4, 2, 0)
+    object AnalogOut : DefaultResourceTypes(4, Short.SIZE_BYTES.toByte(), 0)
 
     /**
      * A serial connection.
@@ -57,9 +59,9 @@ sealed class DefaultResourceTypes(
     object SerialConnection : DefaultResourceTypes(5, 60, 60)
 
     /**
-     * A servo.
+     * A servo, typically needs a [PwmPin], not just a regular [Pin].
      */
-    object Servo : DefaultResourceTypes(6, 1, 0)
+    object Servo : DefaultResourceTypes(6, Short.SIZE_BYTES.toByte(), 0)
 
     /**
      * A stepper motor, typically needs a [PinGroup] of 2 or 4 pins.
