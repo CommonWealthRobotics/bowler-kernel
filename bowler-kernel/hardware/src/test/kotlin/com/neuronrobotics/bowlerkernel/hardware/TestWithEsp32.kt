@@ -162,4 +162,37 @@ internal class TestWithEsp32 {
             Thread.sleep(100)
         }
     }
+
+    @Test
+    @Disabled("Needs real hardware")
+    fun `test servo with custom duty cycle`() {
+        val servo = ResourceId(
+            DefaultResourceTypes.Servo,
+            DefaultAttachmentPoints.PwmPin(
+                pinNumber = 2,
+                minUsLow = 400,
+                maxUsHigh = 2400,
+                timerWidth = 18
+            )
+        )
+
+        val rpc = SimplePacketComsProtocol(
+            comms = object :
+                UdpDevice(
+                    InetAddress.getByAddress(
+                        listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
+                    )
+                ) {
+            },
+            resourceIdValidator = DefaultResourceIdValidator()
+        )
+
+        rpc.connect().mapLeft {
+            fail { it }
+        }
+
+        rpc.addWrite(servo)
+
+        println(rpc.disconnect())
+    }
 }
