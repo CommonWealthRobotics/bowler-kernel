@@ -198,7 +198,9 @@ internal class DefaultKinematicBaseFactoryTest {
         assertAll(
             { assertEquals(expected::class, base::class) },
             { assertEquals(expected.id, base.id) },
-            { assertEquals(expected.limbs.toSet(), base.limbs.toSet()) },
+            { assertEquals(expected.limbs.size, base.limbs.size) },
+            { assertEquals(expected.limbs.first().id, base.limbs.first().id) },
+            { assertEquals(expected.limbs.first().links, base.limbs.first().links) },
             { assertEquals(expected.limbBaseTransforms.entries, base.limbBaseTransforms.entries) },
             { assertEquals(expected.bodyController::class, base.bodyController::class) }
         )
