@@ -18,8 +18,12 @@ package com.neuronrobotics.bowlerkernel.kinematics.limb.link.model
 
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.DhParamData
+import helios.json
 
+@json
 data class LinkConfigurationData(
     val type: LinkType,
     val dhParamData: DhParamData
-)
+) {
+    companion object
+}

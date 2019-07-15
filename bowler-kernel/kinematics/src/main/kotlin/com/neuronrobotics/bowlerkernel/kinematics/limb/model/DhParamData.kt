@@ -17,7 +17,9 @@
 package com.neuronrobotics.bowlerkernel.kinematics.limb.model
 
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
+import helios.json
 
+@json
 data class DhParamData(
     val d: Double,
     val theta: Double,
@@ -32,4 +34,6 @@ data class DhParamData(
     )
 
     fun toDhParam() = DhParam(d, theta, r, alpha)
+
+    companion object
 }

@@ -19,7 +19,11 @@
 package com.neuronrobotics.bowlerkernel.kinematics.motion
 
 import Jama.Matrix
+import arrow.core.Either
 import com.beust.klaxon.Klaxon
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.decoder
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.encoder
 import com.neuronrobotics.bowlerkernel.kinematics.testJsonConversion
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -482,5 +486,26 @@ internal class FrameTransformationTest {
     fun `test json`() {
         Klaxon().converter(FrameTransformation)
             .testJsonConversion(FrameTransformation.fromTranslation(10, 20, 30))
+    }
+
+    @Test
+    fun `test helios json`() {
+        val encoded = with(Enum.Companion.encoder<LinkType>()) {
+            LinkType.Rotary.encode()
+        }
+
+        encoded.decode(Enum.Companion.decoder<LinkType>()).let { println(it) }
+
+        val expected = FrameTransformation.fromTranslation(10, 20, 30)
+        val json = with(FrameTransformation) { expected.encode() }
+        val actual = json.decode(FrameTransformation)
+
+        assertAll(
+            { assertTrue(actual.isRight()) },
+            {
+                actual as Either.Right
+                assertEquals(expected, actual.b)
+            }
+        )
     }
 }

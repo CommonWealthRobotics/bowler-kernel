@@ -19,9 +19,24 @@
 package com.neuronrobotics.bowlerkernel.kinematics.motion
 
 import Jama.Matrix
+import arrow.core.Either
+import arrow.core.extensions.either.applicative.applicative
+import arrow.core.extensions.either.monad.binding
+import arrow.core.fix
 import com.beust.klaxon.Converter
 import com.beust.klaxon.JsonValue
 import com.google.common.math.DoubleMath
+import helios.core.ArrayDecodingError
+import helios.core.DecodingError
+import helios.core.JsArray
+import helios.core.JsNumber
+import helios.core.JsObject
+import helios.core.Json
+import helios.core.KeyNotFound
+import helios.core.NumberDecodingError
+import helios.instances.decoder
+import helios.typeclasses.Decoder
+import helios.typeclasses.Encoder
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation
 import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
@@ -207,7 +222,7 @@ private constructor(private val mat: Matrix) {
         return true
     }
 
-    companion object : Converter {
+    companion object : Converter, Encoder<FrameTransformation>, Decoder<FrameTransformation> {
 
         /**
          * The identity frame transformation.
@@ -350,6 +365,57 @@ private constructor(private val mat: Matrix) {
                 )
             }
         }
+
+        override fun FrameTransformation.encode(): Json =
+            JsObject(
+                "rows" to JsNumber(mat.rowDimension),
+                "cols" to JsNumber(mat.columnDimension),
+                "data" to JsArray(internalData.map { JsNumber(it) })
+            )
+
+        override fun decode(value: Json): Either<DecodingError, FrameTransformation> =
+            Either.applicative<DecodingError>().map(
+                value["rows"].fold(
+                    { Either.left(KeyNotFound("rows")) },
+                    { it.decode(Int.decoder()) }),
+                value["cols"].fold(
+                    { Either.left(KeyNotFound("cols")) },
+                    { it.decode(Int.decoder()) }),
+                value["data"].fold(
+                    { Either.left(KeyNotFound("data")) },
+                    { it.decode(doubleArrayDecoder()) })
+            ) { (rows, cols, data) ->
+                require(rows == 4)
+                require(cols == 4)
+                require(data.size == 16)
+
+                FrameTransformation(
+                    Matrix(
+                        Array(4) { row ->
+                            DoubleArray(4) { col ->
+                                data[col + row * 4]
+                            }
+                        }
+                    )
+                )
+            }.fix()
+    }
+}
+
+fun doubleArrayDecoder() = object : Decoder<DoubleArray> {
+    override fun decode(value: Json): Either<DecodingError, DoubleArray> = binding {
+        value.asJsArray()
+            .toEither { ArrayDecodingError(value) }
+            .bind()
+            .value
+            .map {
+                it.asJsNumber()
+                    .toEither { NumberDecodingError(it) }
+                    .bind()
+                    .decode(Double.decoder())
+                    .bind()
+            }
+            .toDoubleArray()
     }
 }
 
