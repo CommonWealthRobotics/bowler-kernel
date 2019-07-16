@@ -1,5 +1,10 @@
 plugins {
     `java-library`
+    kotlin("kapt")
+}
+
+apply {
+    from(rootProject.file("gradle/generated-kotlin-sources.gradle"))
 }
 
 description = "An interface to a Git-based filesystem."
@@ -36,5 +41,31 @@ dependencies {
         group = "org.eclipse.jgit",
         name = "org.eclipse.jgit",
         version = "5.2.0.201812061821-r"
+    )
+
+    implementation(
+        group = "com.47deg",
+        name = "helios-core",
+        version = property("helios.version") as String
+    )
+    implementation(
+        group = "com.47deg",
+        name = "helios-parser",
+        version = property("helios.version") as String
+    )
+    implementation(
+        group = "com.47deg",
+        name = "helios-optics",
+        version = property("helios.version") as String
+    )
+    kapt(
+        group = "com.47deg",
+        name = "helios-meta",
+        version = property("helios.version") as String
+    )
+    kapt(
+        group = "com.47deg",
+        name = "helios-dsl-meta",
+        version = property("helios.version") as String
     )
 }

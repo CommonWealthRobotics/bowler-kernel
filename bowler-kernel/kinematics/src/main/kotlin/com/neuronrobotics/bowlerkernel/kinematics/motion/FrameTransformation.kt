@@ -373,6 +373,8 @@ private constructor(private val mat: Matrix) {
                 "data" to JsArray(internalData.map { JsNumber(it) })
             )
 
+        fun encoder() = this
+
         override fun decode(value: Json): Either<DecodingError, FrameTransformation> =
             Either.applicative<DecodingError>().map(
                 value["rows"].fold(
@@ -399,6 +401,8 @@ private constructor(private val mat: Matrix) {
                     )
                 )
             }.fix()
+
+        fun decoder() = this
     }
 }
 

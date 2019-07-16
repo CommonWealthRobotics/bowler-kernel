@@ -16,14 +16,58 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.limb.link.model
 
+import arrow.core.Either
+import arrow.core.extensions.either.applicative.applicative
+import arrow.core.fix
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.decoder
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.encoder
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.DhParamData
-import helios.json
+import com.neuronrobotics.bowlerkernel.kinematics.limb.model.decoder
+import com.neuronrobotics.bowlerkernel.kinematics.limb.model.encoder
+import helios.core.DecodingError
+import helios.core.JsObject
+import helios.core.Json
+import helios.core.KeyNotFound
+import helios.typeclasses.Decoder
+import helios.typeclasses.Encoder
 
-@json
 data class LinkConfigurationData(
     val type: LinkType,
     val dhParamData: DhParamData
 ) {
     companion object
+}
+
+fun LinkConfigurationData.toJson(): Json = JsObject(mapOf(
+    "dhParamData" to DhParamData.encoder().run { dhParamData.encode() }
+    ,
+    "type" to LinkType.encoder().run { type.encode() }
+))
+
+fun Json.Companion.toLinkConfigurationData(value: Json): Either<DecodingError, LinkConfigurationData> =
+    Either.applicative<DecodingError>().map(
+        value["dhParamData"].fold(
+            { Either.Left(KeyNotFound("dhParamData")) },
+            {
+                DhParamData.decoder()
+                    .run { decode(it) }
+            }),
+        value["type"].fold(
+            { Either.Left(KeyNotFound("type")) },
+            {
+                LinkType.decoder()
+                    .run { decode(it) }
+            })
+    ) { (dhParamData, type) ->
+        LinkConfigurationData(dhParamData = dhParamData, type = type)
+    }.fix()
+
+fun LinkConfigurationData.Companion.encoder() = object : Encoder<LinkConfigurationData> {
+    override fun LinkConfigurationData.encode(): Json = this.toJson()
+}
+
+fun LinkConfigurationData.Companion.decoder() = object : Decoder<LinkConfigurationData> {
+    override fun decode(value: Json): Either<DecodingError, LinkConfigurationData> =
+        Json.toLinkConfigurationData(value)
 }

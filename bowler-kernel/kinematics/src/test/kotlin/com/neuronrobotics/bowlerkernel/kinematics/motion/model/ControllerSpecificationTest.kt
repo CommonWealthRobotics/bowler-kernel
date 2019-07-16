@@ -16,12 +16,14 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.motion.model
 
+import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
 import com.beust.klaxon.Klaxon
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 
 interface IFoo
@@ -30,44 +32,51 @@ data class Foo(val bar: Int) : IFoo
 internal class ControllerSpecificationTest {
 
     private val klaxon = Klaxon()
-    private val fooSpec = ControllerSpecification.fromEither(
-        ClassData(
-            Foo::class.qualifiedName!!,
-            """{"bar" : 2}"""
-        ).right()
-    )
+    private val fooSpec = ClassData(
+        Foo::class.qualifiedName!!,
+        """{"bar" : 2}"""
+    ).right()
 
-    private val gitFileSpec = ControllerSpecification.fromEither(
-        GitFile("", "").left()
-    )
+    private val gitFileSpec = GitFile("", "").left()
 
     @Test
     fun `test parsing as concrete class`() {
-        val jsonString = klaxon.toJsonString(fooSpec)
-        val result = klaxon.parse<ControllerSpecification>(jsonString)!!.loadClass<Foo>(klaxon)
-        assertEquals(Foo(2), result)
+        val decoded = controllerSpecificationEncoder().run { fooSpec.encode() }
+            .decode(controllerSpecificationDecoder())
+        assertAll(
+            { assertEquals(fooSpec.right(), decoded) },
+            { assertEquals(Foo(2), (decoded as Either.Right).b.loadClass<Foo>(klaxon)) }
+        )
     }
 
     @Test
     fun `test parsing as interface`() {
-        val jsonString = klaxon.toJsonString(fooSpec)
-        val result = klaxon.parse<ControllerSpecification>(jsonString)!!.loadClass<IFoo>(klaxon)
-        assertEquals(Foo(2), result)
+        val decoded = controllerSpecificationEncoder().run { fooSpec.encode() }
+            .decode(controllerSpecificationDecoder())
+        assertAll(
+            { assertEquals(fooSpec.right(), decoded) },
+            { assertEquals(Foo(2), (decoded as Either.Right).b.loadClass<IFoo>(klaxon)) }
+        )
     }
 
     @Test
     fun `test parsing as wrong class`() {
-        val jsonString = klaxon.toJsonString(fooSpec)
-
-        assertThrows<IllegalArgumentException> {
-            klaxon.parse<ControllerSpecification>(jsonString)!!.loadClass<String>(klaxon)
-        }
+        val decoded = controllerSpecificationEncoder().run { fooSpec.encode() }
+            .decode(controllerSpecificationDecoder())
+        assertAll(
+            { assertEquals(fooSpec.right(), decoded) },
+            {
+                assertThrows<IllegalArgumentException> {
+                    (decoded as Either.Right).b.loadClass<String>(klaxon)
+                }
+            }
+        )
     }
 
     @Test
     fun `test parsing git file`() {
-        val jsonString = klaxon.toJsonString(gitFileSpec)
-        val result = klaxon.parse<ControllerSpecification>(jsonString)?.gitFile
-        assertEquals(gitFileSpec.gitFile, result)
+        val decoded = controllerSpecificationEncoder().run { gitFileSpec.encode() }
+            .decode(controllerSpecificationDecoder())
+        assertEquals(gitFileSpec.right(), decoded)
     }
 }

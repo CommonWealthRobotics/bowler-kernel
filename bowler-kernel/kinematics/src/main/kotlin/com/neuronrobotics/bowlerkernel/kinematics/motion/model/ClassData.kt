@@ -17,10 +17,12 @@
 package com.neuronrobotics.bowlerkernel.kinematics.motion.model
 
 import com.beust.klaxon.Klaxon
+import helios.json
 
 /**
  * All the data needed to instantiate a class.
  */
+@json
 data class ClassData(
     val fullClassName: String,
     val data: String

@@ -16,9 +16,73 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.limb.link.model
 
-import com.neuronrobotics.bowlerkernel.kinematics.motion.model.ControllerSpecification
+import arrow.core.Either
+import arrow.core.extensions.either.applicative.applicative
+import arrow.core.fix
+import com.neuronrobotics.bowlerkernel.gitfs.GitFile
+import com.neuronrobotics.bowlerkernel.gitfs.decoder
+import com.neuronrobotics.bowlerkernel.gitfs.encoder
+import com.neuronrobotics.bowlerkernel.kinematics.motion.model.ClassData
+import com.neuronrobotics.bowlerkernel.kinematics.motion.model.decoder
+import com.neuronrobotics.bowlerkernel.kinematics.motion.model.encoder
+import helios.core.DecodingError
+import helios.core.JsObject
+import helios.core.Json
+import helios.core.KeyNotFound
+import helios.instances.decoder
+import helios.instances.encoder
+import helios.typeclasses.Decoder
+import helios.typeclasses.Encoder
 
 data class LinkScriptData(
-    val jointAngleController: ControllerSpecification,
-    val inertialStateEstimator: ControllerSpecification
-)
+    val jointAngleController: Either<GitFile, ClassData>,
+    val inertialStateEstimator: Either<GitFile, ClassData>
+) {
+    companion object
+}
+
+fun LinkScriptData.toJson(): Json = JsObject(mapOf(
+    "inertialStateEstimator" to Either.encoder(
+        GitFile.encoder(),
+        ClassData.encoder()
+    ).run { inertialStateEstimator.encode() }
+    ,
+    "jointAngleController" to Either.encoder(
+        GitFile.encoder(),
+        ClassData.encoder()
+    ).run { jointAngleController.encode() }
+))
+
+fun Json.Companion.toLinkScriptData(value: Json): Either<DecodingError, LinkScriptData> =
+    Either.applicative<DecodingError>().map(
+        value["inertialStateEstimator"].fold(
+            { Either.Left(KeyNotFound("inertialStateEstimator")) },
+            {
+                Either.decoder(
+                    GitFile.decoder(),
+                    ClassData.decoder()
+                ).run { decode(it) }
+            }),
+        value["jointAngleController"].fold(
+            { Either.Left(KeyNotFound("jointAngleController")) },
+            {
+                Either.decoder(
+                    GitFile.decoder(),
+                    ClassData.decoder()
+                ).run { decode(it) }
+            })
+    ) { (inertialStateEstimator, jointAngleController) ->
+        LinkScriptData(
+            inertialStateEstimator = inertialStateEstimator,
+            jointAngleController = jointAngleController
+        )
+    }.fix()
+
+fun LinkScriptData.Companion.encoder() = object : Encoder<LinkScriptData> {
+    override fun LinkScriptData.encode(): Json = this.toJson()
+}
+
+fun LinkScriptData.Companion.decoder() = object : Decoder<LinkScriptData> {
+    override fun decode(value: Json): Either<DecodingError, LinkScriptData> =
+        Json.toLinkScriptData(value)
+}

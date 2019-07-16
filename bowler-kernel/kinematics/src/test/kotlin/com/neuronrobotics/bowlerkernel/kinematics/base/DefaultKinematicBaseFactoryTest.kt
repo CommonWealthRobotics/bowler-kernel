@@ -17,6 +17,7 @@
 package com.neuronrobotics.bowlerkernel.kinematics.base
 
 import arrow.core.Either
+import arrow.core.right
 import com.beust.klaxon.Klaxon
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseConfigurationData
@@ -41,7 +42,6 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopForwardKinematicsSo
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInertialStateEstimator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.model.ClassData
-import com.neuronrobotics.bowlerkernel.kinematics.motion.model.ControllerSpecification
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanGenerator
 import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultGitScriptFactory
@@ -59,57 +59,41 @@ internal class DefaultKinematicBaseFactoryTest {
     private val klaxon = Klaxon().converter(FrameTransformation)
 
     private val linkScriptData = LinkScriptData(
-        ControllerSpecification.fromClassData(
-            ClassData.fromInstance(
-                NoopJointAngleController,
-                klaxon
-            )
-        ),
-        ControllerSpecification.fromClassData(
-            ClassData.fromInstance(
-                NoopInertialStateEstimator,
-                klaxon
-            )
-        )
+        ClassData.fromInstance(
+            NoopJointAngleController,
+            klaxon
+        ).right(),
+        ClassData.fromInstance(
+            NoopInertialStateEstimator,
+            klaxon
+        ).right()
     )
 
     private val limbScriptData = LimbScriptData(
-        ControllerSpecification.fromClassData(
-            ClassData.fromInstance(
-                NoopForwardKinematicsSolver,
-                klaxon
-            )
-        ),
-        ControllerSpecification.fromClassData(
-            ClassData.fromInstance(
-                NoopInverseKinematicsSolver,
-                klaxon
-            )
-        ),
-        ControllerSpecification.fromClassData(
-            ClassData.fromInstance(
-                LengthBasedReachabilityCalculator(),
-                klaxon
-            )
-        ),
-        ControllerSpecification.fromClassData(
-            ClassData.fromInstance(
-                NoopLimbMotionPlanGenerator,
-                klaxon
-            )
-        ),
-        ControllerSpecification.fromClassData(
-            ClassData.fromInstance(
-                NoopLimbMotionPlanFollower,
-                klaxon
-            )
-        ),
-        ControllerSpecification.fromClassData(
-            ClassData.fromInstance(
-                NoopInertialStateEstimator,
-                klaxon
-            )
-        ),
+        ClassData.fromInstance(
+            NoopForwardKinematicsSolver,
+            klaxon
+        ).right(),
+        ClassData.fromInstance(
+            NoopInverseKinematicsSolver,
+            klaxon
+        ).right(),
+        ClassData.fromInstance(
+            LengthBasedReachabilityCalculator(),
+            klaxon
+        ).right(),
+        ClassData.fromInstance(
+            NoopLimbMotionPlanGenerator,
+            klaxon
+        ).right(),
+        ClassData.fromInstance(
+            NoopLimbMotionPlanFollower,
+            klaxon
+        ).right(),
+        ClassData.fromInstance(
+            NoopInertialStateEstimator,
+            klaxon
+        ).right(),
         listOf(linkScriptData)
     )
 
@@ -126,18 +110,14 @@ internal class DefaultKinematicBaseFactoryTest {
                 )
             )
         ),
-        listOf(
-            FrameTransformation.fromTranslation(10, 20, 30)
-        )
+        listOf(FrameTransformation.fromTranslation(10, 20, 30))
     )
 
     private val scriptData = KinematicBaseScriptData(
-        ControllerSpecification.fromClassData(
-            ClassData.fromInstance(
-                NoopBodyController,
-                klaxon
-            )
-        ),
+        ClassData.fromInstance(
+            NoopBodyController,
+            klaxon
+        ).right(),
         listOf(limbScriptData)
     )
 

@@ -22,6 +22,7 @@ import com.beust.klaxon.Klaxon
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkConfigurationData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialStateEstimator
+import com.neuronrobotics.bowlerkernel.kinematics.motion.model.createInstance
 import com.neuronrobotics.bowlerkernel.scripting.factory.GitScriptFactory
 import javax.inject.Inject
 

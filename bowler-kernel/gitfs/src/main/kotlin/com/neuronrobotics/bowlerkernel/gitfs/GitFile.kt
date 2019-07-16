@@ -16,6 +16,8 @@
  */
 package com.neuronrobotics.bowlerkernel.gitfs
 
+import helios.json
+
 /**
  * Represents a file in Git.
  *
@@ -24,7 +26,10 @@ package com.neuronrobotics.bowlerkernel.gitfs
  * `https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git`.
  * @param filename The name of the file in the repo (including extension).
  */
+@json
 data class GitFile(
     val gitUrl: String,
     val filename: String
-)
+) {
+    companion object
+}

@@ -16,37 +16,35 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.base.model
 
-import com.beust.klaxon.Klaxon
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkConfigurationData
-import com.neuronrobotics.bowlerkernel.kinematics.limb.model.DhParamData
-import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbConfigurationData
+import arrow.core.right
+import com.neuronrobotics.bowlerkernel.kinematics.kinematicBaseConfigurationData
+import com.neuronrobotics.bowlerkernel.kinematics.limbConfigurationData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
-import com.neuronrobotics.bowlerkernel.kinematics.testJsonConversion
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 internal class KinematicBaseConfigurationDataTest {
 
     @Test
     fun `test json`() {
-        Klaxon().converter(FrameTransformation).testJsonConversion(
+        val expected = kinematicBaseConfigurationData()
+
+        val decoded = with(KinematicBaseConfigurationData.encoder()) {
+            expected.encode()
+        }.decode(KinematicBaseConfigurationData.decoder())
+
+        assertEquals(expected.right(), decoded)
+    }
+
+    @Test
+    fun `test constructor with unequal number of limb and transforms`() {
+        assertThrows<IllegalArgumentException> {
             KinematicBaseConfigurationData(
-                "base id",
-                listOf(
-                    LimbConfigurationData(
-                        "limb 1 id",
-                        listOf(
-                            LinkConfigurationData(
-                                LinkType.Rotary,
-                                DhParamData(10, 20, 30, 40)
-                            )
-                        )
-                    )
-                ),
-                listOf(
-                    FrameTransformation.fromTranslation(10, 20, 30)
-                )
+                "A",
+                listOf(limbConfigurationData(), limbConfigurationData()),
+                listOf(FrameTransformation.identity)
             )
-        )
+        }
     }
 }

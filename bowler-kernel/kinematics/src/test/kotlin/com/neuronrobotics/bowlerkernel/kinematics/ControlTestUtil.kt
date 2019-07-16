@@ -16,8 +16,27 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics
 
+import arrow.core.right
 import com.beust.klaxon.Klaxon
+import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseConfigurationData
+import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseScriptData
+import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopBodyController
+import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopJointAngleController
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkConfigurationData
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkScriptData
+import com.neuronrobotics.bowlerkernel.kinematics.limb.model.DhParamData
+import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbConfigurationData
+import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.BasicMotionConstraints
+import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
+import com.neuronrobotics.bowlerkernel.kinematics.motion.LengthBasedReachabilityCalculator
+import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopForwardKinematicsSolver
+import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInertialStateEstimator
+import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInverseKinematicsSolver
+import com.neuronrobotics.bowlerkernel.kinematics.motion.model.ClassData
+import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanFollower
+import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanGenerator
 import org.junit.jupiter.api.Assertions.assertEquals
 
 internal fun createMotionConstraints(duration: Number) = BasicMotionConstraints(
@@ -27,3 +46,81 @@ internal fun createMotionConstraints(duration: Number) = BasicMotionConstraints(
 internal inline fun <reified T> Klaxon.testJsonConversion(input: T) {
     assertEquals(input, parse<T>(toJsonString(input).also { println(it) }))
 }
+
+internal fun linkConfigurationData() = LinkConfigurationData(
+    LinkType.Rotary,
+    DhParamData(1, 2, 3, 4.5)
+)
+
+internal fun Klaxon.linkScriptData() = LinkScriptData(
+    ClassData.fromInstance(
+        NoopJointAngleController,
+        this
+    ).right(),
+    ClassData.fromInstance(
+        NoopInertialStateEstimator,
+        this
+    ).right()
+)
+
+internal fun limbConfigurationData() = LimbConfigurationData(
+    "A",
+    listOf(
+        linkConfigurationData(),
+        linkConfigurationData()
+    )
+)
+
+internal fun Klaxon.limbScriptData() = LimbScriptData(
+    ClassData.fromInstance(
+        NoopForwardKinematicsSolver,
+        this
+    ).right(),
+    ClassData.fromInstance(
+        NoopInverseKinematicsSolver,
+        this
+    ).right(),
+    ClassData.fromInstance(
+        LengthBasedReachabilityCalculator(),
+        this
+    ).right(),
+    ClassData.fromInstance(
+        NoopLimbMotionPlanGenerator,
+        this
+    ).right(),
+    ClassData.fromInstance(
+        NoopLimbMotionPlanFollower,
+        this
+    ).right(),
+    ClassData.fromInstance(
+        NoopInertialStateEstimator,
+        this
+    ).right(),
+    listOf(
+        linkScriptData(),
+        linkScriptData()
+    )
+)
+
+internal fun Klaxon.kinematicBaseScriptData() = KinematicBaseScriptData(
+    ClassData.fromInstance(
+        NoopBodyController,
+        this
+    ).right(),
+    listOf(
+        limbScriptData(),
+        limbScriptData()
+    )
+)
+
+internal fun kinematicBaseConfigurationData() = KinematicBaseConfigurationData(
+    "A",
+    listOf(
+        limbConfigurationData(),
+        limbConfigurationData()
+    ),
+    listOf(
+        FrameTransformation.fromTranslation(10, 20, 30),
+        FrameTransformation.identity
+    )
+)
