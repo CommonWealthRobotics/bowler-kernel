@@ -51,8 +51,8 @@ class GitHubFS(
     private val credentials: Pair<String, String>
 ) : GitFS {
 
-    private val myGists = Eval.later { gitHub.myself.listGists() }
-    private val myRepositories = Eval.later { gitHub.myself.listRepositories() }
+    private val myGists = Eval.later { gitHub.myself.listGists().toList() }
+    private val myRepositories = Eval.later { gitHub.myself.allRepositories.values }
 
     override fun cloneRepo(
         gitUrl: String,
