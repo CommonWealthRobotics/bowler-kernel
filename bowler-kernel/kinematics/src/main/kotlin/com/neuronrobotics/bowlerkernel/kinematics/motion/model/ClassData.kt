@@ -32,7 +32,7 @@ data class ClassData(
 
         fun fromInstance(instance: Any, klaxon: Klaxon) = ClassData(
             instance::class.qualifiedName!!,
-            klaxon.toJsonString(instance)
+            klaxon.toJsonString(instance).replace("\"", "\\\"")
         )
     }
 }

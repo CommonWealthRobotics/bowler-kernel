@@ -45,8 +45,7 @@ fun LinkScriptData.toJson(): Json = JsObject(mapOf(
     "inertialStateEstimator" to Either.encoder(
         GitFile.encoder(),
         ClassData.encoder()
-    ).run { inertialStateEstimator.encode() }
-    ,
+    ).run { inertialStateEstimator.encode() },
     "jointAngleController" to Either.encoder(
         GitFile.encoder(),
         ClassData.encoder()

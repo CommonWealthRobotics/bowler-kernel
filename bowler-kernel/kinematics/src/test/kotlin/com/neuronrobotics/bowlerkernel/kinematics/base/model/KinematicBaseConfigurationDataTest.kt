@@ -18,11 +18,8 @@ package com.neuronrobotics.bowlerkernel.kinematics.base.model
 
 import arrow.core.right
 import com.neuronrobotics.bowlerkernel.kinematics.kinematicBaseConfigurationData
-import com.neuronrobotics.bowlerkernel.kinematics.limbConfigurationData
-import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 internal class KinematicBaseConfigurationDataTest {
 
@@ -35,16 +32,5 @@ internal class KinematicBaseConfigurationDataTest {
         }.decode(KinematicBaseConfigurationData.decoder())
 
         assertEquals(expected.right(), decoded)
-    }
-
-    @Test
-    fun `test constructor with unequal number of limb and transforms`() {
-        assertThrows<IllegalArgumentException> {
-            KinematicBaseConfigurationData(
-                "A",
-                listOf(limbConfigurationData(), limbConfigurationData()),
-                listOf(FrameTransformation.identity)
-            )
-        }
     }
 }

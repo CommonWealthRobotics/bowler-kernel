@@ -14,13 +14,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:Suppress("UnstableApiUsage")
+
 package com.neuronrobotics.bowlerkernel.kinematics.base
 
 import Jama.Matrix
-import com.google.common.collect.ImmutableList
-import com.google.common.collect.ImmutableMap
+import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.KinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
+import com.neuronrobotics.bowlerkernel.kinematics.graph.KinematicGraph
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
@@ -29,12 +31,14 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
 @SuppressWarnings("TooManyFunctions")
 class DefaultKinematicBase(
     override val id: KinematicBaseId,
-    override val limbs: ImmutableList<Limb>,
-    override val limbBaseTransforms: ImmutableMap<LimbId, FrameTransformation>,
+    override val kinematicGraph: KinematicGraph,
     override val bodyController: BodyController
 ) : KinematicBase {
 
     private var currentWorldSpaceTransform = FrameTransformation.identity
+    private val nodes by lazy {
+        kinematicGraph.nodes()
+    }
 
     override fun setDesiredWorldSpaceTransformDelta(
         worldSpaceTransform: FrameTransformation,
@@ -54,45 +58,42 @@ class DefaultKinematicBase(
         limbId: LimbId,
         worldSpaceTransform: FrameTransformation,
         motionConstraints: MotionConstraints
-    ) = setDesiredLimbTipTransform(
-        limbs.indexOfFirst { it.id == limbId },
-        worldSpaceTransform,
-        motionConstraints
-    )
-
-    override fun setDesiredLimbTipTransform(
-        limbIndex: Int,
-        worldSpaceTransform: FrameTransformation,
-        motionConstraints: MotionConstraints
-    ) = limbs[limbIndex].let { limb ->
-        limb.setDesiredTaskSpaceTransform(
-            worldSpaceTransform * getCurrentWorldSpaceTransformWithDelta().inverse *
-                limbBaseTransforms[limb.id]!!.inverse,
-            motionConstraints
-        )
+    ) {
+        TODO()
+        // val limb = nodes.firstLimb { it.id == limbId }
+        // limb.setDesiredTaskSpaceTransform(
+        //     worldSpaceTransform *
+        //         getCurrentWorldSpaceTransformWithDelta().inverse *
+        //         limbBaseTransforms[limb.id]!!.inverse,
+        //     motionConstraints
+        // )
     }
 
-    override fun getCurrentLimbTipTransform(limbId: LimbId) =
-        getCurrentLimbTipTransform(limbs.indexOfFirst { it.id == limbId })
+    override fun getCurrentLimbTipTransform(limbId: LimbId): FrameTransformation {
+        TODO()
+        // val limb = nodes.firstLimb { it.id == limbId }
+        // return limb.getCurrentTaskSpaceTransform() *
+        //     limbBaseTransforms[limb.id]!! *
+        //     getCurrentWorldSpaceTransformWithDelta()
+    }
 
-    override fun getCurrentLimbTipTransform(limbIndex: Int) =
-        limbs[limbIndex].let { limb ->
-            limb.getCurrentTaskSpaceTransform() * limbBaseTransforms[limb.id]!! *
-                getCurrentWorldSpaceTransformWithDelta()
-        }
+    override fun getDesiredLimbTipTransform(limbId: LimbId): FrameTransformation {
+        TODO()
+        // val limb = nodes.firstLimb { it.id == limbId }
+        // return limb.getDesiredTaskSpaceTransform() *
+        //     limbBaseTransforms[limb.id]!! *
+        //     getCurrentWorldSpaceTransformWithDelta()
+    }
 
-    override fun getDesiredLimbTipTransform(limbId: LimbId) =
-        getDesiredLimbTipTransform(limbs.indexOfFirst { it.id == limbId })
-
-    override fun getDesiredLimbTipTransform(limbIndex: Int) =
-        limbs[limbIndex].let { limb ->
-            limb.getDesiredTaskSpaceTransform() * limbBaseTransforms[limb.id]!! *
-                getCurrentWorldSpaceTransformWithDelta()
-        }
-
-    override fun computeJacobian(limbIndex: Int, linkIndex: Int): Matrix {
+    override fun computeJacobian(limbId: LimbId, linkIndex: Int): Matrix {
         TODO("not implemented")
     }
 
     override fun getInertialState() = bodyController.getInertialState()
 }
+
+private fun Collection<Either<KinematicBase, Limb>>.firstLimb(
+    predicate: (Limb) -> Boolean
+): Limb = (first {
+    it is Either.Right && predicate(it.b)
+} as Either.Right).b

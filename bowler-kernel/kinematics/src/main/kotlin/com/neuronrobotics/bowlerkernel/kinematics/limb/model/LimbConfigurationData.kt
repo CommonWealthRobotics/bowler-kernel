@@ -41,8 +41,7 @@ data class LimbConfigurationData(
 }
 
 fun LimbConfigurationData.toJson(): Json = JsObject(mapOf(
-    "id" to String.encoder().run { id.encode() }
-    ,
+    "id" to String.encoder().run { id.encode() },
     "linkConfigurations" to ListEncoderInstance(LinkConfigurationData.encoder()).run { linkConfigurations.encode() }
 ))
 

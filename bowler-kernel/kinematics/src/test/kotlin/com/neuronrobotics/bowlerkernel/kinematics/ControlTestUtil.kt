@@ -18,18 +18,21 @@ package com.neuronrobotics.bowlerkernel.kinematics
 
 import arrow.core.right
 import com.beust.klaxon.Klaxon
+import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseConfigurationData
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopBodyController
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopJointAngleController
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DefaultLink
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.DhParamData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkConfigurationData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkScriptData
-import com.neuronrobotics.bowlerkernel.kinematics.limb.model.DhParamData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbConfigurationData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.BasicMotionConstraints
-import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.LengthBasedReachabilityCalculator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInertialStateEstimator
@@ -38,6 +41,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.model.ClassData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanGenerator
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.octogonapus.ktguava.collections.immutableListOf
 
 internal fun createMotionConstraints(duration: Number) = BasicMotionConstraints(
     duration, 0, 0, 0
@@ -106,21 +110,27 @@ internal fun Klaxon.kinematicBaseScriptData() = KinematicBaseScriptData(
     ClassData.fromInstance(
         NoopBodyController,
         this
-    ).right(),
-    listOf(
-        limbScriptData(),
-        limbScriptData()
-    )
+    ).right()
 )
 
 internal fun kinematicBaseConfigurationData() = KinematicBaseConfigurationData(
-    "A",
-    listOf(
-        limbConfigurationData(),
-        limbConfigurationData()
+    "A"
+)
+
+internal val seaArmLinks: ImmutableList<Link> = immutableListOf(
+    DefaultLink(
+        LinkType.Rotary,
+        DhParam(135, 0, 0, -90),
+        NoopInertialStateEstimator
     ),
-    listOf(
-        FrameTransformation.fromTranslation(10, 20, 30),
-        FrameTransformation.identity
+    DefaultLink(
+        LinkType.Rotary,
+        DhParam(0, 0, 175, 0),
+        NoopInertialStateEstimator
+    ),
+    DefaultLink(
+        LinkType.Rotary,
+        DhParam(0, 90, 169.28, 0),
+        NoopInertialStateEstimator
     )
 )

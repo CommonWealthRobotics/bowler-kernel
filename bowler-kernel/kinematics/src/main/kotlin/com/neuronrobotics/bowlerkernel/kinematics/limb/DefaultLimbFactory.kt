@@ -47,6 +47,14 @@ class DefaultLimbFactory
         limbConfigurationData: LimbConfigurationData,
         limbScriptData: LimbScriptData
     ): Either<String, Limb> = binding {
+        require(limbConfigurationData.linkConfigurations.size == limbScriptData.linkScripts.size) {
+            """
+            Must have an equal number of link configurations and link scripts.
+            Link configurations size: ${limbConfigurationData.linkConfigurations.size}
+            Link scripts size: ${limbScriptData.linkScripts.size}
+            """.trimIndent()
+        }
+
         val links = limbConfigurationData.linkConfigurations
             .zip(limbScriptData.linkScripts)
             .map { linkFactory.createLink(it.first, it.second).bind() }

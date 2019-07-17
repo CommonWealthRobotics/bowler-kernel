@@ -55,30 +55,24 @@ fun LimbScriptData.toJson(): Json = JsObject(mapOf(
     "forwardKinematicsSolver" to Either.encoder(
         GitFile.encoder(),
         ClassData.encoder()
-    ).run { forwardKinematicsSolver.encode() }
-    ,
+    ).run { forwardKinematicsSolver.encode() },
     "inertialStateEstimator" to Either.encoder(
         GitFile.encoder(),
         ClassData.encoder()
-    ).run { inertialStateEstimator.encode() }
-    ,
+    ).run { inertialStateEstimator.encode() },
     "inverseKinematicsSolver" to Either.encoder(
         GitFile.encoder(),
         ClassData.encoder()
-    ).run { inverseKinematicsSolver.encode() }
-    ,
+    ).run { inverseKinematicsSolver.encode() },
     "limbMotionPlanFollower" to Either.encoder(
         GitFile.encoder(),
         ClassData.encoder()
-    ).run { limbMotionPlanFollower.encode() }
-    ,
+    ).run { limbMotionPlanFollower.encode() },
     "limbMotionPlanGenerator" to Either.encoder(
         GitFile.encoder(),
         ClassData.encoder()
-    ).run { limbMotionPlanGenerator.encode() }
-    ,
-    "linkScripts" to ListEncoderInstance(LinkScriptData.encoder()).run { linkScripts.encode() }
-    ,
+    ).run { limbMotionPlanGenerator.encode() },
+    "linkScripts" to ListEncoderInstance(LinkScriptData.encoder()).run { linkScripts.encode() },
     "reachabilityCalculator" to Either.encoder(
         GitFile.encoder(),
         ClassData.encoder()

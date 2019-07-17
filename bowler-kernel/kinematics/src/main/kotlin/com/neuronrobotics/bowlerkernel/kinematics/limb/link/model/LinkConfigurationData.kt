@@ -22,9 +22,6 @@ import arrow.core.fix
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.decoder
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.encoder
-import com.neuronrobotics.bowlerkernel.kinematics.limb.model.DhParamData
-import com.neuronrobotics.bowlerkernel.kinematics.limb.model.decoder
-import com.neuronrobotics.bowlerkernel.kinematics.limb.model.encoder
 import helios.core.DecodingError
 import helios.core.JsObject
 import helios.core.Json
@@ -40,8 +37,7 @@ data class LinkConfigurationData(
 }
 
 fun LinkConfigurationData.toJson(): Json = JsObject(mapOf(
-    "dhParamData" to DhParamData.encoder().run { dhParamData.encode() }
-    ,
+    "dhParamData" to DhParamData.encoder().run { dhParamData.encode() },
     "type" to LinkType.encoder().run { type.encode() }
 ))
 

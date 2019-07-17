@@ -59,7 +59,7 @@ inline fun <reified T : Any> ControllerSpecification.loadClass(klaxon: Klaxon): 
     }
 
     return klaxon.fromJsonObject(
-        klaxon.parseJsonObject(b.data.reader()),
+        klaxon.parseJsonObject(b.data.replace("\\\"", "\"").reader()),
         clazz,
         clazz.kotlin
     ) as T
