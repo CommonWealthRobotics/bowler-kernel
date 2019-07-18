@@ -30,6 +30,8 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.model.createInstance
 import com.neuronrobotics.bowlerkernel.scripting.factory.GitScriptFactory
+import org.octogonapus.ktguava.collections.toImmutableMap
+import org.octogonapus.ktguava.collections.toImmutableSet
 import javax.inject.Inject
 
 class DefaultKinematicBaseFactory
@@ -55,8 +57,8 @@ class DefaultKinematicBaseFactory
         DefaultKinematicBase(
             SimpleKinematicBaseId(kinematicBaseConfigurationData.id),
             bodyController,
-            limbs,
-            limbTransforms
+            limbs.toImmutableSet(),
+            limbTransforms.toImmutableMap()
         )
     }
 }

@@ -21,6 +21,8 @@ package com.neuronrobotics.bowlerkernel.kinematics.base
 import Jama.Matrix
 import arrow.core.Either
 import arrow.core.left
+import com.google.common.collect.ImmutableMap
+import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.KinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
 import com.neuronrobotics.bowlerkernel.kinematics.graph.BaseNode
@@ -31,6 +33,8 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
 import org.octogonapus.ktguava.collections.outNodes
 import org.octogonapus.ktguava.collections.outNodesAndEdges
+import org.octogonapus.ktguava.collections.toImmutableMap
+import org.octogonapus.ktguava.collections.toImmutableSet
 
 /**
  * A [KinematicBase] which only considers limbs directly attached to it.
@@ -44,8 +48,8 @@ import org.octogonapus.ktguava.collections.outNodesAndEdges
 class DefaultKinematicBase(
     override val id: KinematicBaseId,
     override val bodyController: BodyController,
-    private val limbs: Set<Limb>,
-    private val limbBaseTransforms: Map<LimbId, FrameTransformation>
+    val limbs: ImmutableSet<Limb>,
+    val limbBaseTransforms: ImmutableMap<LimbId, FrameTransformation>
 ) : KinematicBase {
 
     private var currentWorldSpaceTransform = FrameTransformation.identity
@@ -129,8 +133,8 @@ class DefaultKinematicBase(
             return DefaultKinematicBase(
                 baseId,
                 bodyController,
-                limbs,
-                limbBaseTransforms
+                limbs.toImmutableSet(),
+                limbBaseTransforms.toImmutableMap()
             )
         }
     }
