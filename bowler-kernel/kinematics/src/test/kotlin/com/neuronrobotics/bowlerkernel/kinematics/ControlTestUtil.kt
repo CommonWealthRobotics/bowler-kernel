@@ -16,13 +16,19 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics
 
+import arrow.core.left
 import arrow.core.right
 import com.beust.klaxon.Klaxon
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.KinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseConfigurationData
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopBodyController
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopJointAngleController
+import com.neuronrobotics.bowlerkernel.kinematics.graph.BaseNode
+import com.neuronrobotics.bowlerkernel.kinematics.graph.KinematicGraph
+import com.neuronrobotics.bowlerkernel.kinematics.graph.buildMutableKinematicGraph
+import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DefaultLink
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
@@ -33,6 +39,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbConfigurationData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.BasicMotionConstraints
+import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.LengthBasedReachabilityCalculator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInertialStateEstimator
@@ -42,6 +49,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlan
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanGenerator
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.octogonapus.ktguava.collections.immutableListOf
+import org.octogonapus.ktguava.collections.toImmutableNetwork
 
 internal fun createMotionConstraints(duration: Number) = BasicMotionConstraints(
     duration, 0, 0, 0
@@ -134,3 +142,16 @@ internal val seaArmLinks: ImmutableList<Link> = immutableListOf(
         NoopInertialStateEstimator
     )
 )
+
+internal fun makeSimpleKinematicGraph(
+    baseId: KinematicBaseId,
+    vararg limbs: Pair<Limb, FrameTransformation>
+): KinematicGraph {
+    val mutableGraph = buildMutableKinematicGraph()
+
+    limbs.forEach { (limb, transform) ->
+        mutableGraph.addEdge(BaseNode(baseId).left(), limb.right(), transform)
+    }
+
+    return mutableGraph.toImmutableNetwork()
+}

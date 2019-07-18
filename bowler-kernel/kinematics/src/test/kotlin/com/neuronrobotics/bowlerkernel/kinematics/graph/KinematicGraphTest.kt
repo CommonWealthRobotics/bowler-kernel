@@ -20,7 +20,6 @@ import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
 import com.google.common.graph.ImmutableNetwork
-import com.google.common.graph.NetworkBuilder
 import com.neuronrobotics.bowlerkernel.kinematics.base.DefaultKinematicBase
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopBodyController
@@ -48,10 +47,7 @@ internal class KinematicGraphTest {
 
     @Test
     fun `test json conversion`() {
-        val mutableKinematicGraph: MutableKinematicGraph = NetworkBuilder.directed()
-            .allowsParallelEdges(false)
-            .allowsSelfLoops(false)
-            .build()
+        val mutableKinematicGraph = buildMutableKinematicGraph()
 
         val baseNodeA = BaseNode(SimpleKinematicBaseId("BaseA")).left()
 
@@ -72,9 +68,9 @@ internal class KinematicGraphTest {
 
         val kinematicGraph = ImmutableNetwork.copyOf(mutableKinematicGraph)
 
-        val baseA = DefaultKinematicBase(
-            SimpleKinematicBaseId("BaseA"),
+        val baseA = DefaultKinematicBase.create(
             kinematicGraph,
+            SimpleKinematicBaseId("BaseA"),
             NoopBodyController
         )
 

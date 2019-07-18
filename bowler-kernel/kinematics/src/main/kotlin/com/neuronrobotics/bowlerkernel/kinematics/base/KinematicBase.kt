@@ -19,7 +19,6 @@ package com.neuronrobotics.bowlerkernel.kinematics.base
 import Jama.Matrix
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.KinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
-import com.neuronrobotics.bowlerkernel.kinematics.graph.KinematicGraph
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
@@ -37,11 +36,6 @@ interface KinematicBase {
      * The unique id of this base.
      */
     val id: KinematicBaseId
-
-    /**
-     * The graph this base is a part of.
-     */
-    val kinematicGraph: KinematicGraph
 
     /**
      * The controller for the body.

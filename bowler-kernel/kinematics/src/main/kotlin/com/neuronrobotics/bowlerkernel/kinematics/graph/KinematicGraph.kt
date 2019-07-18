@@ -25,6 +25,7 @@ import arrow.core.right
 import com.beust.klaxon.Klaxon
 import com.google.common.graph.ImmutableNetwork
 import com.google.common.graph.MutableNetwork
+import com.google.common.graph.NetworkBuilder
 import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBase
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.KinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseConfigurationData
@@ -38,13 +39,32 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.model.ClassData
 
-data class BaseNode(
-    val id: KinematicBaseId
-)
+/**
+ * An identifier of a [KinematicBase] in a [KinematicGraph].
+ *
+ * @param id The [KinematicBase.id].
+ */
+data class BaseNode(val id: KinematicBaseId)
 
 typealias KinematicGraph = ImmutableNetwork<Either<BaseNode, Limb>, FrameTransformation>
 typealias MutableKinematicGraph = MutableNetwork<Either<BaseNode, Limb>, FrameTransformation>
 
+/**
+ * @return An empty [MutableKinematicGraph].
+ */
+fun buildMutableKinematicGraph(): MutableKinematicGraph =
+    NetworkBuilder.directed()
+        .allowsParallelEdges(false)
+        .allowsSelfLoops(false)
+        .build()
+
+/**
+ * Converts a [KinematicGraph] to a [KinematicGraphData].
+ *
+ * @param bases The kinematic bases corresponding to the base nodes in the graph.
+ * @param klaxon The [Klaxon] instance used to map scripts to [ClassData].
+ * @return A [KinematicGraphData] representing this [KinematicGraph].
+ */
 fun KinematicGraph.convertToKinematicGraphData(
     bases: Set<KinematicBase>,
     klaxon: Klaxon = Klaxon().converter(FrameTransformation)
