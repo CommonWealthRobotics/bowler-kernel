@@ -38,7 +38,5 @@ class LengthBasedReachabilityCalculator : ReachabilityCalculator {
         return true
     }
 
-    override fun hashCode(): Int {
-        return javaClass.hashCode()
-    }
+    override fun hashCode(): Int = javaClass.hashCode()
 }
