@@ -19,10 +19,14 @@ package com.neuronrobotics.bowlerkernel.kinematics.base
 import arrow.core.Either
 import arrow.core.extensions.either.monad.binding
 import com.beust.klaxon.Klaxon
+import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseConfigurationData
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.LimbFactory
+import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.LimbId
+import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbConfigurationData
+import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.model.createInstance
 import com.neuronrobotics.bowlerkernel.scripting.factory.GitScriptFactory
@@ -37,27 +41,22 @@ class DefaultKinematicBaseFactory
 
     override fun create(
         kinematicBaseConfigurationData: KinematicBaseConfigurationData,
-        kinematicBaseScriptData: KinematicBaseScriptData
+        kinematicBaseScriptData: KinematicBaseScriptData,
+        limbData: List<Pair<LimbConfigurationData, LimbScriptData>>,
+        limbTransforms: Map<LimbId, FrameTransformation>
     ): Either<String, KinematicBase> = binding {
         val (bodyController) = kinematicBaseScriptData.bodyController
             .createInstance<BodyController>(scriptFactory, klaxon)
 
-        TODO()
+        val limbs = limbData.mapTo(hashSetOf()) {
+            limbFactory.createLimb(it.first, it.second).bind()
+        }
 
-        // val limbs = kinematicBaseConfigurationData.limbConfigurations
-        //     .zip(kinematicBaseScriptData.limbScripts)
-        //     .map { limbFactory.createLimb(it.first, it.second).bind() }
-        //     .toImmutableList()
-        //
-        // val limbTransforms = limbs.map { it.id }
-        //     .zip(kinematicBaseConfigurationData.limbTransforms)
-        //     .toImmutableMap()
-        //
-        // DefaultKinematicBase(
-        //     SimpleKinematicBaseId(kinematicBaseConfigurationData.id),
-        //     limbs,
-        //     limbTransforms,
-        //     bodyController
-        // )
+        DefaultKinematicBase(
+            SimpleKinematicBaseId(kinematicBaseConfigurationData.id),
+            bodyController,
+            limbs,
+            limbTransforms
+        )
     }
 }
