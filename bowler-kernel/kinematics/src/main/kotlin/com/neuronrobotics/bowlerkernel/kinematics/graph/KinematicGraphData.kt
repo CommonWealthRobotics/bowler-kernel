@@ -22,7 +22,6 @@ import arrow.core.Tuple3
 import arrow.core.extensions.either.applicative.applicative
 import arrow.core.extensions.either.monad.binding
 import arrow.core.fix
-import com.google.common.graph.ImmutableNetwork
 import com.google.common.graph.NetworkBuilder
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseConfigurationData
@@ -46,6 +45,7 @@ import helios.instances.decoder
 import helios.instances.encoder
 import helios.typeclasses.Decoder
 import helios.typeclasses.Encoder
+import org.octogonapus.ktguava.collections.toImmutableNetwork
 
 typealias KinematicGraphDataNode = Either<
     Tuple2<KinematicBaseConfigurationData, KinematicBaseScriptData>,
@@ -94,7 +94,7 @@ data class KinematicGraphData(
                 )
             }
 
-            ImmutableNetwork.copyOf(mutableNetwork)
+            mutableNetwork.toImmutableNetwork()
         }
 
     companion object

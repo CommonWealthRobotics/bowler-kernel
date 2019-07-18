@@ -19,7 +19,6 @@ package com.neuronrobotics.bowlerkernel.kinematics.graph
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import com.google.common.graph.ImmutableNetwork
 import com.neuronrobotics.bowlerkernel.kinematics.base.DefaultKinematicBase
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopBodyController
@@ -41,6 +40,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.octogonapus.ktguava.collections.toImmutableList
+import org.octogonapus.ktguava.collections.toImmutableNetwork
 
 @Suppress("UnstableApiUsage")
 internal class KinematicGraphTest {
@@ -66,7 +66,7 @@ internal class KinematicGraphTest {
             FrameTransformation.fromTranslation(-10, 0, -10)
         )
 
-        val kinematicGraph = ImmutableNetwork.copyOf(mutableKinematicGraph)
+        val kinematicGraph = mutableKinematicGraph.toImmutableNetwork()
 
         val baseA = DefaultKinematicBase.create(
             kinematicGraph,
