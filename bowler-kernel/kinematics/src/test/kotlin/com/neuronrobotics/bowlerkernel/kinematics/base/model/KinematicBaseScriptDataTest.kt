@@ -16,21 +16,16 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.base.model
 
+import arrow.core.Either
+import arrow.core.right
 import com.beust.klaxon.Klaxon
+import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopBodyController
-import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopJointAngleController
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkScriptData
-import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbScriptData
-import com.neuronrobotics.bowlerkernel.kinematics.motion.LengthBasedReachabilityCalculator
-import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopForwardKinematicsSolver
-import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInertialStateEstimator
-import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInverseKinematicsSolver
-import com.neuronrobotics.bowlerkernel.kinematics.motion.model.ClassData
-import com.neuronrobotics.bowlerkernel.kinematics.motion.model.ControllerSpecification
-import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanFollower
-import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanGenerator
-import com.neuronrobotics.bowlerkernel.kinematics.testJsonConversion
+import com.neuronrobotics.bowlerkernel.kinematics.kinematicBaseScriptData
+import com.neuronrobotics.bowlerkernel.kinematics.motion.model.loadClass
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 
 internal class KinematicBaseScriptDataTest {
 
@@ -38,71 +33,20 @@ internal class KinematicBaseScriptDataTest {
     fun `test json`() {
         val klaxon = Klaxon()
 
-        val linkScriptData = LinkScriptData(
-            ControllerSpecification.fromClassData(
-                ClassData.fromInstance(
-                    NoopJointAngleController,
-                    klaxon
-                )
-            ),
-            ControllerSpecification.fromClassData(
-                ClassData.fromInstance(
-                    NoopInertialStateEstimator,
-                    klaxon
-                )
-            )
-        )
+        val expected = klaxon.kinematicBaseScriptData()
 
-        val limbScriptData = LimbScriptData(
-            ControllerSpecification.fromClassData(
-                ClassData.fromInstance(
-                    NoopForwardKinematicsSolver,
-                    klaxon
-                )
-            ),
-            ControllerSpecification.fromClassData(
-                ClassData.fromInstance(
-                    NoopInverseKinematicsSolver,
-                    klaxon
-                )
-            ),
-            ControllerSpecification.fromClassData(
-                ClassData.fromInstance(
-                    LengthBasedReachabilityCalculator(),
-                    klaxon
-                )
-            ),
-            ControllerSpecification.fromClassData(
-                ClassData.fromInstance(
-                    NoopLimbMotionPlanGenerator,
-                    klaxon
-                )
-            ),
-            ControllerSpecification.fromClassData(
-                ClassData.fromInstance(
-                    NoopLimbMotionPlanFollower,
-                    klaxon
-                )
-            ),
-            ControllerSpecification.fromClassData(
-                ClassData.fromInstance(
-                    NoopInertialStateEstimator,
-                    klaxon
-                )
-            ),
-            listOf(linkScriptData)
-        )
+        val decoded = with(KinematicBaseScriptData.encoder()) {
+            expected.encode()
+        }.decode(KinematicBaseScriptData.decoder())
 
-        klaxon.testJsonConversion(
-            KinematicBaseScriptData(
-                ControllerSpecification.fromClassData(
-                    ClassData.fromInstance(
-                        NoopBodyController,
-                        klaxon
-                    )
-                ),
-                listOf(limbScriptData)
-            )
+        assertAll(
+            { assertEquals(expected.right(), decoded) },
+            {
+                assertEquals(
+                    NoopBodyController,
+                    (decoded as Either.Right).b.bodyController.loadClass<BodyController>(klaxon)
+                )
+            }
         )
     }
 }

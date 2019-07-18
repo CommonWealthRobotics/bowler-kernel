@@ -19,6 +19,10 @@ package com.neuronrobotics.bowlerkernel.kinematics.base
 import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseConfigurationData
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseScriptData
+import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.LimbId
+import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbConfigurationData
+import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbScriptData
+import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 
 interface KinematicBaseFactory {
 
@@ -27,10 +31,14 @@ interface KinematicBaseFactory {
      *
      * @param kinematicBaseConfigurationData The configuration data.
      * @param kinematicBaseScriptData The script data.
+     * @param limbData The data for all the limbs attached to the base.
+     * @param limbTransforms The base transforms for all the limbs attached to the base.
      * @return A new kinematic base.
      */
     fun create(
         kinematicBaseConfigurationData: KinematicBaseConfigurationData,
-        kinematicBaseScriptData: KinematicBaseScriptData
+        kinematicBaseScriptData: KinematicBaseScriptData,
+        limbData: List<Pair<LimbConfigurationData, LimbScriptData>>,
+        limbTransforms: Map<LimbId, FrameTransformation>
     ): Either<String, KinematicBase>
 }

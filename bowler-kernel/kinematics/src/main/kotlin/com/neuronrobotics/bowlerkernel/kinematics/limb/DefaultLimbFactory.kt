@@ -28,6 +28,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.ForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialStateEstimator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.ReachabilityCalculator
+import com.neuronrobotics.bowlerkernel.kinematics.motion.model.createInstance
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanGenerator
 import com.neuronrobotics.bowlerkernel.scripting.factory.GitScriptFactory
@@ -46,6 +47,14 @@ class DefaultLimbFactory
         limbConfigurationData: LimbConfigurationData,
         limbScriptData: LimbScriptData
     ): Either<String, Limb> = binding {
+        require(limbConfigurationData.linkConfigurations.size == limbScriptData.linkScripts.size) {
+            """
+            Must have an equal number of link configurations and link scripts.
+            Link configurations size: ${limbConfigurationData.linkConfigurations.size}
+            Link scripts size: ${limbScriptData.linkScripts.size}
+            """.trimIndent()
+        }
+
         val links = limbConfigurationData.linkConfigurations
             .zip(limbScriptData.linkScripts)
             .map { linkFactory.createLink(it.first, it.second).bind() }

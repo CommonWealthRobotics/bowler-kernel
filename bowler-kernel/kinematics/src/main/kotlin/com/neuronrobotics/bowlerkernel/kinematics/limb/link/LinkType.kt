@@ -16,9 +16,40 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.limb.link
 
+import arrow.core.Either
+import arrow.core.Try
+import arrow.core.flatMap
+import helios.core.DecodingError
+import helios.core.JsString
+import helios.core.Json
+import helios.core.ObjectDecodingError
+import helios.core.StringDecodingError
+import helios.typeclasses.Decoder
+import helios.typeclasses.Encoder
+
 /**
  * The type of a link.
  */
 enum class LinkType {
-    Rotary, Prismatic
+    Rotary, Prismatic;
+
+    companion object
 }
+
+fun LinkType.Companion.encoder() = Enum.Companion.encoder<LinkType>()
+fun LinkType.Companion.decoder() = Enum.Companion.decoder<LinkType>()
+
+fun <E : Enum<E>> Enum.Companion.encoder(): Encoder<Enum<E>> = object : Encoder<Enum<E>> {
+    override fun Enum<E>.encode(): Json = JsString(name)
+}
+
+inline fun <reified E : Enum<E>> Enum.Companion.decoder(): Decoder<E> =
+    object : Decoder<E> {
+
+        override fun decode(value: Json): Either<DecodingError, E> =
+            value.asJsString().toEither { StringDecodingError(value) }.flatMap {
+                Try {
+                    java.lang.Enum.valueOf(E::class.java, it.value.toString())
+                }.toEither { ObjectDecodingError(value) }
+            }
+    }

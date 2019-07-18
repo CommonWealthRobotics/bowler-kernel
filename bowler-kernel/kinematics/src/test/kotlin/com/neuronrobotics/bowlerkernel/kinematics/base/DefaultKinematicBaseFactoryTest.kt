@@ -17,6 +17,7 @@
 package com.neuronrobotics.bowlerkernel.kinematics.base
 
 import arrow.core.Either
+import arrow.core.right
 import com.beust.klaxon.Klaxon
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseConfigurationData
@@ -30,9 +31,9 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DefaultLink
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DefaultLinkFactory
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.DhParamData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkConfigurationData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkScriptData
-import com.neuronrobotics.bowlerkernel.kinematics.limb.model.DhParamData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbConfigurationData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
@@ -41,7 +42,6 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopForwardKinematicsSo
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInertialStateEstimator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.model.ClassData
-import com.neuronrobotics.bowlerkernel.kinematics.motion.model.ControllerSpecification
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanGenerator
 import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultGitScriptFactory
@@ -53,92 +53,44 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableMapOf
+import org.octogonapus.ktguava.collections.immutableSetOf
 
 internal class DefaultKinematicBaseFactoryTest {
 
     private val klaxon = Klaxon().converter(FrameTransformation)
 
     private val linkScriptData = LinkScriptData(
-        ControllerSpecification.fromClassData(
-            ClassData.fromInstance(
-                NoopJointAngleController,
-                klaxon
-            )
-        ),
-        ControllerSpecification.fromClassData(
-            ClassData.fromInstance(
-                NoopInertialStateEstimator,
-                klaxon
+        ClassData.fromInstance(NoopJointAngleController, klaxon).right(),
+        ClassData.fromInstance(NoopInertialStateEstimator, klaxon).right()
+    )
+
+    private val limbConfigurationData = LimbConfigurationData(
+        "limb 1 id",
+        listOf(
+            LinkConfigurationData(
+                LinkType.Rotary,
+                DhParamData(10, 20, 30, 40)
             )
         )
     )
 
+    private val limbBaseTransform =
+        SimpleLimbId("limb 1 id") to FrameTransformation.fromTranslation(10, 20, 30)
+
     private val limbScriptData = LimbScriptData(
-        ControllerSpecification.fromClassData(
-            ClassData.fromInstance(
-                NoopForwardKinematicsSolver,
-                klaxon
-            )
-        ),
-        ControllerSpecification.fromClassData(
-            ClassData.fromInstance(
-                NoopInverseKinematicsSolver,
-                klaxon
-            )
-        ),
-        ControllerSpecification.fromClassData(
-            ClassData.fromInstance(
-                LengthBasedReachabilityCalculator(),
-                klaxon
-            )
-        ),
-        ControllerSpecification.fromClassData(
-            ClassData.fromInstance(
-                NoopLimbMotionPlanGenerator,
-                klaxon
-            )
-        ),
-        ControllerSpecification.fromClassData(
-            ClassData.fromInstance(
-                NoopLimbMotionPlanFollower,
-                klaxon
-            )
-        ),
-        ControllerSpecification.fromClassData(
-            ClassData.fromInstance(
-                NoopInertialStateEstimator,
-                klaxon
-            )
-        ),
+        ClassData.fromInstance(NoopForwardKinematicsSolver, klaxon).right(),
+        ClassData.fromInstance(NoopInverseKinematicsSolver, klaxon).right(),
+        ClassData.fromInstance(LengthBasedReachabilityCalculator(), klaxon).right(),
+        ClassData.fromInstance(NoopLimbMotionPlanGenerator, klaxon).right(),
+        ClassData.fromInstance(NoopLimbMotionPlanFollower, klaxon).right(),
+        ClassData.fromInstance(NoopInertialStateEstimator, klaxon).right(),
         listOf(linkScriptData)
     )
 
-    private val configData = KinematicBaseConfigurationData(
-        "base id",
-        listOf(
-            LimbConfigurationData(
-                "limb 1 id",
-                listOf(
-                    LinkConfigurationData(
-                        LinkType.Rotary,
-                        DhParamData(10, 20, 30, 40)
-                    )
-                )
-            )
-        ),
-        listOf(
-            FrameTransformation.fromTranslation(10, 20, 30)
-        )
-    )
+    private val configData = KinematicBaseConfigurationData("base id")
 
     private val scriptData = KinematicBaseScriptData(
-        ControllerSpecification.fromClassData(
-            ClassData.fromInstance(
-                NoopBodyController,
-                klaxon
-            )
-        ),
-        listOf(limbScriptData)
+        ClassData.fromInstance(NoopBodyController, klaxon).right()
     )
 
     private val factory = DefaultKinematicBaseFactory(
@@ -148,10 +100,7 @@ internal class DefaultKinematicBaseFactoryTest {
         ),
         DefaultLimbFactory(
             mock {},
-            DefaultLinkFactory(
-                mock {},
-                klaxon
-            ),
+            DefaultLinkFactory(mock {}, klaxon),
             klaxon
         ),
         klaxon
@@ -161,7 +110,8 @@ internal class DefaultKinematicBaseFactoryTest {
     fun `full base test`() {
         val expected = DefaultKinematicBase(
             SimpleKinematicBaseId("base id"),
-            immutableListOf(
+            NoopBodyController,
+            immutableSetOf(
                 DefaultLimb(
                     SimpleLimbId("limb 1 id"),
                     immutableListOf(
@@ -176,24 +126,26 @@ internal class DefaultKinematicBaseFactoryTest {
                     LengthBasedReachabilityCalculator(),
                     NoopLimbMotionPlanGenerator,
                     NoopLimbMotionPlanFollower,
-                    immutableListOf(
-                        NoopJointAngleController
-                    ),
+                    immutableListOf(NoopJointAngleController),
                     NoopInertialStateEstimator
                 )
             ),
             immutableMapOf(
                 SimpleLimbId("limb 1 id") to
                     FrameTransformation.fromTranslation(10, 20, 30)
-            ),
-            NoopBodyController
+            )
         )
 
-        val actual = factory.create(configData, scriptData)
+        val actual = factory.create(
+            configData,
+            scriptData,
+            listOf(limbConfigurationData to limbScriptData),
+            listOf(limbBaseTransform).toMap()
+        )
 
         assertTrue(actual is Either.Right, "actual was $actual")
         actual as Either.Right
-        val base = actual.b
+        val base = actual.b as DefaultKinematicBase
 
         assertAll(
             { assertEquals(expected::class, base::class) },

@@ -106,4 +106,34 @@ class DefaultLimb(
         reachabilityCalculator.isFrameTransformationReachable(taskSpaceTransform, links)
 
     override fun getInertialState() = inertialStateEstimator.getInertialState()
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is DefaultLimb) return false
+
+        if (id != other.id) return false
+        if (links != other.links) return false
+        if (forwardKinematicsSolver != other.forwardKinematicsSolver) return false
+        if (inverseKinematicsSolver != other.inverseKinematicsSolver) return false
+        if (reachabilityCalculator != other.reachabilityCalculator) return false
+        if (motionPlanGenerator != other.motionPlanGenerator) return false
+        if (motionPlanFollower != other.motionPlanFollower) return false
+        if (jointAngleControllers != other.jointAngleControllers) return false
+        if (inertialStateEstimator != other.inertialStateEstimator) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + links.hashCode()
+        result = 31 * result + forwardKinematicsSolver.hashCode()
+        result = 31 * result + inverseKinematicsSolver.hashCode()
+        result = 31 * result + reachabilityCalculator.hashCode()
+        result = 31 * result + motionPlanGenerator.hashCode()
+        result = 31 * result + motionPlanFollower.hashCode()
+        result = 31 * result + jointAngleControllers.hashCode()
+        result = 31 * result + inertialStateEstimator.hashCode()
+        return result
+    }
 }

@@ -14,13 +14,26 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics.base.model
+package com.neuronrobotics.bowlerkernel.kinematics.limb.model
 
-import helios.json
+import arrow.core.right
+import com.beust.klaxon.Klaxon
+import com.neuronrobotics.bowlerkernel.kinematics.limbScriptData
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
-@json
-data class KinematicBaseConfigurationData(
-    val id: String
-) {
-    companion object
+internal class LimbScriptDataTest {
+
+    @Test
+    fun `test json conversion`() {
+        val klaxon = Klaxon()
+
+        val expected = klaxon.limbScriptData()
+
+        val decoded = with(LimbScriptData.encoder()) {
+            expected.encode()
+        }.decode(LimbScriptData.decoder())
+
+        assertEquals(expected.right(), decoded)
+    }
 }

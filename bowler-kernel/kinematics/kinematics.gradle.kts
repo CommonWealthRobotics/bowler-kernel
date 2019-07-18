@@ -1,3 +1,11 @@
+plugins {
+    kotlin("kapt")
+}
+
+apply {
+    from(rootProject.file("gradle/generated-kotlin-sources.gradle"))
+}
+
 description = "The kinematics stack."
 
 repositories {
@@ -48,10 +56,37 @@ dependencies {
         name = "kotlin-guiced-core",
         version = property("kotlin-guiced-core.version") as String
     )
+
     implementation(
         group = "com.beust",
         name = "klaxon",
         version = property("klaxon.version") as String
+    )
+
+    implementation(
+        group = "com.47deg",
+        name = "helios-core",
+        version = property("helios.version") as String
+    )
+    implementation(
+        group = "com.47deg",
+        name = "helios-parser",
+        version = property("helios.version") as String
+    )
+    implementation(
+        group = "com.47deg",
+        name = "helios-optics",
+        version = property("helios.version") as String
+    )
+    kapt(
+        group = "com.47deg",
+        name = "helios-meta",
+        version = property("helios.version") as String
+    )
+    kapt(
+        group = "com.47deg",
+        name = "helios-dsl-meta",
+        version = property("helios.version") as String
     )
 
     testImplementation(

@@ -24,10 +24,14 @@ import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseConfig
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.LimbFactory
+import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.LimbId
+import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbConfigurationData
+import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
+import com.neuronrobotics.bowlerkernel.kinematics.motion.model.createInstance
 import com.neuronrobotics.bowlerkernel.scripting.factory.GitScriptFactory
-import org.octogonapus.ktguava.collections.toImmutableList
 import org.octogonapus.ktguava.collections.toImmutableMap
+import org.octogonapus.ktguava.collections.toImmutableSet
 import javax.inject.Inject
 
 class DefaultKinematicBaseFactory
@@ -39,25 +43,22 @@ class DefaultKinematicBaseFactory
 
     override fun create(
         kinematicBaseConfigurationData: KinematicBaseConfigurationData,
-        kinematicBaseScriptData: KinematicBaseScriptData
+        kinematicBaseScriptData: KinematicBaseScriptData,
+        limbData: List<Pair<LimbConfigurationData, LimbScriptData>>,
+        limbTransforms: Map<LimbId, FrameTransformation>
     ): Either<String, KinematicBase> = binding {
         val (bodyController) = kinematicBaseScriptData.bodyController
             .createInstance<BodyController>(scriptFactory, klaxon)
 
-        val limbs = kinematicBaseConfigurationData.limbConfigurations
-            .zip(kinematicBaseScriptData.limbScripts)
-            .map { limbFactory.createLimb(it.first, it.second).bind() }
-            .toImmutableList()
-
-        val limbTransforms = limbs.map { it.id }
-            .zip(kinematicBaseConfigurationData.limbTransforms)
-            .toImmutableMap()
+        val limbs = limbData.mapTo(hashSetOf()) {
+            limbFactory.createLimb(it.first, it.second).bind()
+        }
 
         DefaultKinematicBase(
             SimpleKinematicBaseId(kinematicBaseConfigurationData.id),
-            limbs,
-            limbTransforms,
-            bodyController
+            bodyController,
+            limbs.toImmutableSet(),
+            limbTransforms.toImmutableMap()
         )
     }
 }

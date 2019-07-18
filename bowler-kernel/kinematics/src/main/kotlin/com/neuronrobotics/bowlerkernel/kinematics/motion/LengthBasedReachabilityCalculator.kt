@@ -31,4 +31,12 @@ class LengthBasedReachabilityCalculator : ReachabilityCalculator {
         links: ImmutableList<Link>
     ) = frameTransformation.translation.length() <=
         links.map { it.dhParam }.toFrameTransformation().translation.length()
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is LengthBasedReachabilityCalculator) return false
+        return true
+    }
+
+    override fun hashCode(): Int = javaClass.hashCode()
 }

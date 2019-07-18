@@ -17,8 +17,6 @@
 package com.neuronrobotics.bowlerkernel.kinematics.base
 
 import Jama.Matrix
-import com.google.common.collect.ImmutableList
-import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.KinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
@@ -38,17 +36,6 @@ interface KinematicBase {
      * The unique id of this base.
      */
     val id: KinematicBaseId
-
-    /**
-     * The limbs attached to this base.
-     */
-    val limbs: ImmutableList<Limb>
-
-    /**
-     * A mapping of a [Limb.id] to the [FrameTransformation] which moves its starting point to
-     * its mounting point on this base.
-     */
-    val limbBaseTransforms: ImmutableMap<LimbId, FrameTransformation>
 
     /**
      * The controller for the body.
@@ -97,34 +84,12 @@ interface KinematicBase {
     )
 
     /**
-     * Sets a desired world space transform the limb tip should try to move to.
-     *
-     * @param limbIndex The index of the limb in [limbs].
-     * @param worldSpaceTransform The desired world space transform for the limb tip.
-     * @param motionConstraints The constraints on the motion to move from the current task
-     * space transform to the desired [worldSpaceTransform].
-     */
-    fun setDesiredLimbTipTransform(
-        limbIndex: Int,
-        worldSpaceTransform: FrameTransformation,
-        motionConstraints: MotionConstraints
-    )
-
-    /**
      * Reads the current tip transform of the limb in world space.
      *
      * @param limbId The id of the limb.
      * @return The current limb tip transform in world space.
      */
     fun getCurrentLimbTipTransform(limbId: LimbId): FrameTransformation
-
-    /**
-     * Reads the current tip transform of the limb in world space.
-     *
-     * @param limbIndex The index of the limb in [limbs].
-     * @return The current limb tip transform in world space.
-     */
-    fun getCurrentLimbTipTransform(limbIndex: Int): FrameTransformation
 
     /**
      * Reads the desired tip transform of the limb in world space.
@@ -135,21 +100,13 @@ interface KinematicBase {
     fun getDesiredLimbTipTransform(limbId: LimbId): FrameTransformation
 
     /**
-     * Reads the desired tip transform of the limb in world space.
-     *
-     * @param limbIndex The index of the limb in [limbs].
-     * @return The desired limb tip transform in world space.
-     */
-    fun getDesiredLimbTipTransform(limbIndex: Int): FrameTransformation
-
-    /**
      * Computes the current Jacobian matrix for the given link.
      *
-     * @param limbIndex The index of the limb in [limbs].
+     * @param limbId The id of the limb.
      * @param linkIndex The index of the link in [Limb.links].
      * @return The Jacobian matrix.
      */
-    fun computeJacobian(limbIndex: Int, linkIndex: Int): Matrix
+    fun computeJacobian(limbId: LimbId, linkIndex: Int): Matrix
 
     /**
      * Returns the current [InertialState] for this base.
