@@ -18,6 +18,7 @@
 
 package com.neuronrobotics.bowlerkernel.gitfs
 
+import arrow.core.Eval
 import arrow.effects.IO
 import arrow.effects.handleErrorWith
 import com.google.common.collect.ImmutableList
@@ -49,6 +50,9 @@ class GitHubFS(
     private val gitHub: GitHub,
     private val credentials: Pair<String, String>
 ) : GitFS {
+
+    private val myGists = Eval.later { gitHub.myself.listGists().toList() }
+    private val myRepositories = Eval.later { gitHub.myself.allRepositories.values }
 
     override fun cloneRepo(
         gitUrl: String,
@@ -167,12 +171,12 @@ class GitHubFS(
     ): IO<ImmutableList<File>> = forkAndCloneRepo(gitUrl, branch).mapToRepoFiles()
 
     override fun isOwner(gitUrl: String): IO<Boolean> = IO {
-        gitHub.myself.listGists().firstOrNull {
+        myGists.value.firstOrNull {
             it.gitPullUrl == gitUrl
         } != null
     }.handleErrorWith {
         IO {
-            gitHub.myself.listRepositories().first { repo ->
+            myRepositories.value.first { repo ->
                 repo.gitTransportUrl == gitUrl
             }.hasPushAccess()
         }
