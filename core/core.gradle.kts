@@ -1,8 +1,24 @@
+import org.apache.commons.lang3.SystemUtils
+
 plugins {
     `java-library`
 }
 
 description = "The core module."
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath(
+            group = "org.apache.commons",
+            name = "commons-lang3",
+            version = property("commons-lang3.version") as String
+        )
+    }
+}
 
 dependencies {
     api(
@@ -24,6 +40,11 @@ dependencies {
         group = "com.neuronrobotics",
         name = "bowler-kernel-kinematics",
         version = property("bowler-kernel.version") as String
+    )
+    api(
+        group = "com.neuronrobotics",
+        name = "bowler-kinematics-native-${SystemUtils.OS_NAME.toLowerCase().replace(" ", "")}",
+        version = property("bowler-kinematics-native.version") as String
     )
 
     implementation(
