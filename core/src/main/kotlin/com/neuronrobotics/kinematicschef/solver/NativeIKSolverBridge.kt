@@ -25,6 +25,9 @@ import java.lang.Math.toDegrees
 import java.lang.Math.toRadians
 import java.nio.FloatBuffer
 
+/**
+ * Solves any serial manipulator using a native solver.
+ */
 class NativeIKSolverBridge : InverseKinematicsSolver {
 
     override fun solveChain(
@@ -33,33 +36,56 @@ class NativeIKSolverBridge : InverseKinematicsSolver {
         jointLimits: List<JointLimits>,
         targetFrameTransform: FrameTransformation
     ): List<Double> {
-        val buf = FloatBuffer.allocate(links.size * 7 + 16).apply {
-            links.forEach {
-                put(it.dhParam.d.toFloat())
-                put(toRadians(it.dhParam.theta).toFloat())
-                put(it.dhParam.r.toFloat())
-                put(toRadians(it.dhParam.alpha).toFloat())
-            }
+        val numberOfLinks = links.size
 
-            jointLimits.forEach {
-                put(toRadians(it.maximum).toFloat())
-            }
-
-            jointLimits.forEach {
-                put(toRadians(it.minimum).toFloat())
-            }
-
-            targetFrameTransform.data.forEach {
-                put(it.toFloat())
-            }
-
-            currentJointAngles.forEach {
-                put(toRadians(it).toFloat())
-            }
-
-            rewind()
+        require(numberOfLinks > 0) {
+            "Must have at least one link."
         }
 
-        return NativeIKSolver.solve(links.size, buf.array()).map { toDegrees(it.toDouble()) }
+        require(numberOfLinks == currentJointAngles.size) {
+            """
+            Links and joint angles must have equal length:
+            Number of links: $numberOfLinks
+            Number of joint angles: ${currentJointAngles.size}
+            """.trimIndent()
+        }
+
+        require(numberOfLinks == jointLimits.size) {
+            """
+            Links and joint limits must have equal length:
+            Number of links: $numberOfLinks
+            Number of joint limits: ${jointLimits.size}
+            """.trimIndent()
+        }
+
+        return NativeIKSolver.solve(
+            numberOfLinks = numberOfLinks,
+            dhParams = FloatBuffer.allocate(numberOfLinks * 4).apply {
+                links.forEach {
+                    put(it.dhParam.d.toFloat())
+                    put(toRadians(it.dhParam.theta).toFloat())
+                    put(it.dhParam.r.toFloat())
+                    put(toRadians(it.dhParam.alpha).toFloat())
+                }
+
+                rewind()
+            }.array(),
+            upperJointLimits = FloatBuffer.allocate(numberOfLinks).apply {
+                jointLimits.forEach { put(toRadians(it.maximum).toFloat()) }
+                rewind()
+            }.array(),
+            lowerJointLimits = FloatBuffer.allocate(numberOfLinks).apply {
+                jointLimits.forEach { put(toRadians(it.minimum).toFloat()) }
+                rewind()
+            }.array(),
+            initialJointAngles = FloatBuffer.allocate(numberOfLinks).apply {
+                currentJointAngles.forEach { put(toRadians(it).toFloat()) }
+                rewind()
+            }.array(),
+            target = FloatBuffer.allocate(16).apply {
+                targetFrameTransform.data.forEach { put(it.toFloat()) }
+                rewind()
+            }.array()
+        ).map { toDegrees(it.toDouble()) }
     }
 }

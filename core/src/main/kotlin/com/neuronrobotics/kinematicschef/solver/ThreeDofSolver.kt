@@ -46,22 +46,24 @@ class ThreeDofSolver : InverseKinematicsSolver {
         jointLimits: List<JointLimits>,
         targetFrameTransform: FrameTransformation
     ): List<Double> {
-        require(links.size >= 3) {
-            "Must have at least 3 links, given ${links.size}"
+        val numberOfLinks = links.size
+
+        require(numberOfLinks >= 3) {
+            "Must have at least 3 links, given $numberOfLinks"
         }
 
-        require(links.size == currentJointAngles.size) {
+        require(numberOfLinks == currentJointAngles.size) {
             """
             Links and joint angles must have equal length:
-            Number of links: ${links.size}
+            Number of links: $numberOfLinks
             Number of joint angles: ${currentJointAngles.size}
             """.trimIndent()
         }
 
-        require(links.size == jointLimits.size) {
+        require(numberOfLinks == jointLimits.size) {
             """
             Links and joint limits must have equal length:
-            Number of links: ${links.size}
+            Number of links: $numberOfLinks
             Number of joint limits: ${jointLimits.size}
             """.trimIndent()
         }
@@ -114,7 +116,7 @@ class ThreeDofSolver : InverseKinematicsSolver {
             )
         }
 
-        val inv = DoubleArray(links.size)
+        val inv = DoubleArray(numberOfLinks)
         inv[0] = toDegrees(orientation)
 
         val elevation = asin(zSet / vec)

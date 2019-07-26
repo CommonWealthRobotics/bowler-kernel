@@ -1,5 +1,3 @@
-import org.apache.commons.lang3.SystemUtils
-
 plugins {
     `java-library`
 }
@@ -41,10 +39,11 @@ dependencies {
         name = "bowler-kernel-kinematics",
         version = property("bowler-kernel.version") as String
     )
-    api(
+
+    compileOnly(
         group = "com.neuronrobotics",
-        name = "bowler-kinematics-native-${SystemUtils.OS_NAME.toLowerCase().replace(" ", "")}",
-        version = property("bowler-kinematics-native.version") as String
+        name = "bowler-kinematics-native",
+        version = "${property("bowler-kinematics-native.partial-version") as String}-linux"
     )
 
     implementation(
