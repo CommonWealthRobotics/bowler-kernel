@@ -16,8 +16,8 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.motion
 
-import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
+import com.neuronrobotics.bowlerkernel.util.JointLimits
 
 /**
  * A solver that implements inverse kinematics.
@@ -29,12 +29,14 @@ interface InverseKinematicsSolver {
      *
      * @param links The links that make up the limb.
      * @param currentJointAngles The current joint angles.
+     * @param jointLimits The limits for each joint.
      * @param targetFrameTransform The target task space frame transformation for the chain.
      * @return New joint angles to reach the [targetFrameTransform].
      */
     fun solveChain(
-        links: ImmutableList<Link>,
-        currentJointAngles: ImmutableList<Double>,
+        links: List<Link>,
+        currentJointAngles: List<Double>,
+        jointLimits: List<JointLimits>,
         targetFrameTransform: FrameTransformation
-    ): ImmutableList<Double>
+    ): List<Double>
 }

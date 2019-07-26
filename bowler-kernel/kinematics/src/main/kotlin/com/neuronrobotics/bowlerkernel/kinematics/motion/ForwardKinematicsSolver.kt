@@ -16,7 +16,6 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.motion
 
-import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 
 /**
@@ -32,7 +31,7 @@ interface ForwardKinematicsSolver {
      * @return The task space frame transformation of the chain given the [currentJointAngles].
      */
     fun solveChain(
-        links: ImmutableList<Link>,
-        currentJointAngles: ImmutableList<Double>
+        links: List<Link>,
+        currentJointAngles: List<Double>
     ): FrameTransformation
 }

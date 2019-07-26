@@ -16,7 +16,6 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.motion
 
-import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 
 /**
@@ -25,8 +24,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 object NoopForwardKinematicsSolver : ForwardKinematicsSolver {
 
     override fun solveChain(
-        links: ImmutableList<Link>,
-        currentJointAngles: ImmutableList<Double>
-    ): FrameTransformation =
-        FrameTransformation.identity
+        links: List<Link>,
+        currentJointAngles: List<Double>
+    ): FrameTransformation = FrameTransformation.identity
 }

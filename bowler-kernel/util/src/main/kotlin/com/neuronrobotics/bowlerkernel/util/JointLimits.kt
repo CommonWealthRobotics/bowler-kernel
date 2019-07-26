@@ -20,7 +20,7 @@ package com.neuronrobotics.bowlerkernel.util
  * Contains the two joint limits.
  *
  * @param maximum The maximum joint angle from home, in degrees, [0, 180].
- * @param minimum The minimum joint angle from home, in degrees, [0, -180].
+ * @param minimum The minimum joint angle from home, in degrees, [-180, 0].
  */
 data class JointLimits(
     val maximum: Double,
