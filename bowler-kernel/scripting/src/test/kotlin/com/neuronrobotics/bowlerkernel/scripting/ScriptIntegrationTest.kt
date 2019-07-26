@@ -147,14 +147,7 @@ internal class ScriptIntegrationTest {
         val script = DefaultScriptFactory(
             DefaultScriptLanguageParser()
         ).createScriptFromText("groovy", scriptText).fold(
-            {
-                fail {
-                    """
-                    |Failed to create script:
-                    |$it
-                    """.trimMargin()
-                }
-            },
+            { failedToCreateScript(it) },
             { it }
         )
 
@@ -162,28 +155,14 @@ internal class ScriptIntegrationTest {
 
         // Run the script a first time, this should work fine
         script.startScript(emptyImmutableList()).bimap(
-            {
-                fail {
-                    """
-                    |Failed to run script:
-                    |$it
-                    """.trimMargin()
-                }
-            },
+            { failedToRunScript(it) },
             { assertTrue(it as Boolean) }
         )
 
         // Run the script a second time, this should fail (inside the script) because the hardware
         // has not been unregistered
         script.startScript(emptyImmutableList()).bimap(
-            {
-                fail {
-                    """
-                    |Failed to run script:
-                    |$it
-                    """.trimMargin()
-                }
-            },
+            { failedToRunScript(it) },
             { assertFalse(it as Boolean) }
         )
 
@@ -192,14 +171,7 @@ internal class ScriptIntegrationTest {
         // Run the script a third time, this should work again because the script was stopped and
         // clean up after
         script.startScript(emptyImmutableList()).bimap(
-            {
-                fail {
-                    """
-                    |Failed to run script:
-                    |$it
-                    """.trimMargin()
-                }
-            },
+            { failedToRunScript(it) },
             { assertTrue(it as Boolean) }
         )
 
@@ -267,14 +239,7 @@ internal class ScriptIntegrationTest {
         val script = DefaultScriptFactory(
             DefaultScriptLanguageParser()
         ).createScriptFromText("kotlin", scriptText).fold(
-            {
-                fail {
-                    """
-                    |Failed to create script:
-                    |$it
-                    """.trimMargin()
-                }
-            },
+            { failedToCreateScript(it) },
             { it }
         )
 
@@ -282,28 +247,14 @@ internal class ScriptIntegrationTest {
 
         // Run the script a first time, this should work fine
         script.startScript(emptyImmutableList()).bimap(
-            {
-                fail {
-                    """
-                    |Failed to run script:
-                    |$it
-                    """.trimMargin()
-                }
-            },
+            { failedToRunScript(it) },
             { assertTrue(it as Boolean) }
         )
 
         // Run the script a second time, this should fail (inside the script) because the hardware
         // has not been unregistered
         script.startScript(emptyImmutableList()).bimap(
-            {
-                fail {
-                    """
-                    |Failed to run script:
-                    |$it
-                    """.trimMargin()
-                }
-            },
+            { failedToRunScript(it) },
             { assertFalse(it as Boolean) }
         )
 
@@ -312,14 +263,7 @@ internal class ScriptIntegrationTest {
         // Run the script a third time, this should work again because the script was stopped and
         // clean up after
         script.startScript(emptyImmutableList()).bimap(
-            {
-                fail {
-                    """
-                    |Failed to run script:
-                    |$it
-                    """.trimMargin()
-                }
-            },
+            { failedToRunScript(it) },
             { assertTrue(it as Boolean) }
         )
 
@@ -350,14 +294,7 @@ internal class ScriptIntegrationTest {
         val script = DefaultScriptFactory(
             DefaultScriptLanguageParser()
         ).createScriptFromText("kotlin", scriptText).fold(
-            {
-                fail {
-                    """
-                    |Failed to create script:
-                    |$it
-                    """.trimMargin()
-                }
-            },
+            { failedToCreateScript(it) },
             { it }
         )
 
@@ -367,14 +304,7 @@ internal class ScriptIntegrationTest {
 
         // Run the script a first time, this should work fine
         script.startScript(emptyImmutableList()).bimap(
-            {
-                fail {
-                    """
-                    |Failed to run script:
-                    |$it
-                    """.trimMargin()
-                }
-            },
+            { failedToRunScript(it) },
             {
                 @Suppress("UNCHECKED_CAST")
                 val bindings = it as Map<Key<*>, Binding<*>>
@@ -415,31 +345,15 @@ internal class ScriptIntegrationTest {
         val script = DefaultScriptFactory(
             DefaultScriptLanguageParser()
         ).createScriptFromText("kotlin", scriptText).fold(
-            {
-                fail {
-                    """
-                    |Failed to create script:
-                    |$it
-                    """.trimMargin()
-                }
-            },
+            { failedToCreateScript(it) },
             { it }
         )
 
         // Run the script a first time, this should work fine
         @Suppress("UNCHECKED_CAST")
         val result = script.startScript(emptyImmutableList()).fold(
-            {
-                fail {
-                    """
-                    |Failed to run script:
-                    |$it
-                    """.trimMargin()
-                }
-            },
-            {
-                it as List<Int>
-            }
+            { failedToRunScript(it) },
+            { it as List<Int> }
         )
 
         assertIterableEquals(result, listOf(1))
@@ -451,4 +365,20 @@ internal class ScriptIntegrationTest {
 
     private interface IFoo
     private class Foo : IFoo
+
+    private fun failedToCreateScript(it: String): Nothing =
+        fail {
+            """
+            |Failed to create script:
+            |$it
+            """.trimMargin()
+        }
+
+    private fun failedToRunScript(it: String): Nothing =
+        fail {
+            """
+            |Failed to run script:
+            |$it
+            """.trimMargin()
+        }
 }
