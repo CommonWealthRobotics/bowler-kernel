@@ -1,3 +1,5 @@
+import org.apache.commons.lang3.SystemUtils
+
 plugins {
     `java-library`
 }
@@ -17,6 +19,21 @@ buildscript {
         )
     }
 }
+
+fun bowlerKinematicsNativeVersionSuffix() = when {
+    SystemUtils.IS_OS_WINDOWS -> "windows"
+    SystemUtils.IS_OS_LINUX -> "linux"
+    SystemUtils.IS_OS_MAC -> "macos"
+    else -> throw IllegalStateException("Unknown OS: ${SystemUtils.OS_NAME}")
+}
+
+fun DependencyHandler.bowlerKinematicsNative() =
+    create(
+        group = "com.neuronrobotics",
+        name = "bowler-kinematics-native",
+        version = property("bowler-kinematics-native.partial-version") as String + "-" +
+            bowlerKinematicsNativeVersionSuffix()
+    )
 
 dependencies {
     api(
@@ -40,11 +57,7 @@ dependencies {
         version = property("bowler-kernel.version") as String
     )
 
-    compileOnly(
-        group = "com.neuronrobotics",
-        name = "bowler-kinematics-native",
-        version = "${property("bowler-kinematics-native.partial-version") as String}-linux"
-    )
+    compileOnly(bowlerKinematicsNative())
 
     implementation(
         group = "org.octogonapus",
@@ -77,6 +90,8 @@ dependencies {
         name = "hamkrest",
         version = property("hamkrest.version") as String
     )
+
+    testImplementation(bowlerKinematicsNative())
 
     testImplementation(
         group = "com.nhaarman.mockitokotlin2",
