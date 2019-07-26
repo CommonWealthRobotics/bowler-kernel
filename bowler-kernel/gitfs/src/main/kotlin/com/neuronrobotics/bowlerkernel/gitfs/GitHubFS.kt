@@ -113,29 +113,11 @@ class GitHubFS(
 
         return if (isValidHttpGitURL(gitUrl)) {
             val directory = gitUrlToDirectory(gitUrl)
-            val result = if (directory.mkdirs()) {
-                IO {
-                    Git.cloneRepository()
-                        .setURI(gitUrl)
-                        .setBranch(branch)
-                        .setDirectory(directory)
-                        .setCredentialsProvider(
-                            UsernamePasswordCredentialsProvider(
-                                credentials.first,
-                                credentials.second
-                            )
-                        )
-                        .call()
-                        .use {
-                            it.submoduleInit().call()
-                            it.submoduleUpdate().call()
-                        }
-                }.map { directory }
+            if (directory.mkdirs()) {
+                IO { cloneRepository(gitUrl, branch, directory) }.map { directory }
             } else {
                 IO.raiseError(IllegalStateException("Directory $directory already exists."))
             }
-
-            result
         } else {
             IO.raiseError(
                 IllegalArgumentException(
@@ -147,6 +129,26 @@ class GitHubFS(
             )
         }
     }
+
+    private fun cloneRepository(
+        gitUrl: String,
+        branch: String,
+        directory: File
+    ) = Git.cloneRepository()
+        .setURI(gitUrl)
+        .setBranch(branch)
+        .setDirectory(directory)
+        .setCredentialsProvider(
+            UsernamePasswordCredentialsProvider(
+                credentials.first,
+                credentials.second
+            )
+        )
+        .call()
+        .use {
+            it.submoduleInit().call()
+            it.submoduleUpdate().call()
+        }
 
     override fun cloneRepoAndGetFiles(
         gitUrl: String,
