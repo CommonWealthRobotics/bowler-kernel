@@ -57,13 +57,13 @@ dependencies {
         version = property("kotlin-guiced-core.version") as String
     )
 
-    implementation(
+    api(
         group = "com.beust",
         name = "klaxon",
         version = property("klaxon.version") as String
     )
 
-    implementation(
+    api(
         group = "com.47deg",
         name = "helios-core",
         version = property("helios.version") as String

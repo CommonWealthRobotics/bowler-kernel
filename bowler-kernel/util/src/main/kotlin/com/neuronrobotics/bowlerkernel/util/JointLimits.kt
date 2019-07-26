@@ -27,4 +27,10 @@ data class JointLimits(
     val minimum: Double
 ) {
     constructor(maximum: Number, minimum: Number) : this(maximum.toDouble(), minimum.toDouble())
+
+    init {
+        require(maximum >= minimum) {
+            "Maximum ($maximum) was less than minimum ($minimum)."
+        }
+    }
 }
