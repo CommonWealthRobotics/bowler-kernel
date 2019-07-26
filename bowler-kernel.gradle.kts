@@ -6,30 +6,19 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.nio.file.Paths
 
 plugins {
-    jacoco
-    pmd
     id("com.diffplug.gradle.spotless") version "3.22.0"
     id("org.jlleitschuh.gradle.ktlint") version "7.3.0"
     id("com.github.spotbugs") version "1.7.1"
     id("io.gitlab.arturbosch.detekt") version "1.0.0-RC12"
-    `maven-publish`
     id("com.jfrog.bintray") version "1.8.3"
-    `java-library`
     id("org.jetbrains.dokka") version "0.9.18"
     id("com.adarshr.test-logger") version "1.6.0"
+    `maven-publish`
+    `java-library`
+    jacoco
+    pmd
     checkstyle
 }
-
-val bowlerKernelVersion = "0.1.10"
-val ktlintVersion = "0.29.0"
-val junitJupiterVersion = "5.4.0"
-val jacocoToolVersion = "0.8.3"
-val checkstyleToolVersion = "8.1"
-val spotbugsToolVersion = "4.0.0-beta1"
-val pmdToolVersion = "6.3.0"
-val detektToolVersion = "1.0.0-RC12"
-
-val spotlessLicenseHeaderDelimiter = "(@|package|import)"
 
 val bowlerKernelProject = project(":bowler-kernel")
 val bowlerKernelSettingsProject = project(":bowler-kernel:config")
@@ -66,6 +55,8 @@ val publishedProjects = setOf(
     bowlerKernelVitaminsProject
 )
 
+val spotlessLicenseHeaderDelimiter = "(@|package|import)"
+
 buildscript {
     repositories {
         mavenCentral() // Needed for kotlin gradle plugin
@@ -80,7 +71,7 @@ buildscript {
 }
 
 allprojects {
-    version = bowlerKernelVersion
+    version = property("bowler-kernel.version") as String
     group = "com.neuronrobotics"
 
     apply {
@@ -100,7 +91,7 @@ allprojects {
     pluginManager.withPlugin("jacoco") {
         // If this project has the plugin applied, configure the tool version.
         jacoco {
-            toolVersion = jacocoToolVersion
+            toolVersion = property("jacoco-tool.version") as String
         }
     }
 
@@ -121,7 +112,7 @@ allprojects {
          * These checks are dependencies of the `check` task.
          */
         kotlinGradle {
-            ktlint(ktlintVersion)
+            ktlint(property("ktlint.version") as String)
             trimTrailingWhitespace()
         }
         freshmark {
@@ -138,9 +129,6 @@ allprojects {
     }
 }
 
-fun DependencyHandler.junitJupiter(name: String) =
-    create(group = "org.junit.jupiter", name = name, version = junitJupiterVersion)
-
 configure(javaProjects) {
     apply {
         plugin("java")
@@ -151,12 +139,16 @@ configure(javaProjects) {
     }
 
     dependencies {
-        testCompile(junitJupiter("junit-jupiter"))
+        testCompile(
+            group = "org.junit.jupiter",
+            name = "junit-jupiter",
+            version = property("junit-jupiter.version") as String
+        )
 
         testRuntime(
             group = "org.junit.platform",
             name = "junit-platform-launcher",
-            version = "1.0.0"
+            version = property("junit-platform-launcher.version") as String
         )
     }
 
@@ -239,11 +231,11 @@ configure(javaProjects) {
     }
 
     checkstyle {
-        toolVersion = checkstyleToolVersion
+        toolVersion = property("checkstyle-tool.version") as String
     }
 
     spotbugs {
-        toolVersion = spotbugsToolVersion
+        toolVersion = property("spotbugs-tool.version") as String
         excludeFilter = file("${rootProject.rootDir}/config/spotbugs/spotbugs-excludeFilter.xml")
     }
 
@@ -257,7 +249,7 @@ configure(javaProjects) {
     }
 
     pmd {
-        toolVersion = pmdToolVersion
+        toolVersion = property("pmd-tool.version") as String
         ruleSets = emptyList() // Needed so PMD only uses our custom ruleset
         ruleSetFiles = files("${rootProject.rootDir}/config/pmd/pmd-ruleset.xml")
     }
@@ -284,7 +276,7 @@ configure(kotlinProjects) {
         implementation(
             group = "org.jetbrains.kotlinx",
             name = "kotlinx-coroutines-core",
-            version = "1.0.0"
+            version = property("kotlin-coroutines.version") as String
         )
     }
 
@@ -322,7 +314,7 @@ configure(kotlinProjects) {
 
     spotless {
         kotlin {
-            ktlint(ktlintVersion)
+            ktlint(property("ktlint.version") as String)
             trimTrailingWhitespace()
             indentWithSpaces(2)
             endWithNewline()
@@ -335,7 +327,7 @@ configure(kotlinProjects) {
     }
 
     detekt {
-        toolVersion = detektToolVersion
+        toolVersion = property("detekt-tool.version") as String
         input = files("src/main/kotlin", "src/test/kotlin")
         parallel = true
         config = files("${rootProject.rootDir}/config/detekt/config.yml")
@@ -408,7 +400,7 @@ configure(publishedProjects) {
             vcsUrl = "https://github.com/CommonWealthRobotics/bowler-kernel.git"
             githubRepo = "https://github.com/CommonWealthRobotics/bowler-kernel"
             with(version) {
-                name = bowlerKernelVersion
+                name = property("bowler-kernel.version") as String
                 desc = "The heart of the Bowler stack."
             }
         }
@@ -422,6 +414,6 @@ tasks.dokka {
 }
 
 tasks.wrapper {
-    gradleVersion = "5.4.1"
+    gradleVersion = rootProject.property("gradle-wrapper.version") as String
     distributionType = Wrapper.DistributionType.ALL
 }
