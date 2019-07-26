@@ -287,30 +287,30 @@ configure(kotlinProjects) {
         }
     }
 
-    val compileKotlin: KotlinCompile by tasks
-    afterEvaluate {
-        /*
-         * Needed to configure kotlin to work correctly with the "java-library" plugin.
-         * See:
-         * https://docs.gradle.org/current/userguide/java_library_plugin.html#sec:java_library_known_issues
-         */
-        pluginManager.withPlugin("java-library") {
-            configurations {
-                "apiElements" {
-                    outgoing
-                        .variants
-                        .getByName("classes")
-                        .artifact(
-                            mapOf(
-                                "file" to compileKotlin.destinationDir,
-                                "type" to "java-classes-directory",
-                                "builtBy" to compileKotlin
-                            )
-                        )
-                }
-            }
-        }
-    }
+    // val compileKotlin: KotlinCompile by tasks
+    // afterEvaluate {
+    //     /*
+    //      * Needed to configure kotlin to work correctly with the "java-library" plugin.
+    //      * See:
+    //      * https://docs.gradle.org/current/userguide/java_library_plugin.html#sec:java_library_known_issues
+    //      */
+    //     pluginManager.withPlugin("java-library") {
+    //         configurations {
+    //             "apiElements" {
+    //                 outgoing
+    //                     .variants
+    //                     .getByName("classes")
+    //                     .artifact(
+    //                         mapOf(
+    //                             "file" to compileKotlin.destinationDir,
+    //                             "type" to "java-classes-directory",
+    //                             "builtBy" to compileKotlin
+    //                         )
+    //                     )
+    //             }
+    //         }
+    //     }
+    // }
 
     spotless {
         kotlin {
