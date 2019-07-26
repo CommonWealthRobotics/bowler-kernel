@@ -359,16 +359,16 @@ configure(publishedProjects) {
     val projectName = "bowler-kernel"
 
     task<Jar>("sourcesJar") {
-        classifier = "sources"
-        baseName = "$projectName-${this@configure.name.toLowerCase()}"
+        archiveClassifier.set("sources")
+        archiveBaseName.set("$projectName-${this@configure.name.toLowerCase()}")
         from(sourceSets.main.get().allSource)
     }
 
     val dokkaJar by tasks.creating(Jar::class) {
         group = JavaBasePlugin.DOCUMENTATION_GROUP
         description = "Assembles Kotlin docs with Dokka"
-        classifier = "javadoc"
-        baseName = "$projectName-${this@configure.name.toLowerCase()}"
+        archiveClassifier.set("javadoc")
+        archiveBaseName.set("$projectName-${this@configure.name.toLowerCase()}")
         from(tasks.dokka)
     }
 
