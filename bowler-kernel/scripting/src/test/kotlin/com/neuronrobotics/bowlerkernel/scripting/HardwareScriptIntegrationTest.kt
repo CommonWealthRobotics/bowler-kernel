@@ -70,7 +70,7 @@ internal class HardwareScriptIntegrationTest {
                         DefaultDeviceTypes.UnknownDevice,
                         DefaultConnectionMethods.RawHID(0, 0)
                     ),
-                    MockBowlerRPCProtocol()
+                    mockBowlerRPCProtocol()
                 )
 
                 device.connect().bind()

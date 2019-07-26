@@ -57,7 +57,7 @@ internal class ScriptIntegrationTest {
                     DefaultDeviceTypes.UnknownDevice,
                     DefaultConnectionMethods.RawHID(0, 0)
                 ),
-                MockBowlerRPCProtocol()
+                mockBowlerRPCProtocol()
             ).getOrHandle {
                 fail {
                     """
@@ -107,9 +107,10 @@ internal class ScriptIntegrationTest {
             import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDigitalOutFactory
-            import com.neuronrobotics.bowlerkernel.scripting.MockBowlerRPCProtocol
 
             import javax.inject.Inject
+
+            import static com.neuronrobotics.bowlerkernel.scripting.TestUtilKt.mockBowlerRPCProtocol
 
             class Test {
 
@@ -124,7 +125,7 @@ internal class ScriptIntegrationTest {
                                     new DefaultDeviceTypes.UnknownDevice(),
                                     new DefaultConnectionMethods.RawHID(0, 0)
                             ),
-                            new MockBowlerRPCProtocol()
+                            mockBowlerRPCProtocol()
                     ).map {
                         it.connect()
 
@@ -191,7 +192,8 @@ internal class ScriptIntegrationTest {
             import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResourceFactory
-            import com.neuronrobotics.bowlerkernel.scripting.MockBowlerRPCProtocol
+            import com.neuronrobotics.bowlerkernel.scripting.mockBowlerRPCProtocol
+
             import javax.inject.Inject
 
             class MyScript
@@ -208,7 +210,7 @@ internal class ScriptIntegrationTest {
                             DefaultDeviceTypes.UnknownDevice,
                             DefaultConnectionMethods.RawHID(0, 0)
                         ),
-                        MockBowlerRPCProtocol()
+                        mockBowlerRPCProtocol()
                     ).map {
                         it.connect()
 

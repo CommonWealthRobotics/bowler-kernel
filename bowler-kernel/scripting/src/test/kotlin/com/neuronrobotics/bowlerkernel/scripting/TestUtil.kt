@@ -14,16 +14,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup
+package com.neuronrobotics.bowlerkernel.scripting
 
-import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.GenericDigitalOut
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import arrow.core.right
+import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.doReturn
+import com.nhaarman.mockitokotlin2.mock
 
-data class UnprovisionedDigitalOut(
-    override val device: BowlerDevice,
-    override val resourceId: ResourceId
-) : UnprovisionedDeviceResource<GenericDigitalOut> {
-
-    override fun provision() = GenericDigitalOut(device, resourceId)
+// This can't be internal because it is needed in a script
+fun mockBowlerRPCProtocol(): BowlerRPCProtocol {
+    return mock {
+        on { connect() } doReturn Unit.right()
+        on { disconnect() } doReturn Unit.right()
+        on { isResourceInRange(any()) } doReturn true
+    }
 }
