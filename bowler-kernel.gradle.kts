@@ -9,7 +9,7 @@ plugins {
     id("com.diffplug.gradle.spotless") version "3.22.0"
     id("org.jlleitschuh.gradle.ktlint") version "7.3.0"
     id("com.github.spotbugs") version "1.7.1"
-    id("io.gitlab.arturbosch.detekt") version "1.0.0-RC12"
+    id("io.gitlab.arturbosch.detekt") version "1.0.0-RC16"
     id("com.jfrog.bintray") version "1.8.3"
     id("org.jetbrains.dokka") version "0.9.18"
     id("com.adarshr.test-logger") version "1.6.0"
