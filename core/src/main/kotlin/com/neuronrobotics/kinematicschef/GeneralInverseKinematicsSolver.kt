@@ -21,10 +21,11 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.util.JointLimits
+import com.neuronrobotics.kinematicschef.solver.NativeIKSolverBridge
 import com.neuronrobotics.kinematicschef.solver.ThreeDofSolver
 
 /**
- * Detects the type of chain and uses the correct solver for it.
+ * Detects the type of serial manipulator and uses the correct solver for it.
  */
 class GeneralInverseKinematicsSolver(
     private val links: ImmutableList<Link>
@@ -48,6 +49,6 @@ class GeneralInverseKinematicsSolver(
     private fun identifySolver(links: List<Link>): InverseKinematicsSolver =
         when (links.size) {
             3 -> ThreeDofSolver()
-            else -> TODO("Unsupported number of links.")
+            else -> NativeIKSolverBridge()
         }
 }

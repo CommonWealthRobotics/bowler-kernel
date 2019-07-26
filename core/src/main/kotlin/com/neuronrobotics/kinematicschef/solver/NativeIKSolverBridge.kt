@@ -30,6 +30,7 @@ import java.nio.FloatBuffer
  */
 class NativeIKSolverBridge : InverseKinematicsSolver {
 
+    @SuppressWarnings("ComplexMethod")
     override fun solveChain(
         links: List<Link>,
         currentJointAngles: List<Double>,
