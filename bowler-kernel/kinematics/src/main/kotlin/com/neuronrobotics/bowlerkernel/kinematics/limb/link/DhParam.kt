@@ -44,19 +44,24 @@ data class DhParam(
             val thetaRadians = Math.toRadians(theta)
             val alphaRadians = Math.toRadians(alpha)
 
-            this[0, 0] = cos(thetaRadians)
-            this[1, 0] = sin(thetaRadians)
+            val cosTheta = cos(thetaRadians)
+            val sinTheta = sin(thetaRadians)
+            val cosAlpha = cos(alphaRadians)
+            val sinAlpha = sin(alphaRadians)
 
-            this[0, 1] = -sin(thetaRadians) * cos(alphaRadians)
-            this[1, 1] = cos(thetaRadians) * cos(alphaRadians)
-            this[2, 1] = sin(alphaRadians)
+            this[0, 0] = cosTheta
+            this[1, 0] = sinTheta
 
-            this[0, 2] = sin(thetaRadians) * sin(alphaRadians)
-            this[1, 2] = -cos(thetaRadians) * sin(alphaRadians)
-            this[2, 2] = cos(alphaRadians)
+            this[0, 1] = -sinTheta * cosAlpha
+            this[1, 1] = cosTheta * cosAlpha
+            this[2, 1] = sinAlpha
 
-            this[0, 3] = r * cos(thetaRadians)
-            this[1, 3] = r * sin(thetaRadians)
+            this[0, 2] = sinTheta * sinAlpha
+            this[1, 2] = -cosTheta * sinAlpha
+            this[2, 2] = cosAlpha
+
+            this[0, 3] = r * cosTheta
+            this[1, 3] = r * sinTheta
             this[2, 3] = d
         }.let { FrameTransformation.fromMatrix(it) }
     }
