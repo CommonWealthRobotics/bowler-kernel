@@ -17,13 +17,11 @@
 package com.neuronrobotics.kinematicschef.solver
 
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
-import com.neuronrobotics.bowlerkernel.kinematics.motion.approxEquals
+import com.neuronrobotics.bowlerkernel.util.JointLimits
 import com.neuronrobotics.kinematicschef.GeneralForwardKinematicsSolver
 import com.neuronrobotics.kinematicschef.TestUtil.hephaestusArmLinks
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.octogonapus.ktguava.collections.toImmutableList
 
 internal class ThreeDofSolverTest {
 
@@ -34,22 +32,7 @@ internal class ThreeDofSolverTest {
     fun `test fk to ik`() {
         (-30..30 step 1).map { targetPos ->
             val target = FrameTransformation.fromTranslation(targetPos, 0, 0)
-            val resultAngles = ik.solveChain(
-                hephaestusArmLinks,
-                hephaestusArmLinks.map { 0.0 }.toImmutableList(),
-                target
-            )
-            val resultTarget = fk.solveChain(hephaestusArmLinks, resultAngles)
-            assertTrue(target.translation.approxEquals(resultTarget.translation, 1e-10)) {
-                """
-                Target:
-                $target
-                Result:
-                $resultTarget
-                Result angles:
-                $resultAngles
-                """.trimIndent()
-            }
+            testIK(hephaestusArmLinks, target, ik, fk)
         }
     }
 
@@ -60,7 +43,8 @@ internal class ThreeDofSolverTest {
         assertThrows<IllegalStateException> {
             ik.solveChain(
                 hephaestusArmLinks,
-                hephaestusArmLinks.map { 0.0 }.toImmutableList(),
+                hephaestusArmLinks.map { 0.0 },
+                hephaestusArmLinks.map { JointLimits(180, -180) },
                 target
             )
         }
@@ -71,7 +55,8 @@ internal class ThreeDofSolverTest {
         assertThrows<IllegalArgumentException> {
             ik.solveChain(
                 hephaestusArmLinks.subList(0, 2),
-                hephaestusArmLinks.subList(0, 2).map { 0.0 }.toImmutableList(),
+                hephaestusArmLinks.subList(0, 2).map { 0.0 },
+                hephaestusArmLinks.subList(0, 2).map { JointLimits(180, -180) },
                 FrameTransformation.identity
             )
         }
@@ -82,7 +67,20 @@ internal class ThreeDofSolverTest {
         assertThrows<IllegalArgumentException> {
             ik.solveChain(
                 hephaestusArmLinks,
-                hephaestusArmLinks.subList(0, 2).map { 0.0 }.toImmutableList(),
+                hephaestusArmLinks.subList(0, 2).map { 0.0 },
+                hephaestusArmLinks.map { JointLimits(180, -180) },
+                FrameTransformation.identity
+            )
+        }
+    }
+
+    @Test
+    fun `test ik with 3 links and 2 joint limits`() {
+        assertThrows<IllegalArgumentException> {
+            ik.solveChain(
+                hephaestusArmLinks,
+                hephaestusArmLinks.map { 0.0 },
+                hephaestusArmLinks.subList(0, 2).map { JointLimits(180, -180) },
                 FrameTransformation.identity
             )
         }

@@ -16,34 +16,18 @@
  */
 package com.neuronrobotics.kinematicschef.solver
 
-import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InverseKinematicsSolver
+import com.neuronrobotics.bowlerkernel.util.JointLimits
 import com.neuronrobotics.bowlerkinematicsnative.solver.NativeIKSolver
-import org.octogonapus.ktguava.collections.toImmutableList
 import java.lang.Math.toDegrees
+import java.lang.Math.toRadians
 import java.nio.FloatBuffer
-
-data class JointLimits(
-    val maximum: Double,
-    val minimum: Double
-)
 
 class NativeIKSolverBridge : InverseKinematicsSolver {
 
     override fun solveChain(
-        links: ImmutableList<Link>,
-        currentJointAngles: ImmutableList<Double>,
-        targetFrameTransform: FrameTransformation
-    ) = solveChain(
-        links,
-        currentJointAngles,
-        links.map { JointLimits(it.jointLimits.maximum, it.jointLimits.minimum) },
-        targetFrameTransform
-    ).toImmutableList()
-
-    fun solveChain(
         links: List<Link>,
         currentJointAngles: List<Double>,
         jointLimits: List<JointLimits>,
@@ -52,17 +36,17 @@ class NativeIKSolverBridge : InverseKinematicsSolver {
         val buf = FloatBuffer.allocate(links.size * 7 + 16).apply {
             links.forEach {
                 put(it.dhParam.d.toFloat())
-                put(Math.toRadians(it.dhParam.theta).toFloat())
+                put(toRadians(it.dhParam.theta).toFloat())
                 put(it.dhParam.r.toFloat())
-                put(Math.toRadians(it.dhParam.alpha).toFloat())
+                put(toRadians(it.dhParam.alpha).toFloat())
             }
 
             jointLimits.forEach {
-                put(Math.toRadians(it.maximum).toFloat())
+                put(toRadians(it.maximum).toFloat())
             }
 
             jointLimits.forEach {
-                put(Math.toRadians(it.minimum).toFloat())
+                put(toRadians(it.minimum).toFloat())
             }
 
             targetFrameTransform.data.forEach {
@@ -70,7 +54,7 @@ class NativeIKSolverBridge : InverseKinematicsSolver {
             }
 
             currentJointAngles.forEach {
-                put(Math.toRadians(it).toFloat())
+                put(toRadians(it).toFloat())
             }
 
             rewind()

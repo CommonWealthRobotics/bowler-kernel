@@ -22,7 +22,6 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInertialStateEstimator
-import com.neuronrobotics.bowlerkernel.util.Limits
 import com.nhaarman.mockitokotlin2.eq
 import org.mockito.AdditionalMatchers
 import org.octogonapus.ktguava.collections.immutableListOf
@@ -87,7 +86,6 @@ internal object TestUtil {
         DefaultLink(
             LinkType.Rotary,
             it,
-            Limits(180, -180),
             NoopInertialStateEstimator
         )
     }.toImmutableList()

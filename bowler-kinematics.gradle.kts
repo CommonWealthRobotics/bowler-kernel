@@ -66,9 +66,10 @@ allprojects {
     repositories {
         jcenter()
         mavenCentral()
-        maven(url = "https://dl.bintray.com/octogonapus/maven-artifacts")
-        maven(url = "https://dl.bintray.com/commonwealthrobotics/maven-artifacts")
-        maven(url = "https://dl.bintray.com/s1m0nw1/KtsRunner")
+        maven("https://dl.bintray.com/octogonapus/maven-artifacts")
+        maven("https://dl.bintray.com/commonwealthrobotics/maven-artifacts")
+        maven("https://dl.bintray.com/s1m0nw1/KtsRunner")
+        maven("https://dl.bintray.com/47deg/helios")
     }
 
     // Configures the Jacoco tool version to be the same for all projects that have it applied.

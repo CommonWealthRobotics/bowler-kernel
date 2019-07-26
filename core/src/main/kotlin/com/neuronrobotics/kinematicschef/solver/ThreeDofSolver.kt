@@ -16,10 +16,10 @@
  */
 package com.neuronrobotics.kinematicschef.solver
 
-import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InverseKinematicsSolver
+import com.neuronrobotics.bowlerkernel.util.JointLimits
 import org.octogonapus.ktguava.collections.toImmutableList
 import java.lang.Math.toDegrees
 import java.lang.Math.toRadians
@@ -41,10 +41,11 @@ class ThreeDofSolver : InverseKinematicsSolver {
 
     @SuppressWarnings("LongMethod", "ComplexMethod")
     override fun solveChain(
-        links: ImmutableList<Link>,
-        currentJointAngles: ImmutableList<Double>,
+        links: List<Link>,
+        currentJointAngles: List<Double>,
+        jointLimits: List<JointLimits>,
         targetFrameTransform: FrameTransformation
-    ): ImmutableList<Double> {
+    ): List<Double> {
         require(links.size >= 3) {
             "Must have at least 3 links, given ${links.size}"
         }
@@ -54,6 +55,14 @@ class ThreeDofSolver : InverseKinematicsSolver {
             Links and joint angles must have equal length:
             Number of links: ${links.size}
             Number of joint angles: ${currentJointAngles.size}
+            """.trimIndent()
+        }
+
+        require(links.size == jointLimits.size) {
+            """
+            Links and joint limits must have equal length:
+            Number of links: ${links.size}
+            Number of joint limits: ${jointLimits.size}
             """.trimIndent()
         }
 
@@ -67,6 +76,7 @@ class ThreeDofSolver : InverseKinematicsSolver {
             return solveChain(
                 links,
                 currentJointAngles,
+                jointLimits,
                 targetFrameTransform * FrameTransformation.fromTranslation(1e-6, 0, 0)
             )
         }

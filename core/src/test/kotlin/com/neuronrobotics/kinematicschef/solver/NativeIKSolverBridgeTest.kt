@@ -16,17 +16,10 @@
  */
 package com.neuronrobotics.kinematicschef.solver
 
-import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
-import com.neuronrobotics.bowlerkernel.kinematics.motion.ForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
-import com.neuronrobotics.bowlerkernel.kinematics.motion.InverseKinematicsSolver
-import com.neuronrobotics.bowlerkernel.kinematics.motion.approxEquals
 import com.neuronrobotics.kinematicschef.GeneralForwardKinematicsSolver
 import com.neuronrobotics.kinematicschef.TestUtil.hephaestusArmLinks
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.octogonapus.ktguava.collections.toImmutableList
 
 internal class NativeIKSolverBridgeTest {
 
@@ -40,28 +33,6 @@ internal class NativeIKSolverBridgeTest {
                 val target = FrameTransformation.fromTranslation(targetPos, 0, 0)
                 testIK(hephaestusArmLinks, target, ik, fk)
             }
-        }
-    }
-
-    private fun testIK(
-        links: ImmutableList<Link>,
-        target: FrameTransformation,
-        ik: InverseKinematicsSolver,
-        fk: ForwardKinematicsSolver
-    ) {
-        val resultAngles = ik.solveChain(links, links.map { 0.0 }.toImmutableList(), target)
-        val resultTarget = fk.solveChain(hephaestusArmLinks, resultAngles)
-        assertTrue(
-            target.translation.approxEquals(resultTarget.translation, 1e-1)
-        ) {
-            """
-                Target:
-                ${target.translation.array.joinToString { it.joinToString() }}
-                Result:
-                ${resultTarget.translation.array.joinToString { it.joinToString() }}
-                Result angles :
-                $resultAngles
-                """.trimIndent()
         }
     }
 }
