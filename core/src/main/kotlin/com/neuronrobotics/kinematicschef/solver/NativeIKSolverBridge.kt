@@ -23,7 +23,7 @@ import com.neuronrobotics.bowlerkernel.util.JointLimits
 import com.neuronrobotics.bowlerkinematicsnative.solver.NativeIKSolver
 import java.lang.Math.toDegrees
 import java.lang.Math.toRadians
-import java.nio.FloatBuffer
+import java.nio.DoubleBuffer
 
 /**
  * Solves any serial manipulator using a native solver.
@@ -61,32 +61,32 @@ class NativeIKSolverBridge : InverseKinematicsSolver {
 
         return NativeIKSolver.solve(
             numberOfLinks = numberOfLinks,
-            dhParams = FloatBuffer.allocate(numberOfLinks * 4).apply {
+            dhParams = DoubleBuffer.allocate(numberOfLinks * 4).apply {
                 links.forEach {
-                    put(it.dhParam.d.toFloat())
-                    put(toRadians(it.dhParam.theta).toFloat())
-                    put(it.dhParam.r.toFloat())
-                    put(toRadians(it.dhParam.alpha).toFloat())
+                    put(it.dhParam.d)
+                    put(toRadians(it.dhParam.theta))
+                    put(it.dhParam.r)
+                    put(toRadians(it.dhParam.alpha))
                 }
 
                 rewind()
             }.array(),
-            upperJointLimits = FloatBuffer.allocate(numberOfLinks).apply {
-                jointLimits.forEach { put(toRadians(it.maximum).toFloat()) }
+            upperJointLimits = DoubleBuffer.allocate(numberOfLinks).apply {
+                jointLimits.forEach { put(toRadians(it.maximum)) }
                 rewind()
             }.array(),
-            lowerJointLimits = FloatBuffer.allocate(numberOfLinks).apply {
-                jointLimits.forEach { put(toRadians(it.minimum).toFloat()) }
+            lowerJointLimits = DoubleBuffer.allocate(numberOfLinks).apply {
+                jointLimits.forEach { put(toRadians(it.minimum)) }
                 rewind()
             }.array(),
-            initialJointAngles = FloatBuffer.allocate(numberOfLinks).apply {
-                currentJointAngles.forEach { put(toRadians(it).toFloat()) }
+            initialJointAngles = DoubleBuffer.allocate(numberOfLinks).apply {
+                currentJointAngles.forEach { put(toRadians(it)) }
                 rewind()
             }.array(),
-            target = FloatBuffer.allocate(16).apply {
-                targetFrameTransform.data.forEach { put(it.toFloat()) }
+            target = DoubleBuffer.allocate(16).apply {
+                targetFrameTransform.data.forEach { put(it) }
                 rewind()
             }.array()
-        ).map { toDegrees(it.toDouble()) }
+        ).map { toDegrees(it) }
     }
 }

@@ -31,10 +31,8 @@ internal class NativeIKSolverBridgeTest {
     @Test
     fun `test bridge`() {
         (-30..30 step 1).map { targetPos ->
-            if (targetPos !in listOf(-16, -5, 0, 1, 6, 7, 8, 15)) {
-                val target = FrameTransformation.fromTranslation(targetPos, 0, 0)
-                testIK(hephaestusArmLinks, target, ik, fk)
-            }
+            val target = FrameTransformation.fromTranslation(targetPos, 0, 0)
+            testIK(hephaestusArmLinks, target, ik, fk)
         }
     }
 
