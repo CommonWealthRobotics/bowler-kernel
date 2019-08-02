@@ -16,10 +16,30 @@
  */
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
+import com.google.common.math.DoubleMath
 import org.octogonapus.ktunits.quantities.Length
+import org.octogonapus.ktunits.quantities.meter
 
 data class CenterOfMass(
     val x: Length,
     val y: Length,
     val z: Length
-)
+) {
+
+    /**
+     * Whether this instance approximately equals the [other] instance within the per-dimension
+     * [tolerance].
+     *
+     * @param other The other instance.
+     * @param tolerance The per-element equality tolerance.
+     * @param units The unit to convert to before checking equality.
+     * @return True if this instance is approximately equal to the [other] instance.
+     */
+    fun approxEquals(
+        other: CenterOfMass,
+        tolerance: Double = 1e-10,
+        units: Length.() -> Double = Length::meter
+    ) = DoubleMath.fuzzyEquals(x.units(), other.x.units(), tolerance) &&
+        DoubleMath.fuzzyEquals(y.units(), other.y.units(), tolerance) &&
+        DoubleMath.fuzzyEquals(z.units(), other.z.units(), tolerance)
+}

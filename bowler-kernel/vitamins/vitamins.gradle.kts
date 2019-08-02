@@ -26,6 +26,13 @@ dependencies {
         name = "kt-units-quantities",
         version = property("kt-units.version") as String
     )
+    api(
+        group = "com.neuronrobotics",
+        name = "JavaCad",
+        version = property("javacad.version") as String
+    ) {
+        exclude(group = "org.slf4j", module = "slf4j-simple")
+    }
 
     api(arrow("arrow-core-data"))
     api(arrow("arrow-core-extensions"))
