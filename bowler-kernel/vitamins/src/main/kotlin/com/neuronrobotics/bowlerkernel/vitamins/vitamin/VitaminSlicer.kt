@@ -20,6 +20,8 @@ import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cube
 import eu.mihosoft.vrl.v3d.Vector3d
 import org.octogonapus.ktunits.quantities.millimeter
+import java.util.concurrent.atomic.AtomicLong
+import java.util.stream.Collectors
 
 /**
  * Slices a [CSG] to determine its center of mass. Assumes that the [CSG] has a uniform density.
@@ -28,23 +30,36 @@ import org.octogonapus.ktunits.quantities.millimeter
  * @param sliceStep The resolution of the slices (distance between slices).
  */
 class VitaminSlicer(
-    private val slicePlaneThickness: Double = 1e-5,
-    private val sliceStep: Double = 1.0
+    private val sliceStep: Double = 1.0,
+    private val slicePlaneThickness: Double = sliceStep
 ) {
 
     fun getCenterOfMass(vit: CSG): CenterOfMass {
-        val xSlices = sliceOnAxis(listOf(vit), CSG::getMaxX, CSG::getMinX, this::getXAxisSlicePlane)
+        val xSlices = sliceOnAxis(
+            listOf(vit),
+            { maxX - centerX },
+            { minX + centerX },
+            this::getXAxisSlicePlane
+        )
         println(xSlices.size)
-        val ySlices = sliceOnAxis(xSlices, CSG::getMaxY, CSG::getMinY, this::getYAxisSlicePlane)
+
+        val ySlices = sliceOnAxis(
+            xSlices,
+            { maxY - centerY },
+            { minY + centerY },
+            this::getYAxisSlicePlane
+        )
         println(ySlices.size)
-        val zSlices = sliceOnAxis(ySlices, CSG::getMaxZ, CSG::getMinZ, this::getZAxisSlicePlane)
+
+        val zSlices = sliceOnAxis(
+            ySlices,
+            { maxZ - centerZ },
+            { minZ + centerZ },
+            this::getZAxisSlicePlane
+        )
         println(zSlices.size)
 
-        val sumOfCenters = zSlices.filter { it.polygons.isNotEmpty() }
-            .map { it.center }
-            .fold(Vector3d(0.0, 0.0, 0.0), Vector3d::plus)
-
-        val averageCenter = sumOfCenters.dividedBy(zSlices.size.toDouble())
+        val averageCenter = averageCenters(zSlices)
 
         return CenterOfMass(
             x = averageCenter.x.millimeter,
@@ -53,29 +68,48 @@ class VitaminSlicer(
         )
     }
 
+    private fun averageCenters(slices: List<CSG>): Vector3d {
+        val size = AtomicLong(0)
+        return slices.parallelStream()
+            .filter { it.polygons.isNotEmpty() }
+            .map { it.center }
+            .peek { size.incrementAndGet() }
+            .reduce(Vector3d::plus)
+            .get()
+            .also { println(size) }
+            .dividedBy(size.toDouble())
+    }
+
     private fun sliceOnAxis(
         slices: List<CSG>,
         maxDim: CSG.() -> Double,
         minDim: CSG.() -> Double,
         getSlicePlane: (CSG, Double) -> CSG
     ): List<CSG> {
-        val newSlices = mutableListOf<CSG>()
+        return slices.parallelStream().flatMap { toSlice ->
+            val newSlices = mutableListOf<CSG>()
+            val centeredSlice = toSlice.move(toSlice.center.negated())
 
-        slices.forEach { toSlice ->
-            // TODO: Start slicing from the exact center instead of from the top
-            var height = toSlice.maxDim()
-            while (true) {
-                if (height < toSlice.minDim()) {
-                    newSlices += slice(toSlice, getSlicePlane(toSlice, toSlice.minDim()))
-                    break
-                }
-
-                newSlices += slice(toSlice, getSlicePlane(toSlice, height))
+            var height = 0.0
+            while (height >= centeredSlice.minDim()) {
+                newSlices += slice(
+                    centeredSlice,
+                    getSlicePlane(centeredSlice, height)
+                ).move(toSlice.center)
                 height -= sliceStep
             }
-        }
 
-        return newSlices
+            height = sliceStep // Don't slice at 0 twice
+            while (height <= centeredSlice.maxDim()) {
+                newSlices += slice(
+                    centeredSlice,
+                    getSlicePlane(centeredSlice, height)
+                ).move(toSlice.center)
+                height += sliceStep
+            }
+
+            newSlices.parallelStream()
+        }.collect(Collectors.toList())
     }
 
     private fun slice(vit: CSG, slicePlane: CSG): CSG =
@@ -89,17 +123,17 @@ class VitaminSlicer(
         Cube(
             Vector3d(height, 0.0, 0.0),
             Vector3d(slicePlaneThickness, vit.totalY, vit.totalZ)
-        ).toCSG().move(vit.center)
+        ).toCSG()
 
     private fun getYAxisSlicePlane(vit: CSG, height: Double): CSG =
         Cube(
             Vector3d(0.0, height, 0.0),
             Vector3d(vit.totalX, slicePlaneThickness, vit.totalZ)
-        ).toCSG().move(vit.center)
+        ).toCSG()
 
     private fun getZAxisSlicePlane(vit: CSG, height: Double): CSG =
         Cube(
             Vector3d(0.0, 0.0, height),
             Vector3d(vit.totalX, vit.totalY, slicePlaneThickness)
-        ).toCSG().move(vit.center)
+        ).toCSG()
 }
