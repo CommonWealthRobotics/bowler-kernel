@@ -17,6 +17,7 @@
 package com.neuronrobotics.bowlerkernel.vitamins.vitamin
 
 import eu.mihosoft.vrl.v3d.Cube
+import eu.mihosoft.vrl.v3d.Cylinder
 import eu.mihosoft.vrl.v3d.Sphere
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -39,18 +40,6 @@ internal class VitaminSlicerTest {
         val actual = slicer.getCenterOfMass(Sphere(5.0).toCSG())
 
         checkEquality(expected, actual)
-    }
-
-    private fun checkEquality(expected: CenterOfMass, actual: CenterOfMass) {
-        assertTrue(
-            expected.approxEquals(actual, tolerance, Length::millimeter),
-            """
-            Expected:
-            x=${expected.x.millimeter}, y=${expected.y.millimeter}, z=${expected.z.millimeter}
-            Actual:
-            x=${actual.x.millimeter}, y=${actual.y.millimeter}, z=${actual.z.millimeter}
-            """.trimIndent()
-        )
     }
 
     @Test
@@ -82,7 +71,7 @@ internal class VitaminSlicerTest {
     @Test
     fun `test with two cubes`() {
         val expected = CenterOfMass(
-            x = 1.25.millimeter,
+            x = 2.5.millimeter,
             y = 0.millimeter,
             z = 0.millimeter
         )
@@ -133,17 +122,48 @@ internal class VitaminSlicerTest {
     @Test
     fun `test with off-center internal hole`() {
         val expected = CenterOfMass(
-            x = (-1).millimeter,
+            x = (12.5 / 3.0).millimeter,
             y = 0.millimeter,
             z = 0.millimeter
         )
 
         val actual = slicer.getCenterOfMass(
             Cube(50.0).toCSG().difference(
-                Cube(10.0).toCSG().movex(10)
+                Cube(50.0).toCSG()
+                    .movex(-25)
+                    .movez(-25)
             )
         )
 
         checkEquality(expected, actual)
+    }
+
+    @Test
+    fun `test with off-center screw hole`() {
+        val expected = CenterOfMass(
+            x = 0.millimeter,
+            y = 0.millimeter,
+            z = 0.millimeter
+        )
+
+        val actual = slicer.getCenterOfMass(
+            Cube(50.0).toCSG().difference(
+                Cylinder(5.0, 10.0).toCSG().movex(-5.0)
+            )
+        )
+
+        checkEquality(expected, actual)
+    }
+
+    private fun checkEquality(expected: CenterOfMass, actual: CenterOfMass) {
+        assertTrue(
+            expected.approxEquals(actual, tolerance, Length::millimeter),
+            """
+            Expected:
+            x=${expected.x.millimeter}, y=${expected.y.millimeter}, z=${expected.z.millimeter}
+            Actual:
+            x=${actual.x.millimeter}, y=${actual.y.millimeter}, z=${actual.z.millimeter}
+            """.trimIndent()
+        )
     }
 }

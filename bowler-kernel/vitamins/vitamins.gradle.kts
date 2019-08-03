@@ -26,6 +26,7 @@ dependencies {
         name = "kt-units-quantities",
         version = property("kt-units.version") as String
     )
+
     api(
         group = "com.neuronrobotics",
         name = "JavaCad",
