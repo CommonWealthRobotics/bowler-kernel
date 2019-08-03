@@ -1,13 +1,8 @@
-buildCache {
-    local(DirectoryBuildCache::class.java) {
-        isEnabled = true
-        directory = file("${rootDir.path}/build-cache")
-    }
-}
-
 rootProject.name = "bowler-kernel"
 
 include(":bowler-kernel")
+include(":bowler-kernel:cad-core")
+include(":bowler-kernel:cad-vitamins")
 include(":bowler-kernel:config")
 include(":bowler-kernel:gitfs")
 include(":bowler-kernel:hardware")

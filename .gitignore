@@ -28,3 +28,4 @@ conf/
 .attach_pid*
 *.hprof
 .~lock*
+venv

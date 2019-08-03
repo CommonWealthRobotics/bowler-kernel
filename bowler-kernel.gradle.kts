@@ -21,6 +21,8 @@ plugins {
 }
 
 val bowlerKernelProject = project(":bowler-kernel")
+val bowlerKernelCadCoreProject = project(":bowler-kernel:cad-core")
+val bowlerKernelCadVitaminsProject = project(":bowler-kernel:cad-vitamins")
 val bowlerKernelSettingsProject = project(":bowler-kernel:config")
 val bowlerKernelGitFSProject = project(":bowler-kernel:gitfs")
 val bowlerKernelHardwareProject = project(":bowler-kernel:hardware")
@@ -32,6 +34,8 @@ val bowlerKernelVitaminsProject = project(":bowler-kernel:vitamins")
 
 val kotlinProjects = setOf(
     bowlerKernelProject,
+    bowlerKernelCadCoreProject,
+    bowlerKernelCadVitaminsProject,
     bowlerKernelSettingsProject,
     bowlerKernelGitFSProject,
     bowlerKernelHardwareProject,
