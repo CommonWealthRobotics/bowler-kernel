@@ -34,7 +34,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlan
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanGenerator
 import com.neuronrobotics.bowlerkernel.kinematics.seaArmLinks
 import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.doReturn
+import com.nhaarman.mockitokotlin2.doReturnConsecutively
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -79,16 +79,26 @@ internal class KinematicGraphTest {
         val graphJson = KinematicGraphData.encoder().run { kinematicGraphData.encode() }
 
         val decodedGraph = graphJson.decode(KinematicGraphData.decoder())
-        assertTrue(decodedGraph.isRight())
-        decodedGraph as Either.Right
+        assertTrue(decodedGraph.isRight()) {
+            """
+            Expected Either.Right, got:
+            $decodedGraph
+            """.trimIndent()
+        }
 
+        decodedGraph as Either.Right
         val convertedKinematicGraph = decodedGraph.b.convertToKinematicGraph(mock {
-            on { createLimb(any(), any()) } doReturn Either.right(mock {})
+            on { createLimb(any(), any()) } doReturnConsecutively listOf(limbA, limbB)
         })
 
-        assertTrue(convertedKinematicGraph is Either.Right)
-        convertedKinematicGraph as Either.Right
+        assertTrue(convertedKinematicGraph is Either.Right) {
+            """
+            Expected Either.Right, got:
+            $convertedKinematicGraph
+            """.trimIndent()
+        }
 
+        convertedKinematicGraph as Either.Right
         assertEquals(kinematicGraph.fullEdges(), convertedKinematicGraph.b.fullEdges())
     }
 
