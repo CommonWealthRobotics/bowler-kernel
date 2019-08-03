@@ -34,14 +34,15 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInertialStateEstima
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanGenerator
-import com.neuronrobotics.bowlerkernel.util.Limits
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.toImmutableList
 import org.octogonapus.ktguava.collections.toImmutableMap
+import org.octogonapus.ktguava.collections.toImmutableSet
 
 internal fun createMockKinematicBase(limbs: ImmutableList<ImmutableList<DhParam>>): KinematicBase {
     return DefaultKinematicBase(
         SimpleKinematicBaseId(""),
+        NoopBodyController,
         limbs.mapIndexed { index, limb ->
             DefaultLimb(
                 SimpleLimbId(index.toString()),
@@ -49,7 +50,6 @@ internal fun createMockKinematicBase(limbs: ImmutableList<ImmutableList<DhParam>
                     DefaultLink(
                         LinkType.Rotary,
                         linkParam,
-                        Limits(180, -180),
                         NoopInertialStateEstimator
                     )
                 }.toImmutableList(),
@@ -61,11 +61,10 @@ internal fun createMockKinematicBase(limbs: ImmutableList<ImmutableList<DhParam>
                 limb.map { NoopJointAngleController }.toImmutableList(),
                 NoopInertialStateEstimator
             )
-        }.toImmutableList(),
+        }.toImmutableSet(),
         limbs.mapIndexed { index, _ ->
             SimpleLimbId(index.toString()) to FrameTransformation.identity
-        }.toImmutableMap(),
-        NoopBodyController
+        }.toImmutableMap()
     )
 }
 

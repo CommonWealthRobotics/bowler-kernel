@@ -18,10 +18,10 @@ package com.neuronrobotics.bowlercad.vitamin
 
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Bolt
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultBolt
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultStepperMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBolt
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultShaft
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultStepperMotor
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cylinder
 import org.junit.jupiter.api.Assertions.assertEquals

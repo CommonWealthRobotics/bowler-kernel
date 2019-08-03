@@ -18,13 +18,14 @@ package com.neuronrobotics.bowlercad.cadgenerator
 
 import com.google.common.collect.ImmutableSet
 import com.google.common.collect.ImmutableSetMultimap
+import com.neuronrobotics.bowlerkernel.kinematics.base.DefaultKinematicBase
 import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBase
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.toFrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
-import com.neuronrobotics.bowlerkernel.util.Limits
+import com.neuronrobotics.bowlerkernel.util.JointLimits
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cube
 import eu.mihosoft.vrl.v3d.Extrude
@@ -54,7 +55,7 @@ class DefaultCadGenerator(
     private val fanRadius: Double = 15.0
 ) : CadGenerator {
 
-    private val Limits.range: Double
+    private val JointLimits.range: Double
         get() = maximum - minimum
 
     private val updateCadThreads = mutableListOf<Thread>()
@@ -64,8 +65,17 @@ class DefaultCadGenerator(
 
     @SuppressWarnings("ComplexMethod", "SwallowedException")
     override fun generateLimbs(base: KinematicBase): ImmutableSetMultimap<LimbId, ImmutableSet<CSG>> {
+        // TODO: Support GeneralKinematicBase
+        require(base is DefaultKinematicBase) {
+            "Only supports `DefaultKinematicBase`."
+        }
+
         return base.limbs.map { limb ->
-            val limbCad = limb.links.map { getCadForLink(it) }.toImmutableSet()
+            val limbCad = limb.links
+                .zip(limb.jointAngleControllers)
+                .map { (link, jointAngleController) ->
+                    getCadForLink(link, jointAngleController.jointLimits)
+                }.toImmutableSet()
 
             updateCadThreads.add(
                 thread(name = "Update Limb CAD (${limb.id})", isDaemon = true) {
@@ -107,11 +117,11 @@ class DefaultCadGenerator(
      * @param link The link.
      * @return All CAD for the link.
      */
-    private fun getCadForLink(link: Link): ImmutableSet<CSG> {
+    private fun getCadForLink(link: Link, jointLimits: JointLimits): ImmutableSet<CSG> {
         return getAxes(link) +
             getThetaViz(link) +
             getAlphaViz(link) +
-            getLimitsViz(link) +
+            getLimitsViz(link, jointLimits) +
             immutableSetOf(
                 getDViz(link),
                 getRViz(link)
@@ -256,7 +266,7 @@ class DefaultCadGenerator(
      * @param link The link.
      * @return A CSG showing the joint limits.
      */
-    private fun getLimitsViz(link: Link): ImmutableSet<CSG> {
+    private fun getLimitsViz(link: Link, jointLimits: JointLimits): ImmutableSet<CSG> {
         val limitsProfile = Cube(fanRadius, 1.0, 1.0)
             .toCSG()
             .toXMin()
@@ -267,7 +277,7 @@ class DefaultCadGenerator(
             .toCSG()
             .toXMin()
             // Rotate to the maximum
-            .rotz(link.dhParam.theta + link.jointLimits.maximum)
+            .rotz(link.dhParam.theta + jointLimits.maximum)
             .toZMax() // Other side compared to the theta fan so they dont intersect
             .apply { color = Color.WHITE }
 
@@ -276,16 +286,16 @@ class DefaultCadGenerator(
             .toCSG()
             .toXMin()
             // Rotate to the minimum
-            .rotz(link.dhParam.theta + link.jointLimits.minimum)
+            .rotz(link.dhParam.theta + jointLimits.minimum)
             .toZMax() // Other side compared to the theta fan so they dont intersect
             .apply { color = Color.BLACK }
 
-        val limits = if (link.jointLimits.range.absoluteValue > 10) {
+        val limits = if (jointLimits.range.absoluteValue > 10) {
             CSG.unionAll(
                 Extrude.revolve(
                     limitsProfile,
                     0.0,
-                    link.jointLimits.range.absoluteValue,
+                    jointLimits.range.absoluteValue,
                     10
                 )
             )
@@ -296,7 +306,7 @@ class DefaultCadGenerator(
         return immutableSetOf(
             limits
                 // Rotate to the minimum (the fan extends to the maximum)
-                .rotz(link.dhParam.theta + link.jointLimits.minimum)
+                .rotz(link.dhParam.theta + jointLimits.minimum)
                 .difference(start) // So they dont overlap with the fan
                 .difference(end)   // So they dont overlap with the fan
                 .apply { color = Color.LIGHTGREEN },

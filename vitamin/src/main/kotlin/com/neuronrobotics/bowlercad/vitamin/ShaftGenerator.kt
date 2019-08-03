@@ -18,8 +18,8 @@ package com.neuronrobotics.bowlercad.vitamin
 
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.DefaultShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultShaft
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cube
 import eu.mihosoft.vrl.v3d.Cylinder

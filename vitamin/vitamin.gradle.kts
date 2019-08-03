@@ -14,7 +14,9 @@ dependencies {
         group = "com.neuronrobotics",
         name = "JavaCad",
         version = property("javacad.version") as String
-    )
+    ) {
+        exclude(group = "org.slf4j", module = "slf4j-simple")
+    }
 
     testImplementation(
         group = "com.natpryce",
