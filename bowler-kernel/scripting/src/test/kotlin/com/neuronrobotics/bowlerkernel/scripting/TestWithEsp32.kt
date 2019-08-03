@@ -83,6 +83,7 @@ internal class TestWithEsp32 {
             }
         }
 
+        @SuppressWarnings("EmptyFunctionBlock")
         override fun stopScript() {
         }
     }

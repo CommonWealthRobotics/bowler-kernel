@@ -88,6 +88,7 @@ internal class ScriptIntegrationTest {
                 return Either.right(null)
             }
 
+            @SuppressWarnings("EmptyFunctionBlock")
             override fun stopScript() {
             }
         }

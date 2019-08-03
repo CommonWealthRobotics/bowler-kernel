@@ -47,6 +47,7 @@ internal class HardwareScriptIntegrationTest {
                 return Either.right(null)
             }
 
+            @SuppressWarnings("EmptyFunctionBlock")
             override fun stopScript() {
             }
         }
@@ -98,6 +99,7 @@ internal class HardwareScriptIntegrationTest {
             }
         }
 
+        @SuppressWarnings("EmptyFunctionBlock")
         override fun stopScript() {
         }
     }

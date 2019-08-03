@@ -82,36 +82,7 @@ internal constructor(
     ): Try<Any?> {
         val configuration = CompilerConfiguration().apply {
             addCompilationCustomizers(
-                ImportCustomizer().addStarImports(
-                    "java.util",
-                    "java.io",
-                    "java.nio.file",
-                    "arrow.core",
-                    "eu.mihosoft.vrl.v3d",
-                    "eu.mihosoft.vrl.v3d.svg",
-                    "eu.mihosoft.vrl.v3d.samples",
-                    "eu.mihosoft.vrl.v3d.parametrics",
-                    "eu.mihosoft.vrl.v3d.Transform",
-                    "com.neuronrobotics.imageprovider",
-                    "com.neuronrobotics.sdk.addons.kinematics.xml",
-                    "com.neuronrobotics.sdk.addons.kinematics",
-                    "com.neuronrobotics.sdk.dyio.peripherals",
-                    "com.neuronrobotics.sdk.dyio",
-                    "com.neuronrobotics.sdk.common",
-                    "com.neuronrobotics.sdk.ui",
-                    "com.neuronrobotics.sdk.util",
-                    "com.neuronrobotics.sdk.serial",
-                    "com.neuronrobotics.sdk.addons.kinematics",
-                    "com.neuronrobotics.sdk.addons.kinematics.math",
-                    "com.neuronrobotics.sdk.addons.kinematics.gui",
-                    "com.neuronrobotics.sdk.config",
-                    "com.neuronrobotics.bowlerkernel",
-                    "com.neuronrobotics.bowlerstudio",
-                    "com.neuronrobotics.bowlerstudio.scripting",
-                    "com.neuronrobotics.bowlerstudio.physics",
-                    "com.neuronrobotics.bowlerstudio.vitamins",
-                    "com.neuronrobotics.bowlerstudio.creature"
-                )
+                ImportCustomizer().addStarImports(*groovyStarImports)
             )
         }
 
@@ -164,5 +135,38 @@ internal constructor(
     override fun stopScript() {
         scriptThread?.cancel()
         kotlinScript?.stopAndCleanUp()
+    }
+
+    companion object {
+        private val groovyStarImports = listOf(
+            "java.util",
+            "java.io",
+            "java.nio.file",
+            "arrow.core",
+            "eu.mihosoft.vrl.v3d",
+            "eu.mihosoft.vrl.v3d.svg",
+            "eu.mihosoft.vrl.v3d.samples",
+            "eu.mihosoft.vrl.v3d.parametrics",
+            "eu.mihosoft.vrl.v3d.Transform",
+            "com.neuronrobotics.imageprovider",
+            "com.neuronrobotics.sdk.addons.kinematics.xml",
+            "com.neuronrobotics.sdk.addons.kinematics",
+            "com.neuronrobotics.sdk.dyio.peripherals",
+            "com.neuronrobotics.sdk.dyio",
+            "com.neuronrobotics.sdk.common",
+            "com.neuronrobotics.sdk.ui",
+            "com.neuronrobotics.sdk.util",
+            "com.neuronrobotics.sdk.serial",
+            "com.neuronrobotics.sdk.addons.kinematics",
+            "com.neuronrobotics.sdk.addons.kinematics.math",
+            "com.neuronrobotics.sdk.addons.kinematics.gui",
+            "com.neuronrobotics.sdk.config",
+            "com.neuronrobotics.bowlerkernel",
+            "com.neuronrobotics.bowlerstudio",
+            "com.neuronrobotics.bowlerstudio.scripting",
+            "com.neuronrobotics.bowlerstudio.physics",
+            "com.neuronrobotics.bowlerstudio.vitamins",
+            "com.neuronrobotics.bowlerstudio.creature"
+        ).toTypedArray()
     }
 }
