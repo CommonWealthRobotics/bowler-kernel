@@ -67,11 +67,10 @@ class UnprovisionedDeviceResourceFactory(
 
     private fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource>
         makeUnprovisionedResource(
-            device: BowlerDevice,
-            resourceId: ResourceId,
-            errorMessageType: String,
-            makeResource: (BowlerDevice, ResourceId) -> T
-        ): Either<RegisterError, T> {
+        device: BowlerDevice,
+        resourceId: ResourceId,
+        makeResource: (BowlerDevice, ResourceId) -> T
+    ): Either<RegisterError, T> {
         return if (device.isResourceInRange(resourceId)) {
             registry.registerDeviceResource(device, resourceId, makeResource)
         } else {
@@ -81,15 +80,16 @@ class UnprovisionedDeviceResourceFactory(
 
     private fun <T : UnprovisionedDeviceResourceGroup<R>, R : ProvisionedDeviceResourceGroup>
         makeUnprovisionedResourceGroup(
-            device: BowlerDevice,
-            resourceIds: ImmutableList<ResourceId>,
-            errorMessageType: String,
-            makeResourceGroup: (BowlerDevice, ImmutableList<ResourceId>) -> T
-        ): Either<RegisterError, T> {
+        device: BowlerDevice,
+        resourceIds: ImmutableList<ResourceId>,
+        makeResourceGroup: (BowlerDevice, ImmutableList<ResourceId>) -> T
+    ): Either<RegisterError, T> {
         return if (resourceIds.all { device.isResourceInRange(it) }) {
             registry.registerDeviceResourceGroup(device, resourceIds, makeResourceGroup)
         } else {
-            RegisterDeviceResourceGroupError.ResourceGroupMemberOutsideValidRangeError(resourceIds).left()
+            RegisterDeviceResourceGroupError.ResourceGroupMemberOutsideValidRangeError(
+                resourceIds
+            ).left()
         }
     }
 
@@ -99,8 +99,7 @@ class UnprovisionedDeviceResourceFactory(
     ): Either<RegisterError, UnprovisionedAnalogIn> =
         makeUnprovisionedResource(
             device,
-            ResourceId(DefaultResourceTypes.AnalogIn, attachmentPoint),
-            "AnalogIn"
+            ResourceId(DefaultResourceTypes.AnalogIn, attachmentPoint)
         ) { registeredDevice, resourceId ->
             UnprovisionedAnalogIn(registeredDevice, resourceId)
         }
@@ -111,8 +110,7 @@ class UnprovisionedDeviceResourceFactory(
     ): Either<RegisterError, UnprovisionedAnalogOut> =
         makeUnprovisionedResource(
             device,
-            ResourceId(DefaultResourceTypes.AnalogOut, attachmentPoint),
-            "AnalogOut"
+            ResourceId(DefaultResourceTypes.AnalogOut, attachmentPoint)
         ) { registeredDevice, resourceId ->
             UnprovisionedAnalogOut(registeredDevice, resourceId)
         }
@@ -123,8 +121,7 @@ class UnprovisionedDeviceResourceFactory(
     ): Either<RegisterError, UnprovisionedButton> =
         makeUnprovisionedResource(
             device,
-            ResourceId(DefaultResourceTypes.Button, attachmentPoint),
-            "Button"
+            ResourceId(DefaultResourceTypes.Button, attachmentPoint)
         ) { registeredDevice, resourceId ->
             UnprovisionedButton(registeredDevice, resourceId)
         }
@@ -135,8 +132,7 @@ class UnprovisionedDeviceResourceFactory(
     ): Either<RegisterError, UnprovisionedDigitalIn> =
         makeUnprovisionedResource(
             device,
-            ResourceId(DefaultResourceTypes.DigitalIn, attachmentPoint),
-            "DigitalIn"
+            ResourceId(DefaultResourceTypes.DigitalIn, attachmentPoint)
         ) { registeredDevice, resourceId ->
             UnprovisionedDigitalIn(registeredDevice, resourceId)
         }
@@ -147,8 +143,7 @@ class UnprovisionedDeviceResourceFactory(
     ): Either<RegisterError, UnprovisionedDigitalOut> =
         makeUnprovisionedResource(
             device,
-            ResourceId(DefaultResourceTypes.DigitalOut, attachmentPoint),
-            "DigitalOut"
+            ResourceId(DefaultResourceTypes.DigitalOut, attachmentPoint)
         ) { registeredDevice, resourceId ->
             UnprovisionedDigitalOut(registeredDevice, resourceId)
         }
@@ -159,8 +154,7 @@ class UnprovisionedDeviceResourceFactory(
     ): Either<RegisterError, UnprovisionedEncoder> =
         makeUnprovisionedResource(
             device,
-            ResourceId(DefaultResourceTypes.Encoder, attachmentPoint),
-            "Encoder"
+            ResourceId(DefaultResourceTypes.Encoder, attachmentPoint)
         ) { registeredDevice, resourceId ->
             UnprovisionedEncoder(registeredDevice, resourceId)
         }
@@ -171,8 +165,7 @@ class UnprovisionedDeviceResourceFactory(
     ): Either<RegisterError, UnprovisionedPiezoelectricSpeaker> =
         makeUnprovisionedResource(
             device,
-            ResourceId(DefaultResourceTypes.PiezoelectricSpeaker, attachmentPoint),
-            "PiezoelectricSpeaker"
+            ResourceId(DefaultResourceTypes.PiezoelectricSpeaker, attachmentPoint)
         ) { registeredDevice, resourceId ->
             UnprovisionedPiezoelectricSpeaker(registeredDevice, resourceId)
         }
@@ -183,8 +176,7 @@ class UnprovisionedDeviceResourceFactory(
     ): Either<RegisterError, UnprovisionedSerialConnection> =
         makeUnprovisionedResource(
             device,
-            ResourceId(DefaultResourceTypes.SerialConnection, attachmentPoint),
-            "SerialConnection"
+            ResourceId(DefaultResourceTypes.SerialConnection, attachmentPoint)
         ) { registeredDevice, resourceId ->
             UnprovisionedSerialConnection(registeredDevice, resourceId)
         }
@@ -196,8 +188,7 @@ class UnprovisionedDeviceResourceFactory(
     ): Either<RegisterError, UnprovisionedDeviceResource<Servo>> =
         makeUnprovisionedResource(
             device,
-            ResourceId(DefaultResourceTypes.Servo, attachmentPoint),
-            "Servo"
+            ResourceId(DefaultResourceTypes.Servo, attachmentPoint)
         ) { registeredDevice, resourceId ->
             UnprovisionedServo(registeredDevice, resourceId, limits)
         }
@@ -208,8 +199,7 @@ class UnprovisionedDeviceResourceFactory(
     ): Either<RegisterError, UnprovisionedStepper> =
         makeUnprovisionedResource(
             device,
-            ResourceId(DefaultResourceTypes.Stepper, attachmentPoint),
-            "Stepper"
+            ResourceId(DefaultResourceTypes.Stepper, attachmentPoint)
         ) { registeredDevice, resourceId ->
             UnprovisionedStepper(registeredDevice, resourceId)
         }
@@ -220,8 +210,7 @@ class UnprovisionedDeviceResourceFactory(
     ): Either<RegisterError, UnprovisionedUltrasonic> =
         makeUnprovisionedResource(
             device,
-            ResourceId(DefaultResourceTypes.Ultrasonic, attachmentPoint),
-            "Ultrasonic"
+            ResourceId(DefaultResourceTypes.Ultrasonic, attachmentPoint)
         ) { registeredDevice, resourceId ->
             UnprovisionedUltrasonic(registeredDevice, resourceId)
         }
@@ -234,8 +223,7 @@ class UnprovisionedDeviceResourceFactory(
             device,
             attachmentPoints.map {
                 ResourceId(DefaultResourceTypes.AnalogIn, it)
-            }.toImmutableList(),
-            "AnalogIn Group"
+            }.toImmutableList()
         ) { registeredDevice, resourceIds ->
             UnprovisionedAnalogInGroup(registeredDevice, resourceIds)
         }
@@ -248,8 +236,7 @@ class UnprovisionedDeviceResourceFactory(
             device,
             attachmentPoints.map {
                 ResourceId(DefaultResourceTypes.DigitalIn, it)
-            }.toImmutableList(),
-            "DigitalIn Group"
+            }.toImmutableList()
         ) { registeredDevice, resourceIds ->
             UnprovisionedDigitalInGroup(registeredDevice, resourceIds)
         }
@@ -262,8 +249,7 @@ class UnprovisionedDeviceResourceFactory(
             device,
             attachmentPoints.map {
                 ResourceId(DefaultResourceTypes.DigitalOut, it)
-            }.toImmutableList(),
-            "DigitalOut Group"
+            }.toImmutableList()
         ) { registeredDevice, resourceIds ->
             UnprovisionedDigitalOutGroup(registeredDevice, resourceIds)
         }
