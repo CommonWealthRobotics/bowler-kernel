@@ -18,6 +18,7 @@ package com.neuronrobotics.bowlerkernel.cad.core
 
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.STL
+import mu.KotlinLogging
 import java.io.File
 import java.nio.file.Paths
 import java.text.NumberFormat
@@ -44,6 +45,7 @@ class BlenderDeduplicator(
 
         val command = "$blenderExec --background --python $dedupScript -- " +
             "$folder/$filenamePrefix.stl $folder/$filenamePrefix-deduped.stl $thresholdString"
+        LOGGER.debug { "Running command: `$command`" }
         Runtime.getRuntime().exec(command).waitFor()
 
         val csgBack = STL.file(Paths.get("$folder/$filenamePrefix-deduped.stl"))
@@ -52,5 +54,9 @@ class BlenderDeduplicator(
         File("$folder/$filenamePrefix-deduped.stl").delete()
 
         return csgBack
+    }
+
+    companion object {
+        private val LOGGER = KotlinLogging.logger { }
     }
 }
