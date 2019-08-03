@@ -65,8 +65,7 @@ class UnprovisionedDeviceResourceFactory(
     UnprovisionedDigitalInGroupFactory,
     UnprovisionedDigitalOutGroupFactory {
 
-    private fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource>
-        makeUnprovisionedResource(
+    private fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> makeUnprovisionedResource(
         device: BowlerDevice,
         resourceId: ResourceId,
         makeResource: (BowlerDevice, ResourceId) -> T
@@ -78,8 +77,8 @@ class UnprovisionedDeviceResourceFactory(
         }
     }
 
-    private fun <T : UnprovisionedDeviceResourceGroup<R>, R : ProvisionedDeviceResourceGroup>
-        makeUnprovisionedResourceGroup(
+    @SuppressWarnings("MaxLineLength")
+    private fun <T : UnprovisionedDeviceResourceGroup<R>, R : ProvisionedDeviceResourceGroup> makeUnprovisionedResourceGroup(
         device: BowlerDevice,
         resourceIds: ImmutableList<ResourceId>,
         makeResourceGroup: (BowlerDevice, ImmutableList<ResourceId>) -> T
