@@ -7,10 +7,6 @@ description = "Support for some default scripting languages."
 fun DependencyHandler.arrow(name: String) =
     create(group = "io.arrow-kt", name = name, version = property("arrow.version") as String)
 
-repositories {
-    maven(url = "https://dl.bintray.com/s1m0nw1/KtsRunner")
-}
-
 dependencies {
     api(project(":bowler-kernel:hardware"))
     api(project(":bowler-kernel:gitfs"))
