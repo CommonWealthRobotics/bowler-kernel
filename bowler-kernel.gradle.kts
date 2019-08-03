@@ -49,6 +49,8 @@ val kotlinProjects = setOf(
 val javaProjects = setOf<Project>() + kotlinProjects
 
 val publishedProjects = setOf(
+    bowlerKernelCadCoreProject,
+    bowlerKernelCadVitaminsProject,
     bowlerKernelSettingsProject,
     bowlerKernelGitFSProject,
     bowlerKernelHardwareProject,
