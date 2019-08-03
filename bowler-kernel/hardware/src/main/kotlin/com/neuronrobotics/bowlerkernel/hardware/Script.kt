@@ -19,8 +19,8 @@ package com.neuronrobotics.bowlerkernel.hardware
 import arrow.core.Either
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.registry.BaseHardwareRegistry
-import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistry
 import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistryTracker
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.UnregisterError
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -37,12 +37,12 @@ abstract class Script {
     private var internalIsRunning = AtomicBoolean(false)
 
     /**
-     * The [HardwareRegistry] this script should use.
+     * The [HardwareRegistryTracker] this script should use.
      */
-    val hardwareRegistry: HardwareRegistry
-        get() = internalHardwareRegistry!!
+    val hardwareRegistry: HardwareRegistryTracker
+        get() = internalHardwareRegistry
 
-    private var internalHardwareRegistry: HardwareRegistry? = null
+    private var internalHardwareRegistry = HardwareRegistryTracker(BaseHardwareRegistry())
 
     /**
      * The child threads the script created.
@@ -76,12 +76,17 @@ abstract class Script {
             "A script cannot be its own parent."
         }
 
-        if (internalHardwareRegistry == null) {
-            internalHardwareRegistry = if (parent == null) {
-                BaseHardwareRegistry()
-            } else {
-                HardwareRegistryTracker(parent.internalHardwareRegistry!!)
-            }
+        require(!isRunning) {
+            "Cannot start a script that is already running."
+        }
+
+        require(internalHardwareRegistry.registeredDevices.isEmpty())
+        require(internalHardwareRegistry.registeredDeviceResources.isEmpty)
+
+        // Fine to overwrite this because the only way to stop a script is by calling
+        // stopAndCleanUp()
+        if (parent != null) {
+            internalHardwareRegistry = HardwareRegistryTracker(parent.internalHardwareRegistry)
         }
 
         internalIsRunning.set(true)
@@ -93,8 +98,10 @@ abstract class Script {
      * after the script is done running.
      *
      * @param timeout The per-thread timeout before interrupting the thread.
+     * @return Any errors encountered while unregistering everything from
+     * [internalHardwareRegistry].
      */
-    fun stopAndCleanUp(timeout: Long = 1000) {
+    fun stopAndCleanUp(timeout: Long = 1000): ImmutableList<UnregisterError> {
         stopScript()
 
         threads.forEach {
@@ -105,7 +112,11 @@ abstract class Script {
         }
 
         threads.clear()
+
+        val unregisterErrors = internalHardwareRegistry.unregisterAllHardware()
+
         internalIsRunning.set(false)
+        return unregisterErrors
     }
 
     /**

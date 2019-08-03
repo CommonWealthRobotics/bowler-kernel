@@ -20,8 +20,8 @@ package com.neuronrobotics.bowlerkernel.scripting
 
 import arrow.core.Either
 import arrow.core.getOrHandle
+import arrow.core.right
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.hardware.EmptyScript
 import com.neuronrobotics.bowlerkernel.hardware.Script
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
 import com.neuronrobotics.bowlerkernel.hardware.device.DeviceFactory
@@ -32,17 +32,14 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResourceFactory
 import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocolFactory
-import com.neuronrobotics.bowlerkernel.hardware.registry.BaseHardwareRegistry
 import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultScriptFactory
 import com.neuronrobotics.bowlerkernel.scripting.parser.DefaultScriptLanguageParser
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.emptyImmutableList
-import org.octogonapus.ktguava.collections.immutableListOf
 
 internal class ScriptIntegrationTest {
 
@@ -136,33 +133,35 @@ internal class ScriptIntegrationTest {
     fun `register hardware inside a groovy script`() {
         val scriptText =
             """
-            import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
+            import arrow.core.Either
+            import com.google.common.collect.ImmutableList
+            import com.neuronrobotics.bowlerkernel.hardware.Script
             import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
             import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
             import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDigitalOutFactory
             import com.neuronrobotics.bowlerkernel.hardware.device.DeviceFactory
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResourceFactory
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
             import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocolFactory
-            import com.neuronrobotics.bowlerkernel.hardware.registry.BaseHardwareRegistry
-
+            import org.jetbrains.annotations.NotNull
+            
             import static com.neuronrobotics.bowlerkernel.scripting.TestUtilKt.mockBowlerRPCProtocol
-
-            class Test {
-
+            
+            class Test extends Script {
+            
                 boolean worked = false
-
-                Test() {
+            
+                @Override
+                protected Either<String, Object> runScript(@NotNull ImmutableList<Object> args) {
                     def deviceFactory = new DeviceFactory(
-                        args[0],
-                        DefaultResourceIdValidator(),
-                        SimplePacketComsProtocolFactory(DefaultResourceIdValidator())
+                            hardwareRegistry,
+                            new DefaultResourceIdValidator(),
+                            new SimplePacketComsProtocolFactory(new DefaultResourceIdValidator())
                     )
-
+            
                     def resourceFactory = new UnprovisionedDeviceResourceFactory(hardwareRegistry)
-
+            
                     deviceFactory.makeBowlerDevice(
                             new DeviceId(
                                     new DefaultDeviceTypes.UnknownDevice(),
@@ -171,7 +170,7 @@ internal class ScriptIntegrationTest {
                             mockBowlerRPCProtocol()
                     ).map {
                         it.connect()
-
+            
                         resourceFactory.makeUnprovisionedDigitalOut(
                                 it,
                                 new DefaultAttachmentPoints.Pin(1 as byte)
@@ -179,16 +178,20 @@ internal class ScriptIntegrationTest {
                             worked = true
                             it.add(led1)
                         }
-
+            
                         it.disconnect()
                     }
+                    
+                    return new Either.Right(worked)
+                }
+            
+                @Override
+                protected void stopScript() {
                 }
             }
-
-            return new Test().worked
+            
+            return Test
             """.trimIndent()
-
-        val registry = BaseHardwareRegistry()
 
         val script = DefaultScriptFactory(
             DefaultScriptLanguageParser()
@@ -198,23 +201,16 @@ internal class ScriptIntegrationTest {
         )
 
         // Run the script a first time, this should work fine
-        script.startScript(immutableListOf(registry)).bimap(
+        script.startScript(emptyImmutableList()).bimap(
             { failedToRunScript(it) },
             { assertTrue(it as Boolean) }
         )
 
-        // Run the script a second time, this should fail (inside the script) because the hardware
-        // has not been unregistered
-        script.startScript(immutableListOf(registry)).bimap(
-            { failedToRunScript(it) },
-            { assertFalse(it as Boolean) }
-        )
-
         script.stopAndCleanUp()
 
-        // Run the script a third time, this should work again because the script was stopped and
+        // Run the script a second time, this should work again because the script was stopped and
         // clean up after
-        script.startScript(immutableListOf(registry)).bimap(
+        script.startScript(emptyImmutableList()).bimap(
             { failedToRunScript(it) },
             { assertTrue(it as Boolean) }
         )
@@ -286,9 +282,6 @@ internal class ScriptIntegrationTest {
             MyScript::class
             """.trimIndent()
 
-        // parent script to keep the same hardware registry
-        val parentScript = EmptyScript()
-
         val script = DefaultScriptFactory(
             DefaultScriptLanguageParser()
         ).createScriptFromText("kotlin", scriptText).fold(
@@ -297,23 +290,16 @@ internal class ScriptIntegrationTest {
         )
 
         // Run the script a first time, this should work fine
-        script.startScript(emptyImmutableList(), parentScript).bimap(
+        script.startScript(emptyImmutableList()).bimap(
             { failedToRunScript(it) },
             { assertTrue(it as Boolean) }
         )
 
-        // Run the script a second time, this should fail (inside the script) because the hardware
-        // has not been unregistered
-        script.startScript(emptyImmutableList(), parentScript).bimap(
-            { failedToRunScript(it) },
-            { assertFalse(it as Boolean) }
-        )
-
         script.stopAndCleanUp()
 
-        // Run the script a third time, this should work again because the script was stopped and
+        // Run the script a second time, this should work again because the script was stopped and
         // clean up after
-        script.startScript(emptyImmutableList(), parentScript).bimap(
+        script.startScript(emptyImmutableList()).bimap(
             { failedToRunScript(it) },
             { assertTrue(it as Boolean) }
         )
@@ -323,10 +309,33 @@ internal class ScriptIntegrationTest {
 
     @Test
     fun `test script cannot be its own parent`() {
-        val script = EmptyScript()
+        val script = object : Script() {
+            override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
+                return Unit.right()
+            }
+
+            override fun stopScript() = Unit
+        }
 
         assertThrows<IllegalArgumentException> {
             script.startScript(emptyImmutableList(), script)
+        }
+    }
+
+    @Test
+    fun `test script cannot be started while already running`() {
+        val script = object : Script() {
+            override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
+                return Unit.right()
+            }
+
+            override fun stopScript() = Unit
+        }
+
+        script.startScript(emptyImmutableList())
+
+        assertThrows<IllegalArgumentException> {
+            script.startScript(emptyImmutableList())
         }
     }
 
