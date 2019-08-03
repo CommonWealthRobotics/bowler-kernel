@@ -18,12 +18,12 @@ package com.neuronrobotics.bowlerkernel.cad.vitamins
 
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import eu.mihosoft.vrl.v3d.Cube
-import eu.mihosoft.vrl.v3d.Cylinder
 import eu.mihosoft.vrl.v3d.Sphere
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.millimeter
+import org.octogonapus.ktunits.quantities.times
 
 internal class VitaminSlicerTest {
 
@@ -122,39 +122,24 @@ internal class VitaminSlicerTest {
 
     @Test
     fun `test with corner removed`() {
+        val multiplier = 2
         val expected = CenterOfMass(
-            x = (12.5 / 7.0).millimeter,
-            y = (12.5 / 7.0).millimeter,
-            z = (12.5 / 7.0).millimeter
+            x = (1.25 / 7.0).millimeter * multiplier,
+            y = (1.25 / 7.0).millimeter * multiplier,
+            z = (1.25 / 7.0).millimeter * multiplier
         )
 
         val actual = slicer.getCenterOfMass(
-            Cube(50.0).toCSG().difference(
-                Cube(50.0).toCSG()
-                    .movex(-25)
-                    .movey(-25)
-                    .movez(-25)
-            )
+            Cube(5.0 * multiplier).toCSG().difference(
+                Cube(5.0 * multiplier).toCSG()
+                    .movex(-2.5 * multiplier)
+                    .movey(-2.5 * multiplier)
+                    .movez(-2.5 * multiplier)
+            ),
+            0.5
         )
 
-        checkEquality(expected, actual, 0.15)
-    }
-
-    @Test
-    fun `test with off-center screw hole`() {
-        val expected = CenterOfMass(
-            x = 0.02.millimeter,
-            y = 0.millimeter,
-            z = (-0.02).millimeter
-        )
-
-        val actual = slicer.getCenterOfMass(
-            Cube(50.0).toCSG().difference(
-                Cylinder(5.0, 10.0).toCSG().movex(-5.0)
-            )
-        )
-
-        checkEquality(expected, actual)
+        checkEquality(expected, actual, 0.03)
     }
 
     private fun checkEquality(
