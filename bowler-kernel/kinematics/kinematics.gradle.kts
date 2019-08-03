@@ -16,8 +16,9 @@ fun DependencyHandler.arrow(name: String) =
     create(group = "io.arrow-kt", name = name, version = property("arrow.version") as String)
 
 dependencies {
-    api(project(":bowler-kernel:scripting"))
+    api(project(":bowler-kernel:gitfs"))
     api(project(":bowler-kernel:util"))
+
     api(
         group = "org.apache.commons",
         name = "commons-math3",

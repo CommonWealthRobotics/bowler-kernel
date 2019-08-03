@@ -27,6 +27,7 @@ val bowlerKernelConfigProject = project(":bowler-kernel:config")
 val bowlerKernelGitFSProject = project(":bowler-kernel:gitfs")
 val bowlerKernelHardwareProject = project(":bowler-kernel:hardware")
 val bowlerKernelKinematicsProject = project(":bowler-kernel:kinematics")
+val bowlerKernelKinematicsFactoriesProject = project(":bowler-kernel:kinematics-factories")
 val bowlerKernelLoggingProject = project(":bowler-kernel:logging")
 val bowlerKernelScriptingProject = project(":bowler-kernel:scripting")
 val bowlerKernelUtilProject = project(":bowler-kernel:util")
@@ -40,6 +41,7 @@ val kotlinProjects = setOf(
     bowlerKernelGitFSProject,
     bowlerKernelHardwareProject,
     bowlerKernelKinematicsProject,
+    bowlerKernelKinematicsFactoriesProject,
     bowlerKernelLoggingProject,
     bowlerKernelScriptingProject,
     bowlerKernelUtilProject,
@@ -55,6 +57,7 @@ val publishedProjects = setOf(
     bowlerKernelGitFSProject,
     bowlerKernelHardwareProject,
     bowlerKernelKinematicsProject,
+    bowlerKernelKinematicsFactoriesProject,
     bowlerKernelLoggingProject,
     bowlerKernelScriptingProject,
     bowlerKernelUtilProject,

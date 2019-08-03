@@ -14,15 +14,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics.limb.link
+package com.neuronrobotics.bowlerkernel.kinematics.factories
 
 import arrow.core.Either
 import arrow.core.extensions.either.monad.binding
 import com.beust.klaxon.Klaxon
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DefaultLink
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkFactory
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkConfigurationData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialStateEstimator
-import com.neuronrobotics.bowlerkernel.kinematics.motion.model.createInstance
 import com.neuronrobotics.bowlerkernel.scripting.factory.GitScriptFactory
 import javax.inject.Inject
 

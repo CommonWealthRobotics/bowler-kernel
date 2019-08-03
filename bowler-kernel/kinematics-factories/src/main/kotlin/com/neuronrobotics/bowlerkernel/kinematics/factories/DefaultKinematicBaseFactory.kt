@@ -14,11 +14,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics.base
+package com.neuronrobotics.bowlerkernel.kinematics.factories
 
 import arrow.core.Either
 import arrow.core.extensions.either.monad.binding
 import com.beust.klaxon.Klaxon
+import com.neuronrobotics.bowlerkernel.kinematics.base.DefaultKinematicBase
+import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBase
+import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBaseFactory
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseConfigurationData
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseScriptData
@@ -28,7 +31,6 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbConfigurationData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
-import com.neuronrobotics.bowlerkernel.kinematics.motion.model.createInstance
 import com.neuronrobotics.bowlerkernel.scripting.factory.GitScriptFactory
 import org.octogonapus.ktguava.collections.toImmutableMap
 import org.octogonapus.ktguava.collections.toImmutableSet

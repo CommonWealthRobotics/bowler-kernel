@@ -24,9 +24,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBas
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopBodyController
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopJointAngleController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.DefaultLimb
-import com.neuronrobotics.bowlerkernel.kinematics.limb.DefaultLimbFactory
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DefaultLinkFactory
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.LengthBasedReachabilityCalculator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopForwardKinematicsSolver
@@ -35,6 +33,8 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInverseKinematicsSo
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanGenerator
 import com.neuronrobotics.bowlerkernel.kinematics.seaArmLinks
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -82,12 +82,9 @@ internal class KinematicGraphTest {
         assertTrue(decodedGraph.isRight())
         decodedGraph as Either.Right
 
-        val convertedKinematicGraph = decodedGraph.b.convertToKinematicGraph(
-            DefaultLimbFactory(
-                mock {},
-                DefaultLinkFactory(mock {})
-            )
-        )
+        val convertedKinematicGraph = decodedGraph.b.convertToKinematicGraph(mock {
+            on { createLimb(any(), any()) } doReturn Either.right(mock {})
+        })
 
         assertTrue(convertedKinematicGraph is Either.Right)
         convertedKinematicGraph as Either.Right
