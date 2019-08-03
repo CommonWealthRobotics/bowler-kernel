@@ -145,13 +145,13 @@ internal class ScriptIntegrationTest {
             import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
             import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocolFactory
             import org.jetbrains.annotations.NotNull
-            
+
             import static com.neuronrobotics.bowlerkernel.scripting.TestUtilKt.mockBowlerRPCProtocol
-            
+
             class Test extends Script {
-            
+
                 boolean worked = false
-            
+
                 @Override
                 protected Either<String, Object> runScript(@NotNull ImmutableList<Object> args) {
                     def deviceFactory = new DeviceFactory(
@@ -159,9 +159,9 @@ internal class ScriptIntegrationTest {
                             new DefaultResourceIdValidator(),
                             new SimplePacketComsProtocolFactory(new DefaultResourceIdValidator())
                     )
-            
+
                     def resourceFactory = new UnprovisionedDeviceResourceFactory(hardwareRegistry)
-            
+
                     deviceFactory.makeBowlerDevice(
                             new DeviceId(
                                     new DefaultDeviceTypes.UnknownDevice(),
@@ -170,7 +170,7 @@ internal class ScriptIntegrationTest {
                             mockBowlerRPCProtocol()
                     ).map {
                         it.connect()
-            
+
                         resourceFactory.makeUnprovisionedDigitalOut(
                                 it,
                                 new DefaultAttachmentPoints.Pin(1 as byte)
@@ -178,18 +178,18 @@ internal class ScriptIntegrationTest {
                             worked = true
                             it.add(led1)
                         }
-            
+
                         it.disconnect()
                     }
-                    
+
                     return new Either.Right(worked)
                 }
-            
+
                 @Override
                 protected void stopScript() {
                 }
             }
-            
+
             return Test
             """.trimIndent()
 
