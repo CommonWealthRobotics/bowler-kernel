@@ -25,7 +25,7 @@ interface Deduplicator {
      *
      * @param csg The CSG.
      * @param threshold The minimum closeness to remove.
-     * @return The simplified CSG>
+     * @return The simplified CSG.
      */
-    fun deduplicate(csg: CSG, threshold: Double = 0.0001): CSG
+    fun deduplicate(csg: CSG, threshold: Double = 1e-4): CSG
 }
