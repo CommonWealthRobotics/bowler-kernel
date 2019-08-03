@@ -31,7 +31,7 @@ import org.octogonapus.ktunits.quantities.volt
 
 internal class BatteryGeneratorTest {
 
-    private val generator = com.neuronrobotics.bowlerkernel.cad.vitamins.BatteryGenerator()
+    private val generator = BatteryGenerator()
 
     @Test
     fun `test battery`() {

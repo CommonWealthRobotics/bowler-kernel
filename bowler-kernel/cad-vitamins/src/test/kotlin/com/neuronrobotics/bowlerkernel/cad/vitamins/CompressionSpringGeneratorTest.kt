@@ -32,7 +32,7 @@ import org.octogonapus.ktunits.quantities.oz
 internal class CompressionSpringGeneratorTest {
 
     private val generator =
-        com.neuronrobotics.bowlerkernel.cad.vitamins.CompressionSpringGenerator()
+        CompressionSpringGenerator()
 
     @Test
     fun `test compression spring`() {

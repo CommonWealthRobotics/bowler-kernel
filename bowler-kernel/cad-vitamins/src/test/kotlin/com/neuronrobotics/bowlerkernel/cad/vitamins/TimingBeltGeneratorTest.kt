@@ -28,7 +28,7 @@ import org.octogonapus.ktunits.quantities.millimeter
 
 internal class TimingBeltGeneratorTest {
 
-    private val generator = com.neuronrobotics.bowlerkernel.cad.vitamins.TimingBeltGenerator()
+    private val generator = TimingBeltGenerator()
 
     @Test
     fun `test timing belt`() {

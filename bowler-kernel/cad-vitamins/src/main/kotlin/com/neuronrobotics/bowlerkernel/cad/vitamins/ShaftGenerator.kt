@@ -33,7 +33,7 @@ import org.octogonapus.ktunits.quantities.times
 class ShaftGenerator(
     private val numSlices: Int = 16,
     maxCacheSize: Long = 100
-) : com.neuronrobotics.bowlerkernel.cad.vitamins.VitaminCadGenerator<Shaft> {
+) : VitaminCadGenerator<Shaft> {
 
     private val cache = CacheBuilder.newBuilder()
         .maximumSize(maxCacheSize)

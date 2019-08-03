@@ -28,11 +28,11 @@ import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.millimeter
 
 class StepperGenerator(
-    boltGenerator: com.neuronrobotics.bowlerkernel.cad.vitamins.VitaminCadGenerator<Bolt>,
-    shaftGenerator: com.neuronrobotics.bowlerkernel.cad.vitamins.VitaminCadGenerator<Shaft>,
+    boltGenerator: VitaminCadGenerator<Bolt>,
+    shaftGenerator: VitaminCadGenerator<Shaft>,
     private val numSlices: Int = 16,
     maxCacheSize: Long = 100
-) : com.neuronrobotics.bowlerkernel.cad.vitamins.VitaminCadGenerator<StepperMotor> {
+) : VitaminCadGenerator<StepperMotor> {
 
     private val cache = CacheBuilder.newBuilder()
         .maximumSize(maxCacheSize)

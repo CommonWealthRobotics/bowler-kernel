@@ -26,7 +26,7 @@ import org.octogonapus.ktunits.quantities.millimeter
 class BoltGenerator(
     numSlices: Int = 16,
     maxCacheSize: Long = 100
-) : com.neuronrobotics.bowlerkernel.cad.vitamins.VitaminCadGenerator<Bolt> {
+) : VitaminCadGenerator<Bolt> {
 
     private val cache = CacheBuilder.newBuilder()
         .maximumSize(maxCacheSize)

@@ -29,7 +29,7 @@ import org.octogonapus.ktunits.quantities.plus
 
 internal class BoltGeneratorTest {
 
-    private val generator = com.neuronrobotics.bowlerkernel.cad.vitamins.BoltGenerator()
+    private val generator = BoltGenerator()
 
     @Test
     fun `test bolt with head bigger than body`() {

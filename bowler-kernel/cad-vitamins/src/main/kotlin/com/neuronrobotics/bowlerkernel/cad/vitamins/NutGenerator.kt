@@ -28,7 +28,7 @@ import kotlin.math.sqrt
 class NutGenerator(
     numPoints: Int = 6,
     maxCacheSize: Long = 100
-) : com.neuronrobotics.bowlerkernel.cad.vitamins.VitaminCadGenerator<Nut> {
+) : VitaminCadGenerator<Nut> {
 
     private val cache = CacheBuilder.newBuilder()
         .maximumSize(maxCacheSize)

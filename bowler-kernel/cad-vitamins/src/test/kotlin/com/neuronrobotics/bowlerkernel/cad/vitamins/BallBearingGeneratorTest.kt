@@ -28,7 +28,7 @@ import org.octogonapus.ktunits.quantities.millimeter
 
 internal class BallBearingGeneratorTest {
 
-    private val generator = com.neuronrobotics.bowlerkernel.cad.vitamins.BallBearingGenerator()
+    private val generator = BallBearingGenerator()
 
     @Test
     fun `test bearing`() {

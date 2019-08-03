@@ -41,14 +41,14 @@ import org.octogonapus.ktunits.quantities.volt
 internal class StepperGeneratorTest {
 
     private val tolerance = 1e-8
-    private val generator = com.neuronrobotics.bowlerkernel.cad.vitamins.StepperGenerator(
+    private val generator = StepperGenerator(
         boltGenerator = object :
-            com.neuronrobotics.bowlerkernel.cad.vitamins.VitaminCadGenerator<Bolt> {
+            VitaminCadGenerator<Bolt> {
             override fun generateCAD(vitamin: Bolt): CSG =
                 Cylinder(1.5, (vitamin.headHeight + vitamin.bodyHeight).millimeter).toCSG()
         },
         shaftGenerator = object :
-            com.neuronrobotics.bowlerkernel.cad.vitamins.VitaminCadGenerator<Shaft> {
+            VitaminCadGenerator<Shaft> {
             override fun generateCAD(vitamin: Shaft): CSG =
                 Cylinder(3.0, vitamin.height.millimeter).toCSG()
         }

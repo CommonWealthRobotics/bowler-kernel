@@ -25,7 +25,7 @@ import org.octogonapus.ktunits.quantities.millimeter
 
 class BatteryGenerator(
     maxCacheSize: Long = 100
-) : com.neuronrobotics.bowlerkernel.cad.vitamins.VitaminCadGenerator<Battery> {
+) : VitaminCadGenerator<Battery> {
 
     private val cache = CacheBuilder.newBuilder()
         .maximumSize(maxCacheSize)

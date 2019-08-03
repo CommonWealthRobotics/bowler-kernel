@@ -29,7 +29,7 @@ import org.octogonapus.ktunits.quantities.millimeter
 class BallBearingGenerator(
     numSlices: Int = 16,
     maxCacheSize: Long = 100
-) : com.neuronrobotics.bowlerkernel.cad.vitamins.VitaminCadGenerator<BallBearing> {
+) : VitaminCadGenerator<BallBearing> {
 
     private val cache = CacheBuilder.newBuilder()
         .maximumSize(maxCacheSize)

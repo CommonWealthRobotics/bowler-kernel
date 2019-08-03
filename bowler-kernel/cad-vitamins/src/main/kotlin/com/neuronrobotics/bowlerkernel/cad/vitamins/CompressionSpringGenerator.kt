@@ -27,7 +27,7 @@ import org.octogonapus.ktunits.quantities.minus
 class CompressionSpringGenerator(
     numSlices: Int = 16,
     maxCacheSize: Long = 100
-) : com.neuronrobotics.bowlerkernel.cad.vitamins.VitaminCadGenerator<CompressionSpring> {
+) : VitaminCadGenerator<CompressionSpring> {
 
     private val cache = CacheBuilder.newBuilder()
         .maximumSize(maxCacheSize)

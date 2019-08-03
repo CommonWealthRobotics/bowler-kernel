@@ -27,7 +27,7 @@ import org.octogonapus.ktunits.quantities.millimeter
 
 internal class VitaminSlicerTest {
 
-    private val slicer = com.neuronrobotics.bowlerkernel.cad.vitamins.VitaminSlicer()
+    private val slicer = VitaminSlicer()
     private val tolerance = 1e-2
 
     @Test
@@ -121,22 +121,23 @@ internal class VitaminSlicerTest {
     }
 
     @Test
-    fun `test with off-center internal hole`() {
+    fun `test with corner removed`() {
         val expected = CenterOfMass(
-            x = (12.5 / 3.0).millimeter,
-            y = 0.millimeter,
-            z = (12.5 / 3.0).millimeter
+            x = (12.5 / 7.0).millimeter,
+            y = (12.5 / 7.0).millimeter,
+            z = (12.5 / 7.0).millimeter
         )
 
         val actual = slicer.getCenterOfMass(
             Cube(50.0).toCSG().difference(
                 Cube(50.0).toCSG()
                     .movex(-25)
+                    .movey(-25)
                     .movez(-25)
             )
         )
 
-        checkEquality(expected, actual, 0.2)
+        checkEquality(expected, actual, 0.15)
     }
 
     @Test

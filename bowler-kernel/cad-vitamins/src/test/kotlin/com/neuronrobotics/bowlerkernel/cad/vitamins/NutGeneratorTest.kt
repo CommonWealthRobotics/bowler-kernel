@@ -28,7 +28,7 @@ import org.octogonapus.ktunits.quantities.millimeter
 
 internal class NutGeneratorTest {
 
-    private val generator = com.neuronrobotics.bowlerkernel.cad.vitamins.NutGenerator()
+    private val generator = NutGenerator()
 
     @Test
     fun `test nut`() {

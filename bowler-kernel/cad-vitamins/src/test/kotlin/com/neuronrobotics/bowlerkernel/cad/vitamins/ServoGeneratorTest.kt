@@ -39,7 +39,7 @@ internal class ServoGeneratorTest {
     private val tolerance = 1e-6
 
     private val generator =
-        com.neuronrobotics.bowlerkernel.cad.vitamins.ServoGenerator(com.neuronrobotics.bowlerkernel.cad.vitamins.ShaftGenerator())
+        ServoGenerator(ShaftGenerator())
 
     private val servo = DefaultServo(
         width = 40.millimeter,

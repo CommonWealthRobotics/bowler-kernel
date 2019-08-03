@@ -26,7 +26,7 @@ import org.octogonapus.ktunits.quantities.minus
 
 class TimingBeltGenerator(
     private val defaultLength: Length = 40.millimeter
-) : com.neuronrobotics.bowlerkernel.cad.vitamins.VitaminCadGenerator<TimingBelt> {
+) : VitaminCadGenerator<TimingBelt> {
 
     override fun generateCAD(vitamin: TimingBelt): CSG = generateCAD(vitamin, defaultLength)
 

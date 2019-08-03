@@ -33,7 +33,7 @@ import org.octogonapus.ktunits.quantities.times
 
 internal class TorsionSpringGeneratorTest {
 
-    private val generator = com.neuronrobotics.bowlerkernel.cad.vitamins.TorsionSpringGenerator()
+    private val generator = TorsionSpringGenerator()
 
     @Test
     fun `test torsion spring`() {

@@ -32,7 +32,7 @@ import org.octogonapus.ktunits.quantities.times
 
 internal class ShaftGeneratorTest {
 
-    private val generator = com.neuronrobotics.bowlerkernel.cad.vitamins.ShaftGenerator()
+    private val generator = ShaftGenerator()
 
     @Test
     fun `test square shaft`() {

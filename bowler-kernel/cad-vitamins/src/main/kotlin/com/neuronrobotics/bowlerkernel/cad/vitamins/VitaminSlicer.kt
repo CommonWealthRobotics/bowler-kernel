@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.cad.vitamins
 
+import arrow.syntax.function.partially3
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cube
@@ -25,23 +26,26 @@ import org.octogonapus.ktunits.quantities.millimeter
 import java.util.concurrent.atomic.AtomicLong
 import java.util.stream.Collectors
 
-/**
- * Slices a [CSG] to determine its center of mass. Assumes that the [CSG] has a uniform density.
- *
- * @param slicePlaneThickness The thickness of the slice plane [CSG].
- * @param sliceStep The resolution of the slices (distance between slices).
- */
-class VitaminSlicer(
-    private val sliceStep: Double = 1.0,
-    private val slicePlaneThickness: Double = sliceStep
-) {
+class VitaminSlicer {
 
-    fun getCenterOfMass(vit: CSG): CenterOfMass {
+    /**
+     * Slices a [CSG] to determine its center of mass. Assumes that the [CSG] has a uniform density.
+     *
+     * @param vit The [CSG] to slice.
+     * @param slicePlaneThickness The thickness of the slice plane [CSG].
+     * @param sliceStep The resolution of the slices (distance between slices).
+     */
+    fun getCenterOfMass(
+        vit: CSG,
+        sliceStep: Double = 1.0,
+        slicePlaneThickness: Double = sliceStep
+    ): CenterOfMass {
         val xSlices = sliceOnAxis(
             listOf(vit),
             { maxX - centerX },
             { minX + centerX },
-            this::getXAxisSlicePlane
+            this::getXAxisSlicePlane.partially3(slicePlaneThickness),
+            sliceStep
         )
         LOGGER.debug { "xSlices size: ${xSlices.size}" }
 
@@ -49,7 +53,8 @@ class VitaminSlicer(
             xSlices,
             { maxY - centerY },
             { minY + centerY },
-            this::getYAxisSlicePlane
+            this::getYAxisSlicePlane.partially3(slicePlaneThickness),
+            sliceStep
         )
         LOGGER.debug { "ySlices size: ${ySlices.size}" }
 
@@ -57,7 +62,8 @@ class VitaminSlicer(
             ySlices,
             { maxZ - centerZ },
             { minZ + centerZ },
-            this::getZAxisSlicePlane
+            this::getZAxisSlicePlane.partially3(slicePlaneThickness),
+            sliceStep
         )
         LOGGER.debug { "zSlices size: ${zSlices.size}" }
 
@@ -85,7 +91,8 @@ class VitaminSlicer(
         slices: List<CSG>,
         maxDim: CSG.() -> Double,
         minDim: CSG.() -> Double,
-        getSlicePlane: (CSG, Double) -> CSG
+        getSlicePlane: (CSG, Double) -> CSG,
+        sliceStep: Double
     ): List<CSG> {
         return slices.parallelStream().flatMap { toSlice ->
             val newSlices = mutableListOf<CSG>()
@@ -120,23 +127,32 @@ class VitaminSlicer(
             vit.intersect(slicePlane)
         }
 
-    private fun getXAxisSlicePlane(vit: CSG, height: Double): CSG =
-        Cube(
-            Vector3d(height, 0.0, 0.0),
-            Vector3d(slicePlaneThickness, vit.totalY, vit.totalZ)
-        ).toCSG()
+    private fun getXAxisSlicePlane(
+        vit: CSG,
+        height: Double,
+        slicePlaneThickness: Double
+    ): CSG = Cube(
+        Vector3d(height, 0.0, 0.0),
+        Vector3d(slicePlaneThickness, vit.totalY, vit.totalZ)
+    ).toCSG()
 
-    private fun getYAxisSlicePlane(vit: CSG, height: Double): CSG =
-        Cube(
-            Vector3d(0.0, height, 0.0),
-            Vector3d(vit.totalX, slicePlaneThickness, vit.totalZ)
-        ).toCSG()
+    private fun getYAxisSlicePlane(
+        vit: CSG,
+        height: Double,
+        slicePlaneThickness: Double
+    ): CSG = Cube(
+        Vector3d(0.0, height, 0.0),
+        Vector3d(vit.totalX, slicePlaneThickness, vit.totalZ)
+    ).toCSG()
 
-    private fun getZAxisSlicePlane(vit: CSG, height: Double): CSG =
-        Cube(
-            Vector3d(0.0, 0.0, height),
-            Vector3d(vit.totalX, vit.totalY, slicePlaneThickness)
-        ).toCSG()
+    private fun getZAxisSlicePlane(
+        vit: CSG,
+        height: Double,
+        slicePlaneThickness: Double
+    ): CSG = Cube(
+        Vector3d(0.0, 0.0, height),
+        Vector3d(vit.totalX, vit.totalY, slicePlaneThickness)
+    ).toCSG()
 
     companion object {
         private val LOGGER = KotlinLogging.logger { }

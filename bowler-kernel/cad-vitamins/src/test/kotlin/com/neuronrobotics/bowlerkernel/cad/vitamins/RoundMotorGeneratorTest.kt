@@ -44,9 +44,9 @@ internal class RoundMotorGeneratorTest {
 
     private val tolerance = 1e-6
 
-    private val generator = com.neuronrobotics.bowlerkernel.cad.vitamins.RoundMotorGenerator(
-        boltGenerator = com.neuronrobotics.bowlerkernel.cad.vitamins.BoltGenerator(),
-        shaftGenerator = com.neuronrobotics.bowlerkernel.cad.vitamins.ShaftGenerator()
+    private val generator = RoundMotorGenerator(
+        boltGenerator = BoltGenerator(),
+        shaftGenerator = ShaftGenerator()
     )
 
     private val motor = DefaultRoundMotor(

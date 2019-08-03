@@ -40,9 +40,9 @@ internal class DCMotorGeneratorTest {
 
     private val tolerance = 1e-6
 
-    private val generator = com.neuronrobotics.bowlerkernel.cad.vitamins.DCMotorGenerator(
-        com.neuronrobotics.bowlerkernel.cad.vitamins.ShaftGenerator(),
-        com.neuronrobotics.bowlerkernel.cad.vitamins.BoltGenerator()
+    private val generator = DCMotorGenerator(
+        ShaftGenerator(),
+        BoltGenerator()
     )
 
     private val motor = DefaultDCMotor(

@@ -29,7 +29,7 @@ import org.octogonapus.ktunits.quantities.minus
 class TorsionSpringGenerator(
     numSlices: Int = 16,
     maxCacheSize: Long = 100
-) : com.neuronrobotics.bowlerkernel.cad.vitamins.VitaminCadGenerator<TorsionSpring> {
+) : VitaminCadGenerator<TorsionSpring> {
 
     private val cache = CacheBuilder.newBuilder()
         .maximumSize(maxCacheSize)

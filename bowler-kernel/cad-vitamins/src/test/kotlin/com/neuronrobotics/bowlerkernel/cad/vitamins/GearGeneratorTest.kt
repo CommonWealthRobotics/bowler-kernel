@@ -25,7 +25,7 @@ import org.octogonapus.ktunits.quantities.millimeter
 
 internal class GearGeneratorTest {
 
-    private val generator = com.neuronrobotics.bowlerkernel.cad.vitamins.GearGenerator()
+    private val generator = GearGenerator()
 
     @Test
     fun `test gear`() {

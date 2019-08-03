@@ -31,10 +31,10 @@ import org.octogonapus.ktunits.quantities.minus
  * Generates [Servo] CAD.
  */
 class ServoGenerator(
-    shaftGenerator: com.neuronrobotics.bowlerkernel.cad.vitamins.VitaminCadGenerator<Shaft>,
+    shaftGenerator: VitaminCadGenerator<Shaft>,
     private val numSlices: Int = 16,
     maxCacheSize: Long = 100
-) : com.neuronrobotics.bowlerkernel.cad.vitamins.VitaminCadGenerator<Servo> {
+) : VitaminCadGenerator<Servo> {
 
     private val cache = CacheBuilder.newBuilder()
         .maximumSize(maxCacheSize)

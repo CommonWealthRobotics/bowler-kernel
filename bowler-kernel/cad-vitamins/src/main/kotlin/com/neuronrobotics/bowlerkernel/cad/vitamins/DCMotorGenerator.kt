@@ -29,11 +29,11 @@ import org.octogonapus.ktunits.quantities.millimeter
 import kotlin.math.truncate
 
 class DCMotorGenerator(
-    shaftGenerator: com.neuronrobotics.bowlerkernel.cad.vitamins.VitaminCadGenerator<Shaft>,
-    private val boltGenerator: com.neuronrobotics.bowlerkernel.cad.vitamins.VitaminCadGenerator<Bolt>,
+    shaftGenerator: VitaminCadGenerator<Shaft>,
+    private val boltGenerator: VitaminCadGenerator<Bolt>,
     numSlices: Int = 16,
     maxCacheSize: Long = 100
-) : com.neuronrobotics.bowlerkernel.cad.vitamins.VitaminCadGenerator<DCMotor> {
+) : VitaminCadGenerator<DCMotor> {
 
     private val cache = CacheBuilder.newBuilder()
         .maximumSize(maxCacheSize)
