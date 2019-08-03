@@ -37,11 +37,9 @@ import kotlin.reflect.KClass
  * A meta-script which can compile and run any known [ScriptLanguage].
  *
  * Notes for [ScriptLanguage.Groovy]:
- * Passes the `args` as a variable named `args` and passes the [Script.injector] as a variable
- * named `injector`.
+ * Passes the `args` as a variable named `args`.
  */
-class DefaultScript
-internal constructor(
+class DefaultScript(
     private val language: ScriptLanguage,
     private val scriptText: String
 ) : Script() {
@@ -57,7 +55,7 @@ internal constructor(
      *
      * If the language is Kotlin, special code structure must be used. The script must return a
      * [KClass] which implements [Script]. This class will make an instance of it with
-     * [Script.injector] and will then call [Script.runScript] with `args`.
+     * [Class.newInstance] and will then call [Script.runScript] with `args`.
      *
      * @param args The arguments to the script.
      * @return The result of the script.
@@ -92,7 +90,6 @@ internal constructor(
                 Thread.currentThread().contextClassLoader,
                 Binding().apply {
                     setVariable("args", args)
-                    setVariable("injector", injector)
                 },
                 configuration
             ).parse(scriptText)
@@ -114,10 +111,9 @@ internal constructor(
             coroutineScope.async {
                 val result = KtsObjectLoader().load<Any?>(scriptText)
                 if (result is KClass<*>) {
-                    val instance = this@DefaultScript.injector.getInstance(result.java)
+                    val instance = result.java.newInstance()
                     if (instance is Script) {
                         // Add all of this script's extra modules to the script to run
-                        instance.addToInjector(this@DefaultScript.getModules())
                         kotlinScript = instance
                         instance.startScript(args)
                     } else {

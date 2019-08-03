@@ -28,11 +28,17 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.gro
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDeviceResourceGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.DeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterDeviceError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterDeviceResourceError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterDeviceResourceGroupError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.UnregisterDeviceError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.UnregisterDeviceResourceError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.UnregisterDeviceResourceGroupError
 
 /**
  * A utility to keep track of what hardware is in use.
  */
-internal interface HardwareRegistry {
+interface HardwareRegistry {
 
     /**
      * The currently registered devices.
@@ -55,7 +61,7 @@ internal interface HardwareRegistry {
     fun <T : Device> registerDevice(
         deviceId: DeviceId,
         makeDevice: (DeviceId) -> T
-    ): Either<RegisterError, T>
+    ): Either<RegisterDeviceError, T>
 
     /**
      * Registers a resource id attached (physically) to a device. Fails if the resource is
@@ -70,7 +76,7 @@ internal interface HardwareRegistry {
         device: D,
         resourceId: ResourceId,
         makeResource: (D, ResourceId) -> T
-    ): Either<RegisterError, T>
+    ): Either<RegisterDeviceResourceError, T>
 
     /**
      * Registers a resource group attached (physically) to a device. Fails if the resource group is
@@ -85,7 +91,7 @@ internal interface HardwareRegistry {
         device: D,
         resourceIds: ImmutableList<ResourceId>,
         makeResourceGroup: (D, ImmutableList<ResourceId>) -> T
-    ): Either<RegisterError, T>
+    ): Either<RegisterDeviceResourceGroupError, T>
 
     /**
      * Unregisters and disconnects a device. Fails if the device is not registered or if the
@@ -94,7 +100,7 @@ internal interface HardwareRegistry {
      * @param device The device to unregister.
      * @return An empty option on success, an [UnregisterError] on failure.
      */
-    fun unregisterDevice(device: Device): Option<UnregisterError>
+    fun unregisterDevice(device: Device): Option<UnregisterDeviceError>
 
     /**
      * Unregisters a resource attached (physically) to a device. Fails if the resource is
@@ -105,7 +111,7 @@ internal interface HardwareRegistry {
      */
     fun unregisterDeviceResource(
         resource: DeviceResource
-    ): Option<UnregisterError>
+    ): Option<UnregisterDeviceResourceError>
 
     /**
      * Unregisters a resource group attached (physically) to a device. Fails if the resource
@@ -116,5 +122,5 @@ internal interface HardwareRegistry {
      */
     fun unregisterDeviceResourceGroup(
         resourceGroup: DeviceResourceGroup
-    ): Option<UnregisterError>
+    ): Option<UnregisterDeviceResourceGroupError>
 }

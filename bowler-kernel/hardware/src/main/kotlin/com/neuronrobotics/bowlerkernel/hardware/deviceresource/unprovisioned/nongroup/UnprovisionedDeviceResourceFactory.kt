@@ -37,19 +37,18 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.gro
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDigitalOutGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDigitalOutGroupFactory
 import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistry
-import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterDeviceResourceError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterDeviceResourceGroupError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterError
 import com.neuronrobotics.bowlerkernel.util.ServoLimits
-import org.jlleitschuh.guice.module
 import org.octogonapus.ktguava.collections.toImmutableList
-import javax.inject.Inject
 
 /**
  * A facade for making any type of device resource. Requires the device to be connected or else
  * require creation will fail due to RPC timeout.
  */
 @SuppressWarnings("TooManyFunctions")
-class UnprovisionedDeviceResourceFactory
-@Inject internal constructor(
+class UnprovisionedDeviceResourceFactory(
     private val registry: HardwareRegistry
 ) : UnprovisionedAnalogInFactory,
     UnprovisionedAnalogOutFactory,
@@ -76,10 +75,7 @@ class UnprovisionedDeviceResourceFactory
         return if (device.isResourceInRange(resourceId)) {
             registry.registerDeviceResource(device, resourceId, makeResource)
         } else {
-            """
-            |Could not make an unprovisioned $errorMessageType with resource id
-            |$resourceId because it is not in the range of resources for device $device.
-            """.trimMargin().left()
+            RegisterDeviceResourceError.ResourceOutsideValidRangeError(resourceId).left()
         }
     }
 
@@ -93,10 +89,7 @@ class UnprovisionedDeviceResourceFactory
         return if (resourceIds.all { device.isResourceInRange(it) }) {
             registry.registerDeviceResourceGroup(device, resourceIds, makeResourceGroup)
         } else {
-            """
-            |Could not make an unprovisioned $errorMessageType with resource ids
-            |$resourceIds because it is not in the range of resources for device $device.
-            """.trimMargin().left()
+            RegisterDeviceResourceGroupError.ResourceGroupMemberOutsideValidRangeError(resourceIds).left()
         }
     }
 
@@ -274,24 +267,4 @@ class UnprovisionedDeviceResourceFactory
         ) { registeredDevice, resourceIds ->
             UnprovisionedDigitalOutGroup(registeredDevice, resourceIds)
         }
-
-    companion object {
-
-        fun unprovisionedDeviceResourceFactoryModule() = module {
-            bind<UnprovisionedAnalogInFactory>().to<UnprovisionedDeviceResourceFactory>()
-            bind<UnprovisionedAnalogOutFactory>().to<UnprovisionedDeviceResourceFactory>()
-            bind<UnprovisionedButtonFactory>().to<UnprovisionedDeviceResourceFactory>()
-            bind<UnprovisionedDigitalInFactory>().to<UnprovisionedDeviceResourceFactory>()
-            bind<UnprovisionedDigitalOutFactory>().to<UnprovisionedDeviceResourceFactory>()
-            bind<UnprovisionedEncoderFactory>().to<UnprovisionedDeviceResourceFactory>()
-            bind<UnprovisionedPiezoelectricSpeakerFactory>().to<UnprovisionedDeviceResourceFactory>()
-            bind<UnprovisionedSerialConnectionFactory>().to<UnprovisionedDeviceResourceFactory>()
-            bind<UnprovisionedServoFactory>().to<UnprovisionedDeviceResourceFactory>()
-            bind<UnprovisionedStepperFactory>().to<UnprovisionedDeviceResourceFactory>()
-            bind<UnprovisionedUltrasonicFactory>().to<UnprovisionedDeviceResourceFactory>()
-            bind<UnprovisionedAnalogInGroupFactory>().to<UnprovisionedDeviceResourceFactory>()
-            bind<UnprovisionedDigitalInGroupFactory>().to<UnprovisionedDeviceResourceFactory>()
-            bind<UnprovisionedDigitalOutGroupFactory>().to<UnprovisionedDeviceResourceFactory>()
-        }
-    }
 }

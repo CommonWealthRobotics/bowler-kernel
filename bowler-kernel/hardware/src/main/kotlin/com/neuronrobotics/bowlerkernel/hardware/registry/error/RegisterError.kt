@@ -14,9 +14,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.registry
+package com.neuronrobotics.bowlerkernel.hardware.registry.error
 
-/**
- * An error encountered while registering something.
- */
-typealias RegisterError = String
+interface RegisterError

@@ -19,7 +19,7 @@ package com.neuronrobotics.bowlerkernel.hardware.device
 import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
-import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterError
 
 interface BowlerDeviceFactory {
 

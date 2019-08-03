@@ -17,17 +17,14 @@
 package com.neuronrobotics.bowlerkernel.scripting.factory
 
 import arrow.effects.IO
-import com.google.inject.assistedinject.Assisted
 import com.neuronrobotics.bowlerkernel.gitfs.GitFS
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 import com.neuronrobotics.bowlerkernel.hardware.Script
 import com.neuronrobotics.bowlerkernel.scripting.DefaultScript
 import com.neuronrobotics.bowlerkernel.scripting.parser.ScriptLanguageParser
-import javax.inject.Inject
 
-class DefaultGitScriptFactory
-@Inject constructor(
-    @Assisted private val gitFS: GitFS,
+class DefaultGitScriptFactory(
+    private val gitFS: GitFS,
     private val scriptLanguageParser: ScriptLanguageParser
 ) : GitScriptFactory {
 

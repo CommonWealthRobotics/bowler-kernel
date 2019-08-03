@@ -16,7 +16,9 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.registry
 
+import arrow.core.Either
 import arrow.core.None
+import arrow.core.Some
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.hasSize
@@ -33,10 +35,12 @@ import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.fail
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.emptyImmutableSetMultimap
 import org.octogonapus.ktguava.collections.immutableListOf
+import org.octogonapus.ktguava.collections.toImmutableList
 
 class HardwareRegistryTrackerTest {
 
@@ -161,11 +165,14 @@ class HardwareRegistryTrackerTest {
             DefaultAttachmentPoints.Pin(1)
         )
 
-        registry.registerDeviceResource(device, resourceId) { _, _ ->
+        val result = registry.registerDeviceResource(device, resourceId) { _, _ ->
             mock<UnprovisionedDeviceResource<*>> {}
         }
 
         assertAll(
+            {
+                assertTrue(result is Either.Left)
+            },
             {
                 assertThat(registry.sessionRegisteredDeviceResources.entries(), hasSize(equalTo(0)))
             },
@@ -230,7 +237,7 @@ class HardwareRegistryTrackerTest {
             ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1))
         )
 
-        registry.unregisterDeviceResource(resource)
+        assertTrue(registry.unregisterDeviceResource(resource) is Some)
 
         assertAll(
             {
@@ -256,7 +263,7 @@ class HardwareRegistryTrackerTest {
             )
         )
 
-        registry.unregisterDeviceResourceGroup(resourceGroup)
+        assertTrue(registry.unregisterDeviceResourceGroup(resourceGroup) is Some)
 
         assertAll(
             {
@@ -292,9 +299,9 @@ class HardwareRegistryTrackerTest {
         val resource = registry.makeDeviceResourceOrFail(device, 0)
         val resourceGroup = registry.makeDeviceResourceGroupOrFail(device, immutableListOf(1, 2))
 
-        baseRegistry.unregisterDeviceResource(resource)
-        baseRegistry.unregisterDeviceResourceGroup(resourceGroup)
-        baseRegistry.unregisterDevice(device)
+        assertTrue(baseRegistry.unregisterDeviceResource(resource) is None)
+        assertTrue(baseRegistry.unregisterDeviceResourceGroup(resourceGroup) is None)
+        assertTrue(baseRegistry.unregisterDevice(device) is None)
 
         val unregisterErrors = registry.unregisterAllHardware()
 
@@ -311,7 +318,7 @@ class HardwareRegistryTrackerTest {
         val resource = registry.makeDeviceResourceOrFail(device, 0)
         registry.makeDeviceResourceGroupOrFail(device, immutableListOf(1, 2))
 
-        baseRegistry.unregisterDeviceResource(resource)
+        assertTrue(baseRegistry.unregisterDeviceResource(resource) is None)
 
         val unregisterErrors = registry.unregisterAllHardware()
 
@@ -320,5 +327,177 @@ class HardwareRegistryTrackerTest {
             { assertThat(registry.sessionRegisteredDevices, hasSize(equalTo(0))) },
             { assertThat(registry.sessionRegisteredDeviceResources.entries(), hasSize(equalTo(0))) }
         )
+    }
+
+    @Nested
+    inner class TestWithNestedTrackers {
+
+        private val secondRegistry = HardwareRegistryTracker(registry)
+
+        @Test
+        fun `successfully registry a device`() {
+            secondRegistry.makeDeviceOrFail()
+
+            assertAll(
+                {
+                    assertThat(registry.sessionRegisteredDevices, hasSize(equalTo(1)))
+                },
+                {
+                    assertThat(secondRegistry.sessionRegisteredDevices, hasSize(equalTo(1)))
+                },
+                {
+                    assertEquals(
+                        registry.sessionRegisteredDevices.map { it.deviceId },
+                        listOf(
+                            DeviceId(
+                                DefaultDeviceTypes.UnknownDevice,
+                                DefaultConnectionMethods.RawHID(0, 0)
+                            )
+                        )
+                    )
+                },
+                {
+                    assertEquals(
+                        secondRegistry.sessionRegisteredDevices.map { it.deviceId },
+                        listOf(
+                            DeviceId(
+                                DefaultDeviceTypes.UnknownDevice,
+                                DefaultConnectionMethods.RawHID(0, 0)
+                            )
+                        )
+                    )
+                }
+            )
+        }
+
+        @Test
+        fun `fail to register in the second layer`() {
+            val device = registry.makeDeviceOrFail()
+            val resource = registry.makeDeviceResourceOrFail(device, 0)
+            registry.makeDeviceResourceGroupOrFail(device, immutableListOf(1, 2))
+
+            val actual = secondRegistry.registerDeviceResourceGroup(
+                device,
+                immutableListOf(1, 2).map {
+                    ResourceId(
+                        DefaultResourceTypes.DigitalOut,
+                        DefaultAttachmentPoints.Pin(it.toByte())
+                    )
+                }.toImmutableList(),
+                MockUnprovisionedDeviceResourceGroup.create
+            )
+
+            assertTrue(actual is Either.Left)
+        }
+
+        @Test
+        fun `unregister all from the second layer`() {
+            val device = secondRegistry.makeDeviceOrFail()
+            val resource = secondRegistry.makeDeviceResourceOrFail(device, 0)
+            secondRegistry.makeDeviceResourceGroupOrFail(device, immutableListOf(1, 2))
+
+            assertAll(
+                { assertThat(baseRegistry.registeredDevices, hasSize(equalTo(1))) },
+                {
+                    assertThat(
+                        baseRegistry.registeredDeviceResources.entries(),
+                        hasSize(equalTo(2))
+                    )
+                },
+                { assertThat(secondRegistry.sessionRegisteredDevices, hasSize(equalTo(1))) },
+                {
+                    assertThat(
+                        secondRegistry.sessionRegisteredDeviceResources.entries(),
+                        hasSize(equalTo(2))
+                    )
+                },
+                { assertThat(registry.sessionRegisteredDevices, hasSize(equalTo(1))) },
+                {
+                    assertThat(
+                        registry.sessionRegisteredDeviceResources.entries(),
+                        hasSize(equalTo(2))
+                    )
+                }
+            )
+
+            val unregisterErrors = secondRegistry.unregisterAllHardware()
+
+            assertAll(
+                { assertThat(unregisterErrors, hasSize(equalTo(0))) },
+                { assertThat(secondRegistry.sessionRegisteredDevices, hasSize(equalTo(0))) },
+                {
+                    assertThat(
+                        secondRegistry.sessionRegisteredDeviceResources.entries(),
+                        hasSize(equalTo(0))
+                    )
+                },
+                { assertThat(registry.sessionRegisteredDevices, hasSize(equalTo(0))) },
+                {
+                    assertThat(
+                        registry.sessionRegisteredDeviceResources.entries(),
+                        hasSize(equalTo(0))
+                    )
+                }
+            )
+        }
+
+        @Test
+        fun `unregister all from the second layer with some errors`() {
+            val device = secondRegistry.makeDeviceOrFail()
+            val resource = secondRegistry.makeDeviceResourceOrFail(device, 0)
+            secondRegistry.makeDeviceResourceGroupOrFail(device, immutableListOf(1, 2))
+
+            assertAll(
+                { assertThat(baseRegistry.registeredDevices, hasSize(equalTo(1))) },
+                {
+                    assertThat(
+                        baseRegistry.registeredDeviceResources.entries(),
+                        hasSize(equalTo(2))
+                    )
+                },
+                { assertThat(registry.sessionRegisteredDevices, hasSize(equalTo(1))) },
+                {
+                    assertThat(
+                        registry.sessionRegisteredDeviceResources.entries(),
+                        hasSize(equalTo(2))
+                    )
+                },
+                { assertThat(secondRegistry.sessionRegisteredDevices, hasSize(equalTo(1))) },
+                {
+                    assertThat(
+                        secondRegistry.sessionRegisteredDeviceResources.entries(),
+                        hasSize(equalTo(2))
+                    )
+                }
+            )
+
+            val unregisterResourceError = baseRegistry.unregisterDeviceResource(resource)
+            assertTrue(unregisterResourceError is None)
+
+            val unregisterErrors = secondRegistry.unregisterAllHardware()
+
+            assertAll(
+                { assertThat(unregisterErrors, hasSize(equalTo(1))) },
+                { assertThat(registry.sessionRegisteredDevices, hasSize(equalTo(0))) },
+                {
+                    val actual = registry.sessionRegisteredDeviceResources.entries()
+                    assertThat(
+                        """
+                        Expected an empty list but got:
+                        ${actual.joinToString("\n")}
+                        """.trimIndent(),
+                        actual,
+                        hasSize(equalTo(0))
+                    )
+                },
+                { assertThat(secondRegistry.sessionRegisteredDevices, hasSize(equalTo(0))) },
+                {
+                    assertThat(
+                        secondRegistry.sessionRegisteredDeviceResources.entries(),
+                        hasSize(equalTo(0))
+                    )
+                }
+            )
+        }
     }
 }

@@ -16,19 +16,22 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware
 
-import com.google.inject.Guice
-import com.google.inject.Injector
-import com.google.inject.Singleton
-import com.neuronrobotics.bowlerkernel.hardware.registry.BaseHardwareRegistry
-import org.jlleitschuh.guice.module
+import arrow.core.right
+import com.google.common.collect.ImmutableList
+import org.octogonapus.ktguava.collections.emptyImmutableList
 
-internal object KernelHardwareModule {
-    /**
-     * This [Injector] is static because it maintains a global [BaseHardwareRegistry].
-     */
-    internal val injector: Injector = Guice.createInjector(kernelHardwareModule())
+/**
+ * A script which does nothing. Can be used to maintain a hardware registry between child scripts.
+ */
+class EmptyScript : Script() {
 
-    private fun kernelHardwareModule() = module {
-        bind<BaseHardwareRegistry>().`in`(Singleton::class.java)
+    init {
+        startScript(emptyImmutableList())
+    }
+
+    override fun runScript(args: ImmutableList<Any?>) = Unit.right()
+
+    @SuppressWarnings("EmptyFunctionBlock")
+    override fun stopScript() {
     }
 }

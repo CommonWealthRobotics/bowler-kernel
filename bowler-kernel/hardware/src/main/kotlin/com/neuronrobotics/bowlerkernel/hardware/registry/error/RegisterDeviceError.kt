@@ -14,12 +14,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware
+package com.neuronrobotics.bowlerkernel.hardware.registry.error
 
-import arrow.core.Either
-import org.junit.jupiter.api.Assertions.fail
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 
-fun <A, B> Either<A, B>.getOrFail() = fold(
-    { fail<B> { it.toString() } },
-    { it }
-)
+sealed class RegisterDeviceError : RegisterError {
+
+    /**
+     * Cannot register the device because it is already registered.
+     */
+    data class DeviceIsAlreadyRegisteredError(val deviceId: DeviceId) : RegisterDeviceError()
+}
