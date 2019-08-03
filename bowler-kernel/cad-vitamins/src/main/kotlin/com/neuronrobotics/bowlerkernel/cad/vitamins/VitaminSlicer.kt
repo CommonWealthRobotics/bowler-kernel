@@ -116,7 +116,7 @@ class VitaminSlicer {
                 height += sliceStep
             }
 
-            newSlices.parallelStream()
+            newSlices.stream()
         }.collect(Collectors.toList())
     }
 

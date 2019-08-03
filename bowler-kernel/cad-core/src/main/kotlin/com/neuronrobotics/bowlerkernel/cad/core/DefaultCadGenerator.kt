@@ -190,7 +190,7 @@ class DefaultCadGenerator(
                 // The fan extends into positive theta already
                 .let { if (link.dhParam.theta < 0) it.rotz(link.dhParam.theta) else it }
                 .difference(start) // So they dont overlap with the fan
-                .difference(end)   // So they dont overlap with the fan
+                .difference(end) // So they dont overlap with the fan
                 .apply { color = Color.AQUA },
             start,
             end
@@ -253,7 +253,7 @@ class DefaultCadGenerator(
                 .let { if (link.dhParam.alpha > 0) it.rotx(link.dhParam.alpha) else it }
                 .moveByDhParam(immutableListOf(link.dhParam), false)
                 .difference(start) // So they dont overlap with the fan
-                .difference(end)   // So they dont overlap with the fan
+                .difference(end) // So they dont overlap with the fan
                 .apply { color = Color.YELLOW },
             start,
             end
@@ -308,7 +308,7 @@ class DefaultCadGenerator(
                 // Rotate to the minimum (the fan extends to the maximum)
                 .rotz(link.dhParam.theta + jointLimits.minimum)
                 .difference(start) // So they dont overlap with the fan
-                .difference(end)   // So they dont overlap with the fan
+                .difference(end) // So they dont overlap with the fan
                 .apply { color = Color.LIGHTGREEN },
             start,
             end
