@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlercad
+package com.neuronrobotics.bowlerkernel.cad.core
 
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.base.DefaultKinematicBase

@@ -14,12 +14,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlercad.cadgenerator
+package com.neuronrobotics.bowlerkernel.cad.core
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.hasSize
-import com.neuronrobotics.bowlercad.createMockKinematicBase
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -35,14 +34,22 @@ internal class DefaultCadGeneratorTest {
 
     @Test
     fun `test with zero dh params`() {
-        val result = generator.generateLimbs(createMockKinematicBase(emptyImmutableList()))
+        val result = generator.generateLimbs(
+            createMockKinematicBase(
+                emptyImmutableList()
+            )
+        )
 
         assertThat(result.values(), hasSize(equalTo(0)))
     }
 
     @Test
     fun `test body`() {
-        val result = generator.generateBody(createMockKinematicBase(emptyImmutableList()))
+        val result = generator.generateBody(
+            createMockKinematicBase(
+                emptyImmutableList()
+            )
+        )
 
         assertAll(
             { assertEquals(5.0, result.totalX) },
