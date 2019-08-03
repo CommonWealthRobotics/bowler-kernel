@@ -125,7 +125,7 @@ internal class VitaminSlicerTest {
         val expected = CenterOfMass(
             x = (12.5 / 3.0).millimeter,
             y = 0.millimeter,
-            z = 0.millimeter
+            z = (12.5 / 3.0).millimeter
         )
 
         val actual = slicer.getCenterOfMass(
@@ -136,15 +136,15 @@ internal class VitaminSlicerTest {
             )
         )
 
-        checkEquality(expected, actual)
+        checkEquality(expected, actual, 0.2)
     }
 
     @Test
     fun `test with off-center screw hole`() {
         val expected = CenterOfMass(
-            x = 0.millimeter,
+            x = 0.02.millimeter,
             y = 0.millimeter,
-            z = 0.millimeter
+            z = (-0.02).millimeter
         )
 
         val actual = slicer.getCenterOfMass(
@@ -156,14 +156,21 @@ internal class VitaminSlicerTest {
         checkEquality(expected, actual)
     }
 
-    private fun checkEquality(expected: CenterOfMass, actual: CenterOfMass) {
+    private fun checkEquality(
+        expected: CenterOfMass,
+        actual: CenterOfMass,
+        customTolerance: Double? = null
+    ) {
+        val actualTolerance = customTolerance ?: tolerance
         assertTrue(
-            expected.approxEquals(actual, tolerance, Length::millimeter),
+            expected.approxEquals(actual, actualTolerance, Length::millimeter),
             """
             Expected:
             x=${expected.x.millimeter}, y=${expected.y.millimeter}, z=${expected.z.millimeter}
             Actual:
             x=${actual.x.millimeter}, y=${actual.y.millimeter}, z=${actual.z.millimeter}
+            Tolerance:
+            $actualTolerance
             """.trimIndent()
         )
     }

@@ -20,6 +20,7 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cube
 import eu.mihosoft.vrl.v3d.Vector3d
+import mu.KotlinLogging
 import org.octogonapus.ktunits.quantities.millimeter
 import java.util.concurrent.atomic.AtomicLong
 import java.util.stream.Collectors
@@ -42,7 +43,7 @@ class VitaminSlicer(
             { minX + centerX },
             this::getXAxisSlicePlane
         )
-        println(xSlices.size)
+        LOGGER.debug { "xSlices size: ${xSlices.size}" }
 
         val ySlices = sliceOnAxis(
             xSlices,
@@ -50,7 +51,7 @@ class VitaminSlicer(
             { minY + centerY },
             this::getYAxisSlicePlane
         )
-        println(ySlices.size)
+        LOGGER.debug { "ySlices size: ${ySlices.size}" }
 
         val zSlices = sliceOnAxis(
             ySlices,
@@ -58,7 +59,7 @@ class VitaminSlicer(
             { minZ + centerZ },
             this::getZAxisSlicePlane
         )
-        println(zSlices.size)
+        LOGGER.debug { "zSlices size: ${zSlices.size}" }
 
         val averageCenter = averageCenters(zSlices)
 
@@ -77,7 +78,6 @@ class VitaminSlicer(
             .peek { size.incrementAndGet() }
             .reduce(Vector3d::plus)
             .get()
-            .also { println(size) }
             .dividedBy(size.toDouble())
     }
 
@@ -137,4 +137,8 @@ class VitaminSlicer(
             Vector3d(0.0, 0.0, height),
             Vector3d(vit.totalX, vit.totalY, slicePlaneThickness)
         ).toCSG()
+
+    companion object {
+        private val LOGGER = KotlinLogging.logger { }
+    }
 }
