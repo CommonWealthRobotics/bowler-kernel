@@ -25,6 +25,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
  */
 object NoopBodyController : BodyController {
 
+    @SuppressWarnings("EmptyFunctionBlock")
     override fun setDesiredWorldSpaceTransformDelta(
         worldSpaceTransform: FrameTransformation,
         motionConstraints: MotionConstraints

@@ -24,6 +24,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.closedloop.JointAngleControlle
  */
 object NoopLimbMotionPlanFollower : LimbMotionPlanFollower {
 
+    @SuppressWarnings("EmptyFunctionBlock")
     override fun followPlan(
         jointAngleControllers: ImmutableList<JointAngleController>,
         plan: LimbMotionPlan
