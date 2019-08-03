@@ -19,6 +19,8 @@ package com.neuronrobotics.bowlerkernel.scripting
 import arrow.core.Either
 import arrow.core.extensions.either.monad.binding
 import com.google.common.collect.ImmutableList
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.isEmpty
 import com.neuronrobotics.bowlerkernel.hardware.Script
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
 import com.neuronrobotics.bowlerkernel.hardware.device.DeviceFactory
@@ -32,7 +34,9 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.non
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedServoFactory
 import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocolFactory
 import com.neuronrobotics.bowlerkernel.util.ServoLimits
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import org.octogonapus.ktguava.collections.immutableListOf
 
@@ -67,8 +71,12 @@ internal class HardwareScriptIntegrationTest {
             }
         }
 
-        script.startScript(emptyImmutableList())
-        script.stopAndCleanUp()
+        assertAll(
+            { assertTrue(script.startScript(emptyImmutableList()) is Either.Right) },
+            { assertThat(script.stopAndCleanUp(), isEmpty) },
+            { assertThat(script.hardwareRegistry.registeredDevices, isEmpty) },
+            { assertTrue(script.hardwareRegistry.registeredDeviceResources.isEmpty) }
+        )
     }
 
     private class TestHardware(
