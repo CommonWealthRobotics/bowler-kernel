@@ -82,6 +82,7 @@ internal constructor(
     ): Try<Any?> {
         val configuration = CompilerConfiguration().apply {
             addCompilationCustomizers(
+                @Suppress("SpreadOperator")
                 ImportCustomizer().addStarImports(*groovyStarImports)
             )
         }

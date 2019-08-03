@@ -95,6 +95,7 @@ data class KinematicGraphData(
                         edge
                     )
                 } catch (e: IllegalArgumentException) {
+                    @Suppress("RemoveExplicitTypeArguments")
                     e.localizedMessage.left().bind<Nothing>()
                 }
             }

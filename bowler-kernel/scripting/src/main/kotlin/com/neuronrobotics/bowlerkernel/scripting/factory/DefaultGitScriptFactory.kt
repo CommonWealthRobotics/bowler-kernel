@@ -38,8 +38,8 @@ class DefaultGitScriptFactory
      * @return A [DefaultScript] on success, a [String] on error.
      */
     override fun createScriptFromGit(gitFile: GitFile): IO<Script> =
-        gitFS.cloneRepoAndGetFiles(gitFile.gitUrl).flatMap {
-            val file = it.first { it.name == gitFile.filename }
+        gitFS.cloneRepoAndGetFiles(gitFile.gitUrl).flatMap { files ->
+            val file = files.first { it.name == gitFile.filename }
             scriptLanguageParser.parse(file.extension).fold(
                 { IO.raiseError<Script>(IllegalStateException(it)) },
                 { IO.just(DefaultScript(it, file.readText())) }

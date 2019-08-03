@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:SuppressWarnings("LongMethod")
+
 package com.neuronrobotics.bowlerkernel.scripting
 
 import arrow.core.Either
