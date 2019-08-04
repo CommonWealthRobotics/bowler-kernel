@@ -27,7 +27,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResourceFactory
 import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocolFactory
-import com.neuronrobotics.bowlerkernel.hardware.registry.BaseHardwareRegistry
+import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistryTracker
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -39,7 +39,7 @@ internal class TestWithEsp32 {
     @Test
     @Disabled
     fun `test esp32 with script`() {
-        val hardwareRegistry = BaseHardwareRegistry()
+        val hardwareRegistry = HardwareRegistryTracker.createWithBaseRegistry()
 
         val deviceFactory = DeviceFactory(
             hardwareRegistry,

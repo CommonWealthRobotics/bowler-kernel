@@ -375,7 +375,7 @@ class HardwareRegistryTrackerTest {
         @Test
         fun `fail to register in the second layer`() {
             val device = registry.makeDeviceOrFail()
-            val resource = registry.makeDeviceResourceOrFail(device, 0)
+            registry.makeDeviceResourceOrFail(device, 0)
             registry.makeDeviceResourceGroupOrFail(device, immutableListOf(1, 2))
 
             val actual = secondRegistry.registerDeviceResourceGroup(
@@ -395,7 +395,7 @@ class HardwareRegistryTrackerTest {
         @Test
         fun `unregister all from the second layer`() {
             val device = secondRegistry.makeDeviceOrFail()
-            val resource = secondRegistry.makeDeviceResourceOrFail(device, 0)
+            secondRegistry.makeDeviceResourceOrFail(device, 0)
             secondRegistry.makeDeviceResourceGroupOrFail(device, immutableListOf(1, 2))
 
             assertAll(

@@ -198,4 +198,12 @@ class HardwareRegistryTracker(
             sessionRegisteredDeviceResources.remove(device, resource)
         }
     }
+
+    companion object {
+
+        /**
+         * Creates a new [HardwareRegistryTracker] that proxies a [BaseHardwareRegistry].
+         */
+        fun createWithBaseRegistry() = HardwareRegistryTracker(BaseHardwareRegistry())
+    }
 }
