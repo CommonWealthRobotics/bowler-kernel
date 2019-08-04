@@ -32,6 +32,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
  * @param bodyController The body controller this base uses.
  * @param kinematicGraph The kinematic graph containing the base and any other bases or limbs.
  */
+@Suppress("UnstableApiUsage")
 class GeneralKinematicBase(
     override val id: KinematicBaseId,
     override val bodyController: BodyController,
