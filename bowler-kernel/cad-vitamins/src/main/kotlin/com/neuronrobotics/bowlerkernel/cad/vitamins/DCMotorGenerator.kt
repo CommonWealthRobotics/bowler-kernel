@@ -24,9 +24,7 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cylinder
 import org.octogonapus.ktunits.quantities.Length
-import org.octogonapus.ktunits.quantities.degree
 import org.octogonapus.ktunits.quantities.millimeter
-import kotlin.math.truncate
 
 class DCMotorGenerator(
     shaftGenerator: VitaminCadGenerator<Shaft>,
@@ -54,26 +52,18 @@ class DCMotorGenerator(
 
             val shaft = shaftGenerator.generateCAD(it.shaft).toZMin()
 
-            val bolts = getBolts(it, boltGenerator.generateCAD(it.bolt)).toZMax()
+            val bolts = getBoltCircle(
+                diameter = it.boltCircleDiameter,
+                angleOffset = it.boltCircleAngleOffset,
+                angleIncrement = it.boltCircleAngleIncrement,
+                bolt = boltGenerator.generateCAD(it.bolt)
+            ).toZMax()
 
             case.difference(bolts)
                 .movez(-shaftSupport.totalZ)
                 .union(shaftSupport)
                 .union(shaft)
         })
-
-    private fun getBolts(motor: DCMotor, bolt: CSG): CSG {
-        val startingBolt = bolt.toZMax()
-            .movex(motor.boltCircleDiameter.millimeter / 2)
-            .rotz(motor.boltCircleAngleOffset.degree)
-
-        val numberOfBolts = truncate(360 / motor.boltCircleAngleIncrement.degree).toInt()
-        val allBolts = (1..numberOfBolts).map { i ->
-            startingBolt.rotz(motor.boltCircleAngleIncrement.degree * i)
-        }
-
-        return CSG.unionAll(allBolts).toZMax()
-    }
 
     override fun generateCAD(vitamin: DCMotor): CSG = cache[vitamin]
 
@@ -101,8 +91,11 @@ class DCMotorGenerator(
             boltHoleLength.millimeter
         ).toCSG()
 
-        return getBolts(vitamin, startingBolt)
-            .toZMin()
-            .movez(-vitamin.shaftSupportHeight.millimeter)
+        return getBoltCircle(
+            diameter = vitamin.boltCircleDiameter,
+            angleOffset = vitamin.boltCircleAngleOffset,
+            angleIncrement = vitamin.boltCircleAngleIncrement,
+            bolt = startingBolt
+        ).toZMin().movez(-vitamin.shaftSupportHeight.millimeter)
     }
 }
