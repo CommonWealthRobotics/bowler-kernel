@@ -20,6 +20,7 @@ import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexEDRMotor
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cube
 import eu.mihosoft.vrl.v3d.Cylinder
@@ -84,6 +85,16 @@ class VexMotorGenerator(
         // Use 6#32 cap screw head diameter
         generateKeepaway(vitamin, 6.5.millimeter, vitamin.shaft.height)
 
+    /**
+     * Generates the keepaway CAD for this [Vitamin]. This CAD can be used to perform a difference
+     * operation to cut out a keepaway region in another CSG. This return value may be cached by
+     * this generator.
+     *
+     * @param vitamin The [Vitamin].
+     * @param boltHoleDiameter The diameter of the bolt hole cylinders.
+     * @param boltHoleLength The length of the bolt hole cylinders.
+     * @return The keepaway CAD for the [vitamin].
+     */
     fun generateKeepaway(
         vitamin: VexEDRMotor,
         boltHoleDiameter: Length,
