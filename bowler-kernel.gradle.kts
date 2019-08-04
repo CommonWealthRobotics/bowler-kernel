@@ -177,15 +177,19 @@ configure(javaProjects) {
             }
 
             /*
-             * Performance tests are only really run during development.
-             * They don't need to run in CI or as part of regular development.
+            These tests just test performance and should not run in CI.
              */
             excludeTags("performance")
 
             /*
-             * Marking a test as `slow` will excluded it from being run as part of the regular CI system.
+            These tests are too slow to run in CI.
              */
             excludeTags("slow")
+
+            /*
+            These tests need some sort of software that can't be reasonably installed on CI servers.
+             */
+            excludeTags("needsSpecialSoftware")
         }
 
         if (project.hasProperty("jenkinsBuild") || project.hasProperty("headless")) {
