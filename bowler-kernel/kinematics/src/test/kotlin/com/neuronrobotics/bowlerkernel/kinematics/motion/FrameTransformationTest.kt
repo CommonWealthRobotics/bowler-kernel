@@ -499,4 +499,17 @@ internal class FrameTransformationTest {
             }
         )
     }
+
+    @Test
+    fun `test matrix approx equals`() {
+        val tolerance = 1e-5
+        val expected = Matrix.random(4, 4)
+        val actual = Matrix(Array(4) { row ->
+            DoubleArray(4) { col ->
+                expected[row, col] - tolerance / 2
+            }
+        })
+
+        assertTrue(expected.approxEquals(actual, tolerance))
+    }
 }
