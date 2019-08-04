@@ -19,20 +19,26 @@ package com.neuronrobotics.bowlerkernel.scripting
 import arrow.core.Either
 import arrow.core.extensions.either.monad.binding
 import com.google.common.collect.ImmutableList
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.isEmpty
 import com.neuronrobotics.bowlerkernel.hardware.Script
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
+import com.neuronrobotics.bowlerkernel.hardware.device.DeviceFactory
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDigitalOutGroupFactory
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResourceFactory
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedServoFactory
+import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocolFactory
 import com.neuronrobotics.bowlerkernel.util.ServoLimits
-import org.jlleitschuh.guice.key
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import org.octogonapus.ktguava.collections.immutableListOf
-import javax.inject.Inject
 
 internal class HardwareScriptIntegrationTest {
 
@@ -40,10 +46,23 @@ internal class HardwareScriptIntegrationTest {
     fun `test registering some hardware`() {
         val script = object : Script() {
             override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
-                injector.getInstance(key<TestHardware>()).let {
-                    it.startScript(args)
+                val deviceFactory = DeviceFactory(
+                    hardwareRegistry,
+                    DefaultResourceIdValidator(),
+                    SimplePacketComsProtocolFactory(DefaultResourceIdValidator())
+                )
+
+                val resourceFactory = UnprovisionedDeviceResourceFactory(hardwareRegistry)
+
+                TestHardware(
+                    deviceFactory,
+                    resourceFactory,
+                    resourceFactory
+                ).let {
+                    it.startScript(args, this)
                     it.stopAndCleanUp()
                 }
+
                 return Either.right(null)
             }
 
@@ -52,13 +71,15 @@ internal class HardwareScriptIntegrationTest {
             }
         }
 
-        script.addToInjector(Script.getDefaultModules())
-        script.startScript(emptyImmutableList())
-        script.stopAndCleanUp()
+        assertAll(
+            { assertTrue(script.startScript(emptyImmutableList()) is Either.Right) },
+            { assertThat(script.stopAndCleanUp(), isEmpty) },
+            { assertThat(script.hardwareRegistry.registeredDevices, isEmpty) },
+            { assertTrue(script.hardwareRegistry.registeredDeviceResources.isEmpty) }
+        )
     }
 
-    private class TestHardware
-    @Inject constructor(
+    private class TestHardware(
         private val bowlerDeviceFactory: BowlerDeviceFactory,
         private val digitalOutGroupFactory: UnprovisionedDigitalOutGroupFactory,
         private val servoFactory: UnprovisionedServoFactory
@@ -72,7 +93,7 @@ internal class HardwareScriptIntegrationTest {
                         DefaultConnectionMethods.RawHID(0, 0)
                     ),
                     mockBowlerRPCProtocol()
-                )
+                ).mapLeft { it.toString() }
 
                 device.connect().bind()
 
@@ -82,7 +103,7 @@ internal class HardwareScriptIntegrationTest {
                         DefaultAttachmentPoints.Pin(1),
                         DefaultAttachmentPoints.Pin(2)
                     )
-                )
+                ).mapLeft { it.toString() }
 
                 device.add(ledGroup).bind()
 
@@ -90,7 +111,7 @@ internal class HardwareScriptIntegrationTest {
                     device,
                     DefaultAttachmentPoints.Pin(3),
                     ServoLimits(100, 0, 50, 1)
-                )
+                ).mapLeft { it.toString() }
 
                 device.add(servo1).bind()
 

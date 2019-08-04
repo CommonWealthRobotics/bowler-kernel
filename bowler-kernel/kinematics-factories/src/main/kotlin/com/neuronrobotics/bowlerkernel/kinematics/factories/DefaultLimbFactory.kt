@@ -35,10 +35,8 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanFoll
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanGenerator
 import com.neuronrobotics.bowlerkernel.scripting.factory.GitScriptFactory
 import org.octogonapus.ktguava.collections.toImmutableList
-import javax.inject.Inject
 
-class DefaultLimbFactory
-@Inject constructor(
+class DefaultLimbFactory(
     private val scriptFactory: GitScriptFactory,
     private val linkFactory: LinkFactory,
     private val klaxon: Klaxon = Klaxon()

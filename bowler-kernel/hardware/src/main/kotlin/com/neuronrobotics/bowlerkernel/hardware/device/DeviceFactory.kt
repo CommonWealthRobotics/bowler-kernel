@@ -18,21 +18,16 @@ package com.neuronrobotics.bowlerkernel.hardware.device
 
 import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
 import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocolFactory
-import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocolFactory
 import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistry
-import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
-import org.jlleitschuh.guice.module
-import javax.inject.Inject
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterError
 
 /**
  * A facade for making any type of device.
  */
-class DeviceFactory
-@Inject internal constructor(
+class DeviceFactory(
     private val registry: HardwareRegistry,
     private val resourceIdValidator: ResourceIdValidator,
     private val protocolFactory: BowlerRPCProtocolFactory
@@ -54,13 +49,4 @@ class DeviceFactory
         registry.registerDevice(deviceId) {
             BowlerDevice(it, bowlerRPCProtocol, resourceIdValidator)
         }
-
-    companion object {
-
-        fun deviceFactoryModule() = module {
-            bind<BowlerDeviceFactory>().to<DeviceFactory>()
-            bind<ResourceIdValidator>().to<DefaultResourceIdValidator>()
-            bind<BowlerRPCProtocolFactory>().to<SimplePacketComsProtocolFactory>()
-        }
-    }
 }

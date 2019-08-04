@@ -92,14 +92,16 @@ internal class DefaultKinematicBaseFactoryTest {
         ClassData.fromInstance(NoopBodyController, klaxon).right()
     )
 
+    private val gitScriptFactory = DefaultGitScriptFactory(
+        mock {},
+        DefaultScriptLanguageParser()
+    )
+
     private val factory = DefaultKinematicBaseFactory(
-        DefaultGitScriptFactory(
-            mock {},
-            DefaultScriptLanguageParser()
-        ),
+        gitScriptFactory,
         DefaultLimbFactory(
-            mock {},
-            DefaultLinkFactory(mock {}, klaxon),
+            gitScriptFactory,
+            DefaultLinkFactory(gitScriptFactory, klaxon),
             klaxon
         ),
         klaxon

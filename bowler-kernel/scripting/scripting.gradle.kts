@@ -15,16 +15,6 @@ dependencies {
         name = "kt-guava-core",
         version = property("kt-guava-core.version") as String
     )
-    api(
-        group = "com.google.inject",
-        name = "guice",
-        version = property("guice.version") as String
-    )
-    api(
-        group = "com.google.inject.extensions",
-        name = "guice-assistedinject",
-        version = "4.1.0"
-    )
 
     api(arrow("arrow-core-data"))
     api(arrow("arrow-core-extensions"))
@@ -33,11 +23,6 @@ dependencies {
     api(arrow("arrow-extras-data"))
     api(arrow("arrow-extras-extensions"))
 
-    implementation(
-        group = "org.jlleitschuh.guice",
-        name = "kotlin-guiced-core",
-        version = property("kotlin-guiced-core.version") as String
-    )
     implementation(group = "org.codehaus.groovy", name = "groovy", version = "2.5.4")
     implementation(group = "org.apache.ivy", name = "ivy", version = "2.4.0")
     implementation(group = "de.swirtz", name = "ktsRunner", version = "0.0.7") {

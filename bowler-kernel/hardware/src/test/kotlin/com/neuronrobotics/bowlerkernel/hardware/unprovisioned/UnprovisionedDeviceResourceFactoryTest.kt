@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:SuppressWarnings("LargeClass", "TooManyFunctions", "LongMethod", "LongMethod")
+
 package com.neuronrobotics.bowlerkernel.hardware.unprovisioned
 
 import arrow.core.Either
@@ -30,7 +32,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Resour
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResourceFactory
 import com.neuronrobotics.bowlerkernel.hardware.registry.BaseHardwareRegistry
-import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterError
 import com.neuronrobotics.bowlerkernel.util.ServoLimits
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock

@@ -18,7 +18,6 @@ package com.neuronrobotics.bowlerkernel.hardware.registry
 
 import arrow.core.Either
 import arrow.core.Option
-import arrow.core.Try
 import arrow.core.left
 import arrow.core.right
 import com.google.common.collect.ImmutableList
@@ -31,14 +30,20 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.gro
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDeviceResourceGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.DeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterDeviceError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterDeviceResourceError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterDeviceResourceGroupError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.UnregisterDeviceError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.UnregisterDeviceResourceError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.UnregisterDeviceResourceGroupError
+import mu.KotlinLogging
 import org.octogonapus.ktguava.collections.toImmutableSet
 import org.octogonapus.ktguava.collections.toImmutableSetMultimap
 
 /**
  * The base implementation of [HardwareRegistry].
  */
-internal class BaseHardwareRegistry
-internal constructor() : HardwareRegistry {
+class BaseHardwareRegistry : HardwareRegistry {
 
     private val internalRegisteredDeviceIds: MutableSet<DeviceId> = mutableSetOf()
     private val internalRegisteredDevices: MutableSet<Device> = mutableSetOf()
@@ -60,14 +65,14 @@ internal constructor() : HardwareRegistry {
     override fun <T : Device> registerDevice(
         deviceId: DeviceId,
         makeDevice: (DeviceId) -> T
-    ): Either<RegisterError, T> {
+    ): Either<RegisterDeviceError, T> {
         return when {
             internalRegisteredDeviceIds.contains(deviceId) ->
-                """
-                |Cannot register device $deviceId because the device is already registered.
-                """.trimMargin().left()
+                RegisterDeviceError.DeviceIsAlreadyRegisteredError(deviceId).left()
 
             else -> {
+                LOGGER.debug { "Registering device $deviceId" }
+
                 internalRegisteredDeviceIds.add(deviceId)
 
                 makeDevice(deviceId).also {
@@ -81,32 +86,28 @@ internal constructor() : HardwareRegistry {
         device: D,
         resourceId: ResourceId,
         makeResource: (D, ResourceId) -> T
-    ): Either<RegisterError, T> {
+    ): Either<RegisterDeviceResourceError, T> {
         return when {
             !internalRegisteredDeviceIds.contains(device.deviceId) ->
-                """
-                |Cannot register resource $resourceId on device ${device.deviceId} because device
-                |${device.deviceId} is not registered.
-                """.trimMargin().left()
+                RegisterDeviceResourceError.DeviceIsNotRegisteredError(
+                    resourceId,
+                    device.deviceId
+                ).left()
 
             internalRegisteredDeviceResourceIds.containsEntry(
                 device.deviceId,
                 resourceId
             ) ->
-                """
-                |Cannot register resource $resourceId on device ${device.deviceId} because the
-                |resource is already registered.
-                """.trimMargin().left()
+                RegisterDeviceResourceError.ResourceIsAlreadyRegisteredError(resourceId).left()
 
             internalRegisteredDeviceResourceIds.values().any {
                 it.attachmentPoint == resourceId.attachmentPoint
             } ->
-                """
-                |Cannot register resource $resourceId on device ${device.deviceId} because there
-                |is already a resource on the same attachment point.
-                """.trimMargin().left()
+                RegisterDeviceResourceError.ResourceOnSameAttachmentPointError(resourceId).left()
 
             else -> {
+                LOGGER.debug { "Registering resource $resourceId on device $device" }
+
                 internalRegisteredDeviceResourceIds.put(device.deviceId, resourceId)
 
                 makeResource(device, resourceId).also {
@@ -120,33 +121,33 @@ internal constructor() : HardwareRegistry {
         device: D,
         resourceIds: ImmutableList<ResourceId>,
         makeResourceGroup: (D, ImmutableList<ResourceId>) -> T
-    ): Either<RegisterError, T> {
+    ): Either<RegisterDeviceResourceGroupError, T> {
         return when {
             !internalRegisteredDeviceIds.contains(device.deviceId) ->
-                """
-                |Cannot register resource group $resourceIds on device ${device.deviceId} because
-                |device ${device.deviceId} is not registered.
-                """.trimMargin().left()
+                RegisterDeviceResourceGroupError.DeviceIsNotRegisteredError(
+                    resourceIds,
+                    device.deviceId
+                ).left()
 
             resourceIds.any {
                 internalRegisteredDeviceResourceIds.containsEntry(device.deviceId, it)
-            } ->
-                """
-                |Cannot register resource group $resourceIds on device ${device.deviceId} because
-                |the resource group is already registered.
-                """.trimMargin().left()
+            } -> RegisterDeviceResourceGroupError.ResourceGroupIsAlreadyRegisteredError(
+                resourceIds
+            ).left()
 
             resourceIds.any {
                 internalRegisteredDeviceResourceIds.values().any { registeredResourceId ->
                     registeredResourceId.attachmentPoint == it.attachmentPoint
                 }
-            } ->
-                """
-                |Cannot register resource group $resourceIds on device ${device.deviceId} because
-                |there is already a resource on the same attachment point.
-                """.trimMargin().left()
+            } -> RegisterDeviceResourceGroupError.ResourceOnSameAttachmentPointError(
+                resourceIds
+            ).left()
 
             else -> {
+                LOGGER.debug {
+                    "Registering resource group ${resourceIds.joinToString()} on device $device"
+                }
+
                 internalRegisteredDeviceResourceIds.putAll(device.deviceId, resourceIds)
 
                 makeResourceGroup(device, resourceIds).also {
@@ -156,57 +157,57 @@ internal constructor() : HardwareRegistry {
         }
     }
 
-    override fun unregisterDevice(device: Device): Option<UnregisterError> {
+    override fun unregisterDevice(device: Device): Option<UnregisterDeviceError> {
         return when {
-            !internalRegisteredDeviceIds.contains(device.deviceId) -> Option.just(
-                """
-                |Cannot unregister device ${device.deviceId} because the device is not registered.
-                """.trimMargin()
-            )
+            !internalRegisteredDeviceIds.contains(device.deviceId) ->
+                Option.just(UnregisterDeviceError.DeviceIsNotRegisteredError(device.deviceId))
 
-            internalRegisteredDeviceResourceIds[device.deviceId].isNotEmpty() -> Option.just(
-                """
-                |Cannot unregister device ${device.deviceId} because there are registered
-                |resources attached to it.
-                """.trimMargin()
-            )
+            internalRegisteredDeviceResourceIds[device.deviceId].isNotEmpty() ->
+                Option.just(
+                    UnregisterDeviceError.DeviceHasRegisteredResourcesError(
+                        device.deviceId,
+                        internalRegisteredDeviceResourceIds[device.deviceId].toSet()
+                    )
+                )
 
-            else -> Try {
-                device.disconnect()
-            }.toEither().fold(
-                {
-                    Option.just(it.message ?: "")
-                },
-                {
-                    internalRegisteredDeviceIds.remove(device.deviceId)
-                    internalRegisteredDevices.remove(device)
-                    Option.empty()
-                }
-            )
+            else -> {
+                LOGGER.debug { "Unregistering device $device" }
+
+                device.disconnect().fold(
+                    {
+                        Option.just(UnregisterDeviceError.DisconnectError(it))
+                    },
+                    {
+                        internalRegisteredDeviceIds.remove(device.deviceId)
+                        internalRegisteredDevices.remove(device)
+                        Option.empty()
+                    }
+                )
+            }
         }
     }
 
-    override fun unregisterDeviceResource(resource: DeviceResource): Option<UnregisterError> {
+    override fun unregisterDeviceResource(
+        resource: DeviceResource
+    ): Option<UnregisterDeviceResourceError> {
         return when {
             !internalRegisteredDeviceIds.contains(resource.device.deviceId) -> Option.just(
-                """
-                |Cannot unregister resource ${resource.resourceId} on device
-                |${resource.device.deviceId} because device ${resource.device.deviceId} is not
-                |registered.
-                """.trimMargin()
+                UnregisterDeviceResourceError.DeviceIsNotRegisteredError(resource.resourceId)
             )
 
             !internalRegisteredDeviceResourceIds.containsEntry(
                 resource.device.deviceId,
                 resource.resourceId
             ) -> Option.just(
-                """
-                |Cannot unregister resource ${resource.resourceId} on device
-                |${resource.device.deviceId} because the resource is not registered on that device.
-                """.trimMargin()
+                UnregisterDeviceResourceError.ResourceIsNotRegisteredOnDeviceError(
+                    resource.resourceId,
+                    resource.device.deviceId
+                )
             )
 
             else -> {
+                LOGGER.debug { "Unregistering resource $resource" }
+
                 internalRegisteredDeviceResourceIds.remove(
                     resource.device.deviceId,
                     resource.resourceId
@@ -220,14 +221,10 @@ internal constructor() : HardwareRegistry {
 
     override fun unregisterDeviceResourceGroup(
         resourceGroup: DeviceResourceGroup
-    ): Option<UnregisterError> {
+    ): Option<UnregisterDeviceResourceGroupError> {
         return when {
             !internalRegisteredDeviceIds.contains(resourceGroup.device.deviceId) -> Option.just(
-                """
-                |Cannot unregister resource ${resourceGroup.resourceIds} on device
-                |${resourceGroup.device.deviceId} because device ${resourceGroup.device.deviceId}
-                |is not registered.
-                """.trimMargin()
+                UnregisterDeviceResourceGroupError.DeviceIsNotRegisteredError(resourceGroup.resourceIds)
             )
 
             resourceGroup.resourceIds.any {
@@ -236,14 +233,15 @@ internal constructor() : HardwareRegistry {
                     it
                 )
             } -> Option.just(
-                """
-                |Cannot unregister resource group ${resourceGroup.resourceIds} on device
-                |${resourceGroup.device.deviceId} because the resource is not registered on that
-                |device.
-                """.trimMargin()
+                UnregisterDeviceResourceGroupError.ResourceGroupIsNotRegisteredOnDeviceError(
+                    resourceGroup.resourceIds,
+                    resourceGroup.device.deviceId
+                )
             )
 
             else -> {
+                LOGGER.debug { "Unregistering resource group $resourceGroup" }
+
                 resourceGroup.resourceIds.forEach { id ->
                     internalRegisteredDeviceResourceIds.remove(resourceGroup.device.deviceId, id)
                 }
@@ -255,5 +253,9 @@ internal constructor() : HardwareRegistry {
                 Option.empty()
             }
         }
+    }
+
+    companion object {
+        private val LOGGER = KotlinLogging.logger { }
     }
 }

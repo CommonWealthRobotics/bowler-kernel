@@ -14,21 +14,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware
+package com.neuronrobotics.bowlerkernel.hardware.registry.error
 
-import com.google.inject.Guice
-import com.google.inject.Injector
-import com.google.inject.Singleton
-import com.neuronrobotics.bowlerkernel.hardware.registry.BaseHardwareRegistry
-import org.jlleitschuh.guice.module
-
-internal object KernelHardwareModule {
-    /**
-     * This [Injector] is static because it maintains a global [BaseHardwareRegistry].
-     */
-    internal val injector: Injector = Guice.createInjector(kernelHardwareModule())
-
-    private fun kernelHardwareModule() = module {
-        bind<BaseHardwareRegistry>().`in`(Singleton::class.java)
-    }
-}
+interface UnregisterError

@@ -34,10 +34,8 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.scripting.factory.GitScriptFactory
 import org.octogonapus.ktguava.collections.toImmutableMap
 import org.octogonapus.ktguava.collections.toImmutableSet
-import javax.inject.Inject
 
-class DefaultKinematicBaseFactory
-@Inject constructor(
+class DefaultKinematicBaseFactory(
     private val scriptFactory: GitScriptFactory,
     private val limbFactory: LimbFactory,
     private val klaxon: Klaxon = Klaxon().converter(FrameTransformation)

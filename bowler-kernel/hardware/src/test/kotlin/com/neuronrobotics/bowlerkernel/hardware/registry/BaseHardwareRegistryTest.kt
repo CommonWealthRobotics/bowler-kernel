@@ -14,9 +14,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:SuppressWarnings("TooManyFunctions")
+
 package com.neuronrobotics.bowlerkernel.hardware.registry
 
 import arrow.core.Either
+import arrow.core.left
 import arrow.core.right
 import com.neuronrobotics.bowlerkernel.hardware.device.Device
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
@@ -77,11 +80,9 @@ class BaseHardwareRegistryTest {
             override val deviceId: DeviceId
         ) : Device {
 
-            override fun connect(): Either<String, Unit> = Unit.right()
+            override fun connect() = Unit.right()
 
-            override fun disconnect(): Either<String, Unit> {
-                throw IllegalStateException("Oops!")
-            }
+            override fun disconnect() = "Oops!".left()
 
             override fun isResourceInRange(resourceId: ResourceId) = true
 

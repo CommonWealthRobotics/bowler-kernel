@@ -18,17 +18,9 @@ package com.neuronrobotics.bowlerkernel.hardware
 
 import arrow.core.Either
 import com.google.common.collect.ImmutableList
-import com.google.inject.Injector
-import com.google.inject.Module
-import com.google.inject.Singleton
-import com.neuronrobotics.bowlerkernel.hardware.device.DeviceFactory
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResourceFactory
-import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistry
+import com.neuronrobotics.bowlerkernel.hardware.registry.BaseHardwareRegistry
 import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistryTracker
-import org.jlleitschuh.guice.key
-import org.jlleitschuh.guice.module
-import org.octogonapus.ktguava.collections.immutableListOf
-import org.octogonapus.ktguava.collections.toImmutableList
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.UnregisterError
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -37,22 +29,20 @@ import java.util.concurrent.atomic.AtomicBoolean
 abstract class Script {
 
     /**
-     * An [Injector] available for the script to use.
-     */
-    protected var injector = makeScriptInjector()
-
-    /**
-     * The modules which have been added by the user.
-     */
-    private val addedModules = mutableListOf<Module>()
-
-    /**
      * Whether the script is currently running.
      */
     val isRunning
         get() = internalIsRunning.get()
 
     private var internalIsRunning = AtomicBoolean(false)
+
+    /**
+     * The [HardwareRegistryTracker] this script should use.
+     */
+    val hardwareRegistry: HardwareRegistryTracker
+        get() = internalHardwareRegistry
+
+    private var internalHardwareRegistry = HardwareRegistryTracker(BaseHardwareRegistry())
 
     /**
      * The child threads the script created.
@@ -78,9 +68,27 @@ abstract class Script {
      * Starts running the script on the current thread.
      *
      * @param args The arguments to the script.
+     * @param parent The parent script calling this script.
      * @return The result of the script.
      */
-    fun startScript(args: ImmutableList<Any?>): Either<String, Any?> {
+    fun startScript(args: ImmutableList<Any?>, parent: Script? = null): Either<String, Any?> {
+        require(parent != this) {
+            "A script cannot be its own parent."
+        }
+
+        require(!isRunning) {
+            "Cannot start a script that is already running."
+        }
+
+        require(internalHardwareRegistry.registeredDevices.isEmpty())
+        require(internalHardwareRegistry.registeredDeviceResources.isEmpty)
+
+        // Fine to overwrite this because the only way to stop a script is by calling
+        // stopAndCleanUp()
+        if (parent != null) {
+            internalHardwareRegistry = HardwareRegistryTracker(parent.internalHardwareRegistry)
+        }
+
         internalIsRunning.set(true)
         return runScript(args)
     }
@@ -90,8 +98,10 @@ abstract class Script {
      * after the script is done running.
      *
      * @param timeout The per-thread timeout before interrupting the thread.
+     * @return Any errors encountered while unregistering everything from
+     * [internalHardwareRegistry].
      */
-    fun stopAndCleanUp(timeout: Long = 1000) {
+    fun stopAndCleanUp(timeout: Long = 1000): ImmutableList<UnregisterError> {
         stopScript()
 
         threads.forEach {
@@ -102,34 +112,12 @@ abstract class Script {
         }
 
         threads.clear()
-        injector.getInstance(key<HardwareRegistryTracker>()).unregisterAllHardware()
+
+        val unregisterErrors = internalHardwareRegistry.unregisterAllHardware()
+
         internalIsRunning.set(false)
+        return unregisterErrors
     }
-
-    /**
-     * Adds additional modules to the [injector].
-     *
-     * @param modules The modules to add.
-     */
-    fun addToInjector(modules: ImmutableList<Module>) {
-        addedModules.addAll(modules)
-        injector = injector.createChildInjector(modules)
-    }
-
-    /**
-     * Adds additional modules to the [injector].
-     *
-     * @param modules The modules to add.
-     */
-    @SuppressWarnings("SpreadOperator")
-    fun addToInjector(vararg modules: Module) = addToInjector(immutableListOf(*modules))
-
-    /**
-     * Returns the modules which have been added to this script's [injector].
-     *
-     * @return The modules added to this script's [injector].
-     */
-    fun getModules(): ImmutableList<Module> = addedModules.toImmutableList()
 
     /**
      * Adds a thread to the list of threads this script tracks.
@@ -138,29 +126,5 @@ abstract class Script {
      */
     protected fun addThread(thread: Thread) {
         threads.add(thread)
-    }
-
-    companion object {
-
-        /**
-         * Creates the base injector all scripts start with.
-         */
-        fun makeScriptInjector(): Injector =
-            KernelHardwareModule.injector.createChildInjector(scriptModule())
-
-        /**
-         * Returns the modules which bind default instances of various kernel interfaces. This list
-         * does not include required modules, such as the [scriptModule] or [KernelHardwareModule].
-         * You should use this module unless you need to override something specific.
-         */
-        fun getDefaultModules(): ImmutableList<Module> = immutableListOf(
-            DeviceFactory.deviceFactoryModule(),
-            UnprovisionedDeviceResourceFactory.unprovisionedDeviceResourceFactoryModule()
-        )
-
-        private fun scriptModule() = module {
-            bind<HardwareRegistryTracker>().`in`(Singleton::class.java)
-            bind<HardwareRegistry>().to<HardwareRegistryTracker>().`in`(Singleton::class.java)
-        }
     }
 }

@@ -14,9 +14,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.registry
+package com.neuronrobotics.bowlerkernel.hardware.registry.error
 
-/**
- * An error encountered while unregistering something.
- */
-typealias UnregisterError = String
+import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
+
+sealed class RegisterDeviceError : RegisterError {
+
+    /**
+     * Cannot register the device because it is already registered.
+     */
+    data class DeviceIsAlreadyRegisteredError(val deviceId: DeviceId) : RegisterDeviceError()
+}
