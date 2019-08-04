@@ -49,6 +49,19 @@ internal class DhParamTest {
         )
     }
 
+    @Test
+    fun `test theta 30 and alpha 60`() {
+        assertTrue(
+            (FrameTransformation.fromRotation(30, 0, 0) *
+                FrameTransformation.fromTranslation(0, 0, 10) *
+                FrameTransformation.fromTranslation(8, 0, 0) *
+                FrameTransformation.fromRotation(0, 0, 60)).approxEquals(
+                DhParam(10, 30, 8, 60).frameTransformation,
+                tolerance
+            )
+        )
+    }
+
     @ParameterizedTest
     @MethodSource("lengthIndependentOfRotationSource")
     fun `test length independent of rotation`(theta: Double, alpha: Double) {
