@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import java.io.IOException
 
 internal class BlenderDeduplicatorTest {
 
@@ -54,5 +55,7 @@ internal class BlenderDeduplicatorTest {
             .unsafeRunSync()
 
         assertTrue(result is Either.Left)
+        result as Either.Left
+        assertTrue(result.a is IOException)
     }
 }
