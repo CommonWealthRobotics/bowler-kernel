@@ -13,6 +13,7 @@ plugins {
     id("com.jfrog.bintray") version "1.8.3"
     id("org.jetbrains.dokka") version "0.9.18"
     id("com.adarshr.test-logger") version "1.6.0"
+    id("info.solidsoft.pitest") version "1.4.0"
     `maven-publish`
     `java-library`
     jacoco
@@ -73,9 +74,12 @@ buildscript {
         maven("https://oss.sonatype.org/content/repositories/staging/")
     }
 
+    configurations.maybeCreate("pitest")
+
     dependencies {
         // Gives us the KotlinJvmProjectExtension
         classpath(kotlin("gradle-plugin", property("kotlin.version") as String))
+        "pitest"("org.pitest:pitest-junit5-plugin:0.9")
     }
 }
 
@@ -146,6 +150,7 @@ configure(javaProjects) {
         plugin("checkstyle")
         plugin("com.github.spotbugs")
         plugin("pmd")
+        plugin("info.solidsoft.pitest")
     }
 
     dependencies {
@@ -227,6 +232,11 @@ configure(javaProjects) {
             xml.isEnabled = true
             csv.isEnabled = false
         }
+    }
+
+    pitest {
+        testPlugin = "junit5"
+        threads = 4
     }
 
     spotless {
