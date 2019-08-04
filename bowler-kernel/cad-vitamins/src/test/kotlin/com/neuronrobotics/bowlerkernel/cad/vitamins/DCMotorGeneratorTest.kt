@@ -122,7 +122,7 @@ internal class DCMotorGeneratorTest {
     fun `test generate bolts`() {
         val diameter = 4.0
         val height = 20.0
-        val cad = generator.generateBolts(motor, diameter.millimeter, height.millimeter)
+        val cad = generator.generateBoltKeepaway(motor, diameter.millimeter, height.millimeter)
 
         assertAll(
             { assertEquals(0.0, cad.bounds.center.x, tolerance) },

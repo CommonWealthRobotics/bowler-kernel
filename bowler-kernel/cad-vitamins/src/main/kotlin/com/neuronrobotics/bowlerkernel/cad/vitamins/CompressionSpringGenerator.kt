@@ -22,7 +22,6 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CompressionSpring
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cylinder
 import org.octogonapus.ktunits.quantities.millimeter
-import org.octogonapus.ktunits.quantities.minus
 
 class CompressionSpringGenerator(
     numSlices: Int = 16,
@@ -40,14 +39,10 @@ class CompressionSpringGenerator(
                 numSlices
             ).toCSG()
 
-            val innerCylinder = Cylinder(
-                (it.outerDiameter - it.wireDiameter).millimeter / 2,
-                it.uncompressedHeight.millimeter,
-                numSlices
-            ).toCSG()
-
-            outerCylinder.difference(innerCylinder)
+            outerCylinder
         })
 
     override fun generateCAD(vitamin: CompressionSpring): CSG = cache[vitamin]
+
+    override fun generateKeepaway(vitamin: CompressionSpring): CSG = cache[vitamin]
 }

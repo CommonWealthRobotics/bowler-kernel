@@ -52,7 +52,11 @@ class TorsionSpringGenerator(
                 it.legLength.millimeter,
                 it.wireDiameter.millimeter,
                 it.wireDiameter.millimeter
-            ).toCSG().toZMin().toXMin().toYMin().movey(-it.outerDiameter.millimeter / 2)
+            ).toCSG()
+                .toZMin()
+                .toXMin()
+                .toYMin()
+                .movey(-it.outerDiameter.millimeter / 2)
 
             core.union(leg).union(
                 leg.toZMax()
@@ -63,4 +67,7 @@ class TorsionSpringGenerator(
         })
 
     override fun generateCAD(vitamin: TorsionSpring): CSG = cache[vitamin]
+
+    // TODO: What's a valid keepaway for a torsion spring?
+    override fun generateKeepaway(vitamin: TorsionSpring): CSG = cache[vitamin]
 }

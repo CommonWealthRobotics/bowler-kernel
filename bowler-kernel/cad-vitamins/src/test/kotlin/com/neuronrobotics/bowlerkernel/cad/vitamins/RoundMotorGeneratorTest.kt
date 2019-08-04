@@ -125,7 +125,7 @@ internal class RoundMotorGeneratorTest {
     fun `test generate bolts`() {
         val diameter = 4.0
         val height = 20.0
-        val cad = generator.generateBolts(motor, diameter.millimeter, height.millimeter)
+        val cad = generator.generateBoltKeepaway(motor, diameter.millimeter, height.millimeter)
 
         assertAll(
             { assertEquals(-motor.gearboxShaftOffset.millimeter, cad.bounds.center.x, tolerance) },

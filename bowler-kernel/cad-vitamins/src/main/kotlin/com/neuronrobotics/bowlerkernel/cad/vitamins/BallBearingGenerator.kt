@@ -42,14 +42,10 @@ class BallBearingGenerator(
                 numSlices
             ).toCSG()
 
-            val bore = Cylinder(
-                it.bore.millimeter / 2,
-                it.width.millimeter,
-                numSlices
-            ).toCSG()
-
-            bearingOutside.difference(bore)
+            bearingOutside
         })
 
     override fun generateCAD(vitamin: BallBearing): CSG = cache[vitamin]
+
+    override fun generateKeepaway(vitamin: BallBearing): CSG = cache[vitamin]
 }

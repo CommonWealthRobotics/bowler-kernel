@@ -39,4 +39,6 @@ class BatteryGenerator(
         })
 
     override fun generateCAD(vitamin: Battery): CSG = cache[vitamin]
+
+    override fun generateKeepaway(vitamin: Battery): CSG = cache[vitamin]
 }

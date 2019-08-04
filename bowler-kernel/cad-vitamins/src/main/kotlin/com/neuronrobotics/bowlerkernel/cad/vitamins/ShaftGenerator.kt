@@ -140,4 +140,6 @@ class ShaftGenerator(
     }
 
     override fun generateCAD(vitamin: Shaft): CSG = cache[vitamin]
+
+    override fun generateKeepaway(vitamin: Shaft): CSG = cache[vitamin]
 }

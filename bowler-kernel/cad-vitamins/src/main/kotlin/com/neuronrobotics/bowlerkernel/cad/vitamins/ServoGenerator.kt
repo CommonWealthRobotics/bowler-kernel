@@ -20,6 +20,7 @@ import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Servo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cube
 import eu.mihosoft.vrl.v3d.Cylinder
@@ -65,15 +66,21 @@ class ServoGenerator(
 
     override fun generateCAD(vitamin: Servo): CSG = cache[vitamin]
 
+    override fun generateKeepaway(vitamin: Servo): CSG =
+        // No specified bolt height, so just use the shaft height
+        generateKeepaway(vitamin, vitamin.boltHoleDiameter, vitamin.shaft.height)
+
     /**
-     * Generates a servo with bolt hole cylinders that can be used to cut out holes for the
-     * bolts.
+     * Generates the keepaway CAD for this [Vitamin]. This CAD can be used to perform a difference
+     * operation to cut out a keepaway region in another CSG. This return value may be cached by
+     * this generator.
      *
-     * @param vitamin The vitamin.
+     * @param vitamin The [Vitamin].
      * @param boltHoleDiameter The diameter of the bolt hole cylinders.
      * @param boltHoleLength The length of the bolt hole cylinders.
+     * @return The keepaway CAD for the [vitamin].
      */
-    fun generateCAD(vitamin: Servo, boltHoleDiameter: Length, boltHoleLength: Length): CSG =
+    fun generateKeepaway(vitamin: Servo, boltHoleDiameter: Length, boltHoleLength: Length): CSG =
         cache[vitamin].union(generateBolts(vitamin, boltHoleDiameter, boltHoleLength))
 
     /**

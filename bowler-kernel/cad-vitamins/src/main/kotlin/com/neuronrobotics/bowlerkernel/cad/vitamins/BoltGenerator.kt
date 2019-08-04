@@ -19,12 +19,16 @@ package com.neuronrobotics.bowlerkernel.cad.vitamins
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Bolt
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cylinder
+import org.octogonapus.ktunits.annotation.max
+import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.millimeter
+import org.octogonapus.ktunits.quantities.plus
 
 class BoltGenerator(
-    numSlices: Int = 16,
+    private val numSlices: Int = 16,
     maxCacheSize: Long = 100
 ) : VitaminCadGenerator<Bolt> {
 
@@ -49,4 +53,25 @@ class BoltGenerator(
         })
 
     override fun generateCAD(vitamin: Bolt): CSG = cache[vitamin]
+
+    override fun generateKeepaway(vitamin: Bolt): CSG =
+        generateKeepaway(vitamin, vitamin.headHeight + vitamin.bodyHeight)
+
+    /**
+     * Generates the keepaway CAD for this [Vitamin]. This CAD can be used to perform a difference
+     * operation to cut out a keepaway region in another CSG. This return value may be cached by
+     * this generator.
+     *
+     * @param vitamin The [Vitamin].
+     * @param height The height of the keepaway cylinder.
+     * @return The keepaway CAD for the [vitamin].
+     */
+    fun generateKeepaway(vitamin: Bolt, height: Length): CSG {
+        val maxDiam = max(vitamin.headDiameter, vitamin.throughHoleDiameter)
+        return Cylinder(
+            maxDiam.millimeter / 2,
+            height.millimeter / 2,
+            numSlices
+        ).toCSG().toZMin()
+    }
 }

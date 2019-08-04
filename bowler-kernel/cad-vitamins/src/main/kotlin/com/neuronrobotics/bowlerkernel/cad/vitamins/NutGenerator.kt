@@ -45,4 +45,6 @@ class NutGenerator(
         })
 
     override fun generateCAD(vitamin: Nut): CSG = cache[vitamin]
+
+    override fun generateKeepaway(vitamin: Nut): CSG = cache[vitamin]
 }

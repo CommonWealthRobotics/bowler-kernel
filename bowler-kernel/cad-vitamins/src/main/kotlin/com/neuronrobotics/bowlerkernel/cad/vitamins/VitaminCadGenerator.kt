@@ -30,7 +30,17 @@ interface VitaminCadGenerator<T : Vitamin> {
      * Generates the CAD for this [Vitamin]. This return value may be cached by this generator.
      *
      * @param vitamin The [Vitamin].
-     * @return The CAD for this [Vitamin].
+     * @return The CAD for the [vitamin].
      */
     fun generateCAD(vitamin: T): CSG
+
+    /**
+     * Generates the keepaway CAD for this [Vitamin]. This CAD can be used to perform a difference
+     * operation to cut out a keepaway region in another CSG. This return value may be cached by
+     * this generator.
+     *
+     * @param vitamin The [Vitamin].
+     * @return The keepaway CAD for the [vitamin].
+     */
+    fun generateKeepaway(vitamin: T): CSG
 }

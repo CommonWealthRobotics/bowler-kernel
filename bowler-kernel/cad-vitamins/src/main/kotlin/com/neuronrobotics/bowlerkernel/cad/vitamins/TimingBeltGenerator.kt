@@ -30,6 +30,8 @@ class TimingBeltGenerator(
 
     override fun generateCAD(vitamin: TimingBelt): CSG = generateCAD(vitamin, defaultLength)
 
+    override fun generateKeepaway(vitamin: TimingBelt): CSG = generateCAD(vitamin)
+
     fun generateCAD(vitamin: TimingBelt, length: Length): CSG {
         val toothLength = vitamin.pitchWidth / 3
         val toothStart = vitamin.height - vitamin.toothHeight

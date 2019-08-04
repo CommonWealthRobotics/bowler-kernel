@@ -46,11 +46,15 @@ internal class StepperGeneratorTest {
             VitaminCadGenerator<Bolt> {
             override fun generateCAD(vitamin: Bolt): CSG =
                 Cylinder(1.5, (vitamin.headHeight + vitamin.bodyHeight).millimeter).toCSG()
+
+            override fun generateKeepaway(vitamin: Bolt): CSG = generateCAD(vitamin)
         },
         shaftGenerator = object :
             VitaminCadGenerator<Shaft> {
             override fun generateCAD(vitamin: Shaft): CSG =
                 Cylinder(3.0, vitamin.height.millimeter).toCSG()
+
+            override fun generateKeepaway(vitamin: Shaft): CSG = generateCAD(vitamin)
         }
     )
 
