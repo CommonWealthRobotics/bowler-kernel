@@ -237,6 +237,7 @@ configure(javaProjects) {
     pitest {
         testPlugin = "junit5"
         threads = 4
+        avoidCallsTo = setOf("kotlin.jvm.internal")
     }
 
     spotless {
