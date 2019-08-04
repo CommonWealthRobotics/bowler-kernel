@@ -238,6 +238,7 @@ configure(javaProjects) {
         testPlugin = "junit5"
         threads = 4
         avoidCallsTo = setOf("kotlin.jvm.internal")
+        timeoutConstInMillis = 10000
     }
 
     spotless {

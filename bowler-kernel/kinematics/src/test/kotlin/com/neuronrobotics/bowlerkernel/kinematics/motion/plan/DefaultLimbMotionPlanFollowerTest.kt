@@ -29,10 +29,12 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.toImmutableList
+import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
 internal class DefaultLimbMotionPlanFollowerTest {
@@ -83,6 +85,7 @@ internal class DefaultLimbMotionPlanFollowerTest {
     }
 
     @Test
+    @Timeout(value = 2, unit = TimeUnit.SECONDS)
     fun `test angles are set in order`() {
         val targetAngles = (0..10 step 1).map { it.toDouble() }.toImmutableList()
         val plan = LimbMotionPlan(
