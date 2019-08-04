@@ -40,36 +40,54 @@ import com.nhaarman.mockitokotlin2.doReturnConsecutively
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.toImmutableList
 import org.octogonapus.ktguava.collections.toImmutableNetwork
 
 @Suppress("UnstableApiUsage")
 internal class KinematicGraphTest {
 
+    private val mutableKinematicGraph = buildMutableKinematicGraph()
+
+    private val baseNodeA = BaseNode(SimpleKinematicBaseId("BaseA")).left()
+
+    private val limbA = makeLimb("LimbA")
+    private val limbB = makeLimb("LimbB")
+    private val limbABaseTransform = FrameTransformation.fromTranslation(10, 0, -10)
+    private val limbBBaseTransform = FrameTransformation.fromTranslation(-10, 0, -10)
+
+    private lateinit var kinematicGraph: KinematicGraph
+
+    @BeforeEach
+    fun beforeEach() {
+        mutableKinematicGraph.addEdge(baseNodeA, limbA, limbABaseTransform)
+        mutableKinematicGraph.addEdge(baseNodeA, limbB, limbBBaseTransform)
+        kinematicGraph = mutableKinematicGraph.toImmutableNetwork()
+    }
+
+    @Test
+    fun `test create`() {
+        val baseId = SimpleKinematicBaseId("BaseA")
+        val bodyController = NoopBodyController
+        val base = DefaultKinematicBase.create(kinematicGraph, baseId, bodyController)
+
+        assertAll(
+            { assertEquals(setOf(limbA.b, limbB.b), base.limbs) },
+            { assertEquals(baseId, base.id) },
+            { assertEquals(bodyController, base.bodyController) },
+            {
+                assertEquals(
+                    mapOf(limbA.b.id to limbABaseTransform, limbB.b.id to limbBBaseTransform),
+                    base.limbBaseTransforms
+                )
+            }
+        )
+    }
+
     @Test
     fun `test json conversion`() {
-        val mutableKinematicGraph = buildMutableKinematicGraph()
-
-        val baseNodeA = BaseNode(SimpleKinematicBaseId("BaseA")).left()
-
-        val limbA = makeLimb("LimbA")
-        val limbB = makeLimb("LimbB")
-
-        mutableKinematicGraph.addEdge(
-            baseNodeA,
-            limbA,
-            FrameTransformation.fromTranslation(10, 0, -10)
-        )
-
-        mutableKinematicGraph.addEdge(
-            baseNodeA,
-            limbB,
-            FrameTransformation.fromTranslation(-10, 0, -10)
-        )
-
-        val kinematicGraph = mutableKinematicGraph.toImmutableNetwork()
-
         val baseA = DefaultKinematicBase.create(
             kinematicGraph,
             SimpleKinematicBaseId("BaseA"),
@@ -116,5 +134,5 @@ internal class KinematicGraphTest {
             NoopJointAngleController
         }.toImmutableList(),
         NoopInertialStateEstimator
-    ).right()
+    ).right() as Either.Right
 }
