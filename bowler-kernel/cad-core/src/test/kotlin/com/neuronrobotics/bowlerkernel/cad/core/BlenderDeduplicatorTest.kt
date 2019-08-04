@@ -16,8 +16,10 @@
  */
 package com.neuronrobotics.bowlerkernel.cad.core
 
+import arrow.core.Either
 import eu.mihosoft.vrl.v3d.Cylinder
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
@@ -25,17 +27,30 @@ internal class BlenderDeduplicatorTest {
 
     private val deduplicator = BlenderDeduplicator()
 
+    private val csg = Cylinder(50.0, 50.0, 100).toCSG().let { csg ->
+        csg.union((0 until 20).map { csg.rotz(it) })
+    }
+
     @Test
     fun `test dedup`() {
-        val csg = Cylinder(50.0, 50.0, 100).toCSG().let { csg ->
-            csg.union((0 until 20).map { csg.rotz(it) })
-        }
+        val csgOut = deduplicator.deduplicate(csg).attempt().unsafeRunSync()
 
-        val csgOut = deduplicator.deduplicate(csg)
+        assertTrue(csgOut is Either.Right)
+        csgOut as Either.Right
 
         assertAll(
-            { assertEquals(csg.bounds.center, csgOut.bounds.center) },
-            { assertEquals(csg.bounds.bounds, csgOut.bounds.bounds) }
+            { assertEquals(csg.bounds.center, csgOut.b.bounds.center) },
+            { assertEquals(csg.bounds.bounds, csgOut.b.bounds.bounds) }
         )
+    }
+
+    @Test
+    fun `test with invalid blender executable`() {
+        val result = BlenderDeduplicator(blenderExec = "NotABlenderExec")
+            .deduplicate(csg)
+            .attempt()
+            .unsafeRunSync()
+
+        assertTrue(result is Either.Left)
     }
 }

@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.cad.core
 
+import arrow.effects.IO
 import eu.mihosoft.vrl.v3d.CSG
 
 interface Deduplicator {
@@ -27,5 +28,5 @@ interface Deduplicator {
      * @param threshold The minimum closeness to remove.
      * @return The simplified CSG.
      */
-    fun deduplicate(csg: CSG, threshold: Double = 1e-4): CSG
+    fun deduplicate(csg: CSG, threshold: Double = 1e-4): IO<CSG>
 }

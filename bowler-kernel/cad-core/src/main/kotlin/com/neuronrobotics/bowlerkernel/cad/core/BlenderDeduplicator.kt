@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.cad.core
 
+import arrow.effects.IO
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.STL
 import mu.KotlinLogging
@@ -31,29 +32,31 @@ class BlenderDeduplicator(
 
     private val folder = dedupScript.parent
 
-    override fun deduplicate(csg: CSG, threshold: Double): CSG {
-        val filenamePrefix = Random.nextBytes(12).joinToString("")
+    override fun deduplicate(csg: CSG, threshold: Double): IO<CSG> {
+        return IO<CSG> {
+            val filenamePrefix = Random.nextBytes(12).joinToString("")
 
-        File("$folder/$filenamePrefix.stl").writeText(csg.toStlString())
+            File("$folder/$filenamePrefix.stl").writeText(csg.toStlString())
 
-        // Double.toString() would use scientific notation
-        val thresholdString = NumberFormat.getInstance().apply {
-            isGroupingUsed = false
-            maximumIntegerDigits = 999
-            maximumFractionDigits = 999
-        }.format(threshold)
+            // Double.toString() would use scientific notation
+            val thresholdString = NumberFormat.getInstance().apply {
+                isGroupingUsed = false
+                maximumIntegerDigits = 999
+                maximumFractionDigits = 999
+            }.format(threshold)
 
-        val command = "$blenderExec --background --python $dedupScript -- " +
-            "$folder/$filenamePrefix.stl $folder/$filenamePrefix-deduped.stl $thresholdString"
-        LOGGER.debug { "Running command: `$command`" }
-        Runtime.getRuntime().exec(command).waitFor()
+            val command = "$blenderExec --background --python $dedupScript -- " +
+                "$folder/$filenamePrefix.stl $folder/$filenamePrefix-deduped.stl $thresholdString"
+            LOGGER.debug { "Running command: `$command`" }
+            Runtime.getRuntime().exec(command).waitFor()
 
-        val csgBack = STL.file(Paths.get("$folder/$filenamePrefix-deduped.stl"))
+            val csgBack = STL.file(Paths.get("$folder/$filenamePrefix-deduped.stl"))
 
-        File("$folder/$filenamePrefix.stl").delete()
-        File("$folder/$filenamePrefix-deduped.stl").delete()
+            File("$folder/$filenamePrefix.stl").delete()
+            File("$folder/$filenamePrefix-deduped.stl").delete()
 
-        return csgBack
+            csgBack
+        }
     }
 
     companion object {
