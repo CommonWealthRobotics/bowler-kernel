@@ -33,30 +33,38 @@ class BlenderDeduplicator(
     private val folder = dedupScript.parent
 
     override fun deduplicate(csg: CSG, threshold: Double): IO<CSG> {
-        return IO<CSG> {
-            val filenamePrefix = Random.nextBytes(12).joinToString("")
+        val filenamePrefix = Random.nextBytes(12).joinToString("")
 
-            File("$folder/$filenamePrefix.stl").writeText(csg.toStlString())
+        return IO {
+            File("$folder/$filenamePrefix.stl").apply {
+                writeText(csg.toStlString())
+            }
+        }.bracketCase(
+            use = {
+                IO {
+                    // Double.toString() would use scientific notation
+                    val thresholdString = NumberFormat.getInstance().apply {
+                        isGroupingUsed = false
+                        maximumIntegerDigits = 999
+                        maximumFractionDigits = 999
+                    }.format(threshold)
 
-            // Double.toString() would use scientific notation
-            val thresholdString = NumberFormat.getInstance().apply {
-                isGroupingUsed = false
-                maximumIntegerDigits = 999
-                maximumFractionDigits = 999
-            }.format(threshold)
+                    val command = "$blenderExec --background --python $dedupScript -- " +
+                        "$folder/$filenamePrefix.stl $folder/$filenamePrefix-deduped.stl $thresholdString"
+                    LOGGER.debug { "Running command: `$command`" }
+                    Runtime.getRuntime().exec(command).waitFor()
 
-            val command = "$blenderExec --background --python $dedupScript -- " +
-                "$folder/$filenamePrefix.stl $folder/$filenamePrefix-deduped.stl $thresholdString"
-            LOGGER.debug { "Running command: `$command`" }
-            Runtime.getRuntime().exec(command).waitFor()
-
-            val csgBack = STL.file(Paths.get("$folder/$filenamePrefix-deduped.stl"))
-
-            File("$folder/$filenamePrefix.stl").delete()
-            File("$folder/$filenamePrefix-deduped.stl").delete()
-
-            csgBack
-        }
+                    STL.file(Paths.get("$folder/$filenamePrefix-deduped.stl"))
+                }
+            },
+            release = { file, _ ->
+                IO {
+                    file.delete()
+                    File("$folder/$filenamePrefix-deduped.stl").delete()
+                    Unit
+                }
+            }
+        )
     }
 
     companion object {
