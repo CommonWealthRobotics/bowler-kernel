@@ -43,12 +43,12 @@ internal class DefaultGitScriptFactoryTest {
 
         @TempDir
         lateinit var tempDir: File
-        val fakeUrl = "https://github.com/CommonWealthRobotics/FakeUrl.git"
-        val fakeFilename = "fakeFilename.kts"
-        val fakeGitFile = GitFile(gitUrl = fakeUrl, filename = fakeFilename)
-        lateinit var fakeFile: File
+        private val fakeUrl = "https://github.com/CommonWealthRobotics/FakeUrl.git"
+        private val fakeFilename = "fakeFilename.kts"
+        private val fakeGitFile = GitFile(gitUrl = fakeUrl, filename = fakeFilename)
 
-        lateinit var factory: DefaultGitScriptFactory
+        private lateinit var fakeFile: File
+        private lateinit var factory: DefaultGitScriptFactory
 
         @BeforeEach
         fun beforeEach() {
@@ -92,12 +92,12 @@ internal class DefaultGitScriptFactoryTest {
 
         @TempDir
         lateinit var tempDir: File
-        val fakeUrl = "https://github.com/CommonWealthRobotics/FakeUrl.git"
-        val fakeFilename = "fakeFilename.unknownScriptLanguage"
-        val fakeGitFile = GitFile(gitUrl = fakeUrl, filename = fakeFilename)
-        lateinit var fakeFile: File
+        private val fakeUrl = "https://github.com/CommonWealthRobotics/FakeUrl.git"
+        private val fakeFilename = "fakeFilename.unknownScriptLanguage"
+        private val fakeGitFile = GitFile(gitUrl = fakeUrl, filename = fakeFilename)
 
-        lateinit var factory: DefaultGitScriptFactory
+        private lateinit var fakeFile: File
+        private lateinit var factory: DefaultGitScriptFactory
 
         @BeforeEach
         fun beforeEach() {
