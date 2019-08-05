@@ -1,5 +1,6 @@
 import com.adarshr.gradle.testlogger.theme.ThemeType
 import com.github.spotbugs.SpotBugsTask
+import info.solidsoft.gradle.pitest.PitestTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -62,6 +63,17 @@ val publishedProjects = setOf(
     bowlerKernelLoggingProject,
     bowlerKernelScriptingProject,
     bowlerKernelUtilProject,
+    bowlerKernelVitaminsProject
+)
+
+val pitestProjects = setOf(
+    bowlerKernelCadCoreProject,
+    bowlerKernelCadVitaminsProject,
+    bowlerKernelGitFSProject,
+    bowlerKernelHardwareProject,
+    bowlerKernelKinematicsProject,
+    bowlerKernelKinematicsFactoriesProject,
+    bowlerKernelScriptingProject,
     bowlerKernelVitaminsProject
 )
 
@@ -150,7 +162,6 @@ configure(javaProjects) {
         plugin("checkstyle")
         plugin("com.github.spotbugs")
         plugin("pmd")
-        plugin("info.solidsoft.pitest")
     }
 
     dependencies {
@@ -232,13 +243,6 @@ configure(javaProjects) {
             xml.isEnabled = true
             csv.isEnabled = false
         }
-    }
-
-    pitest {
-        testPlugin = "junit5"
-        threads = 4
-        avoidCallsTo = setOf("kotlin.jvm.internal")
-        timeoutConstInMillis = 10000
     }
 
     spotless {
@@ -373,6 +377,23 @@ configure(javaProjects + kotlinProjects) {
     tasks.named("classes") {
         dependsOn(writePropertiesTask)
     }
+}
+
+configure(pitestProjects) {
+    apply {
+        plugin("info.solidsoft.pitest")
+    }
+
+    pitest {
+        testPlugin = "junit5"
+        threads = 1
+        avoidCallsTo = setOf("kotlin.jvm.internal")
+        timeoutConstInMillis = 120000 // 2 minutes
+    }
+}
+
+tasks.withType<PitestTask> {
+    onlyIf { project in pitestProjects }
 }
 
 configure(publishedProjects) {
