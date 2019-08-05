@@ -54,7 +54,7 @@ internal class VitaminSlicerTest {
             z = 0.millimeter
         )
 
-        val actual = slicer.getCenterOfMass(Cube(10.0, 20.0, 30.0).toCSG())
+        val actual = slicer.getCenterOfMass(Cube(1.0, 2.0, 3.0).toCSG())
 
         checkEquality(expected, actual)
     }
@@ -67,7 +67,7 @@ internal class VitaminSlicerTest {
             z = 0.millimeter
         )
 
-        val actual = slicer.getCenterOfMass(Cube(10.0, 20.0, 30.0).toCSG().movey(50))
+        val actual = slicer.getCenterOfMass(Cube(1.0, 2.0, 3.0).toCSG().movey(50))
 
         checkEquality(expected, actual)
     }
@@ -75,14 +75,14 @@ internal class VitaminSlicerTest {
     @Test
     fun `test with two cubes`() {
         val expected = CenterOfMass(
-            x = 2.5.millimeter,
+            x = 1.25.millimeter,
             y = 0.millimeter,
             z = 0.millimeter
         )
 
         val actual = slicer.getCenterOfMass(
-            Cube(10.0, 20.0, 30.0).toCSG().union(
-                Cube(10.0, 20.0, 30.0).toCSG().movex(5)
+            Cube(1.0, 2.0, 3.0).toCSG().union(
+                Cube(1.0, 2.0, 3.0).toCSG().movex(2.5)
             )
         )
 
@@ -94,12 +94,12 @@ internal class VitaminSlicerTest {
         val expected = CenterOfMass(
             x = 0.millimeter,
             y = 0.millimeter,
-            z = 10.millimeter
+            z = 2.millimeter
         )
 
         val actual = slicer.getCenterOfMass(
-            Sphere(10.0).toCSG().union(
-                Sphere(10.0).toCSG().movez(20)
+            Sphere(2.0).toCSG().union(
+                Sphere(2.0).toCSG().movez(4)
             )
         )
 
