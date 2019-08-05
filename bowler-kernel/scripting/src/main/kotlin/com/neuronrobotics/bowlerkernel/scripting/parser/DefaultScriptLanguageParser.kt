@@ -26,10 +26,6 @@ class DefaultScriptLanguageParser : ScriptLanguageParser {
         when (language.toLowerCase()) {
             "groovy" -> ScriptLanguage.Groovy.right()
             "kotlin", "kts" -> ScriptLanguage.Kotlin.right()
-            else ->
-                """
-                |Unknown language:
-                |$language
-                """.trimMargin().left()
+            else -> "Unknown language: $language".left()
         }
 }
