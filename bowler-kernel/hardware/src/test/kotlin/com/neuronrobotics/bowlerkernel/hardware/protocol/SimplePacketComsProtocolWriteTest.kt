@@ -23,10 +23,13 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import org.octogonapus.ktguava.collections.immutableListOf
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class SimplePacketComsProtocolWriteTest {
 
     private val device = MockDevice()

@@ -36,9 +36,12 @@ import com.neuronrobotics.bowlerkernel.hardware.getOrFail
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
+import java.util.concurrent.TimeUnit
 
-class BaseHardwareRegistryTest {
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
+internal class BaseHardwareRegistryTest {
 
     private val registry = BaseHardwareRegistry()
 

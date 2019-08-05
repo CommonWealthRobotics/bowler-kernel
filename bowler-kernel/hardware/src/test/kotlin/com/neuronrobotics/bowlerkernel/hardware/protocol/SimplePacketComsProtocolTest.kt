@@ -29,13 +29,16 @@ import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.octogonapus.ktguava.collections.immutableSetOf
+import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class SimplePacketComsProtocolTest {
 
     private val device = MockDevice()

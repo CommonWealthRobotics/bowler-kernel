@@ -42,10 +42,13 @@ import com.nhaarman.mockitokotlin2.verify
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableSetOf
 import org.octogonapus.ktguava.collections.toImmutableSet
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class BowlerDeviceTest {
 
     private val led1Id = ResourceId(

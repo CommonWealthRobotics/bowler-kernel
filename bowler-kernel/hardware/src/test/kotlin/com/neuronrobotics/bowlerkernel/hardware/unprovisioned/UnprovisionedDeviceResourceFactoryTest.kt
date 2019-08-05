@@ -38,8 +38,11 @@ import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
+import java.util.concurrent.TimeUnit
 
-class UnprovisionedDeviceResourceFactoryTest {
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
+internal class UnprovisionedDeviceResourceFactoryTest {
 
     private val registry = BaseHardwareRegistry()
 

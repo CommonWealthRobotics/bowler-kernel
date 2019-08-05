@@ -26,6 +26,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Resour
 import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import org.octogonapus.ktguava.collections.immutableListOf
@@ -33,7 +34,9 @@ import org.octogonapus.ktguava.collections.immutableSetOf
 import org.octogonapus.ktguava.collections.plus
 import org.octogonapus.ktguava.collections.toImmutableList
 import org.octogonapus.ktguava.collections.toImmutableSet
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class SimplePacketComsProtocolReadGroupTest {
 
     private val device = MockDevice()

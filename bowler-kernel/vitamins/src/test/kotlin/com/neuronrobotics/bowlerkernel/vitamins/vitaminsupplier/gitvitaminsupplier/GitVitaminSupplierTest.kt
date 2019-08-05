@@ -18,12 +18,15 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsuppl
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.octogonapus.ktguava.collections.immutableSetOf
 import org.octogonapus.ktguava.collections.toImmutableMap
+import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class GitVitaminSupplierTest {
 
     private val vitamins = with(Random) {

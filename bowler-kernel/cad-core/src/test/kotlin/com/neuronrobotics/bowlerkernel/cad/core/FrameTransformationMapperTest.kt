@@ -20,8 +20,11 @@ import Jama.Matrix
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class FrameTransformationMapperTest {
 
     @Test

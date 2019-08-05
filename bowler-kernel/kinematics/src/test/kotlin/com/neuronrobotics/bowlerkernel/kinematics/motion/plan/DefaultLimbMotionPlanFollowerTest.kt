@@ -37,6 +37,7 @@ import org.octogonapus.ktguava.collections.toImmutableList
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class DefaultLimbMotionPlanFollowerTest {
 
     private val controller = MockJointAngleController()
@@ -85,7 +86,6 @@ internal class DefaultLimbMotionPlanFollowerTest {
     }
 
     @Test
-    @Timeout(value = 2, unit = TimeUnit.SECONDS)
     fun `test angles are set in order`() {
         val targetAngles = (0..10 step 1).map { it.toDouble() }.toImmutableList()
         val plan = LimbMotionPlan(

@@ -22,9 +22,12 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class BlenderDeduplicatorTest {
 
     private val deduplicator = BlenderDeduplicator()

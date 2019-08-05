@@ -22,6 +22,7 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultDC
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultShaft
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.emptyImmutableMap
 import org.octogonapus.ktunits.quantities.ampere
@@ -35,7 +36,9 @@ import org.octogonapus.ktunits.quantities.plus
 import org.octogonapus.ktunits.quantities.radianPerMinute
 import org.octogonapus.ktunits.quantities.volt
 import org.octogonapus.ktunits.quantities.watt
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class DCMotorGeneratorTest {
 
     private val tolerance = 1e-6

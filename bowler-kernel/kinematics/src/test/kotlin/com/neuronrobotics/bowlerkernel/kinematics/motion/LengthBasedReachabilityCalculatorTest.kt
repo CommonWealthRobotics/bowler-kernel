@@ -23,8 +23,11 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.octogonapus.ktguava.collections.immutableListOf
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class LengthBasedReachabilityCalculatorTest {
 
     private val calculator = LengthBasedReachabilityCalculator()

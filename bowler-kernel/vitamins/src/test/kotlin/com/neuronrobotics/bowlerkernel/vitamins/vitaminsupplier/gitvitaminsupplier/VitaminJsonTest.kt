@@ -22,12 +22,15 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Vitamin
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.getConfiguredKlaxon
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.fail
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 import kotlin.reflect.KClass
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class VitaminJsonTest {
 
     private val klaxon = getConfiguredKlaxon()

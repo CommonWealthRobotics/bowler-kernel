@@ -20,6 +20,7 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultCompressionSpring
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.emptyImmutableMap
 import org.octogonapus.ktunits.quantities.div
@@ -28,7 +29,9 @@ import org.octogonapus.ktunits.quantities.kgf
 import org.octogonapus.ktunits.quantities.kilogram
 import org.octogonapus.ktunits.quantities.millimeter
 import org.octogonapus.ktunits.quantities.oz
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class CompressionSpringGeneratorTest {
 
     private val generator =

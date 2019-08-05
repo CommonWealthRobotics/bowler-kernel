@@ -386,9 +386,9 @@ configure(pitestProjects) {
 
     pitest {
         testPlugin = "junit5"
-        threads = 1
+        threads = 2
         avoidCallsTo = setOf("kotlin.jvm.internal")
-        timeoutConstInMillis = 120000 // 2 minutes
+        timeoutConstInMillis = 5000
     }
 }
 

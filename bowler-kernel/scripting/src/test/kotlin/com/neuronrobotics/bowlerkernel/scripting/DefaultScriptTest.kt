@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTimeout
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.emptyImmutableList
@@ -41,6 +42,7 @@ import java.time.Duration
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class DefaultScriptTest {
 
     @Test

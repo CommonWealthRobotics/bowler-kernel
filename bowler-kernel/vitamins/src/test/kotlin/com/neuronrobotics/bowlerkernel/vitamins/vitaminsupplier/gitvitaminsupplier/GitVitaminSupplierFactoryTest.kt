@@ -26,14 +26,17 @@ import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.plus
 import java.io.File
+import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class GitVitaminSupplierFactoryTest {
 
     private val klaxon = getConfiguredKlaxon()

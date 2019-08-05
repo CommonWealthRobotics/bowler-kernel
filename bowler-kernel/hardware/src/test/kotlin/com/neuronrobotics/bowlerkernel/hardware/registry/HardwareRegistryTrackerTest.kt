@@ -39,12 +39,15 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.emptyImmutableSetMultimap
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.toImmutableList
+import java.util.concurrent.TimeUnit
 
-class HardwareRegistryTrackerTest {
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
+internal class HardwareRegistryTrackerTest {
 
     private val baseRegistry = BaseHardwareRegistry()
     private val registry = HardwareRegistryTracker(baseRegistry)

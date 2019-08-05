@@ -20,6 +20,7 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBattery
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.emptyImmutableMap
 import org.octogonapus.ktunits.quantities.ampere
@@ -28,7 +29,9 @@ import org.octogonapus.ktunits.quantities.milliampereHour
 import org.octogonapus.ktunits.quantities.millimeter
 import org.octogonapus.ktunits.quantities.oz
 import org.octogonapus.ktunits.quantities.volt
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class BatteryGeneratorTest {
 
     private val generator = BatteryGenerator()

@@ -17,10 +17,13 @@
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid
 
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.fail
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class DefaultResourceIdValidatorTest {
 
     private val validator = DefaultResourceIdValidator()

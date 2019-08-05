@@ -21,10 +21,13 @@ import eu.mihosoft.vrl.v3d.Cube
 import eu.mihosoft.vrl.v3d.Sphere
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.millimeter
 import org.octogonapus.ktunits.quantities.times
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class VitaminSlicerTest {
 
     private val slicer = VitaminSlicer()

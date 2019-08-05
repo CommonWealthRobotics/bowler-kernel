@@ -39,10 +39,13 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.toImmutableList
+import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class DefaultLimbIntegrationTest {
 
     @Test

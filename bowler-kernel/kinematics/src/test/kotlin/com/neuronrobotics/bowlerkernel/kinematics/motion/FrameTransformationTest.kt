@@ -26,15 +26,18 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import java.lang.Math.toDegrees
+import java.util.concurrent.TimeUnit
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class FrameTransformationTest {
 
     private val equalityTolerance = 1e-14

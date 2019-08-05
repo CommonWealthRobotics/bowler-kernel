@@ -42,11 +42,14 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.toImmutableList
 import org.octogonapus.ktguava.collections.toImmutableNetwork
+import java.util.concurrent.TimeUnit
 
 @Suppress("UnstableApiUsage")
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class KinematicGraphTest {
 
     private val mutableKinematicGraph = buildMutableKinematicGraph()

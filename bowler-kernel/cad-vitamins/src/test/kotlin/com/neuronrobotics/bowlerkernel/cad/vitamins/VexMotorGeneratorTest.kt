@@ -19,12 +19,15 @@ package com.neuronrobotics.bowlerkernel.cad.vitamins
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexEDRMotor
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktunits.quantities.div
 import org.octogonapus.ktunits.quantities.millimeter
 import org.octogonapus.ktunits.quantities.minus
 import org.octogonapus.ktunits.quantities.plus
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class VexMotorGeneratorTest {
 
     private val generator = VexMotorGenerator(ShaftGenerator())

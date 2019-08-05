@@ -33,10 +33,10 @@ import org.junit.jupiter.api.Timeout
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import java.util.concurrent.TimeUnit
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class DefaultLimbTest {
 
     @Test
-    @Timeout(value = 5, unit = TimeUnit.SECONDS)
     fun `test setDesiredTaskSpaceTransform always finishes moving`() {
         val limb = DefaultLimb(
             SimpleLimbId("A"),

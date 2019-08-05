@@ -38,11 +38,14 @@ import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.immutableMapOf
 import org.octogonapus.ktguava.collections.immutableSetOf
 import org.octogonapus.ktguava.collections.toImmutableList
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class DefaultKinematicBaseTest {
 
     private val tolerance = 1e-10

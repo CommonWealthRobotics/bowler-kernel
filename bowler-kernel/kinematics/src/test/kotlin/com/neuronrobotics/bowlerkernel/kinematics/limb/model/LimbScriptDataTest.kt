@@ -21,7 +21,10 @@ import com.beust.klaxon.Klaxon
 import com.neuronrobotics.bowlerkernel.kinematics.limbScriptData
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class LimbScriptDataTest {
 
     @Test

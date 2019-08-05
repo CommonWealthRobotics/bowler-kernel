@@ -20,11 +20,14 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import java.util.concurrent.TimeUnit
 import kotlin.math.hypot
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class DhParamTest {
 
     private val tolerance = 1e-14

@@ -22,6 +22,7 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultRo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultShaft
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.emptyImmutableMap
 import org.octogonapus.ktunits.quantities.ampere
@@ -38,8 +39,10 @@ import org.octogonapus.ktunits.quantities.radianPerMinute
 import org.octogonapus.ktunits.quantities.times
 import org.octogonapus.ktunits.quantities.volt
 import org.octogonapus.ktunits.quantities.watt
+import java.util.concurrent.TimeUnit
 import kotlin.math.cos
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class RoundMotorGeneratorTest {
 
     private val tolerance = 1e-6

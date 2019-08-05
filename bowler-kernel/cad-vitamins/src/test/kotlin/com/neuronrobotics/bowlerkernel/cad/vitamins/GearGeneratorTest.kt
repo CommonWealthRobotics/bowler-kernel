@@ -19,10 +19,13 @@ package com.neuronrobotics.bowlerkernel.cad.vitamins
 import eu.mihosoft.vrl.v3d.CSG
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktunits.quantities.degree
 import org.octogonapus.ktunits.quantities.millimeter
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class GearGeneratorTest {
 
     private val generator = GearGenerator()

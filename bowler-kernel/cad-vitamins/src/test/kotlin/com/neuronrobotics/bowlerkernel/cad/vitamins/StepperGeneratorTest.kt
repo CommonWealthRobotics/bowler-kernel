@@ -26,6 +26,7 @@ import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cylinder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.emptyImmutableMap
 import org.octogonapus.ktunits.quantities.ampere
@@ -37,7 +38,9 @@ import org.octogonapus.ktunits.quantities.minus
 import org.octogonapus.ktunits.quantities.nM
 import org.octogonapus.ktunits.quantities.plus
 import org.octogonapus.ktunits.quantities.volt
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 5, unit = TimeUnit.SECONDS)
 internal class StepperGeneratorTest {
 
     private val tolerance = 1e-8
