@@ -25,6 +25,8 @@ import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.io.TempDir
@@ -36,54 +38,94 @@ import java.util.concurrent.TimeUnit
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DefaultGitScriptFactoryTest {
 
-    @Test
-    fun `test with mock github api`(@TempDir tempDir: File) {
+    @Nested
+    inner class TestsWithCorrectFilename {
+
+        @TempDir
+        lateinit var tempDir: File
         val fakeUrl = "https://github.com/CommonWealthRobotics/FakeUrl.git"
         val fakeFilename = "fakeFilename.kts"
-        val fakeFile = File(tempDir, fakeFilename).apply { writeText("42") }
+        val fakeGitFile = GitFile(gitUrl = fakeUrl, filename = fakeFilename)
+        lateinit var fakeFile: File
 
-        val factory = DefaultGitScriptFactory(
-            mock {
-                on { cloneRepoAndGetFiles(fakeUrl) } doReturn IO.just(immutableListOf(fakeFile))
-            },
-            DefaultScriptLanguageParser()
-        )
+        lateinit var factory: DefaultGitScriptFactory
 
-        val script = factory.createScriptFromGit(
-            GitFile(gitUrl = fakeUrl, filename = fakeFilename)
-        ).attempt().unsafeRunSync()
-
-        assertTrue(script is Either.Right) {
-            "Expected Either.Right, got: $script"
+        @BeforeEach
+        fun beforeEach() {
+            fakeFile = File(tempDir, fakeFilename).apply { writeText("42") }
+            factory = DefaultGitScriptFactory(
+                mock {
+                    on { cloneRepoAndGetFiles(fakeUrl) } doReturn IO.just(immutableListOf(fakeFile))
+                },
+                DefaultScriptLanguageParser()
+            )
         }
-        script as Either.Right
 
-        script.b.apply {
-            val result = startScript(emptyImmutableList())
-            stopAndCleanUp()
-            assertEquals(42.right(), result)
+        @Test
+        fun `test with mock github api`(@TempDir tempDir: File) {
+            val script = factory.createScriptFromGit(fakeGitFile).attempt().unsafeRunSync()
+
+            assertTrue(script is Either.Right) {
+                "Expected Either.Right, got: $script"
+            }
+
+            script as Either.Right
+            script.b.apply {
+                val result = startScript(emptyImmutableList())
+                stopAndCleanUp()
+                assertEquals(42.right(), result)
+            }
+        }
+
+        @Test
+        fun `test using getInstanceFromGit`(@TempDir tempDir: File) {
+            val script = factory.getInstanceFromGit<Int>(fakeGitFile).attempt().unsafeRunSync()
+
+            assertEquals(42.right().right(), script) {
+                "Got: $script"
+            }
         }
     }
 
-    @Test
-    fun `test with unknown script language`(@TempDir tempDir: File) {
+    @Nested
+    inner class TestsWithUnknownExtension {
+
+        @TempDir
+        lateinit var tempDir: File
         val fakeUrl = "https://github.com/CommonWealthRobotics/FakeUrl.git"
         val fakeFilename = "fakeFilename.unknownScriptLanguage"
-        val fakeFile = File(tempDir, fakeFilename).apply { createNewFile() }
+        val fakeGitFile = GitFile(gitUrl = fakeUrl, filename = fakeFilename)
+        lateinit var fakeFile: File
 
-        val factory = DefaultGitScriptFactory(
-            mock {
-                on { cloneRepoAndGetFiles(fakeUrl) } doReturn IO.just(immutableListOf(fakeFile))
-            },
-            DefaultScriptLanguageParser()
-        )
+        lateinit var factory: DefaultGitScriptFactory
 
-        val script = factory.createScriptFromGit(
-            GitFile(gitUrl = fakeUrl, filename = fakeFilename)
-        ).attempt().unsafeRunSync()
+        @BeforeEach
+        fun beforeEach() {
+            fakeFile = File(tempDir, fakeFilename).apply { writeText("42") }
+            factory = DefaultGitScriptFactory(
+                mock {
+                    on { cloneRepoAndGetFiles(fakeUrl) } doReturn IO.just(immutableListOf(fakeFile))
+                },
+                DefaultScriptLanguageParser()
+            )
+        }
 
-        assertTrue(script is Either.Left) {
-            "Expected Either.Left, got: $script"
+        @Test
+        fun `test with unknown script language`(@TempDir tempDir: File) {
+            val script = factory.createScriptFromGit(fakeGitFile).attempt().unsafeRunSync()
+
+            assertTrue(script is Either.Left) {
+                "Expected Either.Left, got: $script"
+            }
+        }
+
+        @Test
+        fun `test with unknown script language using getInstanceFromGit`(@TempDir tempDir: File) {
+            val script = factory.createScriptFromGit(fakeGitFile).attempt().unsafeRunSync()
+
+            assertTrue(script is Either.Left) {
+                "Expected Either.Left, got: $script"
+            }
         }
     }
 }
