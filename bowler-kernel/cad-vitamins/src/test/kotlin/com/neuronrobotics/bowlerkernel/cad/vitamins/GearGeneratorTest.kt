@@ -25,7 +25,7 @@ import org.octogonapus.ktunits.quantities.degree
 import org.octogonapus.ktunits.quantities.millimeter
 import java.util.concurrent.TimeUnit
 
-@Timeout(value = 15, unit = TimeUnit.SECONDS)
+@Timeout(value = 60, unit = TimeUnit.SECONDS)
 internal class GearGeneratorTest {
 
     private val generator = GearGenerator()
