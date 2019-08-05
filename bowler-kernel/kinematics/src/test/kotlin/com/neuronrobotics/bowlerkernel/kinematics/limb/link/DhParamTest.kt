@@ -27,7 +27,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.util.concurrent.TimeUnit
 import kotlin.math.hypot
 
-@Timeout(value = 15, unit = TimeUnit.SECONDS)
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DhParamTest {
 
     private val tolerance = 1e-14

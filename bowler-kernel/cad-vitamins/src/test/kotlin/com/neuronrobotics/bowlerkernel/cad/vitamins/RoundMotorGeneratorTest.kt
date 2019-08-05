@@ -42,7 +42,7 @@ import org.octogonapus.ktunits.quantities.watt
 import java.util.concurrent.TimeUnit
 import kotlin.math.cos
 
-@Timeout(value = 15, unit = TimeUnit.SECONDS)
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class RoundMotorGeneratorTest {
 
     private val tolerance = 1e-6

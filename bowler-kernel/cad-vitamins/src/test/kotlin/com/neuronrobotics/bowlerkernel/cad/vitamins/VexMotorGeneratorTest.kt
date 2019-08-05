@@ -27,7 +27,7 @@ import org.octogonapus.ktunits.quantities.minus
 import org.octogonapus.ktunits.quantities.plus
 import java.util.concurrent.TimeUnit
 
-@Timeout(value = 15, unit = TimeUnit.SECONDS)
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class VexMotorGeneratorTest {
 
     private val generator = VexMotorGenerator(ShaftGenerator())

@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
 import java.util.concurrent.TimeUnit
 
-@Timeout(value = 15, unit = TimeUnit.SECONDS)
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DefaultLimbFactoryTest {
 
     private val klaxon = Klaxon().converter(FrameTransformation)

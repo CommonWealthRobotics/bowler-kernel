@@ -27,7 +27,7 @@ import org.junit.jupiter.api.assertAll
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-@Timeout(value = 15, unit = TimeUnit.SECONDS)
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class BlenderDeduplicatorTest {
 
     private val deduplicator = BlenderDeduplicator()

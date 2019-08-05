@@ -42,7 +42,7 @@ import org.octogonapus.ktguava.collections.emptyImmutableList
 import org.octogonapus.ktguava.collections.immutableListOf
 import java.util.concurrent.TimeUnit
 
-@Timeout(value = 15, unit = TimeUnit.SECONDS)
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class HardwareScriptIntegrationTest {
 
     @Test

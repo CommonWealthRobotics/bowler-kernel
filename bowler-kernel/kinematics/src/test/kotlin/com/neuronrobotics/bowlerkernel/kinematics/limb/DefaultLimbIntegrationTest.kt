@@ -45,7 +45,7 @@ import org.octogonapus.ktguava.collections.toImmutableList
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
-@Timeout(value = 15, unit = TimeUnit.SECONDS)
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DefaultLimbIntegrationTest {
 
     @Test

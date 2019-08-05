@@ -27,7 +27,7 @@ import org.junit.jupiter.api.assertThrows
 import java.net.InetAddress
 import java.util.concurrent.TimeUnit
 
-@Timeout(value = 15, unit = TimeUnit.SECONDS)
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class SimplePacketComsProtocolFactoryTest {
 
     private val factory = SimplePacketComsProtocolFactory(DefaultResourceIdValidator())

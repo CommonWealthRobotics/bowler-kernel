@@ -28,7 +28,7 @@ import org.octogonapus.ktunits.quantities.inch
 import org.octogonapus.ktunits.quantities.millimeter
 import java.util.concurrent.TimeUnit
 
-@Timeout(value = 15, unit = TimeUnit.SECONDS)
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class TimingBeltGeneratorTest {
 
     private val generator = TimingBeltGenerator()

@@ -33,7 +33,7 @@ import org.octogonapus.ktunits.quantities.oz
 import org.octogonapus.ktunits.quantities.times
 import java.util.concurrent.TimeUnit
 
-@Timeout(value = 15, unit = TimeUnit.SECONDS)
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class TorsionSpringGeneratorTest {
 
     private val generator = TorsionSpringGenerator()

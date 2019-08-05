@@ -36,7 +36,7 @@ import org.octogonapus.ktunits.quantities.second
 import org.octogonapus.ktunits.quantities.volt
 import java.util.concurrent.TimeUnit
 
-@Timeout(value = 15, unit = TimeUnit.SECONDS)
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class ServoGeneratorTest {
 
     private val tolerance = 1e-6
