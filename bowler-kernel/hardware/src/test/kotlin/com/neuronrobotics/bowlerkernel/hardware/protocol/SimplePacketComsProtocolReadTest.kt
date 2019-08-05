@@ -30,7 +30,7 @@ import org.octogonapus.ktguava.collections.emptyImmutableList
 import org.octogonapus.ktguava.collections.immutableListOf
 import java.util.concurrent.TimeUnit
 
-@Timeout(value = 5, unit = TimeUnit.SECONDS)
+@Timeout(value = 15, unit = TimeUnit.SECONDS)
 internal class SimplePacketComsProtocolReadTest {
 
     private val device = MockDevice()

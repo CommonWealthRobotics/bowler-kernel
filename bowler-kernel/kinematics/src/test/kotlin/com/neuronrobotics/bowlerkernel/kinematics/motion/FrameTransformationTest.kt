@@ -37,7 +37,7 @@ import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-@Timeout(value = 5, unit = TimeUnit.SECONDS)
+@Timeout(value = 15, unit = TimeUnit.SECONDS)
 internal class FrameTransformationTest {
 
     private val equalityTolerance = 1e-14

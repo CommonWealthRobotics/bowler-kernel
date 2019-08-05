@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Timeout
 import org.octogonapus.ktguava.collections.immutableListOf
 import java.util.concurrent.TimeUnit
 
-@Timeout(value = 5, unit = TimeUnit.SECONDS)
+@Timeout(value = 15, unit = TimeUnit.SECONDS)
 internal class LengthBasedReachabilityCalculatorTest {
 
     private val calculator = LengthBasedReachabilityCalculator()

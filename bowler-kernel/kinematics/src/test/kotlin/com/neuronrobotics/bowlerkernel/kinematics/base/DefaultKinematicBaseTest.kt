@@ -45,7 +45,7 @@ import org.octogonapus.ktguava.collections.immutableSetOf
 import org.octogonapus.ktguava.collections.toImmutableList
 import java.util.concurrent.TimeUnit
 
-@Timeout(value = 5, unit = TimeUnit.SECONDS)
+@Timeout(value = 15, unit = TimeUnit.SECONDS)
 internal class DefaultKinematicBaseTest {
 
     private val tolerance = 1e-10

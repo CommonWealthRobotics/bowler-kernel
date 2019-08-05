@@ -31,7 +31,7 @@ import org.octogonapus.ktunits.quantities.millimeter
 import org.octogonapus.ktunits.quantities.oz
 import java.util.concurrent.TimeUnit
 
-@Timeout(value = 5, unit = TimeUnit.SECONDS)
+@Timeout(value = 15, unit = TimeUnit.SECONDS)
 internal class CompressionSpringGeneratorTest {
 
     private val generator =

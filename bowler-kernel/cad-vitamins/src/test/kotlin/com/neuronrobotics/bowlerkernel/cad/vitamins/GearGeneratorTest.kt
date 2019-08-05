@@ -25,13 +25,12 @@ import org.octogonapus.ktunits.quantities.degree
 import org.octogonapus.ktunits.quantities.millimeter
 import java.util.concurrent.TimeUnit
 
-@Timeout(value = 5, unit = TimeUnit.SECONDS)
+@Timeout(value = 15, unit = TimeUnit.SECONDS)
 internal class GearGeneratorTest {
 
     private val generator = GearGenerator()
 
     @Test
-    @Timeout(value = 10, unit = TimeUnit.SECONDS)
     fun `test gear`() {
         val thickness = 6.0
         val gear = generator.makeBevelBox(

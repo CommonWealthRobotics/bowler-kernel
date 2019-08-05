@@ -42,7 +42,7 @@ import java.time.Duration
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
-@Timeout(value = 5, unit = TimeUnit.SECONDS)
+@Timeout(value = 15, unit = TimeUnit.SECONDS)
 internal class DefaultScriptTest {
 
     @Test

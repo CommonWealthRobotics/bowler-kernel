@@ -28,7 +28,7 @@ import org.octogonapus.ktunits.quantities.lbM
 import org.octogonapus.ktunits.quantities.millimeter
 import java.util.concurrent.TimeUnit
 
-@Timeout(value = 5, unit = TimeUnit.SECONDS)
+@Timeout(value = 15, unit = TimeUnit.SECONDS)
 internal class BallBearingGeneratorTest {
 
     private val generator = BallBearingGenerator()

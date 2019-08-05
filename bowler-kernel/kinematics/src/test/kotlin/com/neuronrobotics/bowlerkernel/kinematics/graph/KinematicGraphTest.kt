@@ -49,7 +49,7 @@ import org.octogonapus.ktguava.collections.toImmutableNetwork
 import java.util.concurrent.TimeUnit
 
 @Suppress("UnstableApiUsage")
-@Timeout(value = 5, unit = TimeUnit.SECONDS)
+@Timeout(value = 15, unit = TimeUnit.SECONDS)
 internal class KinematicGraphTest {
 
     private val mutableKinematicGraph = buildMutableKinematicGraph()

@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit
 interface IFoo
 data class Foo(val bar: Int) : IFoo
 
-@Timeout(value = 5, unit = TimeUnit.SECONDS)
+@Timeout(value = 15, unit = TimeUnit.SECONDS)
 internal class ControllerSpecificationTest {
 
     private val klaxon = Klaxon()

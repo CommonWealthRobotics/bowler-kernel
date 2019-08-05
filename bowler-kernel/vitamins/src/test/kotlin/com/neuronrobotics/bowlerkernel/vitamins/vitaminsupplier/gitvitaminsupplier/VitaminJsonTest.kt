@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 import kotlin.reflect.KClass
 
-@Timeout(value = 5, unit = TimeUnit.SECONDS)
+@Timeout(value = 15, unit = TimeUnit.SECONDS)
 internal class VitaminJsonTest {
 
     private val klaxon = getConfiguredKlaxon()

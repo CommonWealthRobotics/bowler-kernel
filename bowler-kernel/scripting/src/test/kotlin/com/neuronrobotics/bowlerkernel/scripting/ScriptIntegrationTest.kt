@@ -43,7 +43,7 @@ import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import java.util.concurrent.TimeUnit
 
-@Timeout(value = 5, unit = TimeUnit.SECONDS)
+@Timeout(value = 15, unit = TimeUnit.SECONDS)
 internal class ScriptIntegrationTest {
 
     @Suppress("NestedLambdaShadowedImplicitParameter")
