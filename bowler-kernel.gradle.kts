@@ -389,6 +389,7 @@ configure(pitestProjects) {
         threads = 2
         avoidCallsTo = setOf("kotlin.jvm.internal", "kotlinx.coroutines", "kotlin.ResultKt")
         timeoutConstInMillis = 10000
+        mutators = setOf("ALL")
     }
 }
 
