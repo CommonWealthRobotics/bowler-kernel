@@ -386,8 +386,20 @@ configure(pitestProjects) {
 
     pitest {
         testPlugin = "junit5"
-        threads = 2
-        avoidCallsTo = setOf("kotlin.jvm.internal", "kotlinx.coroutines", "kotlin.ResultKt")
+        threads = 4
+        avoidCallsTo = setOf("kotlin.jvm.internal", "kotlinx.coroutines")
+        excludedMethods = setOf(
+            "hashCode",
+            "equals",
+            "checkIndexOverflow",
+            "throwIndexOverflow",
+            "collectionSizeOrDefault"
+        )
+        excludedClasses = setOf(
+            "NoSuchElementException",
+            "NoWhenBranchMatchedException",
+            "IllegalStateException"
+        )
         timeoutConstInMillis = 10000
         mutators = setOf("ALL")
     }
