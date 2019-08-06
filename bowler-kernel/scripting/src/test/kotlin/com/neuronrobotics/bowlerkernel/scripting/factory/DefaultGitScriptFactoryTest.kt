@@ -17,12 +17,13 @@
 package com.neuronrobotics.bowlerkernel.scripting.factory
 
 import arrow.core.Either
+import arrow.core.left
 import arrow.core.right
 import arrow.effects.IO
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
-import com.neuronrobotics.bowlerkernel.scripting.parser.DefaultScriptLanguageParser
-import com.nhaarman.mockitokotlin2.doReturn
-import com.nhaarman.mockitokotlin2.mock
+import com.neuronrobotics.bowlerkernel.scripting.ScriptLanguage
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -53,11 +54,14 @@ internal class DefaultGitScriptFactoryTest {
         @BeforeEach
         fun beforeEach() {
             fakeFile = File(tempDir, fakeFilename).apply { writeText("42") }
+
             factory = DefaultGitScriptFactory(
-                mock {
-                    on { cloneRepoAndGetFiles(fakeUrl) } doReturn IO.just(immutableListOf(fakeFile))
+                mockk {
+                    every { cloneRepoAndGetFiles(fakeUrl) } returns IO.just(immutableListOf(fakeFile))
                 },
-                DefaultScriptLanguageParser()
+                mockk {
+                    every { parse("kts") } returns ScriptLanguage.Kotlin.right()
+                }
             )
         }
 
@@ -103,10 +107,12 @@ internal class DefaultGitScriptFactoryTest {
         fun beforeEach() {
             fakeFile = File(tempDir, fakeFilename).apply { writeText("42") }
             factory = DefaultGitScriptFactory(
-                mock {
-                    on { cloneRepoAndGetFiles(fakeUrl) } doReturn IO.just(immutableListOf(fakeFile))
+                mockk {
+                    every { cloneRepoAndGetFiles(fakeUrl) } returns IO.just(immutableListOf(fakeFile))
                 },
-                DefaultScriptLanguageParser()
+                mockk {
+                    every { parse(any()) } returns "".left()
+                }
             )
         }
 

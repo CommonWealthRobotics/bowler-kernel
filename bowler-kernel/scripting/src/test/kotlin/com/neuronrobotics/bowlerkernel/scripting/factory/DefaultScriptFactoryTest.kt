@@ -30,8 +30,9 @@ internal class DefaultScriptFactoryTest {
     @Test
     fun `creating a script with a known language succeeds`() {
         val language = "groovy"
-        val mockScriptLanguageParser = mockk<ScriptLanguageParser> {}
-        every { mockScriptLanguageParser.parse(language) } returns ScriptLanguage.Groovy.right()
+        val mockScriptLanguageParser = mockk<ScriptLanguageParser> {
+            every { parse(language) } returns ScriptLanguage.Groovy.right()
+        }
 
         val script = DefaultScriptFactory(
             mockScriptLanguageParser
@@ -43,8 +44,9 @@ internal class DefaultScriptFactoryTest {
     @Test
     fun `creating a script with an unknown language fails`() {
         val unknownLanguage = "unknownLanguage"
-        val mockScriptLanguageParser = mockk<ScriptLanguageParser> {}
-        every { mockScriptLanguageParser.parse(unknownLanguage) } returns "".left()
+        val mockScriptLanguageParser = mockk<ScriptLanguageParser> {
+            every { parse(unknownLanguage) } returns "".left()
+        }
 
         val script = DefaultScriptFactory(
             mockScriptLanguageParser
