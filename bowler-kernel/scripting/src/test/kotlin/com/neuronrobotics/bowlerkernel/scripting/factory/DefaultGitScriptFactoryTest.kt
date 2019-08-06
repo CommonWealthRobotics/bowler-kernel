@@ -62,7 +62,7 @@ internal class DefaultGitScriptFactoryTest {
         }
 
         @Test
-        fun `test with mock github api`(@TempDir tempDir: File) {
+        fun `test with mock github api`() {
             val script = factory.createScriptFromGit(fakeGitFile).attempt().unsafeRunSync()
 
             assertTrue(script is Either.Right) {
@@ -78,7 +78,7 @@ internal class DefaultGitScriptFactoryTest {
         }
 
         @Test
-        fun `test using getInstanceFromGit`(@TempDir tempDir: File) {
+        fun `test using getInstanceFromGit`() {
             val script = factory.getInstanceFromGit<Int>(fakeGitFile).attempt().unsafeRunSync()
 
             assertEquals(42.right().right(), script) {
@@ -111,7 +111,7 @@ internal class DefaultGitScriptFactoryTest {
         }
 
         @Test
-        fun `test with unknown script language`(@TempDir tempDir: File) {
+        fun `test with unknown script language`() {
             val script = factory.createScriptFromGit(fakeGitFile).attempt().unsafeRunSync()
 
             assertTrue(script is Either.Left) {
@@ -120,7 +120,7 @@ internal class DefaultGitScriptFactoryTest {
         }
 
         @Test
-        fun `test with unknown script language using getInstanceFromGit`(@TempDir tempDir: File) {
+        fun `test with unknown script language using getInstanceFromGit`() {
             val script = factory.createScriptFromGit(fakeGitFile).attempt().unsafeRunSync()
 
             assertTrue(script is Either.Left) {
