@@ -165,7 +165,7 @@ configure(javaProjects) {
     }
 
     dependencies {
-        testCompile(
+        testImplementation(
             group = "org.junit.jupiter",
             name = "junit-jupiter",
             version = property("junit-jupiter.version") as String
