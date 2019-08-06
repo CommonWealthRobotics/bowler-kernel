@@ -19,16 +19,10 @@
 package com.neuronrobotics.bowlerkernel.scripting
 
 import arrow.core.Either
-import arrow.core.flatMap
-import arrow.core.left
 import arrow.core.right
 import com.google.common.base.Stopwatch
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.Script
-import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultScriptFactory
-import com.neuronrobotics.bowlerkernel.scripting.parser.ScriptLanguageParser
-import com.nhaarman.mockitokotlin2.doReturn
-import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTimeout
@@ -36,7 +30,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import java.time.Duration
 import java.util.concurrent.TimeUnit
@@ -47,18 +40,10 @@ internal class DefaultScriptTest {
 
     @Test
     fun `test run script with a hello world script`() {
-        val language = "groovy"
         val scriptContent = """ return "Hello, World!" """
+        val script = DefaultScript(ScriptLanguage.Groovy, scriptContent)
 
-        val mockScriptLanguageParser = mock<ScriptLanguageParser> {
-            on { parse(language) } doReturn ScriptLanguage.Groovy.right()
-        }
-
-        val script = DefaultScriptFactory(
-            mockScriptLanguageParser
-        ).createScriptFromText(language, scriptContent)
-
-        val result = script.flatMap { it.startScript(emptyImmutableList()) }
+        val result = script.startScript(emptyImmutableList())
         assertAll(
             { assertTrue(result.isRight()) },
             { assertEquals("Hello, World!", result.fold({ null }, { it as? String })) }
@@ -67,41 +52,24 @@ internal class DefaultScriptTest {
 
     @Test
     fun `test run script with a parse error`() {
-        val language = "groovy"
         val scriptContent = """ return "Hello, World!" """
+        val script = DefaultScript(ScriptLanguage.Groovy, scriptContent)
 
-        val mockScriptLanguageParser = mock<ScriptLanguageParser> {
-            on { parse(language) } doReturn "".left()
-        }
-
-        val script = DefaultScriptFactory(
-            mockScriptLanguageParser
-        ).createScriptFromText(language, scriptContent)
-
-        val result = script.flatMap { it.startScript(emptyImmutableList()) }
+        val result = script.startScript(emptyImmutableList())
         assertTrue(result.isLeft())
     }
 
     @Test
     fun `test run script with a compile error`() {
-        val language = "groovy"
         val scriptContent = """ " """ // Single quote on purpose
+        val script = DefaultScript(ScriptLanguage.Groovy, scriptContent)
 
-        val mockScriptLanguageParser = mock<ScriptLanguageParser> {
-            on { parse(language) } doReturn ScriptLanguage.Groovy.right()
-        }
-
-        val script = DefaultScriptFactory(
-            mockScriptLanguageParser
-        ).createScriptFromText(language, scriptContent)
-
-        val result = script.flatMap { it.startScript(emptyImmutableList()) }
+        val result = script.startScript(emptyImmutableList())
         assertTrue(result.isLeft())
     }
 
     @Test
     fun `test interrupting a script`() {
-        val language = "groovy"
         val scriptContent = """
             |try {
             |   Thread.sleep(10000)
@@ -110,31 +78,13 @@ internal class DefaultScriptTest {
             |}
             """.trimMargin()
 
-        val mockScriptLanguageParser = mock<ScriptLanguageParser> {
-            on { parse(language) } doReturn ScriptLanguage.Groovy.right()
+        val script = DefaultScript(ScriptLanguage.Groovy, scriptContent)
+
+        assertTimeout(Duration.ofSeconds(2)) {
+            thread { script.startScript(emptyImmutableList()) }
+            Thread.sleep(1000)
+            script.stopAndCleanUp()
         }
-
-        val script = DefaultScriptFactory(
-            mockScriptLanguageParser
-        ).createScriptFromText(language, scriptContent)
-
-        script.bimap(
-            {
-                fail {
-                    """
-                    |Script was a left:
-                    |$script
-                    """.trimMargin()
-                }
-            },
-            {
-                assertTimeout(Duration.ofSeconds(2)) {
-                    thread { it.startScript(emptyImmutableList()) }
-                    Thread.sleep(1000)
-                    it.stopAndCleanUp()
-                }
-            }
-        )
     }
 
     @Test
@@ -168,34 +118,14 @@ internal class DefaultScriptTest {
 
     @Test
     fun `test run script with a hello world script using kotlin`() {
-        val language = "kotlin"
         val scriptContent = """ "Hello, World!" """
 
-        val mockScriptLanguageParser = mock<ScriptLanguageParser> {
-            on { parse(language) } doReturn ScriptLanguage.Kotlin.right()
-        }
+        val script = DefaultScript(ScriptLanguage.Kotlin, scriptContent)
 
-        val script = DefaultScriptFactory(
-            mockScriptLanguageParser
-        ).createScriptFromText(language, scriptContent)
-
-        val result = script.flatMap { it.startScript(emptyImmutableList()) }
+        val result = script.startScript(emptyImmutableList())
         assertAll(
             { assertTrue(result.isRight()) },
             { assertEquals("Hello, World!", result.fold({ null }, { it as? String })) }
         )
-    }
-
-    @Test
-    fun `test run script with unknown language`() {
-        val mockScriptLanguageParser = mock<ScriptLanguageParser> {
-            on { parse("qwerty") } doReturn "".left()
-        }
-
-        val script = DefaultScriptFactory(
-            mockScriptLanguageParser
-        ).createScriptFromText("qwerty", "")
-
-        assertTrue(script.isLeft())
     }
 }
