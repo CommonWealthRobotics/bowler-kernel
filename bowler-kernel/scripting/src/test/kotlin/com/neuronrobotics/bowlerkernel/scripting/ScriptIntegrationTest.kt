@@ -23,7 +23,6 @@ import arrow.core.getOrHandle
 import arrow.core.right
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.Script
-import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
 import com.neuronrobotics.bowlerkernel.hardware.device.DeviceFactory
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
@@ -45,40 +44,6 @@ import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class ScriptIntegrationTest {
-
-    @Suppress("NestedLambdaShadowedImplicitParameter")
-    private data class TestClass(
-        val bowlerDeviceFactory: BowlerDeviceFactory,
-        val resourceFactory: UnprovisionedDeviceResourceFactory
-    ) {
-        init {
-            val device = bowlerDeviceFactory.makeBowlerDevice(
-                DeviceId(
-                    DefaultDeviceTypes.UnknownDevice,
-                    DefaultConnectionMethods.RawHID(0, 0)
-                ),
-                mockBowlerRPCProtocol()
-            ).getOrHandle {
-                fail {
-                    """
-                    |Got a RegisterError when making the device:
-                    |$it
-                    """.trimMargin()
-                }
-            }
-
-            device.connect()
-
-            val unprovisionedDigitalOut = resourceFactory.makeUnprovisionedDigitalOut(
-                device,
-                DefaultAttachmentPoints.Pin(7)
-            ).fold({ fail { "" } }, { it })
-
-            device.add(unprovisionedDigitalOut)
-
-            device.disconnect()
-        }
-    }
 
     @Test
     fun `provision LED integration test`() {
