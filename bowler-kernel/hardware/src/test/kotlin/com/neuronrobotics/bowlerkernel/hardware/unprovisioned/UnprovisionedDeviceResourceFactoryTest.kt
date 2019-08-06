@@ -69,8 +69,7 @@ internal class UnprovisionedDeviceResourceFactoryTest {
         ) { device }
         val error = UnprovisionedDeviceResourceFactory(
             registry
-        )
-            .makeUnprovisionedDigitalOut(device, resourceId)
+        ).makeUnprovisionedDigitalOut(device, resourceId)
 
         assertTrue(error.isLeft())
     }

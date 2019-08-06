@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:SuppressWarnings("LargeClass", "TooManyFunctions", "LongMethod", "LongMethod")
+
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid
 
 import org.junit.jupiter.api.Assertions.assertTrue

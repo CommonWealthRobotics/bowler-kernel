@@ -33,6 +33,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.DeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResource
+import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -82,7 +83,7 @@ internal class HardwareRegistryTrackerTest {
                 DefaultDeviceTypes.UnknownDevice,
                 DefaultConnectionMethods.RawHID(0, 0)
             )
-        ) { mock<MockDevice> {} }
+        ) { mock<Device> {} }
 
         assertAll(
             {
@@ -111,12 +112,12 @@ internal class HardwareRegistryTrackerTest {
     @Test
     fun `fail to unregister a device`() {
         registry.unregisterDevice(
-            MockDevice(
-                DeviceId(
+            mock {
+                on { this.deviceId } doReturn DeviceId(
                     DefaultDeviceTypes.UnknownDevice,
                     DefaultConnectionMethods.RawHID(0, 0)
                 )
-            )
+            }
         )
 
         assertAll(
@@ -158,12 +159,12 @@ internal class HardwareRegistryTrackerTest {
 
     @Test
     fun `fail to register a device resource`() {
-        val device = MockDevice(
-            DeviceId(
+        val device = mock<Device> {
+            on { deviceId } doReturn DeviceId(
                 DefaultDeviceTypes.UnknownDevice,
                 DefaultConnectionMethods.RawHID(0, 0)
             )
-        )
+        }
 
         val resourceId = ResourceId(
             DefaultResourceTypes.DigitalOut,

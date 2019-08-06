@@ -16,7 +16,6 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.registry
 
-import arrow.core.Either
 import arrow.core.right
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.device.Device
@@ -31,34 +30,9 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Resour
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDeviceResourceGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.getOrFail
+import com.nhaarman.mockitokotlin2.doReturn
+import com.nhaarman.mockitokotlin2.mock
 import org.octogonapus.ktguava.collections.toImmutableList
-
-internal data class MockDevice(
-    override val deviceId: DeviceId
-) : Device {
-    var connectWasCalled = false
-    var disconnectWasCalled = false
-
-    override fun connect(): Either<String, Unit> {
-        connectWasCalled = true
-        return Unit.right()
-    }
-
-    override fun disconnect(): Either<String, Unit> {
-        disconnectWasCalled = true
-        return Unit.right()
-    }
-
-    override fun isResourceInRange(resourceId: ResourceId) = true
-
-    override fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
-        resource: T
-    ) = Either.left("Not implemented")
-
-    override fun <T : UnprovisionedDeviceResourceGroup<R>, R : ProvisionedDeviceResourceGroup> add(
-        resourceGroup: T
-    ) = Either.left("Not implemented")
-}
 
 internal class MockProvisionedDeviceResource(
     override val device: Device,
@@ -100,13 +74,20 @@ internal data class MockUnprovisionedDeviceResourceGroup(
     }
 }
 
-internal fun HardwareRegistry.makeDeviceOrFail(): MockDevice =
-    registerDevice(
-        DeviceId(
-            DefaultDeviceTypes.UnknownDevice,
-            DefaultConnectionMethods.RawHID(0, 0)
-        )
-    ) { MockDevice(it) }.getOrFail()
+internal fun HardwareRegistry.makeDeviceOrFail(): Device {
+    val deviceId = DeviceId(
+        DefaultDeviceTypes.UnknownDevice,
+        DefaultConnectionMethods.RawHID(0, 0)
+    )
+
+    return registerDevice(deviceId) {
+        mock<Device> {
+            on { this.deviceId } doReturn deviceId
+            on { connect() } doReturn Unit.right()
+            on { disconnect() } doReturn Unit.right()
+        }
+    }.getOrFail()
+}
 
 internal fun HardwareRegistry.makeDeviceResourceOrFail(
     device: Device,
