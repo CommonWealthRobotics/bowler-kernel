@@ -1,7 +1,7 @@
 stages:
 - stage: Build
   jobs:
-    - job: Linux_x86
+    - job: Linux_x64
 
       pool:
         vmImage: ubuntu-16.04
