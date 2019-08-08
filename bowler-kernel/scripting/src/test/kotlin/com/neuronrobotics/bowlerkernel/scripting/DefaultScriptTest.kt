@@ -20,7 +20,6 @@ import arrow.core.Either
 import arrow.core.flatMap
 import arrow.core.left
 import arrow.core.right
-import com.google.common.base.Stopwatch
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.Script
 import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultScriptFactory
@@ -36,7 +35,7 @@ import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import java.time.Duration
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.CountDownLatch
 import kotlin.concurrent.thread
 
 internal class DefaultScriptTest {
@@ -135,11 +134,22 @@ internal class DefaultScriptTest {
 
     @Test
     fun `test stopping a script which has child threads`() {
+        val numThreads = 2
+        val interruptLatch = CountDownLatch(numThreads)
+
         val script = object : Script() {
             override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
-                repeat(2) {
+                repeat(numThreads) {
                     addThread(thread {
-                        Thread.sleep(10000)
+                        while (!Thread.interrupted()) {
+                            try {
+                                Thread.sleep(100)
+                            } catch (ex: InterruptedException) {
+                                break
+                            }
+                        }
+
+                        interruptLatch.countDown()
                     })
                 }
 
@@ -151,14 +161,13 @@ internal class DefaultScriptTest {
         }
 
         script.startScript(emptyImmutableList())
-
-        Thread.sleep(500)
         assertTrue(script.isRunning)
 
-        val stopwatch = Stopwatch.createStarted()
-        script.stopAndCleanUp(timeout = 1000)
-        assertEquals(2, stopwatch.stop().elapsed(TimeUnit.SECONDS))
-        assertFalse(script.isRunning)
+        script.stopAndCleanUp()
+        assertAll(
+            { assertEquals(0, interruptLatch.count) },
+            { assertFalse(script.isRunning) }
+        )
     }
 
     @Test
