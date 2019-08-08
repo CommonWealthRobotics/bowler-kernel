@@ -8,6 +8,7 @@ stages:
 
         steps:
           - task: Gradle@2
+            displayName: 'Compile'
             inputs:
               workingDirectory: ''
               gradleWrapperFile: 'gradlew'
@@ -20,6 +21,7 @@ stages:
               tasks: 'classes testClasses'
 
           - task: Gradle@2
+            displayName: 'Check'
             inputs:
               workingDirectory: ''
               gradleWrapperFile: 'gradlew'
@@ -30,6 +32,8 @@ stages:
               jdkArchitectureOption: 'x64'
               publishJUnitResults: false
               tasks: 'check jacocoTestReport'
+            env:
+              - CODECOV_TOKEN: $(CODECOV_TOKEN)
 
           - bash: |
               bash <(curl -s https://codecov.io/bash)
