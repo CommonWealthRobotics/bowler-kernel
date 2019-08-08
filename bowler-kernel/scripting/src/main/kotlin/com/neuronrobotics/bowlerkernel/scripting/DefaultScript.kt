@@ -127,7 +127,7 @@ class DefaultScript(
         }
 
         return if (result is Class<*>) {
-            val instance = result.newInstance()
+            val instance = result.getDeclaredConstructor().newInstance()
             if (instance is Script) {
                 scriptInstance = instance
                 instance.startScript(args)
