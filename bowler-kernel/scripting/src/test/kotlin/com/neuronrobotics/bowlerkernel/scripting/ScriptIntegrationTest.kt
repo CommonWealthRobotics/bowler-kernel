@@ -31,8 +31,6 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResourceFactory
 import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocolFactory
-import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultScriptFactory
-import com.neuronrobotics.bowlerkernel.scripting.parser.DefaultScriptLanguageParser
 import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -98,164 +96,48 @@ internal class ScriptIntegrationTest {
     }
 
     @Test
-    fun `register hardware inside a groovy script`() {
-        val scriptText =
-            """
-            import arrow.core.Either
-            import com.google.common.collect.ImmutableList
-            import com.neuronrobotics.bowlerkernel.hardware.Script
-            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
-            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
-            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
-            import com.neuronrobotics.bowlerkernel.hardware.device.DeviceFactory
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResourceFactory
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
-            import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocolFactory
-            import org.jetbrains.annotations.NotNull
+    fun `register hardware inside a script`() {
+        val script = object : Script() {
+            private var worked = false
 
-            import static com.neuronrobotics.bowlerkernel.scripting.TestUtilKt.mockBowlerRPCProtocol
+            override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
+                val deviceFactory = DeviceFactory(
+                    hardwareRegistry,
+                    DefaultResourceIdValidator(),
+                    SimplePacketComsProtocolFactory(DefaultResourceIdValidator())
+                )
 
-            class Test extends Script {
+                val resourceFactory = UnprovisionedDeviceResourceFactory(hardwareRegistry)
 
-                boolean worked = false
+                deviceFactory.makeBowlerDevice(
+                    DeviceId(
+                        DefaultDeviceTypes.UnknownDevice,
+                        DefaultConnectionMethods.RawHID(0, 0)
+                    ),
+                    mockBowlerRPCProtocol()
+                ).map {
+                    it.connect()
 
-                @Override
-                protected Either<String, Object> runScript(@NotNull ImmutableList<Object> args) {
-                    def deviceFactory = new DeviceFactory(
-                            hardwareRegistry,
-                            new DefaultResourceIdValidator(),
-                            new SimplePacketComsProtocolFactory(new DefaultResourceIdValidator())
-                    )
-
-                    def resourceFactory = new UnprovisionedDeviceResourceFactory(hardwareRegistry)
-
-                    deviceFactory.makeBowlerDevice(
-                            new DeviceId(
-                                    new DefaultDeviceTypes.UnknownDevice(),
-                                    new DefaultConnectionMethods.RawHID(0, 0)
-                            ),
-                            mockBowlerRPCProtocol()
-                    ).map {
-                        it.connect()
-
-                        resourceFactory.makeUnprovisionedDigitalOut(
-                                it,
-                                new DefaultAttachmentPoints.Pin(1 as byte)
-                        ).map { led1 ->
+                    val led1 = resourceFactory.makeUnprovisionedDigitalOut(
+                        it,
+                        DefaultAttachmentPoints.Pin(1)
+                    ).fold(
+                        { throw IllegalStateException("") },
+                        {
                             worked = true
-                            it.add(led1)
+                            it
                         }
-
-                        it.disconnect()
-                    }
-
-                    return new Either.Right(worked)
-                }
-
-                @Override
-                protected void stopScript() {
-                }
-            }
-
-            return Test
-            """.trimIndent()
-
-        val script = DefaultScriptFactory(
-            DefaultScriptLanguageParser()
-        ).createScriptFromText("groovy", scriptText).fold(
-            { failedToCreateScript(it) },
-            { it }
-        )
-
-        // Run the script a first time, this should work fine
-        script.startScript(emptyImmutableList()).bimap(
-            { failedToRunScript(it) },
-            { assertTrue(it as Boolean) }
-        )
-
-        script.stopAndCleanUp()
-
-        // Run the script a second time, this should work again because the script was stopped and
-        // clean up after
-        script.startScript(emptyImmutableList()).bimap(
-            { failedToRunScript(it) },
-            { assertTrue(it as Boolean) }
-        )
-
-        script.stopAndCleanUp()
-    }
-
-    @Test
-    fun `register hardware inside a kotlin script`() {
-        val scriptText =
-            """
-            import arrow.core.Either
-            import com.google.common.collect.ImmutableList
-            import com.neuronrobotics.bowlerkernel.hardware.Script
-            import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDeviceFactory
-            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
-            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
-            import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResourceFactory
-            import com.neuronrobotics.bowlerkernel.scripting.mockBowlerRPCProtocol
-            import com.neuronrobotics.bowlerkernel.hardware.device.DeviceFactory
-            import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
-            import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocolFactory
-
-            class MyScript : Script() {
-
-                var worked = false
-
-                override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
-                    val deviceFactory = DeviceFactory(
-                        hardwareRegistry,
-                        DefaultResourceIdValidator(),
-                        SimplePacketComsProtocolFactory(DefaultResourceIdValidator())
                     )
 
-                    val resourceFactory = UnprovisionedDeviceResourceFactory(hardwareRegistry)
-
-                    deviceFactory.makeBowlerDevice(
-                        DeviceId(
-                            DefaultDeviceTypes.UnknownDevice,
-                            DefaultConnectionMethods.RawHID(0, 0)
-                        ),
-                        mockBowlerRPCProtocol()
-                    ).map {
-                        it.connect()
-
-                        val led1 = resourceFactory.makeUnprovisionedDigitalOut(
-                            it,
-                            DefaultAttachmentPoints.Pin(1)
-                        ).fold(
-                            { throw IllegalStateException("") },
-                            {
-                                worked = true
-                                it
-                            }
-                        )
-
-                        it.add(led1)
-                        it.disconnect()
-                    }
-                    return Either.right(worked)
+                    it.add(led1)
+                    it.disconnect()
                 }
-
-                override fun stopScript() {
-                }
+                return Either.right(worked)
             }
 
-            MyScript::class
-            """.trimIndent()
-
-        val script = DefaultScriptFactory(
-            DefaultScriptLanguageParser()
-        ).createScriptFromText("kotlin", scriptText).fold(
-            { failedToCreateScript(it) },
-            { it }
-        )
+            override fun stopScript() {
+            }
+        }
 
         // Run the script a first time, this should work fine
         script.startScript(emptyImmutableList()).bimap(
@@ -309,35 +191,17 @@ internal class ScriptIntegrationTest {
 
     @Test
     fun `test stopAndCleanUp is called`() {
-        val scriptText =
-            """
-            import arrow.core.Either
-            import arrow.core.right
-            import com.google.common.collect.ImmutableList
-            import com.neuronrobotics.bowlerkernel.hardware.Script
+        val script = object : Script() {
+            private val counter = mutableListOf(1)
 
-            class TestScript : Script() {
-
-                private val counter = mutableListOf(1)
-
-                override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
-                    return counter.right()
-                }
-
-                override fun stopScript() {
-                    counter.add(2)
-                }
+            override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
+                return counter.right()
             }
 
-            TestScript::class
-            """.trimIndent()
-
-        val script = DefaultScriptFactory(
-            DefaultScriptLanguageParser()
-        ).createScriptFromText("kotlin", scriptText).fold(
-            { failedToCreateScript(it) },
-            { it }
-        )
+            override fun stopScript() {
+                counter.add(2)
+            }
+        }
 
         // Run the script a first time, this should work fine
         @Suppress("UNCHECKED_CAST")
@@ -352,14 +216,6 @@ internal class ScriptIntegrationTest {
 
         assertIterableEquals(result, listOf(1, 2))
     }
-
-    private fun failedToCreateScript(it: String): Nothing =
-        fail {
-            """
-            |Failed to create script:
-            |$it
-            """.trimMargin()
-        }
 
     private fun failedToRunScript(it: String): Nothing =
         fail {
