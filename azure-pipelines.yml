@@ -1,0 +1,103 @@
+stages:
+- stage: Build
+  jobs:
+    - job: Linux_x86
+
+      pool:
+        vmImage: ubuntu-16.04
+
+      steps:
+        - task: Gradle@2
+          displayName: 'Compile'
+          inputs:
+            workingDirectory: ''
+            gradleWrapperFile: 'gradlew'
+            gradleOptions: '-Xmx3072m'
+            options: '--stacktrace'
+            javaHomeOption: 'JDKVersion'
+            jdkVersionOption: '1.8'
+            jdkArchitectureOption: 'x64'
+            publishJUnitResults: false
+            tasks: 'classes testClasses'
+
+        - task: Gradle@2
+          displayName: 'Check'
+          inputs:
+            workingDirectory: ''
+            gradleWrapperFile: 'gradlew'
+            gradleOptions: '-Xmx3072m'
+            options: '--stacktrace -PlogTests -Pheadless'
+            javaHomeOption: 'JDKVersion'
+            jdkVersionOption: '1.8'
+            jdkArchitectureOption: 'x64'
+            publishJUnitResults: false
+            tasks: 'check jacocoTestReport'
+
+        - bash: |
+            bash <(curl -s https://codecov.io/bash)
+          env:
+            CODECOV_TOKEN: $(CODECOV_TOKEN)
+
+    - job: MacOS
+
+      pool:
+        vmImage: macOS-10.14
+
+      steps:
+        - task: Gradle@2
+          displayName: 'Compile'
+          inputs:
+            workingDirectory: ''
+            gradleWrapperFile: 'gradlew'
+            gradleOptions: '-Xmx3072m'
+            options: '--stacktrace'
+            javaHomeOption: 'JDKVersion'
+            jdkVersionOption: '1.8'
+            jdkArchitectureOption: 'x64'
+            publishJUnitResults: false
+            tasks: 'classes testClasses'
+
+        - task: Gradle@2
+          displayName: 'Check'
+          inputs:
+            workingDirectory: ''
+            gradleWrapperFile: 'gradlew'
+            gradleOptions: '-Xmx3072m'
+            options: '--stacktrace -PlogTests -Pheadless'
+            javaHomeOption: 'JDKVersion'
+            jdkVersionOption: '1.8'
+            jdkArchitectureOption: 'x64'
+            publishJUnitResults: false
+            tasks: 'check jacocoTestReport'
+
+    - job: Windows
+
+      pool:
+        vmImage: windows-2019
+
+      steps:
+        - task: Gradle@2
+          displayName: 'Compile'
+          inputs:
+            workingDirectory: ''
+            gradleWrapperFile: 'gradlew'
+            gradleOptions: '-Xmx3072m'
+            options: '--stacktrace'
+            javaHomeOption: 'JDKVersion'
+            jdkVersionOption: '1.8'
+            jdkArchitectureOption: 'x64'
+            publishJUnitResults: false
+            tasks: 'classes testClasses'
+
+        - task: Gradle@2
+          displayName: 'Check'
+          inputs:
+            workingDirectory: ''
+            gradleWrapperFile: 'gradlew'
+            gradleOptions: '-Xmx3072m'
+            options: '--stacktrace -PlogTests -Pheadless'
+            javaHomeOption: 'JDKVersion'
+            jdkVersionOption: '1.8'
+            jdkArchitectureOption: 'x64'
+            publishJUnitResults: false
+            tasks: 'check jacocoTestReport'
