@@ -21,8 +21,8 @@ stages:
             testResultsFiles: '**/TEST-*.xml'
             tasks: 'check jacocoTestReport'
 
-        - bash: |
-            bash <(curl -s https://codecov.io/bash)
+        - bash: bash <(curl -s https://codecov.io/bash)
+          displayName: 'CodeCov'
           env:
             CODECOV_TOKEN: $(CODECOV_TOKEN)
 
