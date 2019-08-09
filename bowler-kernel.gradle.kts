@@ -15,6 +15,7 @@ plugins {
     id("org.jetbrains.dokka") version "0.9.18"
     id("com.adarshr.test-logger") version "1.6.0"
     id("info.solidsoft.pitest") version "1.4.0"
+    id("org.openjfx.javafxplugin") version "0.0.8"
     `maven-publish`
     `java-library`
     jacoco
@@ -141,11 +142,11 @@ allprojects {
             ktlint(property("ktlint.version") as String)
             trimTrailingWhitespace()
         }
-        freshmark {
-            trimTrailingWhitespace()
-            indentWithSpaces(2)
-            endWithNewline()
-        }
+        // freshmark {
+        //     trimTrailingWhitespace()
+        //     indentWithSpaces(2)
+        //     endWithNewline()
+        // }
         format("extraneous") {
             target("src/**/*.fxml")
             trimTrailingWhitespace()
@@ -162,6 +163,7 @@ configure(javaProjects) {
         plugin("checkstyle")
         plugin("com.github.spotbugs")
         plugin("pmd")
+        plugin("org.openjfx.javafxplugin")
     }
 
     dependencies {
@@ -176,6 +178,11 @@ configure(javaProjects) {
             name = "junit-platform-launcher",
             version = property("junit-platform-launcher.version") as String
         )
+    }
+
+    javafx {
+        version = "11.0.2"
+        modules("javafx.graphics")
     }
 
     tasks.withType<JavaCompile> {
