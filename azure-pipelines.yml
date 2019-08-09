@@ -26,6 +26,23 @@ stages:
           env:
             CODECOV_TOKEN: $(CODECOV_TOKEN)
 
+        - task: Gradle@2
+          displayName: 'Publish'
+          condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+          inputs:
+            workingDirectory: ''
+            gradleWrapperFile: 'gradlew'
+            gradleOptions: '-Xmx3072m'
+            options: '--stacktrace'
+            javaHomeOption: 'JDKVersion'
+            jdkVersionOption: '1.11'
+            jdkArchitectureOption: 'x64'
+            publishJUnitResults: false
+            tasks: 'bintrayUpload'
+          env:
+            BINTRAY_USER: $(BINTRAY_USER)
+            BINTRAY_API_KEY: $(BINTRAY_API_KEY)
+
     - job: MacOS
 
       pool:
