@@ -8,19 +8,6 @@ stages:
 
       steps:
         - task: Gradle@2
-          displayName: 'Compile'
-          inputs:
-            workingDirectory: ''
-            gradleWrapperFile: 'gradlew'
-            gradleOptions: '-Xmx3072m'
-            options: '--stacktrace'
-            javaHomeOption: 'JDKVersion'
-            jdkVersionOption: '1.11'
-            jdkArchitectureOption: 'x64'
-            publishJUnitResults: false
-            tasks: 'classes testClasses'
-
-        - task: Gradle@2
           displayName: 'Check'
           inputs:
             workingDirectory: ''
@@ -45,19 +32,6 @@ stages:
 
       steps:
         - task: Gradle@2
-          displayName: 'Compile'
-          inputs:
-            workingDirectory: ''
-            gradleWrapperFile: 'gradlew'
-            gradleOptions: '-Xmx3072m'
-            options: '--stacktrace'
-            javaHomeOption: 'JDKVersion'
-            jdkVersionOption: '1.11'
-            jdkArchitectureOption: 'x64'
-            publishJUnitResults: false
-            tasks: 'classes testClasses'
-
-        - task: Gradle@2
           displayName: 'Check'
           inputs:
             workingDirectory: ''
@@ -76,19 +50,6 @@ stages:
         vmImage: windows-2019
 
       steps:
-        - task: Gradle@2
-          displayName: 'Compile'
-          inputs:
-            workingDirectory: ''
-            gradleWrapperFile: 'gradlew'
-            gradleOptions: '-Xmx3072m'
-            options: '--stacktrace'
-            javaHomeOption: 'JDKVersion'
-            jdkVersionOption: '1.11'
-            jdkArchitectureOption: 'x64'
-            publishJUnitResults: false
-            tasks: 'classes testClasses'
-
         - task: Gradle@2
           displayName: 'Check'
           inputs:
