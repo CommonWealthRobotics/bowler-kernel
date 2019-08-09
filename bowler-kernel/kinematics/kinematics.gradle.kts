@@ -8,10 +8,6 @@ apply {
 
 description = "The kinematics stack."
 
-repositories {
-    maven(url = "https://dl.bintray.com/s1m0nw1/KtsRunner")
-}
-
 fun DependencyHandler.arrow(name: String) =
     create(group = "io.arrow-kt", name = name, version = property("arrow.version") as String)
 
