@@ -104,8 +104,8 @@ internal class GitHubFSTest {
             files
         )
 
-        files.map { it.forEach { File(it).deleteRecursively() } }
         repoPath.toFile().deleteRecursively()
+        tempDir.deleteRecursively()
     }
 
     @Test
@@ -139,7 +139,6 @@ internal class GitHubFSTest {
             files
         )
 
-        files.map { it.forEach { File(it).deleteRecursively() } }
         repoPath.toFile().deleteRecursively()
     }
 
