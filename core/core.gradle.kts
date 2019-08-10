@@ -28,7 +28,7 @@ fun desktopArch(): String {
 fun bowlerKinematicsNativeVersionSuffix() = when {
     SystemUtils.IS_OS_WINDOWS -> "windows"
     SystemUtils.IS_OS_LINUX -> "linux"
-    SystemUtils.IS_OS_MAC -> "macos"
+    SystemUtils.IS_OS_MAC -> "osx"
     else -> throw IllegalStateException("Unknown OS: ${SystemUtils.OS_NAME}")
 } + desktopArch()
 
