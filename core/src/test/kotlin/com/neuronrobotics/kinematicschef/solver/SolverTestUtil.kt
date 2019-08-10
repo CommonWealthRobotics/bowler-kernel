@@ -14,41 +14,44 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with kinematics-chef.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.kinematicschef
+package com.neuronrobotics.kinematicschef.solver
 
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
+import com.neuronrobotics.bowlerkernel.kinematics.motion.ForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InverseKinematicsSolver
+import com.neuronrobotics.bowlerkernel.kinematics.motion.approxEquals
 import com.neuronrobotics.bowlerkernel.util.JointLimits
-import com.neuronrobotics.kinematicschef.solver.NativeIKSolverBridge
-import com.neuronrobotics.kinematicschef.solver.ThreeDofSolver
+import com.neuronrobotics.kinematicschef.TestUtil
+import org.junit.jupiter.api.Assertions.assertTrue
 
-/**
- * Detects the type of serial manipulator and uses the correct solver for it.
- */
-class GeneralInverseKinematicsSolver(
-    private val links: ImmutableList<Link>
-) : InverseKinematicsSolver {
-
-    @Suppress("MemberVisibilityCanBePrivate")
-    val solver: InverseKinematicsSolver = identifySolver(links)
-
-    override fun solveChain(
-        links: List<Link>,
-        currentJointAngles: List<Double>,
-        jointLimits: List<JointLimits>,
-        targetFrameTransform: FrameTransformation
-    ): List<Double> = identifySolver(links).solveChain(
+internal fun testIK(
+    links: ImmutableList<Link>,
+    target: FrameTransformation,
+    ik: InverseKinematicsSolver,
+    fk: ForwardKinematicsSolver
+) {
+    val resultAngles = ik.solveChain(
         links,
-        currentJointAngles,
-        jointLimits,
-        targetFrameTransform
+        links.map { 0.0 },
+        links.map { JointLimits(180, -180) },
+        target
     )
 
-    private fun identifySolver(links: List<Link>): InverseKinematicsSolver =
-        when (links.size) {
-            3 -> ThreeDofSolver()
-            else -> NativeIKSolverBridge()
-        }
+    val resultTarget = fk.solveChain(TestUtil.hephaestusArmLinks, resultAngles)
+
+    assertTrue(
+        target.translation.approxEquals(resultTarget.translation, 1e-1)
+    ) {
+        """
+
+        Target:
+        ${target.translation.array.joinToString { it.joinToString() }}
+        Result:
+        ${resultTarget.translation.array.joinToString { it.joinToString() }}
+        Result angles :
+        $resultAngles
+        """.trimIndent()
+    }
 }

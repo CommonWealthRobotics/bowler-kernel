@@ -18,18 +18,28 @@ package com.neuronrobotics.kinematicschef.solver
 
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.util.JointLimits
+import com.neuronrobotics.bowlerkinematicsnative.solver.NativeIKSolver
 import com.neuronrobotics.kinematicschef.GeneralForwardKinematicsSolver
 import com.neuronrobotics.kinematicschef.TestUtil.hephaestusArmLinks
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-internal class ThreeDofSolverTest {
+internal class NativeIKSolverBridgeTest {
 
     private val fk = GeneralForwardKinematicsSolver()
-    private val ik = ThreeDofSolver()
+    private val ik = NativeIKSolverBridge()
+
+    companion object {
+        @BeforeAll
+        @JvmStatic
+        fun beforeAll() {
+            NativeIKSolver.loadLibrary()
+        }
+    }
 
     @Test
-    fun `test fk to ik`() {
+    fun `test bridge`() {
         (-30..30 step 1).map { targetPos ->
             val target = FrameTransformation.fromTranslation(targetPos, 0, 0)
             testIK(hephaestusArmLinks, target, ik, fk)
@@ -37,28 +47,9 @@ internal class ThreeDofSolverTest {
     }
 
     @Test
-    fun `test ik outside reachable workspace`() {
-        val target = FrameTransformation.fromTranslation(10000, 0, 0)
-
-        assertThrows<IllegalStateException> {
-            ik.solveChain(
-                hephaestusArmLinks,
-                hephaestusArmLinks.map { 0.0 },
-                hephaestusArmLinks.map { JointLimits(180, -180) },
-                target
-            )
-        }
-    }
-
-    @Test
-    fun `test ik with 2 links`() {
+    fun `test ik with 0 links`() {
         assertThrows<IllegalArgumentException> {
-            ik.solveChain(
-                hephaestusArmLinks.subList(0, 2),
-                hephaestusArmLinks.subList(0, 2).map { 0.0 },
-                hephaestusArmLinks.subList(0, 2).map { JointLimits(180, -180) },
-                FrameTransformation.identity
-            )
+            ik.solveChain(emptyList(), emptyList(), emptyList(), FrameTransformation.identity)
         }
     }
 

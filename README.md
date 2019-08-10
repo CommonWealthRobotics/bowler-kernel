@@ -12,9 +12,20 @@ Kinematics for the Bowler stack.
 
 ## Use bowler-kinematics
 
-Get the artifacts [here](https://bintray.com/commonwealthrobotics/maven-artifacts/bowler-kinematics/_latestVersion). Additional repositories:
+Get the artifacts [here](https://bintray.com/commonwealthrobotics/maven-artifacts/bowler-kinematics/_latestVersion):
 ```kotlin
-maven(url = "https://dl.bintray.com/s1m0nw1/KtsRunner")
-maven(url = "https://dl.bintray.com/octogonapus/maven-artifacts")
-maven(url = "https://dl.bintray.com/commonwealthrobotics/maven-artifacts")
+maven("https://dl.bintray.com/commonwealthrobotics/maven-artifacts")
 ```
+
+Additional repositories that `bowler-kinematics` depends on:
+```kotlin
+jcenter()
+mavenCentral()
+maven("https://dl.bintray.com/octogonapus/maven-artifacts")
+maven("https://dl.bintray.com/commonwealthrobotics/maven-artifacts")
+maven("https://dl.bintray.com/s1m0nw1/KtsRunner")
+maven("https://dl.bintray.com/47deg/helios")
+```
+
+This library has a native dependency that must be specified by API consumers. Follow the guide on
+[bowler-kinematics-native](https://github.com/CommonWealthRobotics/bowler-kinematics-native).

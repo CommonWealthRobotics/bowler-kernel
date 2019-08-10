@@ -16,7 +16,6 @@
  */
 package com.neuronrobotics.kinematicschef
 
-import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.toFrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.ForwardKinematicsSolver
@@ -28,8 +27,8 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 class GeneralForwardKinematicsSolver : ForwardKinematicsSolver {
 
     override fun solveChain(
-        links: ImmutableList<Link>,
-        currentJointAngles: ImmutableList<Double>
+        links: List<Link>,
+        currentJointAngles: List<Double>
     ): FrameTransformation =
         links.mapIndexed { index, link ->
             link.dhParam.copy(theta = currentJointAngles[index] + link.dhParam.theta)

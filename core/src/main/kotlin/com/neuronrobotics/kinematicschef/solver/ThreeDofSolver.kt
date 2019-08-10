@@ -16,10 +16,10 @@
  */
 package com.neuronrobotics.kinematicschef.solver
 
-import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InverseKinematicsSolver
+import com.neuronrobotics.bowlerkernel.util.JointLimits
 import org.octogonapus.ktguava.collections.toImmutableList
 import java.lang.Math.toDegrees
 import java.lang.Math.toRadians
@@ -41,19 +41,30 @@ class ThreeDofSolver : InverseKinematicsSolver {
 
     @SuppressWarnings("LongMethod", "ComplexMethod")
     override fun solveChain(
-        links: ImmutableList<Link>,
-        currentJointAngles: ImmutableList<Double>,
+        links: List<Link>,
+        currentJointAngles: List<Double>,
+        jointLimits: List<JointLimits>,
         targetFrameTransform: FrameTransformation
-    ): ImmutableList<Double> {
-        require(links.size >= 3) {
-            "Must have at least 3 links, given ${links.size}"
+    ): List<Double> {
+        val numberOfLinks = links.size
+
+        require(numberOfLinks >= 3) {
+            "Must have at least 3 links, given $numberOfLinks"
         }
 
-        require(links.size == currentJointAngles.size) {
+        require(numberOfLinks == currentJointAngles.size) {
             """
             Links and joint angles must have equal length:
-            Number of links: ${links.size}
+            Number of links: $numberOfLinks
             Number of joint angles: ${currentJointAngles.size}
+            """.trimIndent()
+        }
+
+        require(numberOfLinks == jointLimits.size) {
+            """
+            Links and joint limits must have equal length:
+            Number of links: $numberOfLinks
+            Number of joint limits: ${jointLimits.size}
             """.trimIndent()
         }
 
@@ -67,6 +78,7 @@ class ThreeDofSolver : InverseKinematicsSolver {
             return solveChain(
                 links,
                 currentJointAngles,
+                jointLimits,
                 targetFrameTransform * FrameTransformation.fromTranslation(1e-6, 0, 0)
             )
         }
@@ -104,7 +116,7 @@ class ThreeDofSolver : InverseKinematicsSolver {
             )
         }
 
-        val inv = DoubleArray(links.size)
+        val inv = DoubleArray(numberOfLinks)
         inv[0] = toDegrees(orientation)
 
         val elevation = asin(zSet / vec)
