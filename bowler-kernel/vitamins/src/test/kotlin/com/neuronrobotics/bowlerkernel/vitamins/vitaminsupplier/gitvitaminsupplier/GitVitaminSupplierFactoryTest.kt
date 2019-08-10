@@ -17,7 +17,7 @@
 package com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier
 
 import arrow.effects.IO
-import com.google.common.collect.ImmutableList
+import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.gitfs.GitFS
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.getConfiguredKlaxon
@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
-import org.octogonapus.ktguava.collections.immutableListOf
+import org.octogonapus.ktguava.collections.immutableSetOf
 import org.octogonapus.ktguava.collections.plus
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -58,7 +58,7 @@ internal class GitVitaminSupplierFactoryTest {
         "vitamins.json"
     )
 
-    private fun makeMockGitFS(files: ImmutableList<File>) =
+    private fun makeMockGitFS(files: ImmutableSet<File>) =
         mock<GitFS> { on { cloneRepoAndGetFiles(supplierFile.gitUrl) } doReturn IO.just(files) }
 
     @Test
@@ -70,7 +70,7 @@ internal class GitVitaminSupplierFactoryTest {
         }.toMap()
 
         val mockGitFS = makeMockGitFS(
-            immutableListOf(
+            immutableSetOf(
                 File(tempDir, supplierFile.filename).apply {
                     writeText(
                         """
@@ -128,7 +128,7 @@ internal class GitVitaminSupplierFactoryTest {
     @Test
     fun `test unable to parse GitVitaminSupplierData`(@TempDir tempDir: File) {
         val mockGitFS = makeMockGitFS(
-            immutableListOf(
+            immutableSetOf(
                 // Invalid supplier file
                 File(tempDir, supplierFile.filename).apply {
                     writeText(
@@ -150,7 +150,7 @@ internal class GitVitaminSupplierFactoryTest {
     @Test
     fun `test unable to parse a vitamin`(@TempDir tempDir: File) {
         val mockGitFS = makeMockGitFS(
-            immutableListOf(
+            immutableSetOf(
                 File(tempDir, supplierFile.filename).apply {
                     writeText(
                         """

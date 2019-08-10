@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.io.TempDir
 import org.octogonapus.ktguava.collections.emptyImmutableList
-import org.octogonapus.ktguava.collections.immutableListOf
+import org.octogonapus.ktguava.collections.immutableSetOf
 import java.io.File
 import java.util.concurrent.TimeUnit
 
@@ -57,7 +57,7 @@ internal class DefaultGitScriptFactoryTest {
 
             factory = DefaultGitScriptFactory(
                 mockk {
-                    every { cloneRepoAndGetFiles(fakeUrl) } returns IO.just(immutableListOf(fakeFile))
+                    every { cloneRepoAndGetFiles(fakeUrl) } returns IO.just(immutableSetOf(fakeFile))
                 },
                 mockk {
                     every { parse("kts") } returns ScriptLanguage.Kotlin.right()
@@ -108,7 +108,7 @@ internal class DefaultGitScriptFactoryTest {
             fakeFile = File(tempDir, fakeFilename).apply { writeText("42") }
             factory = DefaultGitScriptFactory(
                 mockk {
-                    every { cloneRepoAndGetFiles(fakeUrl) } returns IO.just(immutableListOf(fakeFile))
+                    every { cloneRepoAndGetFiles(fakeUrl) } returns IO.just(immutableSetOf(fakeFile))
                 },
                 mockk {
                     every { parse(any()) } returns "".left()
