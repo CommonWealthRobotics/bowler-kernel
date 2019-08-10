@@ -19,6 +19,8 @@ package com.neuronrobotics.bowlerkernel.gitfs
 import arrow.core.Either
 import arrow.core.Option
 import arrow.core.right
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.equalTo
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -43,36 +45,35 @@ internal class GitHubFSTest {
     @ParameterizedTest
     @MethodSource("isRepoUrlSource")
     fun `test isRepoUrl`(data: Pair<String, Boolean>) {
-        assertEquals(data.second, GitHubFS.isRepoUrl(data.first))
+        assertThat(GitHubFS.isRepoUrl(data.first), equalTo(data.second))
     }
 
     @ParameterizedTest
     @MethodSource("isGistUrlSource")
     fun `test isGistUrl`(data: Pair<String, Boolean>) {
-        assertEquals(data.second, GitHubFS.isGistUrl(data.first))
+        assertThat(GitHubFS.isGistUrl(data.first), equalTo(data.second))
     }
 
     @ParameterizedTest
     @MethodSource("stripUrlCharactersFromGitUrlSource")
     fun `test stripUrlCharactersFromGitUrl`(data: Pair<String, String>) {
-        assertEquals(data.second, GitHubFS.stripUrlCharactersFromGitUrl(data.first))
+        assertThat(GitHubFS.stripUrlCharactersFromGitUrl(data.first), equalTo(data.second))
     }
 
     @Test
     fun `test gitUrlToDirectory with git repo`(@TempDir tempDir: File) {
-        val expected = "${tempDir.absolutePath}/CommonWealthRobotics/bowler-kernel-test-repo"
+        val expected = Paths.get(
+            tempDir.absolutePath,
+            "CommonWealthRobotics",
+            "bowler-kernel-test-repo"
+        )
 
         val actual = GitHubFS.gitUrlToDirectory(
             tempDir.absolutePath,
             testRepoUrl
         )
 
-        assertEquals(expected, actual.absolutePath) {
-            """
-            Expected: $expected
-            Actual: $actual
-            """.trimIndent()
-        }
+        assertThat(expected.toString(), equalTo(actual.absolutePath))
     }
 
     @Test
@@ -219,24 +220,28 @@ internal class GitHubFSTest {
 
         @Suppress("unused")
         @JvmStatic
-        fun stripUrlCharactersFromGitUrlSource() = listOf(
-            "https://github.com/CommonWealthRobotics/BowlerBuilder.git" to
-                "CommonWealthRobotics/BowlerBuilder",
-            "http://github.com/CommonWealthRobotics/BowlerBuilder.git" to
-                "CommonWealthRobotics/BowlerBuilder",
-            "https://github.com/CommonWealthRobotics/BowlerBuilder.git/" to
-                "CommonWealthRobotics/BowlerBuilder",
-            "http://github.com/CommonWealthRobotics/BowlerBuilder.git/" to
-                "CommonWealthRobotics/BowlerBuilder",
-            "https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git" to
-                "5681d11165708c3aec1ed5cf8cf38238",
-            "http://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git" to
-                "5681d11165708c3aec1ed5cf8cf38238",
-            "https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git/" to
-                "5681d11165708c3aec1ed5cf8cf38238",
-            "http://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git/" to
-                "5681d11165708c3aec1ed5cf8cf38238"
-        )
+        fun stripUrlCharactersFromGitUrlSource(): List<Pair<String, String>> {
+            val repoOwnerAndName = "CommonWealthRobotics/BowlerBuilder"
+            val gistId = "5681d11165708c3aec1ed5cf8cf38238"
+            return listOf(
+                "https://github.com/CommonWealthRobotics/BowlerBuilder.git" to
+                    repoOwnerAndName,
+                "http://github.com/CommonWealthRobotics/BowlerBuilder.git" to
+                    repoOwnerAndName,
+                "https://github.com/CommonWealthRobotics/BowlerBuilder.git/" to
+                    repoOwnerAndName,
+                "http://github.com/CommonWealthRobotics/BowlerBuilder.git/" to
+                    repoOwnerAndName,
+                "https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git" to
+                    gistId,
+                "http://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git" to
+                    gistId,
+                "https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git/" to
+                    gistId,
+                "http://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git/" to
+                    gistId
+            )
+        }
 
         @Suppress("unused")
         @JvmStatic

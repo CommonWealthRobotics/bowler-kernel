@@ -42,6 +42,7 @@ import org.kohsuke.github.GitHub
 import org.octogonapus.ktguava.collections.toImmutableSet
 import java.io.File
 import java.io.IOException
+import java.nio.file.FileSystems
 import java.nio.file.Paths
 
 /**
@@ -359,7 +360,8 @@ class GitHubFS(
                 "The supplied Git URL ($gitUrl) was not a valid repository or Gist URL."
             }
 
-            val subDirs = stripUrlCharactersFromGitUrl(gitUrl).split("/")
+            val subDirs = stripUrlCharactersFromGitUrl(gitUrl)
+                .split(FileSystems.getDefault().separator)
 
             return Paths.get(
                 gitHubCacheDirectory,

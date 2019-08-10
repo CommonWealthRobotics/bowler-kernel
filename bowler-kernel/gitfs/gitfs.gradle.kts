@@ -68,4 +68,10 @@ dependencies {
         name = "helios-dsl-meta",
         version = property("helios.version") as String
     )
+
+    testImplementation(
+        group = "com.natpryce",
+        name = "hamkrest",
+        version = property("hamkrest.version") as String
+    )
 }
