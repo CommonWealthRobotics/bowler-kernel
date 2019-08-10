@@ -18,8 +18,10 @@ package com.neuronrobotics.kinematicschef.solver
 
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.util.JointLimits
+import com.neuronrobotics.bowlerkinematicsnative.solver.NativeIKSolver
 import com.neuronrobotics.kinematicschef.GeneralForwardKinematicsSolver
 import com.neuronrobotics.kinematicschef.TestUtil.hephaestusArmLinks
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -27,6 +29,14 @@ internal class NativeIKSolverBridgeTest {
 
     private val fk = GeneralForwardKinematicsSolver()
     private val ik = NativeIKSolverBridge()
+
+    companion object {
+        @BeforeAll
+        @JvmStatic
+        fun beforeAll() {
+            NativeIKSolver.loadLibrary()
+        }
+    }
 
     @Test
     fun `test bridge`() {

@@ -20,12 +20,17 @@ buildscript {
     }
 }
 
+fun desktopArch(): String {
+    val arch = System.getProperty("os.arch")
+    return if (arch == "amd64" || arch == "x86_64") "x86-64" else "x86"
+}
+
 fun bowlerKinematicsNativeVersionSuffix() = when {
     SystemUtils.IS_OS_WINDOWS -> "windows"
     SystemUtils.IS_OS_LINUX -> "linux"
     SystemUtils.IS_OS_MAC -> "macos"
     else -> throw IllegalStateException("Unknown OS: ${SystemUtils.OS_NAME}")
-}
+} + desktopArch()
 
 fun DependencyHandler.bowlerKinematicsNative() =
     create(
