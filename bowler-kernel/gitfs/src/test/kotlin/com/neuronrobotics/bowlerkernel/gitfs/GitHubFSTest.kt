@@ -21,6 +21,7 @@ import arrow.core.Option
 import arrow.core.right
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import org.apache.commons.io.FileDeleteStrategy
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -103,9 +104,6 @@ internal class GitHubFSTest {
             ).right(),
             files
         )
-
-        repoPath.toFile().deleteRecursively()
-        tempDir.deleteRecursively()
     }
 
     @Test
@@ -139,7 +137,7 @@ internal class GitHubFSTest {
             files
         )
 
-        repoPath.toFile().deleteRecursively()
+        FileDeleteStrategy.FORCE.delete(tempDir)
     }
 
     @Test
@@ -156,6 +154,8 @@ internal class GitHubFSTest {
         actual as Either.Left
 
         assertTrue(actual.a is IllegalArgumentException)
+
+        FileDeleteStrategy.FORCE.delete(tempDir)
     }
 
     @Test
