@@ -16,14 +16,29 @@
  */
 package com.neuronrobotics.bowlerkernel.gitfs
 
+import arrow.core.Either
+import arrow.core.Option
+import arrow.core.right
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
+import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import org.kohsuke.github.GitHub
+import org.octogonapus.ktguava.collections.immutableSetOf
+import java.io.File
+import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class GitHubFSTest {
+
+    private val testRepoUrl = "https://github.com/CommonWealthRobotics/bowler-kernel-test-repo.git"
 
     @ParameterizedTest
     @MethodSource("isRepoUrlSource")
@@ -41,6 +56,135 @@ internal class GitHubFSTest {
     @MethodSource("stripUrlCharactersFromGitUrlSource")
     fun `test stripUrlCharactersFromGitUrl`(data: Pair<String, String>) {
         assertEquals(data.second, GitHubFS.stripUrlCharactersFromGitUrl(data.first))
+    }
+
+    @Test
+    fun `test gitUrlToDirectory with git repo`(@TempDir tempDir: File) {
+        val expected = "${tempDir.absolutePath}/CommonWealthRobotics/bowler-kernel-test-repo"
+
+        val actual = GitHubFS.gitUrlToDirectory(
+            tempDir.absolutePath,
+            testRepoUrl
+        )
+
+        assertEquals(expected, actual.absolutePath) {
+            """
+            Expected: $expected
+            Actual: $actual
+            """.trimIndent()
+        }
+    }
+
+    @Test
+    fun `test cloning test repo`(@TempDir tempDir: File) {
+        val fs = GitHubFS(
+            GitHub.connectAnonymously(),
+            "" to "",
+            tempDir.absolutePath
+        )
+
+        val files = fs.cloneRepoAndGetFiles(testRepoUrl)
+            .map { files -> files.map { it.toString() }.toSet() }
+            .attempt()
+            .unsafeRunSync()
+
+        val repoPath = Paths.get(
+            tempDir.absolutePath,
+            "CommonWealthRobotics",
+            "bowler-kernel-test-repo"
+        )
+
+        assertEquals(
+            immutableSetOf(
+                Paths.get(repoPath.toString(), "fileA.txt").toString(),
+                Paths.get(repoPath.toString(), "dirA").toString(),
+                Paths.get(repoPath.toString(), "dirA", "fileB.txt").toString()
+            ).right(),
+            files
+        )
+    }
+
+    @Test
+    fun `test cloning with corrupted git folder`(@TempDir tempDir: File) {
+        val fs = GitHubFS(
+            GitHub.connectAnonymously(),
+            "" to "",
+            tempDir.absolutePath
+        )
+
+        val repoPath = Paths.get(
+            tempDir.absolutePath,
+            "CommonWealthRobotics",
+            "bowler-kernel-test-repo"
+        )
+
+        repoPath.toFile().apply { mkdirs() }
+        Paths.get(repoPath.toString(), ".git").toFile().apply { mkdirs() }
+
+        val files = fs.cloneRepoAndGetFiles(testRepoUrl)
+            .map { files -> files.map { it.toString() }.toSet() }
+            .attempt()
+            .unsafeRunSync()
+
+        assertEquals(
+            immutableSetOf(
+                Paths.get(repoPath.toString(), "fileA.txt").toString(),
+                Paths.get(repoPath.toString(), "dirA").toString(),
+                Paths.get(repoPath.toString(), "dirA", "fileB.txt").toString()
+            ).right(),
+            files
+        )
+    }
+
+    @Test
+    fun `test cloning from invalid git url`(@TempDir tempDir: File) {
+        val fs = GitHubFS(
+            GitHub.connectAnonymously(),
+            "" to "",
+            tempDir.absolutePath
+        )
+
+        val actual = fs.cloneRepo("invalidGitRepo").attempt().unsafeRunSync()
+
+        assertTrue(actual is Either.Left)
+        actual as Either.Left
+
+        assertTrue(actual.a is IllegalArgumentException)
+    }
+
+    @Test
+    fun `test deleteCache`(@TempDir tempDir: File) {
+        val fs = GitHubFS(
+            GitHub.connectAnonymously(),
+            "" to "",
+            tempDir.absolutePath
+        )
+
+        val repoPath = Paths.get(
+            tempDir.absolutePath,
+            "CommonWealthRobotics",
+            "bowler-kernel-test-repo"
+        )
+
+        val repo = repoPath.toFile().apply { mkdirs() }
+        val fileInRepo = Paths.get(repoPath.toString(), "fileA.txt").toFile().apply {
+            writeText("")
+        }
+
+        assertTrue(fileInRepo.exists())
+
+        fs.deleteCache()
+
+        assertAll(
+            { assertFalse(fileInRepo.exists()) },
+            { assertFalse(repo.exists()) }
+        )
+    }
+
+    @ParameterizedTest
+    @MethodSource("parseRepoSource")
+    fun `test parseRepo`(input: String, expected: Option<GitHubRepo>) {
+        assertEquals(expected, GitHubFS.parseRepo(input))
     }
 
     companion object {
@@ -92,6 +236,23 @@ internal class GitHubFSTest {
                 "5681d11165708c3aec1ed5cf8cf38238",
             "http://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git/" to
                 "5681d11165708c3aec1ed5cf8cf38238"
+        )
+
+        @Suppress("unused")
+        @JvmStatic
+        fun parseRepoSource() = listOf(
+            Arguments.of(
+                "https://github.com/CommonWealthRobotics/BowlerBuilder.git",
+                Option.just(GitHubRepo.Repository("CommonWealthRobotics", "BowlerBuilder"))
+            ),
+            Arguments.of(
+                "https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git",
+                Option.just(GitHubRepo.Gist("5681d11165708c3aec1ed5cf8cf38238"))
+            ),
+            Arguments.of(
+                "invalidUrl",
+                Option.empty<GitHubRepo>()
+            )
         )
     }
 }

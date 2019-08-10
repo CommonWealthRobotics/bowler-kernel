@@ -19,9 +19,13 @@
 package com.neuronrobotics.bowlerkernel.gitfs
 
 import arrow.core.Eval
+import arrow.core.None
+import arrow.core.Option
+import arrow.core.Some
+import arrow.core.extensions.option.applicative.just
 import arrow.effects.IO
 import arrow.effects.handleErrorWith
-import com.google.common.collect.ImmutableList
+import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.settings.BOWLERKERNEL_DIRECTORY
 import com.neuronrobotics.bowlerkernel.settings.BOWLER_DIRECTORY
 import com.neuronrobotics.bowlerkernel.settings.GITHUB_CACHE_DIRECTORY
@@ -35,7 +39,7 @@ import org.kohsuke.github.GHGist
 import org.kohsuke.github.GHGistFile
 import org.kohsuke.github.GHObject
 import org.kohsuke.github.GitHub
-import org.octogonapus.ktguava.collections.toImmutableList
+import org.octogonapus.ktguava.collections.toImmutableSet
 import java.io.File
 import java.io.IOException
 import java.nio.file.Paths
@@ -46,9 +50,17 @@ import java.nio.file.Paths
  * @param gitHub The [GitHub] to connect to GitHub with.
  * @param credentials The credentials to authenticate to GitHub with.
  */
+@SuppressWarnings("LargeClass")
 class GitHubFS(
     private val gitHub: GitHub,
-    private val credentials: Pair<String, String>
+    private val credentials: Pair<String, String>,
+    private val gitHubCacheDirectory: String = Paths.get(
+        System.getProperty("user.home"),
+        BOWLER_DIRECTORY,
+        BOWLERKERNEL_DIRECTORY,
+        GIT_CACHE_DIRECTORY,
+        GITHUB_CACHE_DIRECTORY
+    ).toString()
 ) : GitFS {
 
     private val myGists = Eval.later { gitHub.myself.listGists().toList() }
@@ -59,7 +71,7 @@ class GitHubFS(
         branch: String
     ): IO<File> {
         return freshClone(gitUrl, branch).handleErrorWith {
-            val directory = gitUrlToDirectory(gitUrl)
+            val directory = gitUrlToDirectory(gitHubCacheDirectory, gitUrl)
 
             IO {
                 // The repo was already on disk, so directory exists, so pull
@@ -112,7 +124,7 @@ class GitHubFS(
         }
 
         return if (isValidHttpGitURL(gitUrl)) {
-            val directory = gitUrlToDirectory(gitUrl)
+            val directory = gitUrlToDirectory(gitHubCacheDirectory, gitUrl)
             if (directory.mkdirs()) {
                 IO { cloneRepository(gitUrl, branch, directory) }.map { directory }
             } else {
@@ -153,24 +165,30 @@ class GitHubFS(
     override fun cloneRepoAndGetFiles(
         gitUrl: String,
         branch: String
-    ): IO<ImmutableList<File>> = cloneRepo(gitUrl, branch).mapToRepoFiles()
+    ): IO<ImmutableSet<File>> = mapToRepoFiles(cloneRepo(gitUrl, branch))
 
     override fun forkRepo(gitUrl: String): IO<String> =
-        forkRepo(parseRepo(gitUrl)).map {
-            it.url.toExternalForm()
+        when (val repo = parseRepo(gitUrl)) {
+            is None -> IO.raiseError(IllegalArgumentException("Invalid git urk: $gitUrl"))
+            is Some -> forkRepo(repo.t).map {
+                it.url.toExternalForm()
+            }
         }
 
     override fun forkAndCloneRepo(
         gitUrl: String,
         branch: String
-    ): IO<File> = forkRepo(parseRepo(gitUrl)).flatMap {
-        cloneRepo(it.gitUrl, branch)
+    ): IO<File> = when (val repo = parseRepo(gitUrl)) {
+        is None -> IO.raiseError(IllegalArgumentException("Invalid git urk: $gitUrl"))
+        is Some -> forkRepo(repo.t).flatMap {
+            cloneRepo(it.gitUrl, branch)
+        }
     }
 
     override fun forkAndCloneRepoAndGetFiles(
         gitUrl: String,
         branch: String
-    ): IO<ImmutableList<File>> = forkAndCloneRepo(gitUrl, branch).mapToRepoFiles()
+    ): IO<ImmutableSet<File>> = mapToRepoFiles(forkAndCloneRepo(gitUrl, branch))
 
     override fun isOwner(gitUrl: String): IO<Boolean> = IO {
         myGists.value.firstOrNull {
@@ -186,15 +204,7 @@ class GitHubFS(
 
     override fun deleteCache() {
         try {
-            FileUtils.deleteDirectory(
-                Paths.get(
-                    System.getProperty("user.home"),
-                    BOWLER_DIRECTORY,
-                    BOWLERKERNEL_DIRECTORY,
-                    GIT_CACHE_DIRECTORY,
-                    GITHUB_CACHE_DIRECTORY
-                ).toFile()
-            )
+            FileUtils.deleteDirectory(Paths.get(gitHubCacheDirectory).toFile())
         } catch (e: IOException) {
             LOGGER.error(e) {
                 "Unable to delete the GitHub cache."
@@ -236,12 +246,18 @@ class GitHubFS(
         /**
          * Maps a file in a gist to its file on disk. Fails if the file is not on disk.
          *
+         * @param gitHubCacheDirectory The directory path GitHub files are cached in.
          * @param gist The gist.
          * @param gistFile The file in the gist.
          * @return The file on disk.
          */
-        fun mapGistFileToFileOnDisk(gist: GHGist, gistFile: GHGistFile): IO<File> = IO {
-            gitUrlToDirectory(gist.gitPullUrl).walkTopDown().first { it.name == gistFile.fileName }
+        fun mapGistFileToFileOnDisk(
+            gitHubCacheDirectory: String,
+            gist: GHGist,
+            gistFile: GHGistFile
+        ): IO<File> = IO {
+            gitUrlToDirectory(gitHubCacheDirectory, gist.gitPullUrl).walkTopDown()
+                .first { it.name == gistFile.fileName }
         }
 
         /**
@@ -301,48 +317,44 @@ class GitHubFS(
          * @param gitUrl The Git URL.
          * @return The [GitHubRepo] representation.
          */
-        private fun parseRepo(gitUrl: String): GitHubRepo {
+        internal fun parseRepo(gitUrl: String): Option<GitHubRepo> {
             return when {
                 isRepoUrl(gitUrl) -> {
                     val repoFullName = stripUrlCharactersFromGitUrl(gitUrl)
                     val (owner, repoName) = repoFullName.split("/")
-                    GitHubRepo.Repository(owner, repoName)
+                    GitHubRepo.Repository(owner, repoName).just()
                 }
 
-                isGistUrl(gitUrl) -> GitHubRepo.Gist(stripUrlCharactersFromGitUrl(gitUrl))
+                isGistUrl(gitUrl) -> GitHubRepo.Gist(stripUrlCharactersFromGitUrl(gitUrl)).just()
 
-                else -> throw IllegalArgumentException(
-                    """
-                    |Invalid Git URL:
-                    |$gitUrl
-                    """.trimMargin()
-                )
+                else -> Option.empty()
             }
         }
 
         /**
          * Maps a repository to its files.
          *
-         * @receiver The repository.
+         * @param repoIO The repository.
          * @return The files in the repository, excluding `.git/` files and the receiver file.
          */
-        private fun IO<File>.mapToRepoFiles() = map { repoFile ->
+        internal fun mapToRepoFiles(repoIO: IO<File>) = repoIO.map { repoFile ->
             repoFile.walkTopDown()
                 .filter { file -> file.path != repoFile.path }
                 .filter { !it.path.contains(".git") }
                 .toList()
-                .toImmutableList()
+                .toImmutableSet()
         }
 
         /**
          * Maps a [gitUrl] to its directory on disk. The directory does not necessarily exist.
          *
+         * @param gitHubCacheDirectory The directory path GitHub files are cached in.
          * @param gitUrl The `.git` URL, i.e.
          * `https://github.com/CommonWealthRobotics/BowlerBuilder.git` or
          * `https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git`.
          */
         @SuppressWarnings("SpreadOperator")
-        private fun gitUrlToDirectory(gitUrl: String): File {
+        internal fun gitUrlToDirectory(gitHubCacheDirectory: String, gitUrl: String): File {
             require(isRepoUrl(gitUrl) || isGistUrl(gitUrl)) {
                 "The supplied Git URL ($gitUrl) was not a valid repository or Gist URL."
             }
@@ -350,11 +362,7 @@ class GitHubFS(
             val subDirs = stripUrlCharactersFromGitUrl(gitUrl).split("/")
 
             return Paths.get(
-                System.getProperty("user.home"),
-                BOWLER_DIRECTORY,
-                BOWLERKERNEL_DIRECTORY,
-                GIT_CACHE_DIRECTORY,
-                GITHUB_CACHE_DIRECTORY,
+                gitHubCacheDirectory,
                 * subDirs.toTypedArray()
             ).toFile()
         }

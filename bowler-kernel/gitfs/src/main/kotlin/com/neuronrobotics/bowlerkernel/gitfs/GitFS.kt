@@ -17,7 +17,7 @@
 package com.neuronrobotics.bowlerkernel.gitfs
 
 import arrow.effects.IO
-import com.google.common.collect.ImmutableList
+import com.google.common.collect.ImmutableSet
 import java.io.File
 
 /**
@@ -45,7 +45,7 @@ interface GitFS {
      * @param branch The branch to checkout.
      * @return The files in the repository.
      */
-    fun cloneRepoAndGetFiles(gitUrl: String, branch: String = "HEAD"): IO<ImmutableList<File>>
+    fun cloneRepoAndGetFiles(gitUrl: String, branch: String = "HEAD"): IO<ImmutableSet<File>>
 
     /**
      * Forks a repository.
@@ -81,7 +81,7 @@ interface GitFS {
     fun forkAndCloneRepoAndGetFiles(
         gitUrl: String,
         branch: String = "HEAD"
-    ): IO<ImmutableList<File>>
+    ): IO<ImmutableSet<File>>
 
     /**
      * Returns whether the authenticated user has push access to the Git resource at [gitUrl].
