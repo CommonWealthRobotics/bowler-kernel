@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.device
 
+import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
@@ -39,6 +40,7 @@ import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -76,6 +78,11 @@ internal class BowlerDeviceTest {
         DefaultAttachmentPoints.USBPort(1)
     )
 
+    private val testResourceId1 = ResourceId(
+        DefaultResourceTypes.Encoder,
+        DefaultAttachmentPoints.PinGroup(byteArrayOf(1, 2))
+    )
+
     private val unknownResourceType = object : ResourceType {
         override val type = (DefaultResourceTypes.getHighestTypeNumber() + 1).toByte()
         override val sendLength = 0.toByte()
@@ -86,6 +93,10 @@ internal class BowlerDeviceTest {
     private val unknownId2 = ResourceId(unknownResourceType, DefaultAttachmentPoints.Pin(2))
 
     private val bowlerRPCProtocol = mock<BowlerRPCProtocol> {
+        on { connect() } doReturn Unit.right()
+        on { disconnect() } doReturn Unit.right()
+        on { isResourceInRange(testResourceId1) } doReturn true
+
         on { addWrite(led1Id) } doReturn Unit.right()
         on { addRead(led1Id) } doReturn "".left()
         on { addPollingRead(led1Id) } doReturn "".left()
@@ -129,6 +140,33 @@ internal class BowlerDeviceTest {
     private val unknownResource1 = UnprovisionedAnalogIn(device, unknownId1)
     private val unknownGroup =
         UnprovisionedAnalogInGroup(device, immutableListOf(unknownId1, unknownId2))
+
+    @Test
+    fun `test connect`() {
+        val result = device.connect()
+
+        assertEquals(Unit.right(), result)
+
+        verify(bowlerRPCProtocol).connect()
+    }
+
+    @Test
+    fun `test disconnect`() {
+        val result = device.disconnect()
+
+        assertEquals(Unit.right(), result)
+
+        verify(bowlerRPCProtocol).disconnect()
+    }
+
+    @Test
+    fun `test isResourceInRange`() {
+        val result = device.isResourceInRange(testResourceId1)
+
+        assertEquals(true, result)
+
+        verify(bowlerRPCProtocol).isResourceInRange(testResourceId1)
+    }
 
     @Test
     fun `test adding an led`() {
@@ -198,6 +236,21 @@ internal class BowlerDeviceTest {
         verify(bowlerRPCProtocol, never()).addReadGroup(immutableSetOf(unknownId1, unknownId2))
 
         assertTrue(result.isLeft())
+    }
+
+    @Test
+    fun `test add group with non-unique ids`() {
+        val result = device.add(
+            UnprovisionedDigitalOutGroup(
+                device,
+                immutableListOf(led1Id, led2Id, led1Id)
+            )
+        )
+
+        assertTrue(result is Either.Left)
+
+        verify(bowlerRPCProtocol, never()).addRead(any())
+        verify(bowlerRPCProtocol, never()).addReadGroup(any())
     }
 
     @Nested
