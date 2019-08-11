@@ -21,7 +21,6 @@ import arrow.core.Option
 import arrow.core.right
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
-import org.apache.commons.io.FileDeleteStrategy
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -78,23 +77,25 @@ internal class GitHubFSTest {
     }
 
     @Test
-    fun `test cloning test repo`(@TempDir tempDir: File) {
+    fun `test cloning test repo`() {
         val fs = GitHubFS(
             GitHub.connectAnonymously(),
-            "" to "",
-            tempDir.absolutePath
+            "" to ""
         )
+
+        // Don't use a TempDir because jgit leaves something open so Windows builds fail
+        val repoPath = Paths.get(
+            fs.gitHubCacheDirectory,
+            "CommonWealthRobotics",
+            "bowler-kernel-test-repo"
+        ).also {
+            it.toFile().deleteRecursively()
+        }
 
         val files = fs.cloneRepoAndGetFiles(testRepoUrl)
             .map { files -> files.map { it.toString() }.toSet() }
             .attempt()
             .unsafeRunSync()
-
-        val repoPath = Paths.get(
-            tempDir.absolutePath,
-            "CommonWealthRobotics",
-            "bowler-kernel-test-repo"
-        )
 
         assertEquals(
             immutableSetOf(
@@ -104,23 +105,23 @@ internal class GitHubFSTest {
             ).right(),
             files
         )
-
-        FileDeleteStrategy.FORCE.delete(tempDir)
     }
 
     @Test
-    fun `test cloning with corrupted git folder`(@TempDir tempDir: File) {
+    fun `test cloning with corrupted git folder`() {
         val fs = GitHubFS(
             GitHub.connectAnonymously(),
-            "" to "",
-            tempDir.absolutePath
+            "" to ""
         )
 
+        // Don't use a TempDir because jgit leaves something open so Windows builds fail
         val repoPath = Paths.get(
-            tempDir.absolutePath,
+            fs.gitHubCacheDirectory,
             "CommonWealthRobotics",
             "bowler-kernel-test-repo"
-        )
+        ).also {
+            it.toFile().deleteRecursively()
+        }
 
         repoPath.toFile().apply { mkdirs() }
         Paths.get(repoPath.toString(), ".git").toFile().apply { mkdirs() }
@@ -138,8 +139,6 @@ internal class GitHubFSTest {
             ).right(),
             files
         )
-
-        FileDeleteStrategy.FORCE.delete(tempDir)
     }
 
     @Test

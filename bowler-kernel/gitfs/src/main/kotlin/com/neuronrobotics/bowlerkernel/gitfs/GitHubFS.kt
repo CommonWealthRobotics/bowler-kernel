@@ -55,7 +55,7 @@ import java.nio.file.Paths
 class GitHubFS(
     private val gitHub: GitHub,
     private val credentials: Pair<String, String>,
-    private val gitHubCacheDirectory: String = Paths.get(
+    internal val gitHubCacheDirectory: String = Paths.get(
         System.getProperty("user.home"),
         BOWLER_DIRECTORY,
         BOWLERKERNEL_DIRECTORY,
