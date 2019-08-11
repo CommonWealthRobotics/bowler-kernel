@@ -104,6 +104,8 @@ internal class GitHubFSTest {
             ).right(),
             files
         )
+
+        FileDeleteStrategy.FORCE.delete(tempDir)
     }
 
     @Test
@@ -154,8 +156,6 @@ internal class GitHubFSTest {
         actual as Either.Left
 
         assertTrue(actual.a is IllegalArgumentException)
-
-        FileDeleteStrategy.FORCE.delete(tempDir)
     }
 
     @Test
