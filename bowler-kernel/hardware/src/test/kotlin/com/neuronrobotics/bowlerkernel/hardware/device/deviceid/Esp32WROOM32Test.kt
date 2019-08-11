@@ -16,10 +16,12 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.device.deviceid
 
+import com.neuronrobotics.bowlerkernel.hardware.deviceTypeTest
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -28,6 +30,18 @@ import java.util.concurrent.TimeUnit
 // TODO: Finish this
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class Esp32WROOM32Test {
+
+    @Test
+    fun `test dsl`() {
+        deviceTypeTest(DefaultDeviceTypes.Esp32wroom32) {
+            digitalOut(2, 4, 5, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33)
+            digitalIn(4, 14, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33, 34, 35, 36, 39)
+            analogOut(4, 5, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33)
+            analogIn(4, 14, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33, 34, 35, 36, 39)
+            serial(1 to 3)
+            disallowed(0, 6, 7, 8, 9, 10, 11)
+        }
+    }
 
     @ParameterizedTest
     @MethodSource("digitalOutPinsSource")
