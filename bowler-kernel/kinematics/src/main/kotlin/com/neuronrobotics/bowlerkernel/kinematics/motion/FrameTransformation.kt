@@ -222,6 +222,8 @@ private constructor(private val mat: Matrix) {
         return true
     }
 
+    override fun toString() = mat.array.joinToString("\n") { it.joinToString() }
+
     companion object : Converter, Encoder<FrameTransformation>, Decoder<FrameTransformation> {
 
         /**
