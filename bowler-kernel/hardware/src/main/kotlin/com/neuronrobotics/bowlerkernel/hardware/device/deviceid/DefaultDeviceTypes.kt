@@ -25,10 +25,12 @@ import com.neuronrobotics.bowlerkernel.util.isAllUnique
  * The device types Bowler supports out-of-the-box.
  */
 sealed class DefaultDeviceTypes(
-    override val name: String
+    override val name: String,
+    val firstPinNumber: Int,
+    val numberOfPins: Int
 ) : DeviceType {
 
-    object Esp32wroom32 : DefaultDeviceTypes("ESP32-WROOM-32") {
+    object Esp32wroom32 : DefaultDeviceTypes("ESP32-WROOM-32", 0, 40) {
 
         private val digitalInPins = listOf(
             4, 14, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33, 34, 35, 36, 39
@@ -84,16 +86,14 @@ sealed class DefaultDeviceTypes(
         private fun checkSerial(p: DefaultAttachmentPoints.PinGroup) =
             p.pinNumbers.isAllUnique() && p.pinNumbers.all { it in serialPins }
 
+        @Suppress("UnnecessaryParentheses")
         private fun checkUltrasonic(p: DefaultAttachmentPoints.PinGroup) =
-            p.pinNumbers.isAllUnique() && when (p.pinNumbers.size) {
-                2 -> (p.pinNumbers[0] in digitalInPins && p.pinNumbers[1] in digitalOutPins) ||
-                    (p.pinNumbers[1] in digitalInPins && p.pinNumbers[0] in digitalOutPins)
-
-                else -> false
-            }
+            p.pinNumbers.isAllUnique() && p.pinNumbers.size == 2 &&
+                ((p.pinNumbers[0] in digitalInPins && p.pinNumbers[1] in digitalOutPins) ||
+                    (p.pinNumbers[1] in digitalInPins && p.pinNumbers[0] in digitalOutPins))
     }
 
-    object UnknownDevice : DefaultDeviceTypes("Unknown Device") {
+    object UnknownDevice : DefaultDeviceTypes("Unknown Device", 0, 0) {
         override fun isResourceInRange(resourceId: ResourceId) = true
     }
 }
