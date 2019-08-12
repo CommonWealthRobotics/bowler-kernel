@@ -86,9 +86,7 @@ internal class ScriptIntegrationTest {
                 return Either.right(null)
             }
 
-            @SuppressWarnings("EmptyFunctionBlock")
-            override fun stopScript() {
-            }
+            override fun stopScript() = Unit
         }
 
         script.startScript(emptyImmutableList())
@@ -135,6 +133,7 @@ internal class ScriptIntegrationTest {
                 return Either.right(worked)
             }
 
+            @SuppressWarnings("EmptyFunctionBlock")
             override fun stopScript() {
             }
         }
