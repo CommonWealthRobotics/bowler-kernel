@@ -39,7 +39,6 @@ import org.octogonapus.ktunits.quantities.millimeter
 import org.octogonapus.ktunits.quantities.nM
 import org.octogonapus.ktunits.quantities.revolutionPerMinute
 import org.octogonapus.ktunits.quantities.volt
-import org.octogonapus.ktunits.quantities.watt
 
 /**
  * A Vex EDR motor.
@@ -93,7 +92,7 @@ sealed class VexEDRMotor(
             width = (1.0 / 8.0).inch,
             height = 2.inch,
             mass = 20.gram,
-            centerOfMass = CenterOfMass(0.inch, 0.inch, 1.inch),
+            centerOfMass = TODO(),
             specs = emptyImmutableMap()
         ),
         axelInset = 7.millimeter,
@@ -105,9 +104,9 @@ sealed class VexEDRMotor(
         freeCurrent = 0.37.ampere,
         stallTorque = 1.67.nM,
         stallCurrent = 4.8.ampere,
-        power = 0.watt,
+        power = TODO(),
         mass = 0.192.lbM,
-        centerOfMass = CenterOfMass(0.inch, 0.inch, (-0.5).inch),
+        centerOfMass = TODO(),
         specs = emptyImmutableMap()
     ) {
         override fun toVitamin() = this
@@ -122,7 +121,7 @@ sealed class VexEDRMotor(
             width = (1.0 / 8.0).inch,
             height = 2.inch,
             mass = 20.gram,
-            centerOfMass = CenterOfMass(0.inch, 0.inch, 1.inch),
+            centerOfMass = TODO(),
             specs = emptyImmutableMap()
         ),
         axelInset = 4.5.millimeter,
@@ -134,9 +133,9 @@ sealed class VexEDRMotor(
         freeCurrent = 0.18.ampere,
         stallTorque = 8.6.lbFIn,
         stallCurrent = 2.6.ampere,
-        power = 0.watt,
+        power = TODO(),
         mass = 0.134.lbM,
-        centerOfMass = CenterOfMass(0.inch, 0.inch, (-0.5).inch),
+        centerOfMass = TODO(),
         specs = emptyImmutableMap()
     ) {
         override fun toVitamin() = this

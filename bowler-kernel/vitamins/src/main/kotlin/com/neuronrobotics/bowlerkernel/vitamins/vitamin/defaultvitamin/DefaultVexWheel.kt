@@ -26,8 +26,6 @@ import org.octogonapus.ktunits.quantities.lbM
 
 /**
  * VEX EDR brand wheels.
- *
- * TODO: Find the real CoM
  */
 sealed class DefaultVexWheel : VexWheel, KlaxonVitaminTo {
 
@@ -37,12 +35,7 @@ sealed class DefaultVexWheel : VexWheel, KlaxonVitaminTo {
          */
         object Omni275 : OmniWheel() {
             override val mass = 0.154.lbM
-            override val centerOfMass =
-                CenterOfMass(
-                    0.inch,
-                    0.inch,
-                    0.inch
-                )
+            override val centerOfMass = CenterOfMass(0.inch, 0.inch, 0.inch)
             @ConvertImmutableMap
             override val specs = emptyImmutableMap<String, Any>()
 
@@ -54,12 +47,7 @@ sealed class DefaultVexWheel : VexWheel, KlaxonVitaminTo {
          */
         object Omni325 : OmniWheel() {
             override val mass = 0.132.lbM
-            override val centerOfMass =
-                CenterOfMass(
-                    0.inch,
-                    0.inch,
-                    0.inch
-                )
+            override val centerOfMass = CenterOfMass(0.inch, 0.inch, 0.inch)
             @ConvertImmutableMap
             override val specs = emptyImmutableMap<String, Any>()
 
@@ -71,12 +59,7 @@ sealed class DefaultVexWheel : VexWheel, KlaxonVitaminTo {
          */
         object Omni4 : OmniWheel() {
             override val mass = 0.232.lbM
-            override val centerOfMass =
-                CenterOfMass(
-                    0.inch,
-                    0.inch,
-                    0.inch
-                )
+            override val centerOfMass = CenterOfMass(0.inch, 0.inch, 0.inch)
             @ConvertImmutableMap
             override val specs = emptyImmutableMap<String, Any>()
 
@@ -90,12 +73,7 @@ sealed class DefaultVexWheel : VexWheel, KlaxonVitaminTo {
          */
         object Wheel275 : TractionWheel() {
             override val mass = 0.11.lbM
-            override val centerOfMass =
-                CenterOfMass(
-                    0.inch,
-                    0.inch,
-                    0.inch
-                )
+            override val centerOfMass = CenterOfMass(0.inch, 0.inch, 0.inch)
             @ConvertImmutableMap
             override val specs = emptyImmutableMap<String, Any>()
 
@@ -107,12 +85,7 @@ sealed class DefaultVexWheel : VexWheel, KlaxonVitaminTo {
          */
         object Wheel325 : TractionWheel() {
             override val mass = 0.11.lbM
-            override val centerOfMass =
-                CenterOfMass(
-                    0.inch,
-                    0.inch,
-                    0.inch
-                )
+            override val centerOfMass = CenterOfMass(0.inch, 0.inch, 0.inch)
             @ConvertImmutableMap
             override val specs = emptyImmutableMap<String, Any>()
 
@@ -124,12 +97,7 @@ sealed class DefaultVexWheel : VexWheel, KlaxonVitaminTo {
          */
         object Wheel4 : TractionWheel() {
             override val mass = 0.198.lbM
-            override val centerOfMass =
-                CenterOfMass(
-                    0.inch,
-                    0.inch,
-                    0.inch
-                )
+            override val centerOfMass = CenterOfMass(0.inch, 0.inch, 0.inch)
             @ConvertImmutableMap
             override val specs = emptyImmutableMap<String, Any>()
 
@@ -141,12 +109,7 @@ sealed class DefaultVexWheel : VexWheel, KlaxonVitaminTo {
          */
         object Wheel5 : TractionWheel() {
             override val mass = 0.352.lbM
-            override val centerOfMass =
-                CenterOfMass(
-                    0.inch,
-                    0.inch,
-                    0.inch
-                )
+            override val centerOfMass = CenterOfMass(0.inch, 0.inch, 0.inch)
             @ConvertImmutableMap
             override val specs = emptyImmutableMap<String, Any>()
 
@@ -159,8 +122,7 @@ sealed class DefaultVexWheel : VexWheel, KlaxonVitaminTo {
      */
     object HighTraction : DefaultVexWheel() {
         override val mass = 0.077.lbM
-        override val centerOfMass =
-            CenterOfMass(0.inch, 0.inch, 0.inch)
+        override val centerOfMass = CenterOfMass(0.inch, 0.inch, 0.inch)
         @ConvertImmutableMap
         override val specs = emptyImmutableMap<String, Any>()
 
@@ -172,8 +134,7 @@ sealed class DefaultVexWheel : VexWheel, KlaxonVitaminTo {
      */
     object Mecanum : DefaultVexWheel() {
         override val mass = 0.41.lbM
-        override val centerOfMass =
-            CenterOfMass(0.inch, 0.inch, 0.inch)
+        override val centerOfMass = CenterOfMass(0.inch, 0.inch, 0.inch)
         @ConvertImmutableMap
         override val specs = emptyImmutableMap<String, Any>()
 
@@ -185,8 +146,7 @@ sealed class DefaultVexWheel : VexWheel, KlaxonVitaminTo {
      */
     object WheelLeg : DefaultVexWheel() {
         override val mass = 0.074.lbM
-        override val centerOfMass =
-            CenterOfMass(0.inch, 0.inch, 0.inch)
+        override val centerOfMass = CenterOfMass(0.inch, 0.inch, 0.inch)
         @ConvertImmutableMap
         override val specs = emptyImmutableMap<String, Any>()
 
