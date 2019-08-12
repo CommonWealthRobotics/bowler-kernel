@@ -23,11 +23,9 @@ import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.Mass
 import org.octogonapus.ktunits.quantities.div
+import org.octogonapus.ktunits.quantities.inch
 import org.octogonapus.ktunits.quantities.plus
 
-/**
- * TODO: Find the real CoM
- */
 sealed class DefaultShaft(
     override val width: Length,
     override val length: Length,
@@ -45,10 +43,9 @@ sealed class DefaultShaft(
         override val width: Length,
         override val height: Length,
         override val mass: Mass,
-        override val centerOfMass: CenterOfMass,
         @ConvertImmutableMap
         override val specs: ImmutableMap<String, Any>
-    ) : DefaultShaft(width, width, height, mass, centerOfMass, specs)
+    ) : DefaultShaft(width, width, height, mass, CenterOfMass(0.inch, 0.inch, height / 2), specs)
 
     /**
      * A circular shaft.
@@ -60,10 +57,16 @@ sealed class DefaultShaft(
         val diameter: Length,
         override val height: Length,
         override val mass: Mass,
-        override val centerOfMass: CenterOfMass,
         @ConvertImmutableMap
         override val specs: ImmutableMap<String, Any>
-    ) : DefaultShaft(diameter, diameter, height, mass, centerOfMass, specs)
+    ) : DefaultShaft(
+        diameter,
+        diameter,
+        height,
+        mass,
+        CenterOfMass(0.inch, 0.inch, height / 2),
+        specs
+    )
 
     /**
      * A circular shaft with a flat.

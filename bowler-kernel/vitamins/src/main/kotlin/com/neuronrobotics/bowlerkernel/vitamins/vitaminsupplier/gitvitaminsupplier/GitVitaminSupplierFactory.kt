@@ -25,6 +25,7 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.getConfiguredKlax
 import com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.VitaminSupplierFactory
 import org.octogonapus.ktguava.collections.toImmutableMap
 import org.octogonapus.ktguava.collections.toImmutableSet
+import java.io.File
 import java.io.FileReader
 import kotlin.reflect.KClass
 
@@ -34,6 +35,7 @@ import kotlin.reflect.KClass
  *  - The file passed to [createVitaminSupplier] can be parsed into a [GitVitaminSupplierData].
  *  - Each file in [GitVitaminSupplierData.files] can be parsed into a [KlaxonGitVitamin].
  */
+@SuppressWarnings("LargeClass")
 class GitVitaminSupplierFactory(
     private val gitFS: GitFS,
     private val vitaminType: KClass<out KlaxonGitVitamin> = KlaxonGitVitamin::class
@@ -62,21 +64,7 @@ class GitVitaminSupplierFactory(
                 allFiles.first { it.path.endsWith(vitaminFilePath) }
             }
 
-            gitVitamins.name to allVitaminFiles.map {
-                // We have to parse this "by hand" because variables can't be used as reified
-                // type parameters
-                FileReader(it).use { reader ->
-                    val jsonObject = klaxon.parser(vitaminType).parse(reader) as JsonObject
-                    val parsedObject =
-                        klaxon.fromJsonObject(jsonObject, vitaminType.java, vitaminType)
-                    parsedObject as KlaxonGitVitamin? ?: throw IllegalStateException(
-                        """
-                        |Could not parse DefaultKlaxonGitVitamin from file:
-                        |$it
-                        """.trimMargin()
-                    )
-                }
-            }
+            gitVitamins.name to allVitaminFiles.map { parseVitamin(it) }
         }
 
         val (nameFromGit, vitaminsFromGit) = allVitaminsFromGit.attempt()
@@ -102,4 +90,20 @@ class GitVitaminSupplierFactory(
             bothVitamins.map { it.first to it.second.price }.toImmutableMap()
         )
     }
+
+    private fun parseVitamin(vitaminFile: File): KlaxonGitVitamin =
+        FileReader(vitaminFile).use { reader ->
+            // We have to parse this "by hand" because variables can't be used as reified
+            // type parameters
+            val jsonObject = klaxon.parser(vitaminType).parse(reader) as JsonObject
+            val parsedObject =
+                klaxon.fromJsonObject(jsonObject, vitaminType.java, vitaminType)
+
+            parsedObject as KlaxonGitVitamin? ?: throw IllegalStateException(
+                """
+                |Could not parse DefaultKlaxonGitVitamin from file:
+                |$vitaminFile
+                """.trimMargin()
+            )
+        }
 }
