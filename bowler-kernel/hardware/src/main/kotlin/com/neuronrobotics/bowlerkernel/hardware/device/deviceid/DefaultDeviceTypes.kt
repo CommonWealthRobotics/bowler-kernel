@@ -86,7 +86,7 @@ sealed class DefaultDeviceTypes(
         private fun checkSerial(p: DefaultAttachmentPoints.PinGroup) =
             p.pinNumbers.isAllUnique() && p.pinNumbers.all { it in serialPins }
 
-        @Suppress("UnnecessaryParentheses")
+        @SuppressWarnings("UnnecessaryParentheses")
         private fun checkUltrasonic(p: DefaultAttachmentPoints.PinGroup) =
             p.pinNumbers.isAllUnique() && p.pinNumbers.size == 2 &&
                 ((p.pinNumbers[0] in digitalInPins && p.pinNumbers[1] in digitalOutPins) ||

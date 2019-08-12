@@ -50,7 +50,7 @@ import org.octogonapus.ktguava.collections.immutableSetOf
 import org.octogonapus.ktguava.collections.toImmutableSet
 import java.util.concurrent.TimeUnit
 
-@Suppress("TooManyFunctions")
+@SuppressWarnings("TooManyFunctions")
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class BowlerDeviceTest {
 
