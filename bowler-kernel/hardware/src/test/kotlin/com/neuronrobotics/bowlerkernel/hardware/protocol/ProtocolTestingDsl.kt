@@ -79,7 +79,7 @@ internal class ProtocolScenario(
     /**
      * Runs the tests.
      */
-    @Suppress("LongMethod")
+    @SuppressWarnings("LongMethod")
     fun runTest() {
         val connection = protocol.connect()
         assertTrue(connection.isRight())

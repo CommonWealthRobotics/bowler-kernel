@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 @DslMarker
 internal annotation class DeviceTypeTestDsl
 
-@Suppress("TooManyFunctions", "LargeClass", "LongMethod")
+@SuppressWarnings("TooManyFunctions", "LargeClass", "LongMethod")
 @DeviceTypeTestDsl
 internal class DeviceTypeScenario(
     private val type: DefaultDeviceTypes
@@ -110,6 +110,10 @@ internal class DeviceTypeScenario(
                 assertDisallowed(DefaultResourceTypes.Encoder, it)
             }
 
+        assertDisallowedSteppers(disallowedPins)
+    }
+
+    private fun assertDisallowedSteppers(disallowedPins: List<Byte>) {
         ListK.applicative()
             .tupled(disallowedPins.k(), disallowedPins.k())
             .fix()

@@ -361,23 +361,11 @@ open class SimplePacketComsProtocol(
 
                 if (failedResources.isNotEmpty()) {
                     """
-                        |Failed resource statuses:
-                        |${failedResources.joinWithIndent("\t")}
-                        """.trimMargin().left()
+                    |Failed resource statuses:
+                    |${failedResources.joinWithIndent("\t")}
+                    """.trimMargin().left()
                 } else {
-                    comms.addPollingPacket(packet)
-
-                    comms.addEvent(packetId) {
-                        comms.readBytes(packetId, idToReceiveData[packetId])
-                        idToLatch[packetId]?.countDown()
-                    }
-
-                    configureTimeoutBehavior(packet)
-
-                    if (isPolling) {
-                        packet.pollingMode()
-                    }
-
+                    addNewPacket(packet, packetId, configureTimeoutBehavior, isPolling)
                     Unit.right()
                 }
             },
@@ -433,25 +421,42 @@ open class SimplePacketComsProtocol(
                     pollingResources[resourceId] = packetId
                 }
 
-                comms.addPollingPacket(packet)
-
-                comms.addEvent(packetId) {
-                    comms.readBytes(packetId, idToReceiveData[packetId])
-                    idToLatch[packetId]?.countDown()
-                }
-
-                configureTimeoutBehavior(packet)
-
-                if (isPolling) {
-                    packet.pollingMode()
-                }
-
+                addNewPacket(packet, packetId, configureTimeoutBehavior, isPolling)
                 Unit.right()
             },
             {
                 "Got status $it when sending discovery packet".left()
             }
         )
+    }
+
+    /**
+     * Adds a new packet, registers its event handler, configures the timeout behavior, and sets
+     * the polling mode.
+     *
+     * @param packet The packet to add.
+     * @param packetId The id of the packet.
+     * @param configureTimeoutBehavior The timeout behavior configuration.
+     * @param isPolling True if the packet is a polling packet.
+     */
+    private fun addNewPacket(
+        packet: BytePacketType,
+        packetId: Int,
+        configureTimeoutBehavior: (BytePacketType) -> Unit,
+        isPolling: Boolean
+    ) {
+        comms.addPollingPacket(packet)
+
+        comms.addEvent(packetId) {
+            comms.readBytes(packetId, idToReceiveData[packetId])
+            idToLatch[packetId]?.countDown()
+        }
+
+        configureTimeoutBehavior(packet)
+
+        if (isPolling) {
+            packet.pollingMode()
+        }
     }
 
     /**
