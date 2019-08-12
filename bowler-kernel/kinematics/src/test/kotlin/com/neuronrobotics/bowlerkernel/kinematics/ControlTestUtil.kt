@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-@file:SuppressWarnings("LongMethod")
+@file:SuppressWarnings("LongMethod", "TooManyFunctions")
 @file:Suppress("UnstableApiUsage")
 
 package com.neuronrobotics.bowlerkernel.kinematics
