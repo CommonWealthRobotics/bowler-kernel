@@ -16,7 +16,6 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.device.deviceid
 
-import com.neuronrobotics.bowlerkernel.hardware.deviceTypeTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import java.util.concurrent.TimeUnit

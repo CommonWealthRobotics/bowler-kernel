@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware
+package com.neuronrobotics.bowlerkernel.hardware.device.deviceid
 
 import arrow.core.Tuple2
 import arrow.core.Tuple4
@@ -23,7 +23,6 @@ import arrow.data.ListK
 import arrow.data.extensions.listk.applicative.applicative
 import arrow.data.fix
 import arrow.data.k
-import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
