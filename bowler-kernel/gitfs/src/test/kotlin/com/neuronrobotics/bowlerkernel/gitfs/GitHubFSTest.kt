@@ -24,6 +24,7 @@ import com.natpryce.hamkrest.equalTo
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
@@ -60,85 +61,105 @@ internal class GitHubFSTest {
         assertThat(GitHubFS.stripUrlCharactersFromGitUrl(data.first), equalTo(data.second))
     }
 
-    @Test
-    fun `test gitUrlToDirectory with git repo`(@TempDir tempDir: File) {
-        val expected = Paths.get(
-            tempDir.absolutePath,
-            "CommonWealthRobotics",
-            "bowler-kernel-test-repo"
-        )
+    @Nested
+    inner class UsingTestRepo {
 
-        val actual = GitHubFS.gitUrlToDirectory(
-            tempDir.absolutePath,
-            testRepoUrl
-        )
+        private val orgName = "CommonWealthRobotics"
+        private val repoName = "bowler-kernel-test-repo"
 
-        assertThat(expected.toString(), equalTo(actual.absolutePath))
-    }
+        @Test
+        fun `test gitUrlToDirectory with git repo`(@TempDir tempDir: File) {
+            val expected = Paths.get(tempDir.absolutePath, orgName, repoName)
 
-    @Test
-    fun `test cloning test repo`() {
-        val fs = GitHubFS(
-            GitHub.connectAnonymously(),
-            "" to ""
-        )
+            val actual = GitHubFS.gitUrlToDirectory(
+                tempDir.absolutePath,
+                testRepoUrl
+            )
 
-        // Don't use a TempDir because jgit leaves something open so Windows builds fail
-        val repoPath = Paths.get(
-            fs.gitHubCacheDirectory,
-            "CommonWealthRobotics",
-            "bowler-kernel-test-repo"
-        ).also {
-            it.toFile().deleteRecursively()
+            assertThat(expected.toString(), equalTo(actual.absolutePath))
         }
 
-        val files = fs.cloneRepoAndGetFiles(testRepoUrl)
-            .map { files -> files.map { it.toString() }.toSet() }
-            .attempt()
-            .unsafeRunSync()
+        @Test
+        fun `test cloning test repo`() {
+            val fs = GitHubFS(
+                GitHub.connectAnonymously(),
+                "" to ""
+            )
 
-        assertEquals(
-            immutableSetOf(
-                Paths.get(repoPath.toString(), "fileA.txt").toString(),
-                Paths.get(repoPath.toString(), "dirA").toString(),
-                Paths.get(repoPath.toString(), "dirA", "fileB.txt").toString()
-            ).right(),
-            files
-        )
-    }
+            // Don't use a TempDir because jgit leaves something open so Windows builds fail
+            val repoPath = Paths.get(fs.gitHubCacheDirectory, orgName, repoName).also {
+                it.toFile().deleteRecursively()
+            }
 
-    @Test
-    fun `test cloning with corrupted git folder`() {
-        val fs = GitHubFS(
-            GitHub.connectAnonymously(),
-            "" to ""
-        )
+            val files = fs.cloneRepoAndGetFiles(testRepoUrl)
+                .map { files -> files.map { it.toString() }.toSet() }
+                .attempt()
+                .unsafeRunSync()
 
-        // Don't use a TempDir because jgit leaves something open so Windows builds fail
-        val repoPath = Paths.get(
-            fs.gitHubCacheDirectory,
-            "CommonWealthRobotics",
-            "bowler-kernel-test-repo"
-        ).also {
-            it.toFile().deleteRecursively()
+            assertEquals(
+                immutableSetOf(
+                    Paths.get(repoPath.toString(), "fileA.txt").toString(),
+                    Paths.get(repoPath.toString(), "dirA").toString(),
+                    Paths.get(repoPath.toString(), "dirA", "fileB.txt").toString()
+                ).right(),
+                files
+            )
         }
 
-        repoPath.toFile().apply { mkdirs() }
-        Paths.get(repoPath.toString(), ".git").toFile().apply { mkdirs() }
+        @Test
+        fun `test cloning with corrupted git folder`() {
+            val fs = GitHubFS(
+                GitHub.connectAnonymously(),
+                "" to ""
+            )
 
-        val files = fs.cloneRepoAndGetFiles(testRepoUrl)
-            .map { files -> files.map { it.toString() }.toSet() }
-            .attempt()
-            .unsafeRunSync()
+            // Don't use a TempDir because jgit leaves something open so Windows builds fail
+            val repoPath = Paths.get(fs.gitHubCacheDirectory, orgName, repoName).also {
+                it.toFile().deleteRecursively()
+            }
 
-        assertEquals(
-            immutableSetOf(
-                Paths.get(repoPath.toString(), "fileA.txt").toString(),
-                Paths.get(repoPath.toString(), "dirA").toString(),
-                Paths.get(repoPath.toString(), "dirA", "fileB.txt").toString()
-            ).right(),
-            files
-        )
+            repoPath.toFile().apply { mkdirs() }
+            Paths.get(repoPath.toString(), ".git").toFile().apply { mkdirs() }
+
+            val files = fs.cloneRepoAndGetFiles(testRepoUrl)
+                .map { files -> files.map { it.toString() }.toSet() }
+                .attempt()
+                .unsafeRunSync()
+
+            assertEquals(
+                immutableSetOf(
+                    Paths.get(repoPath.toString(), "fileA.txt").toString(),
+                    Paths.get(repoPath.toString(), "dirA").toString(),
+                    Paths.get(repoPath.toString(), "dirA", "fileB.txt").toString()
+                ).right(),
+                files
+            )
+        }
+
+        @Test
+        fun `test deleteCache`(@TempDir tempDir: File) {
+            val fs = GitHubFS(
+                GitHub.connectAnonymously(),
+                "" to "",
+                tempDir.absolutePath
+            )
+
+            val repoPath = Paths.get(tempDir.absolutePath, orgName, repoName)
+
+            val repo = repoPath.toFile().apply { mkdirs() }
+            val fileInRepo = Paths.get(repoPath.toString(), "fileA.txt").toFile().apply {
+                writeText("")
+            }
+
+            assertTrue(fileInRepo.exists())
+
+            fs.deleteCache()
+
+            assertAll(
+                { assertFalse(fileInRepo.exists()) },
+                { assertFalse(repo.exists()) }
+            )
+        }
     }
 
     @Test
@@ -155,35 +176,6 @@ internal class GitHubFSTest {
         actual as Either.Left
 
         assertTrue(actual.a is IllegalArgumentException)
-    }
-
-    @Test
-    fun `test deleteCache`(@TempDir tempDir: File) {
-        val fs = GitHubFS(
-            GitHub.connectAnonymously(),
-            "" to "",
-            tempDir.absolutePath
-        )
-
-        val repoPath = Paths.get(
-            tempDir.absolutePath,
-            "CommonWealthRobotics",
-            "bowler-kernel-test-repo"
-        )
-
-        val repo = repoPath.toFile().apply { mkdirs() }
-        val fileInRepo = Paths.get(repoPath.toString(), "fileA.txt").toFile().apply {
-            writeText("")
-        }
-
-        assertTrue(fileInRepo.exists())
-
-        fs.deleteCache()
-
-        assertAll(
-            { assertFalse(fileInRepo.exists()) },
-            { assertFalse(repo.exists()) }
-        )
     }
 
     @ParameterizedTest
