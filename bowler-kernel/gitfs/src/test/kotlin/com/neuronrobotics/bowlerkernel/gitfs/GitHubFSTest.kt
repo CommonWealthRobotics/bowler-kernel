@@ -81,15 +81,10 @@ internal class GitHubFSTest {
 
         @Test
         fun `test cloning test repo`() {
-            val fs = GitHubFS(
-                GitHub.connectAnonymously(),
-                "" to ""
-            )
+            val fs = makeAnonymousGitHubFS()
 
             // Don't use a TempDir because jgit leaves something open so Windows builds fail
-            val repoPath = Paths.get(fs.gitHubCacheDirectory, orgName, repoName).also {
-                it.toFile().deleteRecursively()
-            }
+            val repoPath = getCleanedRepoPath(fs)
 
             val files = fs.cloneRepoAndGetFiles(testRepoUrl)
                 .map { files -> files.map { it.toString() }.toSet() }
@@ -108,15 +103,10 @@ internal class GitHubFSTest {
 
         @Test
         fun `test cloning with corrupted git folder`() {
-            val fs = GitHubFS(
-                GitHub.connectAnonymously(),
-                "" to ""
-            )
+            val fs = makeAnonymousGitHubFS()
 
             // Don't use a TempDir because jgit leaves something open so Windows builds fail
-            val repoPath = Paths.get(fs.gitHubCacheDirectory, orgName, repoName).also {
-                it.toFile().deleteRecursively()
-            }
+            val repoPath = getCleanedRepoPath(fs)
 
             repoPath.toFile().apply { mkdirs() }
             Paths.get(repoPath.toString(), ".git").toFile().apply { mkdirs() }
@@ -135,6 +125,14 @@ internal class GitHubFSTest {
                 files
             )
         }
+
+        private fun makeAnonymousGitHubFS() =
+            GitHubFS(GitHub.connectAnonymously(), "" to "")
+
+        private fun getCleanedRepoPath(fs: GitHubFS) =
+            Paths.get(fs.gitHubCacheDirectory, orgName, repoName).also {
+                it.toFile().deleteRecursively()
+            }
 
         @Test
         fun `test deleteCache`(@TempDir tempDir: File) {
