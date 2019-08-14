@@ -92,7 +92,6 @@ sealed class VexEDRMotor(
             width = (1.0 / 8.0).inch,
             height = 2.inch,
             mass = 20.gram,
-            centerOfMass = TODO(),
             specs = emptyImmutableMap()
         ),
         axelInset = 7.millimeter,
@@ -121,7 +120,6 @@ sealed class VexEDRMotor(
             width = (1.0 / 8.0).inch,
             height = 2.inch,
             mass = 20.gram,
-            centerOfMass = TODO(),
             specs = emptyImmutableMap()
         ),
         axelInset = 4.5.millimeter,
