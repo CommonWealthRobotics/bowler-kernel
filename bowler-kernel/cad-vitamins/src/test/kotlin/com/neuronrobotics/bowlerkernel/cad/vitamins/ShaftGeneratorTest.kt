@@ -43,11 +43,6 @@ internal class ShaftGeneratorTest {
             width = 2.millimeter,
             height = 10.millimeter,
             mass = 0.1.gram,
-            centerOfMass = CenterOfMass(
-                0.inch,
-                0.inch,
-                0.inch
-            ),
             specs = emptyImmutableMap()
         )
 
@@ -69,11 +64,6 @@ internal class ShaftGeneratorTest {
             diameter = 2.millimeter,
             height = 10.millimeter,
             mass = 0.1.gram,
-            centerOfMass = CenterOfMass(
-                0.inch,
-                0.inch,
-                0.inch
-            ),
             specs = emptyImmutableMap()
         )
 

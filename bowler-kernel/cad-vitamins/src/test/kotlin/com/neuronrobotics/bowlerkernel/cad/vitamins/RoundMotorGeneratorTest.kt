@@ -66,11 +66,6 @@ internal class RoundMotorGeneratorTest {
             width = 4.millimeter,
             height = 13.millimeter,
             mass = 0.1.gram,
-            centerOfMass = CenterOfMass(
-                0.inch,
-                0.inch,
-                0.inch
-            ),
             specs = emptyImmutableMap()
         ),
         bolt = DefaultBolt(

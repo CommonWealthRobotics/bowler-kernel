@@ -255,14 +255,12 @@ internal fun <T : Random> T.allShafts() = listOf(
         nextDouble().inch,
         nextDouble().inch,
         nextDouble().gram,
-        randomCenterOfMass(),
         randomMap()
     ),
     DefaultShaft.RoundShaft(
         nextDouble().inch,
         nextDouble().inch,
         nextDouble().gram,
-        randomCenterOfMass(),
         randomMap()
     ),
     DefaultShaft.DShaft(

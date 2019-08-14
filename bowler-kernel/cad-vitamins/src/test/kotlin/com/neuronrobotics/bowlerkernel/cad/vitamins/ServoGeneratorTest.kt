@@ -63,11 +63,6 @@ internal class ServoGeneratorTest {
             diameter = 4.millimeter,
             height = 7.1.millimeter,
             mass = 0.1.gram,
-            centerOfMass = CenterOfMass(
-                0.inch,
-                0.inch,
-                0.inch
-            ),
             specs = emptyImmutableMap()
         ),
         mass = 58.gram,
