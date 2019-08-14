@@ -76,12 +76,12 @@ sealed class VexEDRMotor(
     val freeCurrent: ElectricCurrent,
     val stallTorque: Torque,
     val stallCurrent: ElectricCurrent,
-    val power: Power,
     override val mass: Mass,
-    override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap
     override val specs: ImmutableMap<String, Any>
 ) : Vitamin, KlaxonVitaminTo {
+
+    abstract val power: Power
 
     object VexMotor393 : VexEDRMotor(
         width = 50.2.millimeter,
@@ -103,11 +103,16 @@ sealed class VexEDRMotor(
         freeCurrent = 0.37.ampere,
         stallTorque = 1.67.nM,
         stallCurrent = 4.8.ampere,
-        power = TODO(),
         mass = 0.192.lbM,
-        centerOfMass = TODO(),
         specs = emptyImmutableMap()
     ) {
+
+        override val power: Power
+            get() = TODO("not implemented")
+
+        override val centerOfMass: CenterOfMass
+            get() = TODO("not implemented")
+
         override fun toVitamin() = this
     }
 
@@ -131,11 +136,16 @@ sealed class VexEDRMotor(
         freeCurrent = 0.18.ampere,
         stallTorque = 8.6.lbFIn,
         stallCurrent = 2.6.ampere,
-        power = TODO(),
         mass = 0.134.lbM,
-        centerOfMass = TODO(),
         specs = emptyImmutableMap()
     ) {
+
+        override val power: Power
+            get() = TODO("not implemented")
+
+        override val centerOfMass: CenterOfMass
+            get() = TODO("not implemented")
+
         override fun toVitamin() = this
     }
 }
