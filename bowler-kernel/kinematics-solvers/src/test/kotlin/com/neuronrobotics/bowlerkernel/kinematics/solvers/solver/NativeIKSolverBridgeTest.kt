@@ -23,14 +23,18 @@ import com.neuronrobotics.bowlerkernel.util.JointLimits
 import com.neuronrobotics.bowlerkinematicsnative.solver.NativeIKSolver
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class NativeIKSolverBridgeTest {
 
     private val fk = GeneralForwardKinematicsSolver()
     private val ik = NativeIKSolverBridge()
 
     companion object {
+
         @BeforeAll
         @JvmStatic
         fun beforeAll() {

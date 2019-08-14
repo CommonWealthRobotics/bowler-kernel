@@ -23,10 +23,13 @@ import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.octogonapus.ktguava.collections.immutableListOf
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class SphericalWristTest {
 
     private val delta = 1e-5

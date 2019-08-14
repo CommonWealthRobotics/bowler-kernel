@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:SuppressWarnings("LargeClass", "TooManyFunctions", "LongMethod")
+
 package com.neuronrobotics.bowlerkernel.kinematics.solvers.classifier
 
 import com.google.common.collect.ImmutableList
@@ -24,13 +26,16 @@ import com.neuronrobotics.bowlerkernel.kinematics.solvers.dhparam.SphericalWrist
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.toImmutableList
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DefaultWristIdentifierTest {
 
     private val identifier = DefaultWristIdentifier()

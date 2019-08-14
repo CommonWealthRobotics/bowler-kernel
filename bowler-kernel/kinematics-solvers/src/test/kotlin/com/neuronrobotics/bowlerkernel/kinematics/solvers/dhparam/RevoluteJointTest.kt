@@ -18,10 +18,13 @@ package com.neuronrobotics.bowlerkernel.kinematics.solvers.dhparam
 
 import com.neuronrobotics.bowlerkernel.kinematics.solvers.TestUtil.randomDhParam
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import org.octogonapus.ktguava.collections.immutableListOf
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class RevoluteJointTest {
 
     @Test

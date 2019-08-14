@@ -19,6 +19,7 @@ package com.neuronrobotics.bowlerkernel.kinematics.solvers.util
 /**
  * Defines the step for a [ClosedRange] that can be used for iteration.
  */
+@SuppressWarnings("LabeledExpression")
 infix fun ClosedRange<Double>.step(step: Double): Iterable<Double> {
     require(start.isFinite())
     require(endInclusive.isFinite())

@@ -18,11 +18,14 @@ package com.neuronrobotics.bowlerkernel.kinematics.solvers.solver
 
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.solvers.GeneralForwardKinematicsSolver
-import com.neuronrobotics.bowlerkernel.util.JointLimits
 import com.neuronrobotics.bowlerkernel.kinematics.solvers.TestUtil.hephaestusArmLinks
+import com.neuronrobotics.bowlerkernel.util.JointLimits
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class ThreeDofSolverTest {
 
     private val fk = GeneralForwardKinematicsSolver()

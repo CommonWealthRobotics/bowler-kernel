@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:SuppressWarnings("LargeClass", "TooManyFunctions", "LongMethod")
+
 package com.neuronrobotics.bowlerkernel.kinematics.solvers.classifier
 
 import arrow.core.Either
@@ -30,10 +32,13 @@ import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.plus
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DefaultChainIdentifierTest {
 
     @Test
