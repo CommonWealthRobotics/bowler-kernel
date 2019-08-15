@@ -35,4 +35,10 @@ dependencies {
     compileOnly(bowlerKinematicsNative())
 
     testImplementation(bowlerKinematicsNative())
+
+    testImplementation(
+        group = "com.natpryce",
+        name = "hamkrest",
+        version = property("hamkrest.version") as String
+    )
 }
