@@ -162,8 +162,9 @@ class GitHubFS(
             .use {
                 it.submoduleInit().call()
                 it.submoduleUpdate().call()
-                it.repository.close()
             }
+
+        Git.open(directory).repository.close()
     }
 
     override fun cloneRepoAndGetFiles(
