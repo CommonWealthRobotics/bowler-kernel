@@ -160,11 +160,11 @@ class GitHubFS(
             )
             .call()
             .use {
-                it.submoduleInit().call()
-                it.submoduleUpdate().call()
+                Git.wrap(it.repository).use {
+                    it.submoduleInit().call()
+                    it.submoduleUpdate().call()
+                }
             }
-
-        Git.open(directory).repository.close()
     }
 
     override fun cloneRepoAndGetFiles(
