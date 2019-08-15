@@ -111,6 +111,12 @@ abstract class Script {
             }
         }
 
+        threads.forEach {
+            while (it.isAlive) {
+                Thread.sleep(1)
+            }
+        }
+
         threads.clear()
 
         val unregisterErrors = internalHardwareRegistry.unregisterAllHardware()
