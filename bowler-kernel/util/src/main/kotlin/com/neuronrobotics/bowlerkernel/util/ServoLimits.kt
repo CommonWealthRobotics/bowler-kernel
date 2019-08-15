@@ -40,8 +40,20 @@ data class ServoLimits(
     /**
      * Converts the maximum and minimum fields into a [JointLimits].
      */
-    fun toJointLimits() = JointLimits(
-        maximum = (maximum - zero) * scale,
-        minimum = (minimum - zero) * scale
-    )
+    fun toJointLimits(): JointLimits {
+        val maximum = (maximum - zero) * scale
+        val minimum = (minimum - zero) * scale
+
+        return when {
+            maximum - minimum < 0 -> JointLimits(
+                maximum = -maximum,
+                minimum = -minimum
+            )
+
+            else -> JointLimits(
+                maximum = maximum,
+                minimum = minimum
+            )
+        }
+    }
 }
