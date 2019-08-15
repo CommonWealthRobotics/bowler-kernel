@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:SuppressWarnings("LongMethod")
+
 package com.neuronrobotics.bowlerkernel.kinematics.base
 
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
@@ -21,6 +23,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopBodyController
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopJointAngleController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.DefaultLimb
+import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
 import com.neuronrobotics.bowlerkernel.kinematics.motion.BasicMotionConstraints
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
@@ -30,17 +33,23 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInertialStateEstima
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanGenerator
+import com.neuronrobotics.bowlerkernel.kinematics.randomFrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.seaArmLinks
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
+import org.octogonapus.ktguava.collections.emptyImmutableMap
+import org.octogonapus.ktguava.collections.emptyImmutableSet
 import org.octogonapus.ktguava.collections.immutableMapOf
 import org.octogonapus.ktguava.collections.immutableSetOf
 import org.octogonapus.ktguava.collections.toImmutableList
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DefaultKinematicBaseTest {
 
     private val tolerance = 1e-10
@@ -67,66 +76,17 @@ internal class DefaultKinematicBaseTest {
     )
 
     @Test
-    fun `test setting limb tip transform`() {
-        val base = makeBase(FrameTransformation.fromTranslation(10, 0, -10))
-
-        base.setCurrentWorldSpaceTransform(
-            FrameTransformation.fromTranslation(10, 10, 0)
-        )
-
-        val desiredTipTransform = FrameTransformation.fromTranslation(25, 0, -15)
-        base.setDesiredLimbTipTransform(
-            limb.id,
-            desiredTipTransform,
-            BasicMotionConstraints(1, 0, 0, 0)
-        )
-
-        assertAll(
-            {
-                val expected = base.getDesiredLimbTipTransform(limb.id)
-                assertTrue(
-                    expected.approxEquals(desiredTipTransform, tolerance),
-                    """
-                    |Expected:
-                    |$expected
-                    |Actual:
-                    |$desiredTipTransform
-                    """.trimMargin()
-                )
-            },
-            {
-                val expected = FrameTransformation.fromTranslation(
-                    x = 25 - 10 - 10,
-                    y = 0 - 10,
-                    z = -15 - -10
-                )
-                val actual = limb.getDesiredTaskSpaceTransform()
-                assertTrue(
-                    expected.approxEquals(actual, tolerance),
-                    """
-                    |Expected:
-                    |$expected
-                    |Actual:
-                    |$actual
-                    """.trimMargin()
-                )
-            }
-        )
-    }
-
-    @Test
     fun `test setting limb tip transform with rotation on base world transform`() {
-        val base = makeBase(FrameTransformation.fromTranslation(10, 0, -10))
+        val limbBaseFT = randomFrameTransformation()
+        val base = makeBase(limbBaseFT)
 
-        base.setCurrentWorldSpaceTransform(
-            FrameTransformation.fromTranslation(10, 0, 0) *
-                FrameTransformation.fromRotation(0, 90, 0)
-        )
+        val baseCurrentFT = randomFrameTransformation()
+        base.setCurrentWorldSpaceTransform(baseCurrentFT)
 
-        val desiredTipTransform = FrameTransformation.fromTranslation(25, 0, -15)
+        val desiredTipFT = randomFrameTransformation()
         base.setDesiredLimbTipTransform(
             limb.id,
-            desiredTipTransform,
+            desiredTipFT,
             BasicMotionConstraints(1, 0, 0, 0)
         )
 
@@ -134,21 +94,17 @@ internal class DefaultKinematicBaseTest {
             {
                 val expected = base.getDesiredLimbTipTransform(limb.id)
                 assertTrue(
-                    expected.approxEquals(desiredTipTransform, tolerance),
+                    expected.approxEquals(desiredTipFT, tolerance),
                     """
                     |Expected:
                     |$expected
                     |Actual:
-                    |$desiredTipTransform
+                    |$desiredTipFT
                     """.trimMargin()
                 )
             },
             {
-                val expected = FrameTransformation.fromTranslation(
-                    x = 25 - 10,
-                    y = 0,
-                    z = -15 - 10 - 10
-                ) * FrameTransformation.fromRotation(0, -90, 0)
+                val expected = desiredTipFT * baseCurrentFT.inverse * limbBaseFT.inverse
                 val actual = limb.getDesiredTaskSpaceTransform()
                 assertTrue(
                     expected.approxEquals(actual, tolerance),
@@ -165,24 +121,59 @@ internal class DefaultKinematicBaseTest {
 
     @Test
     fun `test get current world space transform`() {
+        val baseDeltaFt = randomFrameTransformation()
         val mockBodyController = mock<BodyController> {
-            on { getDeltaSinceLastDesiredTransform() } doReturn
-                FrameTransformation.fromTranslation(10, 0, 0)
+            on { getDeltaSinceLastDesiredTransform() } doReturn baseDeltaFt
         }
 
         val base = DefaultKinematicBase(
             SimpleKinematicBaseId("base"),
             mockBodyController,
-            immutableSetOf(limb),
-            immutableMapOf(limb.id to FrameTransformation.identity)
+            emptyImmutableSet(),
+            emptyImmutableMap()
         )
 
-        base.setCurrentWorldSpaceTransform(FrameTransformation.fromTranslation(10, 0, 0))
+        val baseCurrentFT = randomFrameTransformation()
+        base.setCurrentWorldSpaceTransform(baseCurrentFT)
 
         assertEquals(
-            // body controller delta should be added
-            FrameTransformation.fromTranslation(20, 0, 0),
+            baseCurrentFT * baseDeltaFt,
             base.getCurrentWorldSpaceTransformWithDelta()
+        )
+    }
+
+    @Test
+    fun `test get current limb tip transform`() {
+        val limbCurrentFT = randomFrameTransformation()
+        val limb = mock<Limb> {
+            on { id } doReturn SimpleLimbId("limb")
+            on { getCurrentTaskSpaceTransform() } doReturn limbCurrentFT
+        }
+
+        val baseDeltaFT = randomFrameTransformation()
+        val limbBaseFT = randomFrameTransformation()
+        val base = DefaultKinematicBase(
+            SimpleKinematicBaseId("base"),
+            mock {
+                on { getDeltaSinceLastDesiredTransform() } doReturn baseDeltaFT
+            },
+            immutableSetOf(limb),
+            immutableMapOf(limb.id to limbBaseFT)
+        )
+
+        val baseCurrentFT = randomFrameTransformation()
+        base.setCurrentWorldSpaceTransform(baseCurrentFT)
+
+        val expected = limbCurrentFT * limbBaseFT * baseCurrentFT * baseDeltaFT
+        val actual = base.getCurrentLimbTipTransform(limb.id)
+        assertTrue(
+            expected.approxEquals(actual, tolerance),
+            """
+            |Expected:
+            |$expected
+            |Actual:
+            |$actual
+            """.trimMargin()
         )
     }
 }

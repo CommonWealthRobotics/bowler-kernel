@@ -22,6 +22,7 @@ import arrow.core.Tuple3
 import arrow.core.extensions.either.applicative.applicative
 import arrow.core.extensions.either.monad.binding
 import arrow.core.fix
+import arrow.core.left
 import com.google.common.graph.NetworkBuilder
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseConfigurationData
@@ -87,11 +88,16 @@ data class KinematicGraphData(
             }.toMap()
 
             edges.forEach { (nodeU, nodeV, edge) ->
-                mutableNetwork.addEdge(
-                    mappedNodes[nodeU] ?: error(""),
-                    mappedNodes[nodeV] ?: error(""),
-                    edge
-                )
+                try {
+                    mutableNetwork.addEdge(
+                        mappedNodes[nodeU] ?: error(""),
+                        mappedNodes[nodeV] ?: error(""),
+                        edge
+                    )
+                } catch (e: IllegalArgumentException) {
+                    @Suppress("RemoveExplicitTypeArguments")
+                    e.localizedMessage.left().bind<Nothing>()
+                }
             }
 
             mutableNetwork.toImmutableNetwork()

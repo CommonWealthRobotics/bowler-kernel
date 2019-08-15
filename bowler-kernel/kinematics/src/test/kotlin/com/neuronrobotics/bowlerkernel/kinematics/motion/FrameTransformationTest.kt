@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-@file:SuppressWarnings("LargeClass")
+@file:SuppressWarnings("LargeClass", "TooManyFunctions")
 
 package com.neuronrobotics.bowlerkernel.kinematics.motion
 
@@ -26,15 +26,18 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import java.lang.Math.toDegrees
+import java.util.concurrent.TimeUnit
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class FrameTransformationTest {
 
     private val equalityTolerance = 1e-14
@@ -498,5 +501,18 @@ internal class FrameTransformationTest {
                 assertEquals(expected, actual.b)
             }
         )
+    }
+
+    @Test
+    fun `test matrix approx equals`() {
+        val tolerance = 1e-5
+        val expected = Matrix.random(4, 4)
+        val actual = Matrix(Array(4) { row ->
+            DoubleArray(4) { col ->
+                expected[row, col] - tolerance / 2
+            }
+        })
+
+        assertTrue(expected.approxEquals(actual, tolerance))
     }
 }

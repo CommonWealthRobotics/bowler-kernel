@@ -19,15 +19,16 @@ package com.neuronrobotics.bowlerkernel.hardware.protocol
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
-import java.net.InetAddress
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class SimplePacketComsProtocolFactoryTest {
 
-    private val factory = SimplePacketComsProtocolFactory(DefaultResourceIdValidator())
+    private val factory = SimplePacketComsProtocolFactory(mock {})
 
     @Test
     fun `test making a protocol with a udp device`() {
@@ -35,7 +36,7 @@ internal class SimplePacketComsProtocolFactoryTest {
         factory.create(
             DeviceId(
                 DefaultDeviceTypes.UnknownDevice,
-                DefaultConnectionMethods.InternetAddress(InetAddress.getLoopbackAddress())
+                DefaultConnectionMethods.InternetAddress(mock {})
             )
         )
     }

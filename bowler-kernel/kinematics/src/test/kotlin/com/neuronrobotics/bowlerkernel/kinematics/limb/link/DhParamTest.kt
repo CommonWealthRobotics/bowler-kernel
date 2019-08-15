@@ -20,11 +20,14 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import java.util.concurrent.TimeUnit
 import kotlin.math.hypot
 
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DhParamTest {
 
     private val tolerance = 1e-14
@@ -44,6 +47,19 @@ internal class DhParamTest {
         assertTrue(
             FrameTransformation.fromRotation(0, 0, 90).approxEquals(
                 DhParam(0, 0, 0, 90).frameTransformation,
+                tolerance
+            )
+        )
+    }
+
+    @Test
+    fun `test theta 30 and alpha 60`() {
+        assertTrue(
+            (FrameTransformation.fromRotation(30, 0, 0) *
+                FrameTransformation.fromTranslation(0, 0, 10) *
+                FrameTransformation.fromTranslation(8, 0, 0) *
+                FrameTransformation.fromRotation(0, 0, 60)).approxEquals(
+                DhParam(10, 30, 8, 60).frameTransformation,
                 tolerance
             )
         )

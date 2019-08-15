@@ -26,6 +26,7 @@ object NoopJointAngleController : JointAngleController {
 
     override var jointLimits: JointLimits = JointLimits(180, -180)
 
+    @SuppressWarnings("EmptyFunctionBlock")
     override fun setTargetAngle(angle: Double, motionConstraints: MotionConstraints) {
     }
 

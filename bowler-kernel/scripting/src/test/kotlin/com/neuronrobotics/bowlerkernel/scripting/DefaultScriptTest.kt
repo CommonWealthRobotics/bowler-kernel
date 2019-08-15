@@ -14,90 +14,52 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:SuppressWarnings("LongMethod", "LargeClass", "TooManyFunctions")
+
 package com.neuronrobotics.bowlerkernel.scripting
 
 import arrow.core.Either
-import arrow.core.flatMap
-import arrow.core.left
 import arrow.core.right
 import com.google.common.base.Stopwatch
 import com.google.common.collect.ImmutableList
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.containsSubstring
 import com.neuronrobotics.bowlerkernel.hardware.Script
-import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultScriptFactory
-import com.neuronrobotics.bowlerkernel.scripting.parser.ScriptLanguageParser
-import com.nhaarman.mockitokotlin2.doReturn
-import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTimeout
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.fail
+import org.junit.jupiter.api.Timeout
 import org.octogonapus.ktguava.collections.emptyImmutableList
+import org.octogonapus.ktguava.collections.immutableListOf
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DefaultScriptTest {
 
     @Test
     fun `test run script with a hello world script`() {
-        val language = "groovy"
         val scriptContent = """ return "Hello, World!" """
+        val script = DefaultScript(ScriptLanguage.Groovy, scriptContent)
 
-        val mockScriptLanguageParser = mock<ScriptLanguageParser> {
-            on { parse(language) } doReturn ScriptLanguage.Groovy.right()
-        }
-
-        val script = DefaultScriptFactory(
-            mockScriptLanguageParser
-        ).createScriptFromText(language, scriptContent)
-
-        val result = script.flatMap { it.startScript(emptyImmutableList()) }
-        assertAll(
-            { assertTrue(result.isRight()) },
-            { assertEquals("Hello, World!", result.fold({ null }, { it as? String })) }
-        )
-    }
-
-    @Test
-    fun `test run script with a parse error`() {
-        val language = "groovy"
-        val scriptContent = """ return "Hello, World!" """
-
-        val mockScriptLanguageParser = mock<ScriptLanguageParser> {
-            on { parse(language) } doReturn "".left()
-        }
-
-        val script = DefaultScriptFactory(
-            mockScriptLanguageParser
-        ).createScriptFromText(language, scriptContent)
-
-        val result = script.flatMap { it.startScript(emptyImmutableList()) }
-        assertTrue(result.isLeft())
+        val result = script.startScript(emptyImmutableList())
+        assertEquals("Hello, World!".right(), result)
     }
 
     @Test
     fun `test run script with a compile error`() {
-        val language = "groovy"
         val scriptContent = """ " """ // Single quote on purpose
+        val script = DefaultScript(ScriptLanguage.Groovy, scriptContent)
 
-        val mockScriptLanguageParser = mock<ScriptLanguageParser> {
-            on { parse(language) } doReturn ScriptLanguage.Groovy.right()
-        }
-
-        val script = DefaultScriptFactory(
-            mockScriptLanguageParser
-        ).createScriptFromText(language, scriptContent)
-
-        val result = script.flatMap { it.startScript(emptyImmutableList()) }
+        val result = script.startScript(emptyImmutableList())
         assertTrue(result.isLeft())
     }
 
     @Test
     fun `test interrupting a script`() {
-        val language = "groovy"
         val scriptContent = """
             |try {
             |   Thread.sleep(10000)
@@ -106,31 +68,13 @@ internal class DefaultScriptTest {
             |}
             """.trimMargin()
 
-        val mockScriptLanguageParser = mock<ScriptLanguageParser> {
-            on { parse(language) } doReturn ScriptLanguage.Groovy.right()
+        val script = DefaultScript(ScriptLanguage.Groovy, scriptContent)
+
+        assertTimeout(Duration.ofSeconds(2)) {
+            thread { script.startScript(emptyImmutableList()) }
+            Thread.sleep(1000)
+            script.stopAndCleanUp()
         }
-
-        val script = DefaultScriptFactory(
-            mockScriptLanguageParser
-        ).createScriptFromText(language, scriptContent)
-
-        script.bimap(
-            {
-                fail {
-                    """
-                    |Script was a left:
-                    |$script
-                    """.trimMargin()
-                }
-            },
-            {
-                assertTimeout(Duration.ofSeconds(2)) {
-                    thread { it.startScript(emptyImmutableList()) }
-                    Thread.sleep(1000)
-                    it.stopAndCleanUp()
-                }
-            }
-        )
     }
 
     @Test
@@ -146,6 +90,7 @@ internal class DefaultScriptTest {
                 return Unit.right()
             }
 
+            @SuppressWarnings("EmptyFunctionBlock")
             override fun stopScript() {
             }
         }
@@ -163,34 +108,147 @@ internal class DefaultScriptTest {
 
     @Test
     fun `test run script with a hello world script using kotlin`() {
-        val language = "kotlin"
         val scriptContent = """ "Hello, World!" """
 
-        val mockScriptLanguageParser = mock<ScriptLanguageParser> {
-            on { parse(language) } doReturn ScriptLanguage.Kotlin.right()
-        }
+        val script = DefaultScript(ScriptLanguage.Kotlin, scriptContent)
 
-        val script = DefaultScriptFactory(
-            mockScriptLanguageParser
-        ).createScriptFromText(language, scriptContent)
-
-        val result = script.flatMap { it.startScript(emptyImmutableList()) }
-        assertAll(
-            { assertTrue(result.isRight()) },
-            { assertEquals("Hello, World!", result.fold({ null }, { it as? String })) }
-        )
+        val result = script.startScript(emptyImmutableList())
+        assertEquals("Hello, World!".right(), result)
     }
 
     @Test
-    fun `test run script with unknown language`() {
-        val mockScriptLanguageParser = mock<ScriptLanguageParser> {
-            on { parse("qwerty") } doReturn "".left()
-        }
+    fun `a kotlin script that returns a KClass of Script should be instantiated and run`() {
+        val scriptContent =
+            """
+            import arrow.core.Either
+            import arrow.core.right
+            import com.google.common.collect.ImmutableList
+            import com.neuronrobotics.bowlerkernel.hardware.Script
 
-        val script = DefaultScriptFactory(
-            mockScriptLanguageParser
-        ).createScriptFromText("qwerty", "")
+            class Foo : Script() {
+                override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
+                    return args.first().right()
+                }
 
-        assertTrue(script.isLeft())
+                override fun stopScript() {
+                }
+            }
+
+            Foo::class
+            """.trimIndent()
+
+        val script = DefaultScript(ScriptLanguage.Kotlin, scriptContent)
+
+        val result = script.startScript(immutableListOf(1))
+        assertEquals(1.right(), result)
+    }
+
+    @Test
+    fun `a kotlin script that returns a Class of Script should be instantiated and run`() {
+        val scriptContent =
+            """
+            import arrow.core.Either
+            import arrow.core.right
+            import com.google.common.collect.ImmutableList
+            import com.neuronrobotics.bowlerkernel.hardware.Script
+
+            class Foo : Script() {
+                override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
+                    return args.first().right()
+                }
+
+                override fun stopScript() {
+                }
+            }
+
+            Foo::class.java
+            """.trimIndent()
+
+        val script = DefaultScript(ScriptLanguage.Kotlin, scriptContent)
+
+        val result = script.startScript(immutableListOf(1))
+        assertEquals(1.right(), result)
+    }
+
+    @Test
+    fun `a kotlin script that returns a KClass which is not a Script should just be returned`() {
+        val scriptContent =
+            """
+            class Foo
+            Foo::class
+            """.trimIndent()
+
+        val script = DefaultScript(ScriptLanguage.Kotlin, scriptContent)
+
+        val result = script.startScript(emptyImmutableList())
+        assertTrue(result is Either.Right)
+        result as Either.Right
+
+        assertThat(result.b!!::class.simpleName!!, containsSubstring("Foo"))
+    }
+
+    @Test
+    fun `a kotlin script that returns a Class which is not a Script should just be returned`() {
+        val scriptContent =
+            """
+            class Foo
+            Foo::class.java
+            """.trimIndent()
+
+        val script = DefaultScript(ScriptLanguage.Kotlin, scriptContent)
+
+        val result = script.startScript(emptyImmutableList())
+        assertTrue(result is Either.Right)
+        result as Either.Right
+
+        assertThat(result.b!!::class.simpleName!!, containsSubstring("Foo"))
+    }
+
+    @Test
+    fun `a groovy script that returns a Class of Script should be instantiated and run`() {
+        val scriptContent =
+            """
+            import arrow.core.Either
+            import com.google.common.collect.ImmutableList
+            import com.neuronrobotics.bowlerkernel.hardware.Script
+            import org.jetbrains.annotations.NotNull
+
+            class Foo extends Script {
+
+                @Override
+                protected Either<String, Object> runScript(@NotNull ImmutableList<Object> args) {
+                    return new Either.Right(args.first())
+                }
+
+                @Override
+                protected void stopScript() {
+                }
+            }
+
+            Foo
+            """.trimIndent()
+
+        val script = DefaultScript(ScriptLanguage.Groovy, scriptContent)
+
+        val result = script.startScript(immutableListOf(1))
+        assertEquals(1.right(), result)
+    }
+
+    @Test
+    fun `a groovy script that returns a Class which is not a Script should just be returned`() {
+        val scriptContent =
+            """
+            class Foo {
+            }
+            Foo
+            """.trimIndent()
+
+        val script = DefaultScript(ScriptLanguage.Groovy, scriptContent)
+
+        val result = script.startScript(emptyImmutableList())
+        assertTrue(result is Either.Right)
+        result as Either.Right
+
+        assertThat(result.b!!::class.simpleName!!, containsSubstring("Foo"))
     }
 }

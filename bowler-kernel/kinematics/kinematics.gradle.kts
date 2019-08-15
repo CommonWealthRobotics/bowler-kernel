@@ -8,16 +8,13 @@ apply {
 
 description = "The kinematics stack."
 
-repositories {
-    maven(url = "https://dl.bintray.com/s1m0nw1/KtsRunner")
-}
-
 fun DependencyHandler.arrow(name: String) =
     create(group = "io.arrow-kt", name = name, version = property("arrow.version") as String)
 
 dependencies {
-    api(project(":bowler-kernel:scripting"))
+    api(project(":bowler-kernel:gitfs"))
     api(project(":bowler-kernel:util"))
+
     api(
         group = "org.apache.commons",
         name = "commons-math3",
@@ -40,22 +37,6 @@ dependencies {
     api(arrow("arrow-typeclasses"))
     api(arrow("arrow-extras-data"))
     api(arrow("arrow-extras-extensions"))
-
-    api(
-        group = "com.google.inject",
-        name = "guice",
-        version = property("guice.version") as String
-    )
-    api(
-        group = "com.google.inject.extensions",
-        name = "guice-assistedinject",
-        version = "4.1.0"
-    )
-    api(
-        group = "org.jlleitschuh.guice",
-        name = "kotlin-guiced-core",
-        version = property("kotlin-guiced-core.version") as String
-    )
 
     api(
         group = "com.beust",

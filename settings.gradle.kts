@@ -1,17 +1,40 @@
-buildCache {
-    local(DirectoryBuildCache::class.java) {
-        isEnabled = true
-        directory = file("${rootDir.path}/build-cache")
+@file:Suppress("UnstableApiUsage")
+
+val spotlessPluginVersion: String by settings
+val ktlintPluginVersion: String by settings
+val spotbugsPluginVersion: String by settings
+val detektPluginVersion: String by settings
+val bintrayPluginVersion: String by settings
+val dokkaPluginVersion: String by settings
+val testloggerPluginVersion: String by settings
+val pitestPluginVersion: String by settings
+val javafxpluginPluginVersion: String by settings
+
+pluginManagement {
+    plugins {
+        id("com.diffplug.gradle.spotless") version spotlessPluginVersion
+        id("org.jlleitschuh.gradle.ktlint") version ktlintPluginVersion
+        id("com.github.spotbugs") version spotbugsPluginVersion
+        id("io.gitlab.arturbosch.detekt") version detektPluginVersion
+        id("com.jfrog.bintray") version bintrayPluginVersion
+        id("org.jetbrains.dokka") version dokkaPluginVersion
+        id("com.adarshr.test-logger") version testloggerPluginVersion
+        id("info.solidsoft.pitest") version pitestPluginVersion
+        id("org.openjfx.javafxplugin") version javafxpluginPluginVersion
     }
 }
 
 rootProject.name = "bowler-kernel"
 
 include(":bowler-kernel")
+include(":bowler-kernel:cad-core")
+include(":bowler-kernel:cad-vitamins")
 include(":bowler-kernel:config")
 include(":bowler-kernel:gitfs")
 include(":bowler-kernel:hardware")
 include(":bowler-kernel:kinematics")
+include(":bowler-kernel:kinematics-factories")
+include(":bowler-kernel:kinematics-solvers")
 include(":bowler-kernel:logging")
 include(":bowler-kernel:scripting")
 include(":bowler-kernel:util")

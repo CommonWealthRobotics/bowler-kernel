@@ -19,7 +19,7 @@ package com.neuronrobotics.bowlerkernel.hardware
 import arrow.core.Either
 import org.junit.jupiter.api.Assertions.fail
 
-fun <B> Either<String, B>.getOrFail() = fold(
-    { fail<B> { it } },
+fun <A, B> Either<A, B>.getOrFail() = fold(
+    { fail<B> { it.toString() } },
     { it }
 )

@@ -20,7 +20,7 @@ import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.PiezoelectricSpeaker
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
-import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterError
 
 interface UnprovisionedPiezoelectricSpeakerFactory {
 

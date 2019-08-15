@@ -1,18 +1,21 @@
 import com.adarshr.gradle.testlogger.theme.ThemeType
 import com.github.spotbugs.SpotBugsTask
+import info.solidsoft.gradle.pitest.PitestTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.nio.file.Paths
 
 plugins {
-    id("com.diffplug.gradle.spotless") version "3.23.1"
-    id("org.jlleitschuh.gradle.ktlint") version "7.3.0"
-    id("com.github.spotbugs") version "1.7.1"
-    id("io.gitlab.arturbosch.detekt") version "1.0.0-RC16"
-    id("com.jfrog.bintray") version "1.8.3"
-    id("org.jetbrains.dokka") version "0.9.18"
-    id("com.adarshr.test-logger") version "1.6.0"
+    id("com.diffplug.gradle.spotless")
+    id("org.jlleitschuh.gradle.ktlint")
+    id("com.github.spotbugs")
+    id("io.gitlab.arturbosch.detekt")
+    id("com.jfrog.bintray")
+    id("org.jetbrains.dokka")
+    id("com.adarshr.test-logger")
+    id("info.solidsoft.pitest")
+    id("org.openjfx.javafxplugin")
     `maven-publish`
     `java-library`
     jacoco
@@ -21,10 +24,14 @@ plugins {
 }
 
 val bowlerKernelProject = project(":bowler-kernel")
-val bowlerKernelSettingsProject = project(":bowler-kernel:config")
+val bowlerKernelCadCoreProject = project(":bowler-kernel:cad-core")
+val bowlerKernelCadVitaminsProject = project(":bowler-kernel:cad-vitamins")
+val bowlerKernelConfigProject = project(":bowler-kernel:config")
 val bowlerKernelGitFSProject = project(":bowler-kernel:gitfs")
 val bowlerKernelHardwareProject = project(":bowler-kernel:hardware")
 val bowlerKernelKinematicsProject = project(":bowler-kernel:kinematics")
+val bowlerKernelKinematicsFactoriesProject = project(":bowler-kernel:kinematics-factories")
+val bowlerKernelKinematicsSolversProject = project(":bowler-kernel:kinematics-solvers")
 val bowlerKernelLoggingProject = project(":bowler-kernel:logging")
 val bowlerKernelScriptingProject = project(":bowler-kernel:scripting")
 val bowlerKernelUtilProject = project(":bowler-kernel:util")
@@ -32,10 +39,14 @@ val bowlerKernelVitaminsProject = project(":bowler-kernel:vitamins")
 
 val kotlinProjects = setOf(
     bowlerKernelProject,
-    bowlerKernelSettingsProject,
+    bowlerKernelCadCoreProject,
+    bowlerKernelCadVitaminsProject,
+    bowlerKernelConfigProject,
     bowlerKernelGitFSProject,
     bowlerKernelHardwareProject,
     bowlerKernelKinematicsProject,
+    bowlerKernelKinematicsFactoriesProject,
+    bowlerKernelKinematicsSolversProject,
     bowlerKernelLoggingProject,
     bowlerKernelScriptingProject,
     bowlerKernelUtilProject,
@@ -45,13 +56,29 @@ val kotlinProjects = setOf(
 val javaProjects = setOf<Project>() + kotlinProjects
 
 val publishedProjects = setOf(
-    bowlerKernelSettingsProject,
+    bowlerKernelCadCoreProject,
+    bowlerKernelCadVitaminsProject,
+    bowlerKernelConfigProject,
     bowlerKernelGitFSProject,
     bowlerKernelHardwareProject,
     bowlerKernelKinematicsProject,
+    bowlerKernelKinematicsFactoriesProject,
+    bowlerKernelKinematicsSolversProject,
     bowlerKernelLoggingProject,
     bowlerKernelScriptingProject,
     bowlerKernelUtilProject,
+    bowlerKernelVitaminsProject
+)
+
+val pitestProjects = setOf(
+    bowlerKernelCadCoreProject,
+    bowlerKernelCadVitaminsProject,
+    bowlerKernelGitFSProject,
+    bowlerKernelHardwareProject,
+    bowlerKernelKinematicsProject,
+    bowlerKernelKinematicsFactoriesProject,
+    bowlerKernelKinematicsSolversProject,
+    bowlerKernelScriptingProject,
     bowlerKernelVitaminsProject
 )
 
@@ -64,9 +91,12 @@ buildscript {
         maven("https://oss.sonatype.org/content/repositories/staging/")
     }
 
+    configurations.maybeCreate("pitest")
+
     dependencies {
         // Gives us the KotlinJvmProjectExtension
         classpath(kotlin("gradle-plugin", property("kotlin.version") as String))
+        "pitest"("org.pitest:pitest-junit5-plugin:0.9")
     }
 }
 
@@ -85,6 +115,7 @@ allprojects {
         maven("https://dl.bintray.com/octogonapus/maven-artifacts")
         maven("https://oss.sonatype.org/content/repositories/staging/")
         maven("https://dl.bintray.com/47deg/helios")
+        maven("https://dl.bintray.com/s1m0nw1/KtsRunner")
     }
 
     // Configures the Jacoco tool version to be the same for all projects that have it applied.
@@ -115,11 +146,11 @@ allprojects {
             ktlint(property("ktlint.version") as String)
             trimTrailingWhitespace()
         }
-        freshmark {
-            trimTrailingWhitespace()
-            indentWithSpaces(2)
-            endWithNewline()
-        }
+        // freshmark {
+        //     trimTrailingWhitespace()
+        //     indentWithSpaces(2)
+        //     endWithNewline()
+        // }
         format("extraneous") {
             target("src/**/*.fxml")
             trimTrailingWhitespace()
@@ -136,10 +167,11 @@ configure(javaProjects) {
         plugin("checkstyle")
         plugin("com.github.spotbugs")
         plugin("pmd")
+        plugin("org.openjfx.javafxplugin")
     }
 
     dependencies {
-        testCompile(
+        testImplementation(
             group = "org.junit.jupiter",
             name = "junit-jupiter",
             version = property("junit-jupiter.version") as String
@@ -150,6 +182,11 @@ configure(javaProjects) {
             name = "junit-platform-launcher",
             version = property("junit-platform-launcher.version") as String
         )
+    }
+
+    javafx {
+        version = "11.0.2"
+        modules("javafx.graphics")
     }
 
     tasks.withType<JavaCompile> {
@@ -167,15 +204,19 @@ configure(javaProjects) {
             }
 
             /*
-             * Performance tests are only really run during development.
-             * They don't need to run in CI or as part of regular development.
+            These tests just test performance and should not run in CI.
              */
             excludeTags("performance")
 
             /*
-             * Marking a test as `slow` will excluded it from being run as part of the regular CI system.
+            These tests are too slow to run in CI.
              */
             excludeTags("slow")
+
+            /*
+            These tests need some sort of software that can't be reasonably installed on CI servers.
+             */
+            excludeTags("needsSpecialSoftware")
         }
 
         if (project.hasProperty("jenkinsBuild") || project.hasProperty("headless")) {
@@ -287,31 +328,6 @@ configure(kotlinProjects) {
         }
     }
 
-    // val compileKotlin: KotlinCompile by tasks
-    // afterEvaluate {
-    //     /*
-    //      * Needed to configure kotlin to work correctly with the "java-library" plugin.
-    //      * See:
-    //      * https://docs.gradle.org/current/userguide/java_library_plugin.html#sec:java_library_known_issues
-    //      */
-    //     pluginManager.withPlugin("java-library") {
-    //         configurations {
-    //             "apiElements" {
-    //                 outgoing
-    //                     .variants
-    //                     .getByName("classes")
-    //                     .artifact(
-    //                         mapOf(
-    //                             "file" to compileKotlin.destinationDir,
-    //                             "type" to "java-classes-directory",
-    //                             "builtBy" to compileKotlin
-    //                         )
-    //                     )
-    //             }
-    //         }
-    //     }
-    // }
-
     spotless {
         kotlin {
             ktlint(property("ktlint.version") as String)
@@ -347,6 +363,36 @@ configure(javaProjects + kotlinProjects) {
     tasks.named("classes") {
         dependsOn(writePropertiesTask)
     }
+}
+
+configure(pitestProjects) {
+    apply {
+        plugin("info.solidsoft.pitest")
+    }
+
+    pitest {
+        testPlugin = "junit5"
+        threads = 4
+        avoidCallsTo = setOf("kotlin.jvm.internal", "kotlinx.coroutines")
+        excludedMethods = setOf(
+            "hashCode",
+            "equals",
+            "checkIndexOverflow",
+            "throwIndexOverflow",
+            "collectionSizeOrDefault"
+        )
+        excludedClasses = setOf(
+            "NoSuchElementException",
+            "NoWhenBranchMatchedException",
+            "IllegalStateException"
+        )
+        timeoutConstInMillis = 10000
+        mutators = setOf("ALL")
+    }
+}
+
+tasks.withType<PitestTask> {
+    onlyIf { project in pitestProjects }
 }
 
 configure(publishedProjects) {

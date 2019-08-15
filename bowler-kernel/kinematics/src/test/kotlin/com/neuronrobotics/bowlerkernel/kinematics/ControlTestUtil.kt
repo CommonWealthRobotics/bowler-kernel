@@ -14,6 +14,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:SuppressWarnings("LongMethod", "TooManyFunctions")
+@file:Suppress("UnstableApiUsage")
+
 package com.neuronrobotics.bowlerkernel.kinematics
 
 import arrow.core.left
@@ -50,6 +53,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlan
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.toImmutableNetwork
+import kotlin.random.Random
 
 internal fun createMotionConstraints(duration: Number) = BasicMotionConstraints(
     duration, 0, 0, 0
@@ -155,3 +159,9 @@ internal fun makeSimpleKinematicGraph(
 
     return mutableGraph.toImmutableNetwork()
 }
+
+internal fun randomFrameTransformation() = Random.Default.randomFrameTransformation()
+
+internal fun Random.randomFrameTransformation() =
+    FrameTransformation.fromTranslation(nextDouble(10.0), nextDouble(10.0), nextDouble(10.0)) *
+        FrameTransformation.fromRotation(nextDouble(10.0), nextDouble(10.0), nextDouble(10.0))

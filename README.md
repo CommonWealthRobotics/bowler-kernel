@@ -1,8 +1,7 @@
 # bowler-kernel
 
 [![Join the chat at https://gitter.im/BowlerBuilder/Lobby](https://badges.gitter.im/BowlerBuilder/Lobby.svg)](https://gitter.im/BowlerBuilder/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://travis-ci.org/CommonWealthRobotics/bowler-kernel.svg?branch=master)](https://travis-ci.org/CommonWealthRobotics/bowler-kernel)
-[![Build status](https://ci.appveyor.com/api/projects/status/49hn4238d3mu41f8/branch/master?svg=true)](https://ci.appveyor.com/project/Octogonapus/bowler-kernel/branch/master)
+[![Build Status](https://dev.azure.com/commonwealthrobotics/bowler-kernel/_apis/build/status/CommonWealthRobotics.bowler-kernel?branchName=master)](https://dev.azure.com/commonwealthrobotics/bowler-kernel/_build/latest?definitionId=1&branchName=master)
 [![Download](https://api.bintray.com/packages/commonwealthrobotics/maven-artifacts/bowler-kernel/images/download.svg) ](https://bintray.com/commonwealthrobotics/maven-artifacts/bowler-kernel/_latestVersion)
 [![codecov](https://codecov.io/gh/CommonWealthRobotics/bowler-kernel/branch/master/graph/badge.svg)](https://codecov.io/gh/CommonWealthRobotics/bowler-kernel)
 [![stability-experimental](https://img.shields.io/badge/stability-experimental-orange.svg)](https://github.com/emersion/stability-badges#experimental)
@@ -16,6 +15,8 @@ Currently, issue tracking is done with ZenHub, so users without ZenHub will see 
 
 Get the artifacts [here](https://bintray.com/commonwealthrobotics/maven-artifacts/bowler-kernel/_latestVersion). Additional repositories:
 ```kotlin
-maven(url = "https://dl.bintray.com/s1m0nw1/KtsRunner")
-maven(url = "https://dl.bintray.com/octogonapus/maven-artifacts")
+maven("https://dl.bintray.com/octogonapus/maven-artifacts")
+maven("https://oss.sonatype.org/content/repositories/staging/")
+maven("https://dl.bintray.com/47deg/helios")
+maven("https://dl.bintray.com/s1m0nw1/KtsRunner")
 ```

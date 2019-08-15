@@ -20,10 +20,8 @@ import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.scripting.DefaultScript
 import com.neuronrobotics.bowlerkernel.scripting.ScriptLanguage
 import com.neuronrobotics.bowlerkernel.scripting.parser.ScriptLanguageParser
-import javax.inject.Inject
 
-class DefaultScriptFactory
-@Inject constructor(
+class DefaultScriptFactory(
     private val scriptLanguageParser: ScriptLanguageParser
 ) : TextScriptFactory {
 

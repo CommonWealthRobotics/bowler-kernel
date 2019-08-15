@@ -64,7 +64,7 @@ sealed class DefaultResourceTypes(
     object Servo : DefaultResourceTypes(6, Short.SIZE_BYTES.toByte(), 0)
 
     /**
-     * A stepper motor, typically needs a [PinGroup] of 2 or 4 pins.
+     * A stepper motor, typically needs a [PinGroup].
      */
     object Stepper : DefaultResourceTypes(7, 4, 0)
 

@@ -21,7 +21,6 @@ import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceIdValidator
 import edu.wpi.SimplePacketComs.phy.HIDSimplePacketComs
 import edu.wpi.SimplePacketComs.phy.UDPSimplePacketComs
-import javax.inject.Inject
 
 /**
  * A [BowlerRPCProtocolFactory] which makes [SimplePacketComsProtocol]. Supports
@@ -29,8 +28,7 @@ import javax.inject.Inject
  *
  * @param resourceIdValidator The resource id validator to give to the [SimplePacketComsProtocol].
  */
-class SimplePacketComsProtocolFactory
-@Inject constructor(
+class SimplePacketComsProtocolFactory(
     private val resourceIdValidator: ResourceIdValidator
 ) : BowlerRPCProtocolFactory {
 

@@ -37,27 +37,24 @@ import kotlin.reflect.KClass
  * A meta-script which can compile and run any known [ScriptLanguage].
  *
  * Notes for [ScriptLanguage.Groovy]:
- * Passes the `args` as a variable named `args` and passes the [Script.injector] as a variable
- * named `injector`.
+ * Passes the `args` as a variable named `args`.
  */
-class DefaultScript
-internal constructor(
+class DefaultScript(
     private val language: ScriptLanguage,
     private val scriptText: String
 ) : Script() {
 
     private var scriptThread: Deferred<Any?>? = null
-    private var kotlinScript: Script? = null
+    private var scriptInstance: Script? = null
 
     /**
      * Runs the script on the current thread.
      *
-     * If the language is Groovy, some star imports are added and two variables, `args` and
-     * `injector`, are added.
+     * If the language is Groovy, some star imports are added and a variable `args` is added.
      *
-     * If the language is Kotlin, special code structure must be used. The script must return a
-     * [KClass] which implements [Script]. This class will make an instance of it with
-     * [Script.injector] and will then call [Script.runScript] with `args`.
+     * If a [KClass] or [Class] is returned, it will be instantiated. If that instance implements
+     * [Script], this class will make an instance of it with [Class.newInstance] and will then call
+     * [Script.runScript] with `args`.
      *
      * @param args The arguments to the script.
      * @return The result of the script.
@@ -65,13 +62,17 @@ internal constructor(
     override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> =
         when (language) {
             is ScriptLanguage.Groovy -> runBlocking {
-                handleGroovy(this, scriptText, args).toEither().mapLeft { it.localizedMessage }
+                handleGroovy(this, scriptText, args)
+                    .toEither()
+                    .mapLeft { it.localizedMessage }
+                    .flatMap { it }
             }
 
             is ScriptLanguage.Kotlin -> runBlocking {
-                handleKotlin(this, scriptText, args).toEither().mapLeft {
-                    it.localizedMessage
-                }.flatMap { it }
+                handleKotlin(this, scriptText, args)
+                    .toEither()
+                    .mapLeft { it.localizedMessage }
+                    .flatMap { it }
             }
         }
 
@@ -79,39 +80,11 @@ internal constructor(
         coroutineScope: CoroutineScope,
         scriptText: String,
         args: ImmutableList<Any?>
-    ): Try<Any?> {
+    ): Try<Either<String, Any?>> {
         val configuration = CompilerConfiguration().apply {
             addCompilationCustomizers(
-                ImportCustomizer().addStarImports(
-                    "java.util",
-                    "java.io",
-                    "java.nio.file",
-                    "arrow.core",
-                    "eu.mihosoft.vrl.v3d",
-                    "eu.mihosoft.vrl.v3d.svg",
-                    "eu.mihosoft.vrl.v3d.samples",
-                    "eu.mihosoft.vrl.v3d.parametrics",
-                    "eu.mihosoft.vrl.v3d.Transform",
-                    "com.neuronrobotics.imageprovider",
-                    "com.neuronrobotics.sdk.addons.kinematics.xml",
-                    "com.neuronrobotics.sdk.addons.kinematics",
-                    "com.neuronrobotics.sdk.dyio.peripherals",
-                    "com.neuronrobotics.sdk.dyio",
-                    "com.neuronrobotics.sdk.common",
-                    "com.neuronrobotics.sdk.ui",
-                    "com.neuronrobotics.sdk.util",
-                    "com.neuronrobotics.sdk.serial",
-                    "com.neuronrobotics.sdk.addons.kinematics",
-                    "com.neuronrobotics.sdk.addons.kinematics.math",
-                    "com.neuronrobotics.sdk.addons.kinematics.gui",
-                    "com.neuronrobotics.sdk.config",
-                    "com.neuronrobotics.bowlerkernel",
-                    "com.neuronrobotics.bowlerstudio",
-                    "com.neuronrobotics.bowlerstudio.scripting",
-                    "com.neuronrobotics.bowlerstudio.physics",
-                    "com.neuronrobotics.bowlerstudio.vitamins",
-                    "com.neuronrobotics.bowlerstudio.creature"
-                )
+                @Suppress("SpreadOperator")
+                ImportCustomizer().addStarImports(*groovyStarImports)
             )
         }
 
@@ -120,7 +93,6 @@ internal constructor(
                 Thread.currentThread().contextClassLoader,
                 Binding().apply {
                     setVariable("args", args)
-                    setVariable("injector", injector)
                 },
                 configuration
             ).parse(scriptText)
@@ -128,7 +100,7 @@ internal constructor(
             coroutineScope.async { script.run() }
         }.map {
             scriptThread = it
-            scriptThread?.await()
+            processResult(scriptThread?.await(), args)
         }
     }
 
@@ -140,20 +112,7 @@ internal constructor(
     ): Try<Either<String, Any?>> {
         return Try {
             coroutineScope.async {
-                val result = KtsObjectLoader().load<Any?>(scriptText)
-                if (result is KClass<*>) {
-                    val instance = this@DefaultScript.injector.getInstance(result.java)
-                    if (instance is Script) {
-                        // Add all of this script's extra modules to the script to run
-                        instance.addToInjector(this@DefaultScript.getModules())
-                        kotlinScript = instance
-                        instance.startScript(args)
-                    } else {
-                        instance.right()
-                    }
-                } else {
-                    result.right()
-                }
+                processResult(KtsObjectLoader().load(scriptText), args)
             }
         }.map {
             scriptThread = it
@@ -161,8 +120,60 @@ internal constructor(
         }
     }
 
+    private fun processResult(resultIn: Any?, args: ImmutableList<Any?>): Either<String, Any?> {
+        var result = resultIn
+        if (result is KClass<*>) {
+            result = result.java
+        }
+
+        return if (result is Class<*>) {
+            val instance = result.getDeclaredConstructor().newInstance()
+            if (instance is Script) {
+                scriptInstance = instance
+                instance.startScript(args)
+            } else {
+                instance.right()
+            }
+        } else {
+            result.right()
+        }
+    }
+
     override fun stopScript() {
         scriptThread?.cancel()
-        kotlinScript?.stopAndCleanUp()
+        scriptInstance?.stopAndCleanUp()
+    }
+
+    companion object {
+        private val groovyStarImports = listOf(
+            "java.util",
+            "java.io",
+            "java.nio.file",
+            "arrow.core",
+            "eu.mihosoft.vrl.v3d",
+            "eu.mihosoft.vrl.v3d.svg",
+            "eu.mihosoft.vrl.v3d.samples",
+            "eu.mihosoft.vrl.v3d.parametrics",
+            "eu.mihosoft.vrl.v3d.Transform",
+            "com.neuronrobotics.imageprovider",
+            "com.neuronrobotics.sdk.addons.kinematics.xml",
+            "com.neuronrobotics.sdk.addons.kinematics",
+            "com.neuronrobotics.sdk.dyio.peripherals",
+            "com.neuronrobotics.sdk.dyio",
+            "com.neuronrobotics.sdk.common",
+            "com.neuronrobotics.sdk.ui",
+            "com.neuronrobotics.sdk.util",
+            "com.neuronrobotics.sdk.serial",
+            "com.neuronrobotics.sdk.addons.kinematics",
+            "com.neuronrobotics.sdk.addons.kinematics.math",
+            "com.neuronrobotics.sdk.addons.kinematics.gui",
+            "com.neuronrobotics.sdk.config",
+            "com.neuronrobotics.bowlerkernel",
+            "com.neuronrobotics.bowlerstudio",
+            "com.neuronrobotics.bowlerstudio.scripting",
+            "com.neuronrobotics.bowlerstudio.physics",
+            "com.neuronrobotics.bowlerstudio.vitamins",
+            "com.neuronrobotics.bowlerstudio.creature"
+        ).toTypedArray()
     }
 }

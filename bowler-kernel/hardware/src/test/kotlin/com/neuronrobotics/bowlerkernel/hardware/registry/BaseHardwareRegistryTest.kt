@@ -14,28 +14,31 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:SuppressWarnings("LargeClass", "TooManyFunctions", "LongMethod", "LongMethod")
+
 package com.neuronrobotics.bowlerkernel.hardware.registry
 
-import arrow.core.Either
-import arrow.core.right
+import arrow.core.left
 import com.neuronrobotics.bowlerkernel.hardware.device.Device
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.ProvisionedDeviceResourceGroup
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.ProvisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDeviceResourceGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.getOrFail
+import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
+import java.util.concurrent.TimeUnit
 
-class BaseHardwareRegistryTest {
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
+internal class BaseHardwareRegistryTest {
 
     private val registry = BaseHardwareRegistry()
 
@@ -65,41 +68,23 @@ class BaseHardwareRegistryTest {
         val device = registry.makeDeviceOrFail()
         val unregisterError = registry.unregisterDevice(device)
 
-        assertAll(
-            { assertTrue(unregisterError.isEmpty()) },
-            { assertTrue(device.disconnectWasCalled) }
-        )
+        verify(device).disconnect()
+        assertTrue(unregisterError.isEmpty())
     }
 
     @Test
     fun `fail to unregister registered device`() {
-        class ThrowingMockDevice(
-            override val deviceId: DeviceId
-        ) : Device {
+        val deviceId = DeviceId(
+            DefaultDeviceTypes.UnknownDevice,
+            DefaultConnectionMethods.RawHID(0, 0)
+        )
 
-            override fun connect(): Either<String, Unit> = Unit.right()
-
-            override fun disconnect(): Either<String, Unit> {
-                throw IllegalStateException("Oops!")
+        val device = registry.registerDevice(deviceId) {
+            mock<Device> {
+                on { this.deviceId } doReturn deviceId
+                on { disconnect() } doReturn "Oops!".left()
             }
-
-            override fun isResourceInRange(resourceId: ResourceId) = true
-
-            override fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
-                resource: T
-            ) = Either.left("Not implemented")
-
-            override fun <T : UnprovisionedDeviceResourceGroup<R>, R : ProvisionedDeviceResourceGroup> add(
-                resourceGroup: T
-            ) = Either.left("Not implemented")
-        }
-
-        val device = registry.registerDevice(
-            DeviceId(
-                DefaultDeviceTypes.UnknownDevice,
-                DefaultConnectionMethods.RawHID(0, 0)
-            )
-        ) { ThrowingMockDevice(it) }.getOrFail()
+        }.getOrFail()
 
         val unregisterError = registry.unregisterDevice(device)
 
@@ -158,14 +143,16 @@ class BaseHardwareRegistryTest {
 
     @Test
     fun `register device resource without registering device first`() {
+        val deviceId = DeviceId(
+            DefaultDeviceTypes.UnknownDevice,
+            DefaultConnectionMethods.RawHID(0, 0)
+        )
+
         val registerError =
             registry.registerDeviceResource(
-                MockDevice(
-                    DeviceId(
-                        DefaultDeviceTypes.UnknownDevice,
-                        DefaultConnectionMethods.RawHID(0, 0)
-                    )
-                ),
+                mock<Device> {
+                    on { this.deviceId } doReturn deviceId
+                },
                 ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1))
             ) { _, _ ->
                 mock<UnprovisionedDeviceResource<*>> {}
@@ -198,14 +185,16 @@ class BaseHardwareRegistryTest {
 
     @Test
     fun `unregister device resource without registering device resource first`() {
+        val deviceId = DeviceId(
+            DefaultDeviceTypes.UnknownDevice,
+            DefaultConnectionMethods.RawHID(0, 0)
+        )
+
         val unregisterError = registry.unregisterDeviceResource(
             MockUnprovisionedDeviceResource(
-                MockDevice(
-                    DeviceId(
-                        DefaultDeviceTypes.UnknownDevice,
-                        DefaultConnectionMethods.RawHID(0, 0)
-                    )
-                ),
+                mock<Device> {
+                    on { this.deviceId } doReturn deviceId
+                },
                 ResourceId(DefaultResourceTypes.DigitalOut, DefaultAttachmentPoints.Pin(1))
             )
         )

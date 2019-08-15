@@ -41,14 +41,12 @@ class SealedObjectHierarchyConverter(private val kls: KClass<*>) : Converter {
         return allClasses.firstOrNull { it.qualifiedName == objectName }?.objectInstance
     }
 
-    override fun toJson(value: Any): String {
-        return """{"name": "${value::class.qualifiedName}"}"""
-    }
+    override fun toJson(value: Any) = """{"name": "${value::class.qualifiedName}"}"""
 
     private fun isSealedAndContainsOnlySealedClassesOrObjects(cls: KClass<*>): Boolean =
-        (cls.isSealed && cls.sealedSubclasses.map {
+        cls.isSealed && cls.sealedSubclasses.map {
             isSealedAndContainsOnlySealedClassesOrObjects(it)
-        }.fold(true, Boolean::and)) || cls.objectInstance != null
+        }.fold(true, Boolean::and) || cls.objectInstance != null
 
     private fun allSealedSubclasses(cls: KClass<*>): List<KClass<*>> =
         cls.sealedSubclasses + cls.sealedSubclasses.flatMap { allSealedSubclasses(it) }

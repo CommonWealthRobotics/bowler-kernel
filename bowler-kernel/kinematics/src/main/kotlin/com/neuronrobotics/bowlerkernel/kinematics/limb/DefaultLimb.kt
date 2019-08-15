@@ -107,6 +107,7 @@ class DefaultLimb(
 
     override fun getInertialState() = inertialStateEstimator.getInertialState()
 
+    @SuppressWarnings("ComplexMethod")
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is DefaultLimb) return false

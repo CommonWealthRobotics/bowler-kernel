@@ -39,7 +39,6 @@ import org.octogonapus.ktunits.quantities.millimeter
 import org.octogonapus.ktunits.quantities.nM
 import org.octogonapus.ktunits.quantities.revolutionPerMinute
 import org.octogonapus.ktunits.quantities.volt
-import org.octogonapus.ktunits.quantities.watt
 
 /**
  * A Vex EDR motor.
@@ -77,12 +76,12 @@ sealed class VexEDRMotor(
     val freeCurrent: ElectricCurrent,
     val stallTorque: Torque,
     val stallCurrent: ElectricCurrent,
-    val power: Power,
     override val mass: Mass,
-    override val centerOfMass: CenterOfMass,
     @ConvertImmutableMap
     override val specs: ImmutableMap<String, Any>
 ) : Vitamin, KlaxonVitaminTo {
+
+    abstract val power: Power
 
     object VexMotor393 : VexEDRMotor(
         width = 50.2.millimeter,
@@ -93,7 +92,6 @@ sealed class VexEDRMotor(
             width = (1.0 / 8.0).inch,
             height = 2.inch,
             mass = 20.gram,
-            centerOfMass = CenterOfMass(0.inch, 0.inch, 1.inch),
             specs = emptyImmutableMap()
         ),
         axelInset = 7.millimeter,
@@ -105,11 +103,16 @@ sealed class VexEDRMotor(
         freeCurrent = 0.37.ampere,
         stallTorque = 1.67.nM,
         stallCurrent = 4.8.ampere,
-        power = 0.watt,
         mass = 0.192.lbM,
-        centerOfMass = CenterOfMass(0.inch, 0.inch, (-0.5).inch),
         specs = emptyImmutableMap()
     ) {
+
+        override val power: Power
+            get() = TODO("not implemented")
+
+        override val centerOfMass: CenterOfMass
+            get() = TODO("not implemented")
+
         override fun toVitamin() = this
     }
 
@@ -122,7 +125,6 @@ sealed class VexEDRMotor(
             width = (1.0 / 8.0).inch,
             height = 2.inch,
             mass = 20.gram,
-            centerOfMass = CenterOfMass(0.inch, 0.inch, 1.inch),
             specs = emptyImmutableMap()
         ),
         axelInset = 4.5.millimeter,
@@ -134,11 +136,16 @@ sealed class VexEDRMotor(
         freeCurrent = 0.18.ampere,
         stallTorque = 8.6.lbFIn,
         stallCurrent = 2.6.ampere,
-        power = 0.watt,
         mass = 0.134.lbM,
-        centerOfMass = CenterOfMass(0.inch, 0.inch, (-0.5).inch),
         specs = emptyImmutableMap()
     ) {
+
+        override val power: Power
+            get() = TODO("not implemented")
+
+        override val centerOfMass: CenterOfMass
+            get() = TODO("not implemented")
+
         override fun toVitamin() = this
     }
 }

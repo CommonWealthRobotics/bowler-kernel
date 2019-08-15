@@ -21,7 +21,7 @@ import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.AnalogInGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
-import com.neuronrobotics.bowlerkernel.hardware.registry.RegisterError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterError
 
 interface UnprovisionedAnalogInGroupFactory {
 

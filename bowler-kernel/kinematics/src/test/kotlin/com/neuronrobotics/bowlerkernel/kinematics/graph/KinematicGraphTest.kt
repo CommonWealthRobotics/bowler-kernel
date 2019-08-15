@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:SuppressWarnings("LongMethod")
+
 package com.neuronrobotics.bowlerkernel.kinematics.graph
 
 import arrow.core.Either
@@ -24,9 +26,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBas
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopBodyController
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopJointAngleController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.DefaultLimb
-import com.neuronrobotics.bowlerkernel.kinematics.limb.DefaultLimbFactory
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DefaultLinkFactory
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.LengthBasedReachabilityCalculator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopForwardKinematicsSolver
@@ -35,39 +35,62 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInverseKinematicsSo
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanGenerator
 import com.neuronrobotics.bowlerkernel.kinematics.seaArmLinks
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.doReturnConsecutively
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
+import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.toImmutableList
 import org.octogonapus.ktguava.collections.toImmutableNetwork
+import java.util.concurrent.TimeUnit
 
 @Suppress("UnstableApiUsage")
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class KinematicGraphTest {
+
+    private val mutableKinematicGraph = buildMutableKinematicGraph()
+
+    private val baseNodeA = BaseNode(SimpleKinematicBaseId("BaseA")).left()
+
+    private val limbA = makeLimb("LimbA")
+    private val limbB = makeLimb("LimbB")
+    private val limbABaseTransform = FrameTransformation.fromTranslation(10, 0, -10)
+    private val limbBBaseTransform = FrameTransformation.fromTranslation(-10, 0, -10)
+
+    private lateinit var kinematicGraph: KinematicGraph
+
+    @BeforeEach
+    fun beforeEach() {
+        mutableKinematicGraph.addEdge(baseNodeA, limbA, limbABaseTransform)
+        mutableKinematicGraph.addEdge(baseNodeA, limbB, limbBBaseTransform)
+        kinematicGraph = mutableKinematicGraph.toImmutableNetwork()
+    }
+
+    @Test
+    fun `test create`() {
+        val baseId = SimpleKinematicBaseId("BaseA")
+        val bodyController = NoopBodyController
+        val base = DefaultKinematicBase.create(kinematicGraph, baseId, bodyController)
+
+        assertAll(
+            { assertEquals(setOf(limbA.b, limbB.b), base.limbs) },
+            { assertEquals(baseId, base.id) },
+            { assertEquals(bodyController, base.bodyController) },
+            {
+                assertEquals(
+                    mapOf(limbA.b.id to limbABaseTransform, limbB.b.id to limbBBaseTransform),
+                    base.limbBaseTransforms
+                )
+            }
+        )
+    }
 
     @Test
     fun `test json conversion`() {
-        val mutableKinematicGraph = buildMutableKinematicGraph()
-
-        val baseNodeA = BaseNode(SimpleKinematicBaseId("BaseA")).left()
-
-        val limbA = makeLimb("LimbA")
-        val limbB = makeLimb("LimbB")
-
-        mutableKinematicGraph.addEdge(
-            baseNodeA,
-            limbA,
-            FrameTransformation.fromTranslation(10, 0, -10)
-        )
-
-        mutableKinematicGraph.addEdge(
-            baseNodeA,
-            limbB,
-            FrameTransformation.fromTranslation(-10, 0, -10)
-        )
-
-        val kinematicGraph = mutableKinematicGraph.toImmutableNetwork()
-
         val baseA = DefaultKinematicBase.create(
             kinematicGraph,
             SimpleKinematicBaseId("BaseA"),
@@ -79,19 +102,26 @@ internal class KinematicGraphTest {
         val graphJson = KinematicGraphData.encoder().run { kinematicGraphData.encode() }
 
         val decodedGraph = graphJson.decode(KinematicGraphData.decoder())
-        assertTrue(decodedGraph.isRight())
+        assertTrue(decodedGraph.isRight()) {
+            """
+            Expected Either.Right, got:
+            $decodedGraph
+            """.trimIndent()
+        }
+
         decodedGraph as Either.Right
+        val convertedKinematicGraph = decodedGraph.b.convertToKinematicGraph(mock {
+            on { createLimb(any(), any()) } doReturnConsecutively listOf(limbA, limbB)
+        })
 
-        val convertedKinematicGraph = decodedGraph.b.convertToKinematicGraph(
-            DefaultLimbFactory(
-                mock {},
-                DefaultLinkFactory(mock {})
-            )
-        )
+        assertTrue(convertedKinematicGraph is Either.Right) {
+            """
+            Expected Either.Right, got:
+            $convertedKinematicGraph
+            """.trimIndent()
+        }
 
-        assertTrue(convertedKinematicGraph is Either.Right)
         convertedKinematicGraph as Either.Right
-
         assertEquals(kinematicGraph.fullEdges(), convertedKinematicGraph.b.fullEdges())
     }
 
@@ -107,5 +137,5 @@ internal class KinematicGraphTest {
             NoopJointAngleController
         }.toImmutableList(),
         NoopInertialStateEstimator
-    ).right()
+    ).right() as Either.Right
 }

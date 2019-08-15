@@ -17,14 +17,10 @@
 package com.neuronrobotics.bowlerkernel.kinematics.motion.model
 
 import arrow.core.Either
-import arrow.core.Try
 import com.beust.klaxon.Klaxon
-import com.google.common.base.Throwables
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 import com.neuronrobotics.bowlerkernel.gitfs.decoder
 import com.neuronrobotics.bowlerkernel.gitfs.encoder
-import com.neuronrobotics.bowlerkernel.scripting.factory.GitScriptFactory
-import com.neuronrobotics.bowlerkernel.scripting.factory.getInstanceFromGit
 import helios.instances.decoder
 import helios.instances.encoder
 
@@ -63,21 +59,4 @@ inline fun <reified T : Any> ControllerSpecification.loadClass(klaxon: Klaxon): 
         clazz,
         clazz.kotlin
     ) as T
-}
-
-/**
- * Creates an instance from this.
- *
- * @param scriptFactory The [GitScriptFactory] used if this is a [Either.Left].
- * @param klaxon The [Klaxon] used if this is a [Either.Right].
- * @return The instance.
- */
-inline fun <reified T : Any> ControllerSpecification.createInstance(
-    scriptFactory: GitScriptFactory,
-    klaxon: Klaxon
-): Either<String, T> = when (this) {
-    is Either.Left -> scriptFactory.getInstanceFromGit<T>(a).unsafeRunSync()
-    is Either.Right -> Try { loadClass<T>(klaxon) }.toEither {
-        Throwables.getStackTraceAsString(it)
-    }
 }

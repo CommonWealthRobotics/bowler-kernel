@@ -1,7 +1,3 @@
-plugins {
-    `java-library`
-}
-
 description = "Controlled access to hardware resources."
 
 fun DependencyHandler.arrow(name: String) =
@@ -30,22 +26,6 @@ dependencies {
     api(arrow("arrow-typeclasses"))
     api(arrow("arrow-extras-data"))
     api(arrow("arrow-extras-extensions"))
-
-    api(
-        group = "com.google.inject",
-        name = "guice",
-        version = property("guice.version") as String
-    )
-    api(
-        group = "com.google.inject.extensions",
-        name = "guice-assistedinject",
-        version = "4.1.0"
-    )
-    api(
-        group = "org.jlleitschuh.guice",
-        name = "kotlin-guiced-core",
-        version = property("kotlin-guiced-core.version") as String
-    )
 
     implementation(project(":bowler-kernel:logging"))
 

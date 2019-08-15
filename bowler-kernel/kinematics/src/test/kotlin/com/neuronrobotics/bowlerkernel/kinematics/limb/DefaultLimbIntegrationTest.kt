@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:SuppressWarnings("LongMethod")
+
 package com.neuronrobotics.bowlerkernel.kinematics.limb
 
 import com.neuronrobotics.bowlerkernel.kinematics.MockJointAngleController
@@ -37,10 +39,13 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.toImmutableList
+import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DefaultLimbIntegrationTest {
 
     @Test

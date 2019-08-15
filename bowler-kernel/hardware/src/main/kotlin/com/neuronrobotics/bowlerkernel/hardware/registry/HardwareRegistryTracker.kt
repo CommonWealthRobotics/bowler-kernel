@@ -32,19 +32,25 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.gro
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDeviceResourceGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.DeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterDeviceError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterDeviceResourceError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterDeviceResourceGroupError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.UnregisterDeviceError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.UnregisterDeviceResourceError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.UnregisterDeviceResourceGroupError
+import com.neuronrobotics.bowlerkernel.hardware.registry.error.UnregisterError
 import org.octogonapus.ktguava.collections.toImmutableList
 import org.octogonapus.ktguava.collections.toImmutableMap
-import javax.inject.Inject
+import org.octogonapus.ktguava.collections.toImmutableSet
 
 /**
  * A proxy to keep track of all hardware registered through this class. Meant to be used to
  * unregister any hardware a script might have registered.
  *
- * @param registry The [BaseHardwareRegistry] to proxy and delegate to.
+ * @param registry The [HardwareRegistry] to proxy and delegate to.
  */
-internal class HardwareRegistryTracker
-@Inject internal constructor(
-    private val registry: BaseHardwareRegistry
+class HardwareRegistryTracker(
+    private val registry: HardwareRegistry
 ) : HardwareRegistry {
 
     /**
@@ -69,7 +75,7 @@ internal class HardwareRegistryTracker
     override fun <T : Device> registerDevice(
         deviceId: DeviceId,
         makeDevice: (DeviceId) -> T
-    ): Either<RegisterError, T> {
+    ): Either<RegisterDeviceError, T> {
         val registerError = registry.registerDevice(deviceId, makeDevice)
 
         registerError.map {
@@ -83,7 +89,7 @@ internal class HardwareRegistryTracker
         device: D,
         resourceId: ResourceId,
         makeResource: (D, ResourceId) -> T
-    ): Either<RegisterError, T> {
+    ): Either<RegisterDeviceResourceError, T> {
         val registerError = registry.registerDeviceResource(device, resourceId, makeResource)
 
         registerError.map {
@@ -97,7 +103,7 @@ internal class HardwareRegistryTracker
         device: D,
         resourceIds: ImmutableList<ResourceId>,
         makeResourceGroup: (D, ImmutableList<ResourceId>) -> T
-    ): Either<RegisterError, T> {
+    ): Either<RegisterDeviceResourceGroupError, T> {
         val registerError =
             registry.registerDeviceResourceGroup(device, resourceIds, makeResourceGroup)
 
@@ -108,7 +114,7 @@ internal class HardwareRegistryTracker
         return registerError
     }
 
-    override fun unregisterDevice(device: Device): Option<UnregisterError> {
+    override fun unregisterDevice(device: Device): Option<UnregisterDeviceError> {
         val unregisterError = registry.unregisterDevice(device)
 
         if (unregisterError.isEmpty()) {
@@ -118,7 +124,9 @@ internal class HardwareRegistryTracker
         return unregisterError
     }
 
-    override fun unregisterDeviceResource(resource: DeviceResource): Option<UnregisterError> {
+    override fun unregisterDeviceResource(
+        resource: DeviceResource
+    ): Option<UnregisterDeviceResourceError> {
         val unregisterError = registry.unregisterDeviceResource(resource)
 
         if (unregisterError.isEmpty()) {
@@ -128,7 +136,9 @@ internal class HardwareRegistryTracker
         return unregisterError
     }
 
-    override fun unregisterDeviceResourceGroup(resourceGroup: DeviceResourceGroup): Option<UnregisterError> {
+    override fun unregisterDeviceResourceGroup(
+        resourceGroup: DeviceResourceGroup
+    ): Option<UnregisterDeviceResourceGroupError> {
         val unregisterError = registry.unregisterDeviceResourceGroup(resourceGroup)
 
         if (unregisterError.isEmpty()) {
@@ -143,7 +153,7 @@ internal class HardwareRegistryTracker
      *
      * @return A list of all the errors encountered.
      */
-    internal fun unregisterAllHardware(): ImmutableList<UnregisterError> {
+    fun unregisterAllHardware(): ImmutableList<UnregisterError> {
         val unregisterDeviceResourceErrors = sessionRegisteredDeviceResources.asMap()
             .mapValues { (device, resources) ->
                 device to resources.map { resource ->
@@ -167,11 +177,33 @@ internal class HardwareRegistryTracker
             sessionRegisteredDevices.remove(device)
 
             // Also be sure to clean up any resources that got stranded
-            sessionRegisteredDeviceResources.removeAll(device)
+            val strandedResources = sessionRegisteredDeviceResources[device] ?: emptySet()
+            removeStrandedResources(device, strandedResources.toImmutableSet())
         }
 
         return (unregisterDeviceResourceErrors.flatMap {
             it.value.second.mapNotNull { (it as? Some)?.t }
         } + unregisterDeviceErrors.mapNotNull { (it.value as? Some)?.t }).toImmutableList()
+    }
+
+    private fun removeStrandedResources(
+        device: Device,
+        resources: Set<Either<DeviceResource, DeviceResourceGroup>>
+    ) {
+        if (registry is HardwareRegistryTracker) {
+            registry.removeStrandedResources(device, resources)
+        }
+
+        resources.forEach { resource ->
+            sessionRegisteredDeviceResources.remove(device, resource)
+        }
+    }
+
+    companion object {
+
+        /**
+         * Creates a new [HardwareRegistryTracker] that proxies a [BaseHardwareRegistry].
+         */
+        fun createWithBaseRegistry() = HardwareRegistryTracker(BaseHardwareRegistry())
     }
 }

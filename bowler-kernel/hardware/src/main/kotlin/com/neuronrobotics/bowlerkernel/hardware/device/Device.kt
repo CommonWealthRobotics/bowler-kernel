@@ -41,6 +41,7 @@ interface Device {
 
     /**
      * Closes the persistent connection to the device. Does nothing if there is no connection open.
+     * This should not throw an exception.
      *
      * @return An error if there is a disconnect problem.
      */

@@ -1,5 +1,4 @@
 plugins {
-    `java-library`
     kotlin("kapt")
 }
 
@@ -40,7 +39,7 @@ dependencies {
     implementation(
         group = "org.eclipse.jgit",
         name = "org.eclipse.jgit",
-        version = "5.2.0.201812061821-r"
+        version = property("jgit.version") as String
     )
 
     implementation(
@@ -67,5 +66,11 @@ dependencies {
         group = "com.47deg",
         name = "helios-dsl-meta",
         version = property("helios.version") as String
+    )
+
+    testImplementation(
+        group = "com.natpryce",
+        name = "hamkrest",
+        version = property("hamkrest.version") as String
     )
 }
