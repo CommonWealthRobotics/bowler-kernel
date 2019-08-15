@@ -162,6 +162,7 @@ class GitHubFS(
             .use {
                 it.submoduleInit().call()
                 it.submoduleUpdate().call()
+                it.repository.close()
             }
     }
 
