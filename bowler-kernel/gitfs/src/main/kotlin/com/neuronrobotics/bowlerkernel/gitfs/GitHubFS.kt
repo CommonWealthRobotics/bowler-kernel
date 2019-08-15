@@ -174,7 +174,7 @@ class GitHubFS(
 
     override fun forkRepo(gitUrl: String): IO<String> =
         when (val repo = parseRepo(gitUrl)) {
-            is None -> IO.raiseError(IllegalArgumentException("Invalid git urk: $gitUrl"))
+            is None -> IO.raiseError(IllegalArgumentException("Invalid git url: $gitUrl"))
             is Some -> forkRepo(repo.t).map {
                 it.url.toExternalForm()
             }
@@ -184,7 +184,7 @@ class GitHubFS(
         gitUrl: String,
         branch: String
     ): IO<File> = when (val repo = parseRepo(gitUrl)) {
-        is None -> IO.raiseError(IllegalArgumentException("Invalid git urk: $gitUrl"))
+        is None -> IO.raiseError(IllegalArgumentException("Invalid git url: $gitUrl"))
         is Some -> forkRepo(repo.t).flatMap {
             cloneRepo(it.gitUrl, branch)
         }
