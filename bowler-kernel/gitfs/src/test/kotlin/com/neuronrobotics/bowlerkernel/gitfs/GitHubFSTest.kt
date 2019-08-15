@@ -35,8 +35,10 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.kohsuke.github.GitHub
 import org.octogonapus.ktguava.collections.immutableSetOf
 import java.io.File
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class GitHubFSTest {
@@ -81,10 +83,11 @@ internal class GitHubFSTest {
 
         @Test
         fun `test cloning test repo`() {
-            val fs = makeAnonymousGitHubFS()
-
             // Don't use a TempDir because jgit leaves something open so Windows builds fail
-            val repoPath = getCleanedRepoPath(fs)
+            val tmpCachePath = getRandomTempFile()
+
+            val fs = GitHubFS(GitHub.connectAnonymously(), "" to "", tmpCachePath.toString())
+            val repoPath = Paths.get(fs.gitHubCacheDirectory, orgName, repoName)
 
             val files = fs.cloneRepoAndGetFiles(testRepoUrl)
                 .map { files -> files.map { it.toString() }.toSet() }
@@ -103,11 +106,13 @@ internal class GitHubFSTest {
 
         @Test
         fun `test cloning with corrupted git folder`() {
-            val fs = makeAnonymousGitHubFS()
-
             // Don't use a TempDir because jgit leaves something open so Windows builds fail
-            val repoPath = getCleanedRepoPath(fs)
+            val tmpCachePath = getRandomTempFile()
+            val fs = GitHubFS(GitHub.connectAnonymously(), "" to "", tmpCachePath.toString())
 
+            val repoPath = Paths.get(fs.gitHubCacheDirectory, orgName, repoName)
+
+            // Make an empty .git directory so it appears corrupted
             repoPath.toFile().apply { mkdirs() }
             Paths.get(repoPath.toString(), ".git").toFile().apply { mkdirs() }
 
@@ -125,14 +130,6 @@ internal class GitHubFSTest {
                 files
             )
         }
-
-        private fun makeAnonymousGitHubFS() =
-            GitHubFS(GitHub.connectAnonymously(), "" to "")
-
-        private fun getCleanedRepoPath(fs: GitHubFS) =
-            Paths.get(fs.gitHubCacheDirectory, orgName, repoName).also {
-                it.toFile().deleteRecursively()
-            }
 
         @Test
         fun `test deleteCache`(@TempDir tempDir: File) {
@@ -156,6 +153,13 @@ internal class GitHubFSTest {
             assertAll(
                 { assertFalse(fileInRepo.exists()) },
                 { assertFalse(repo.exists()) }
+            )
+        }
+
+        private fun getRandomTempFile(): Path {
+            return Paths.get(
+                System.getProperty("java.io.tmpdir"),
+                Random.nextBytes(15).joinToString(separator = "").replace("-", "")
             )
         }
     }
