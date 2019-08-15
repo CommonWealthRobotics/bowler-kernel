@@ -39,7 +39,7 @@ dependencies {
     implementation(
         group = "org.eclipse.jgit",
         name = "org.eclipse.jgit",
-        version = "5.2.0.201812061821-r"
+        version = property("jgit.version") as String
     )
 
     implementation(

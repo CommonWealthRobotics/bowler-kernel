@@ -147,21 +147,23 @@ class GitHubFS(
         gitUrl: String,
         branch: String,
         directory: File
-    ) = Git.cloneRepository()
-        .setURI(gitUrl)
-        .setBranch(branch)
-        .setDirectory(directory)
-        .setCredentialsProvider(
-            UsernamePasswordCredentialsProvider(
-                credentials.first,
-                credentials.second
+    ) {
+        Git.cloneRepository()
+            .setURI(gitUrl)
+            .setBranch(branch)
+            .setDirectory(directory)
+            .setCredentialsProvider(
+                UsernamePasswordCredentialsProvider(
+                    credentials.first,
+                    credentials.second
+                )
             )
-        )
-        .call()
-        .use {
-            it.submoduleInit().call()
-            it.submoduleUpdate().call()
-        }
+            .call()
+            .use {
+                it.submoduleInit().call()
+                it.submoduleUpdate().call()
+            }
+    }
 
     override fun cloneRepoAndGetFiles(
         gitUrl: String,
