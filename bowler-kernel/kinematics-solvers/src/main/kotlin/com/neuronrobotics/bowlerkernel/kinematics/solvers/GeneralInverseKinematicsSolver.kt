@@ -28,7 +28,7 @@ import com.neuronrobotics.bowlerkernel.util.JointLimits
  * Detects the type of serial manipulator and uses the correct solver for it.
  */
 class GeneralInverseKinematicsSolver(
-    private val links: ImmutableList<Link>
+    links: ImmutableList<Link>
 ) : InverseKinematicsSolver {
 
     @Suppress("MemberVisibilityCanBePrivate")
@@ -39,7 +39,7 @@ class GeneralInverseKinematicsSolver(
         currentJointAngles: List<Double>,
         jointLimits: List<JointLimits>,
         targetFrameTransform: FrameTransformation
-    ): List<Double> = identifySolver(links).solveChain(
+    ): List<Double> = solver.solveChain(
         links,
         currentJointAngles,
         jointLimits,
@@ -48,7 +48,7 @@ class GeneralInverseKinematicsSolver(
 
     private fun identifySolver(links: List<Link>): InverseKinematicsSolver =
         when (links.size) {
-            3 -> ThreeDofSolver()
+            3 -> ThreeDofSolver() // TODO: Check more than just the number of links
             else -> NativeIKSolverBridge()
         }
 }

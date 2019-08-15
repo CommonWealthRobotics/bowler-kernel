@@ -33,6 +33,7 @@ val bowlerKernelKinematicsProject = project(":bowler-kernel:kinematics")
 val bowlerKernelKinematicsFactoriesProject = project(":bowler-kernel:kinematics-factories")
 val bowlerKernelKinematicsSolversProject = project(":bowler-kernel:kinematics-solvers")
 val bowlerKernelLoggingProject = project(":bowler-kernel:logging")
+val bowlerKernelOldStackConverterProject = project(":bowler-kernel:old-stack-converter")
 val bowlerKernelScriptingProject = project(":bowler-kernel:scripting")
 val bowlerKernelUtilProject = project(":bowler-kernel:util")
 val bowlerKernelVitaminsProject = project(":bowler-kernel:vitamins")
@@ -48,6 +49,7 @@ val kotlinProjects = setOf(
     bowlerKernelKinematicsFactoriesProject,
     bowlerKernelKinematicsSolversProject,
     bowlerKernelLoggingProject,
+    bowlerKernelOldStackConverterProject,
     bowlerKernelScriptingProject,
     bowlerKernelUtilProject,
     bowlerKernelVitaminsProject
@@ -65,6 +67,7 @@ val publishedProjects = setOf(
     bowlerKernelKinematicsFactoriesProject,
     bowlerKernelKinematicsSolversProject,
     bowlerKernelLoggingProject,
+    bowlerKernelOldStackConverterProject,
     bowlerKernelScriptingProject,
     bowlerKernelUtilProject,
     bowlerKernelVitaminsProject
@@ -186,7 +189,7 @@ configure(javaProjects) {
 
     javafx {
         version = "11.0.2"
-        modules("javafx.graphics")
+        modules("javafx.graphics", "javafx.swing", "javafx.web")
     }
 
     tasks.withType<JavaCompile> {
