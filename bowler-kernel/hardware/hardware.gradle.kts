@@ -1,7 +1,3 @@
-plugins {
-    `java-library`
-}
-
 description = "Controlled access to hardware resources."
 
 fun DependencyHandler.arrow(name: String) =

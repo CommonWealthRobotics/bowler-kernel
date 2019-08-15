@@ -1,9 +1,5 @@
 description = "The core CAD module."
 
-plugins {
-    `java-library`
-}
-
 dependencies {
     api(project(":bowler-kernel:kinematics"))
 

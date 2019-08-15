@@ -1,9 +1,5 @@
 description = "CAD generators for Vitamins."
 
-plugins {
-    `java-library`
-}
-
 dependencies {
     api(project(":bowler-kernel:vitamins"))
 

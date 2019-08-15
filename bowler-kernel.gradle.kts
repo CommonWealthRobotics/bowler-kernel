@@ -7,15 +7,15 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.nio.file.Paths
 
 plugins {
-    id("com.diffplug.gradle.spotless") version "3.23.1"
-    id("org.jlleitschuh.gradle.ktlint") version "7.3.0"
-    id("com.github.spotbugs") version "1.7.1"
-    id("io.gitlab.arturbosch.detekt") version "1.0.0-RC16"
-    id("com.jfrog.bintray") version "1.8.3"
-    id("org.jetbrains.dokka") version "0.9.18"
-    id("com.adarshr.test-logger") version "1.6.0"
-    id("info.solidsoft.pitest") version "1.4.0"
-    id("org.openjfx.javafxplugin") version "0.0.8"
+    id("com.diffplug.gradle.spotless")
+    id("org.jlleitschuh.gradle.ktlint")
+    id("com.github.spotbugs")
+    id("io.gitlab.arturbosch.detekt")
+    id("com.jfrog.bintray")
+    id("org.jetbrains.dokka")
+    id("com.adarshr.test-logger")
+    id("info.solidsoft.pitest")
+    id("org.openjfx.javafxplugin")
     `maven-publish`
     `java-library`
     jacoco

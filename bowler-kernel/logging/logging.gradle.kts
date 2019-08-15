@@ -1,7 +1,3 @@
-plugins {
-    `java-library`
-}
-
 description = "The kernel's logging tools."
 
 dependencies {

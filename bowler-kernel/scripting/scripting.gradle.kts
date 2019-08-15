@@ -1,7 +1,3 @@
-plugins {
-    `java-library`
-}
-
 description = "Support for some default scripting languages."
 
 fun DependencyHandler.arrow(name: String) =
