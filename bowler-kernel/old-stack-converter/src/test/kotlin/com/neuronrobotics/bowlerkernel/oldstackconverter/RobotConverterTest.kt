@@ -53,11 +53,11 @@ internal class RobotConverterTest {
 
         val converter = RobotConverter(mobileBase)
         val result = converter.convertToKinematicGraph(
-            { baseId, limbId -> NoopLimbMotionPlanGenerator },
-            { baseId, limbId -> NoopLimbMotionPlanFollower },
-            { baseId, limbId, linkIndex, jointLimits -> NoopJointAngleController },
-            { baseId, limbId, linkIndex -> NoopInertialStateEstimator },
-            { baseId, limbId -> NoopInertialStateEstimator }
+            { _, _ -> NoopLimbMotionPlanGenerator },
+            { _, _ -> NoopLimbMotionPlanFollower },
+            { _, _, _, _ -> NoopJointAngleController },
+            { _, _, _ -> NoopInertialStateEstimator },
+            { _, _ -> NoopInertialStateEstimator }
         )
 
         assertThat(result.nodes(), hasSize(equalTo(2)))
@@ -100,11 +100,11 @@ internal class RobotConverterTest {
         val converter = RobotConverter(mobileBase)
         val result = converter.convertToKinematicBase(
             NoopBodyController,
-            { baseId, limbId -> NoopLimbMotionPlanGenerator },
-            { baseId, limbId -> NoopLimbMotionPlanFollower },
-            { baseId, limbId, linkIndex, jointLimits -> NoopJointAngleController },
-            { baseId, limbId, linkIndex -> NoopInertialStateEstimator },
-            { baseId, limbId -> NoopInertialStateEstimator }
+            { _, _ -> NoopLimbMotionPlanGenerator },
+            { _, _ -> NoopLimbMotionPlanFollower },
+            { _, _, _, _ -> NoopJointAngleController },
+            { _, _, _ -> NoopInertialStateEstimator },
+            { _, _ -> NoopInertialStateEstimator }
         ) as DefaultKinematicBase
 
         assertAll(

@@ -43,6 +43,8 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanGene
 import com.neuronrobotics.bowlerkernel.kinematics.solvers.GeneralForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.solvers.GeneralInverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.util.JointLimits
+import com.neuronrobotics.sdk.addons.kinematics.DHLink
+import com.neuronrobotics.sdk.addons.kinematics.DHParameterKinematics
 import com.neuronrobotics.sdk.addons.kinematics.MobileBase
 import org.octogonapus.ktguava.collections.toImmutableList
 import org.octogonapus.ktguava.collections.toImmutableNetwork
@@ -91,38 +93,14 @@ class RobotConverter(
         val limbsWithBaseFTs = mobileBase.allDHChains.map {
             val limbId = SimpleLimbId(it.scriptingName)
 
-            val links: ImmutableList<Link> = it.chain.links.mapIndexed { index, link ->
-                DefaultLink(
-                    LinkType.Rotary,
-                    DhParam(link.d, toDegrees(link.theta), link.r, toDegrees(link.alpha)),
-                    linkInertialStateEstimatorFactory(baseId, limbId, index)
-                )
-            }.toImmutableList()
-
-            val limits = it.chain.upperLimits
-                .zip(it.chain.getlowerLimits())
-                .map { (maximum, minimum) ->
-                    JointLimits(maximum = maximum, minimum = minimum)
-                }
-
-            val limb = DefaultLimb(
-                limbId,
-                links,
-                GeneralForwardKinematicsSolver(),
-                GeneralInverseKinematicsSolver(links),
-                LengthBasedReachabilityCalculator(),
+            mapLimb(
+                it,
+                linkInertialStateEstimatorFactory,
                 limbMotionPlanGeneratorFactory(baseId, limbId),
                 limbMotionPlanFollowerFactory(baseId, limbId),
-                links.zip(limits).mapIndexed { index, pair ->
-                    jointAngleControllerFactory(baseId, limbId, index, pair.second)
-                }.toImmutableList(),
+                jointAngleControllerFactory,
                 limbInertialStateEstimatorFactory(baseId, limbId)
             )
-
-            val baseFT =
-                FrameTransformation.fromMatrix(it.robotToFiducialTransform.matrixTransform)
-
-            limb to baseFT
         }
 
         limbsWithBaseFTs.forEach { (limb, baseFT) ->
@@ -131,4 +109,60 @@ class RobotConverter(
 
         return mutableKinematicGraph.toImmutableNetwork()
     }
+
+    private fun mapLimb(
+        oldLimb: DHParameterKinematics,
+        linkInertialStateEstimatorFactory: (KinematicBaseId, LimbId, Int) -> InertialStateEstimator,
+        limbMotionPlanGenerator: LimbMotionPlanGenerator,
+        limbMotionPlanFollower: LimbMotionPlanFollower,
+        jointAngleControllerFactory: (KinematicBaseId, LimbId, Int, JointLimits) -> JointAngleController,
+        limbInertialStateEstimator: InertialStateEstimator
+    ): Pair<DefaultLimb, FrameTransformation> {
+        val limbId = SimpleLimbId(oldLimb.scriptingName)
+
+        val links: ImmutableList<Link> = oldLimb.chain.links.mapIndexed { index, link ->
+            mapLink(link, linkInertialStateEstimatorFactory, limbId, index)
+        }.toImmutableList()
+
+        val limits = oldLimb.chain.upperLimits
+            .zip(oldLimb.chain.getlowerLimits())
+            .map { (maximum, minimum) ->
+                mapJointLimits(maximum, minimum)
+            }
+
+        val limb = DefaultLimb(
+            limbId,
+            links,
+            GeneralForwardKinematicsSolver(),
+            GeneralInverseKinematicsSolver(links),
+            LengthBasedReachabilityCalculator(),
+            limbMotionPlanGenerator,
+            limbMotionPlanFollower,
+            links.zip(limits).mapIndexed { index, pair ->
+                jointAngleControllerFactory(baseId, limbId, index, pair.second)
+            }.toImmutableList(),
+            limbInertialStateEstimator
+        )
+
+        val baseFT =
+            FrameTransformation.fromMatrix(oldLimb.robotToFiducialTransform.matrixTransform)
+
+        return limb to baseFT
+    }
+
+    private fun mapJointLimits(
+        maximum: Double,
+        minimum: Double
+    ) = JointLimits(maximum = maximum, minimum = minimum)
+
+    private fun mapLink(
+        link: DHLink,
+        linkInertialStateEstimatorFactory: (KinematicBaseId, LimbId, Int) -> InertialStateEstimator,
+        limbId: SimpleLimbId,
+        index: Int
+    ) = DefaultLink(
+        LinkType.Rotary,
+        DhParam(link.d, toDegrees(link.theta), link.r, toDegrees(link.alpha)),
+        linkInertialStateEstimatorFactory(baseId, limbId, index)
+    )
 }
