@@ -29,6 +29,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Resour
 import com.neuronrobotics.bowlerkernel.util.isAllUnique
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.fail
 
 @DslMarker
 internal annotation class DeviceTypeTestDsl
@@ -215,25 +216,33 @@ internal class DeviceTypeScenario(
             }
     }
 
-    fun digitalIn(vararg pins: Byte) {
-        digitalInPins = pins.toSet().toList()
+    fun digitalIn(vararg pins: Any) {
+        digitalInPins = pins.collectPins()
     }
 
-    fun digitalOut(vararg pins: Byte) {
-        digitalOutPins = pins.toSet().toList()
+    fun digitalOut(vararg pins: Any) {
+        digitalOutPins = pins.collectPins()
     }
 
-    fun analogIn(vararg pins: Byte) {
-        analogInPins = pins.toSet().toList()
+    fun analogIn(vararg pins: Any) {
+        analogInPins = pins.collectPins()
     }
 
-    fun analogOut(vararg pins: Byte) {
-        analogOutPins = pins.toSet().toList()
+    fun analogOut(vararg pins: Any) {
+        analogOutPins = pins.collectPins()
     }
 
     fun serial(vararg pins: Pair<Number, Number>) {
         serialPins = pins.map { Tuple2(it.first.toByte(), it.second.toByte()) }.toSet().toList()
     }
+
+    private fun Array<out Any>.collectPins() = flatMap {
+        when (it) {
+            is Int -> listOf(it.toByte())
+            is IntRange -> it.map { it.toByte() }
+            else -> fail { "Unknown pin input: $it" }
+        }
+    }.toSet().toList()
 
     private fun assertAllowed(resourceType: DefaultResourceTypes, pin: Byte) =
         assertAllowed(resourceType, DefaultAttachmentPoints.Pin(pin))
