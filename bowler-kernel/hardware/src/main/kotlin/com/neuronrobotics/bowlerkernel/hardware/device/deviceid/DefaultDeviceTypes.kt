@@ -93,6 +93,13 @@ sealed class DefaultDeviceTypes(
                     (p.pinNumbers[1] in digitalInPins && p.pinNumbers[0] in digitalOutPins))
     }
 
+    object Teensy35 : DefaultDeviceTypes("Teensy 3.5", 0, 58) {
+
+        override fun isResourceInRange(resourceId: ResourceId): Boolean {
+            TODO("not implemented")
+        }
+    }
+
     object UnknownDevice : DefaultDeviceTypes("Unknown Device", 0, 0) {
         override fun isResourceInRange(resourceId: ResourceId) = true
     }
