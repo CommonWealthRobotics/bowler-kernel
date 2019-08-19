@@ -34,6 +34,8 @@ dependencies {
 
     compileOnly(bowlerKinematicsNative())
 
+    implementation(files("$rootDir/jbullet-2.72.2.4.jar"))
+
     testImplementation(bowlerKinematicsNative())
 
     testImplementation(

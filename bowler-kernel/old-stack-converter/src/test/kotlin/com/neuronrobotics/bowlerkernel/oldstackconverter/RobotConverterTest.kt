@@ -32,15 +32,57 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInertialStateEstimator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanGenerator
+import com.neuronrobotics.bowlerstudio.creature.ICadGenerator
 import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine
 import com.neuronrobotics.sdk.addons.kinematics.DHLink
 import com.neuronrobotics.sdk.addons.kinematics.MobileBase
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import java.io.File
 import java.lang.Math.toDegrees
+import kotlin.math.round
+import kotlin.random.Random
 
 internal class RobotConverterTest {
+
+    @Test
+    @Disabled("Not really a test")
+    fun `export cad for carlo arm`() {
+        val mobileBase = ScriptingEngine.gitScriptRun(
+            "https://github.com/NotOctogonapus/SeriesElasticActuator.git",
+            "seaArm.xml",
+            null
+        ) as MobileBase
+
+        val limb = mobileBase.appendages.first()
+
+        listOf(
+            arrayListOf(36, round(36 / 0.33206607726344173).toInt()),
+            arrayListOf(36, round(36 / 0.8486810156880156).toInt()),
+            arrayListOf(36, round(36 / 0.1529117565209915).toInt())
+        ).mapIndexed { index, gearRatio ->
+            val cad = ScriptingEngine.gitScriptRun(
+                "https://github.com/NotOctogonapus/SeriesElasticActuator.git",
+                "LinkedGearedCadGen.groovy",
+                arrayListOf(gearRatio, gearRatio, gearRatio)
+            ) as ICadGenerator
+
+            val linkCad = cad.generateCad(limb, index)
+
+            File("/home/salmon/Downloads/carlo-cad/$index").let { file ->
+                file.mkdirs()
+                linkCad.forEach { csg ->
+                    File("${file.absolutePath}/${csg.name}-${randomByteString()}.stl")
+                        .writeText(csg.toStlString())
+                }
+            }
+        }
+    }
+
+    private fun randomByteString() =
+        Random.nextBytes(2).joinToString(separator = "").replace("-", "")
 
     @Test
     fun `test converting 3001 arm to kinematic graph`() {
