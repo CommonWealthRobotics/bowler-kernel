@@ -147,21 +147,25 @@ class GitHubFS(
         gitUrl: String,
         branch: String,
         directory: File
-    ) = Git.cloneRepository()
-        .setURI(gitUrl)
-        .setBranch(branch)
-        .setDirectory(directory)
-        .setCredentialsProvider(
-            UsernamePasswordCredentialsProvider(
-                credentials.first,
-                credentials.second
+    ) {
+        Git.cloneRepository()
+            .setURI(gitUrl)
+            .setBranch(branch)
+            .setDirectory(directory)
+            .setCredentialsProvider(
+                UsernamePasswordCredentialsProvider(
+                    credentials.first,
+                    credentials.second
+                )
             )
-        )
-        .call()
-        .use {
-            it.submoduleInit().call()
-            it.submoduleUpdate().call()
-        }
+            .call()
+            .use {
+                Git.wrap(it.repository).use {
+                    it.submoduleInit().call()
+                    it.submoduleUpdate().call()
+                }
+            }
+    }
 
     override fun cloneRepoAndGetFiles(
         gitUrl: String,
@@ -170,7 +174,7 @@ class GitHubFS(
 
     override fun forkRepo(gitUrl: String): IO<String> =
         when (val repo = parseRepo(gitUrl)) {
-            is None -> IO.raiseError(IllegalArgumentException("Invalid git urk: $gitUrl"))
+            is None -> IO.raiseError(IllegalArgumentException("Invalid git url: $gitUrl"))
             is Some -> forkRepo(repo.t).map {
                 it.url.toExternalForm()
             }
@@ -180,7 +184,7 @@ class GitHubFS(
         gitUrl: String,
         branch: String
     ): IO<File> = when (val repo = parseRepo(gitUrl)) {
-        is None -> IO.raiseError(IllegalArgumentException("Invalid git urk: $gitUrl"))
+        is None -> IO.raiseError(IllegalArgumentException("Invalid git url: $gitUrl"))
         is Some -> forkRepo(repo.t).flatMap {
             cloneRepo(it.gitUrl, branch)
         }

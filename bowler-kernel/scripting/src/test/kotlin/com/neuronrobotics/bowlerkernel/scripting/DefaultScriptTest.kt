@@ -20,7 +20,6 @@ package com.neuronrobotics.bowlerkernel.scripting
 
 import arrow.core.Either
 import arrow.core.right
-import com.google.common.base.Stopwatch
 import com.google.common.collect.ImmutableList
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.containsSubstring
@@ -34,6 +33,7 @@ import org.junit.jupiter.api.Timeout
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import org.octogonapus.ktguava.collections.immutableListOf
 import java.time.Duration
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
@@ -79,11 +79,16 @@ internal class DefaultScriptTest {
 
     @Test
     fun `test stopping a script which has child threads`() {
+        val threadLatch = CountDownLatch(2)
         val script = object : Script() {
             override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
                 repeat(2) {
                     addThread(thread {
-                        Thread.sleep(10000)
+                        try {
+                            Thread.sleep(10000)
+                        } catch (ex: InterruptedException) {
+                            threadLatch.countDown()
+                        }
                     })
                 }
 
@@ -96,13 +101,10 @@ internal class DefaultScriptTest {
         }
 
         script.startScript(emptyImmutableList())
-
-        Thread.sleep(500)
         assertTrue(script.isRunning)
 
-        val stopwatch = Stopwatch.createStarted()
-        script.stopAndCleanUp(timeout = 1000)
-        assertEquals(2, stopwatch.stop().elapsed(TimeUnit.SECONDS))
+        script.stopAndCleanUp()
+        assertEquals(0, threadLatch.count)
         assertFalse(script.isRunning)
     }
 
