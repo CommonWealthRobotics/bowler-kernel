@@ -40,6 +40,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialStateEstimator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.LengthBasedReachabilityCalculator
+import com.neuronrobotics.bowlerkernel.kinematics.motion.ReachabilityCalculator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanGenerator
 import com.neuronrobotics.bowlerkernel.kinematics.solvers.GeneralForwardKinematicsSolver
@@ -65,6 +66,7 @@ class RobotConverter(
         bodyController: BodyController,
         limbFKSolver: (KinematicBaseId, LimbId) -> ForwardKinematicsSolver = defaultFKSolver,
         limbIKSolver: (KinematicBaseId, LimbId, ImmutableList<Link>) -> InverseKinematicsSolver = defaultIKSolver,
+        limbReachabilityCalculator: (KinematicBaseId, LimbId) -> ReachabilityCalculator = defaultReachabilityCalculator,
         limbMotionPlanGeneratorFactory: (KinematicBaseId, LimbId) -> LimbMotionPlanGenerator,
         limbMotionPlanFollowerFactory: (KinematicBaseId, LimbId) -> LimbMotionPlanFollower,
         jointAngleControllerFactory: (KinematicBaseId, LimbId, Int, JointLimits) -> JointAngleController,
@@ -75,6 +77,7 @@ class RobotConverter(
             kinematicGraph = convertToKinematicGraph(
                 limbFKSolver = limbFKSolver,
                 limbIKSolver = limbIKSolver,
+                limbReachabilityCalculator = limbReachabilityCalculator,
                 limbMotionPlanGeneratorFactory = limbMotionPlanGeneratorFactory,
                 limbMotionPlanFollowerFactory = limbMotionPlanFollowerFactory,
                 jointAngleControllerFactory = jointAngleControllerFactory,
@@ -89,6 +92,7 @@ class RobotConverter(
     fun convertToKinematicGraph(
         limbFKSolver: (KinematicBaseId, LimbId) -> ForwardKinematicsSolver = defaultFKSolver,
         limbIKSolver: (KinematicBaseId, LimbId, ImmutableList<Link>) -> InverseKinematicsSolver = defaultIKSolver,
+        limbReachabilityCalculator: (KinematicBaseId, LimbId) -> ReachabilityCalculator = defaultReachabilityCalculator,
         limbMotionPlanGeneratorFactory: (KinematicBaseId, LimbId) -> LimbMotionPlanGenerator,
         limbMotionPlanFollowerFactory: (KinematicBaseId, LimbId) -> LimbMotionPlanFollower,
         jointAngleControllerFactory: (KinematicBaseId, LimbId, Int, JointLimits) -> JointAngleController,
@@ -110,6 +114,7 @@ class RobotConverter(
                 oldLimb = it,
                 limbFKSolver = limbFKSolver,
                 limbIKSolver = limbIKSolver,
+                limbReachabilityCalculator = limbReachabilityCalculator,
                 linkInertialStateEstimatorFactory = linkInertialStateEstimatorFactory,
                 limbMotionPlanGenerator = limbMotionPlanGeneratorFactory(baseId, limbId),
                 limbMotionPlanFollower = limbMotionPlanFollowerFactory(baseId, limbId),
@@ -130,6 +135,7 @@ class RobotConverter(
         linkInertialStateEstimatorFactory: (KinematicBaseId, LimbId, Int) -> InertialStateEstimator,
         limbFKSolver: (KinematicBaseId, LimbId) -> ForwardKinematicsSolver = defaultFKSolver,
         limbIKSolver: (KinematicBaseId, LimbId, ImmutableList<Link>) -> InverseKinematicsSolver = defaultIKSolver,
+        limbReachabilityCalculator: (KinematicBaseId, LimbId) -> ReachabilityCalculator = defaultReachabilityCalculator,
         limbMotionPlanGenerator: LimbMotionPlanGenerator,
         limbMotionPlanFollower: LimbMotionPlanFollower,
         jointAngleControllerFactory: (KinematicBaseId, LimbId, Int, JointLimits) -> JointAngleController,
@@ -152,7 +158,7 @@ class RobotConverter(
             links,
             limbFKSolver(baseId, limbId),
             limbIKSolver(baseId, limbId, links),
-            LengthBasedReachabilityCalculator(),
+            limbReachabilityCalculator(baseId, limbId),
             limbMotionPlanGenerator,
             limbMotionPlanFollower,
             links.zip(limits).mapIndexed { index, pair ->
@@ -189,5 +195,8 @@ class RobotConverter(
 
         private val defaultIKSolver: (KinematicBaseId, LimbId, ImmutableList<Link>) -> GeneralInverseKinematicsSolver =
             { _, _, links -> GeneralInverseKinematicsSolver(links) }
+
+        private val defaultReachabilityCalculator: (KinematicBaseId, LimbId) -> ReachabilityCalculator =
+            { _, _ -> LengthBasedReachabilityCalculator() }
     }
 }

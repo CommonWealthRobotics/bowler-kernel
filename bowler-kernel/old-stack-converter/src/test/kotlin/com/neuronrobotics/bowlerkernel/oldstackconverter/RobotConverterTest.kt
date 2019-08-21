@@ -32,6 +32,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInertialStateEstimator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInverseKinematicsSolver
+import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopReachabilityCalculator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanGenerator
 import com.neuronrobotics.bowlerstudio.creature.ICadGenerator
@@ -99,6 +100,7 @@ internal class RobotConverterTest {
         val result = converter.convertToKinematicGraph(
             { _, _ -> NoopForwardKinematicsSolver },
             { _, _, _ -> NoopInverseKinematicsSolver },
+            { _, _ -> NoopReachabilityCalculator },
             { _, _ -> NoopLimbMotionPlanGenerator },
             { _, _ -> NoopLimbMotionPlanFollower },
             { _, _, _, _ -> NoopJointAngleController },
@@ -148,6 +150,7 @@ internal class RobotConverterTest {
             NoopBodyController,
             { _, _ -> NoopForwardKinematicsSolver },
             { _, _, _ -> NoopInverseKinematicsSolver },
+            { _, _ -> NoopReachabilityCalculator },
             { _, _ -> NoopLimbMotionPlanGenerator },
             { _, _ -> NoopLimbMotionPlanFollower },
             { _, _, _, _ -> NoopJointAngleController },
