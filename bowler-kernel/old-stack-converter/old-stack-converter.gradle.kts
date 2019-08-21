@@ -29,7 +29,7 @@ dependencies {
     api(
         group = "com.neuronrobotics",
         name = "BowlerScriptingKernel",
-        version = "0.45.1"
+        version = property("bowlerScriptingKernel.version") as String
     )
 
     compileOnly(bowlerKinematicsNative())
