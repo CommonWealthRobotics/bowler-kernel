@@ -61,7 +61,7 @@ internal class RobotConverterTest {
         listOf(
             arrayListOf(36, round(36 / 0.33206607726344173).toInt()),
             arrayListOf(36, round(36 / 0.8486810156880156).toInt()),
-            arrayListOf(36, round(36 / 0.1529117565209915).toInt())
+            arrayListOf(12, round(12 / 0.1529117565209915).toInt())
         ).mapIndexed { index, gearRatio ->
             val cad = ScriptingEngine.gitScriptRun(
                 "https://github.com/NotOctogonapus/SeriesElasticActuator.git",

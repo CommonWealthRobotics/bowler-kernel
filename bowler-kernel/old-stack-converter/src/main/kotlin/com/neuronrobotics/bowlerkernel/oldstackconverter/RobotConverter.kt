@@ -87,6 +87,11 @@ class RobotConverter(
         linkInertialStateEstimatorFactory: (KinematicBaseId, LimbId, Int) -> InertialStateEstimator,
         limbInertialStateEstimatorFactory: (KinematicBaseId, LimbId) -> InertialStateEstimator
     ): KinematicGraph {
+        // TODO: Handle parallel groups
+        require(mobileBase.allParallelGroups.all { it.constituantLimbs.isEmpty() }) {
+            "This converter cannot convert parallel groups."
+        }
+
         val mutableKinematicGraph = buildMutableKinematicGraph()
         val baseNode = BaseNode(baseId).left()
 
