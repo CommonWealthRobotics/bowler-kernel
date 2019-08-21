@@ -29,7 +29,9 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DefaultLink
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
+import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopForwardKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInertialStateEstimator
+import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanGenerator
 import com.neuronrobotics.bowlerstudio.creature.ICadGenerator
@@ -95,6 +97,8 @@ internal class RobotConverterTest {
 
         val converter = RobotConverter(mobileBase)
         val result = converter.convertToKinematicGraph(
+            { _, _ -> NoopForwardKinematicsSolver },
+            { _, _, _ -> NoopInverseKinematicsSolver },
             { _, _ -> NoopLimbMotionPlanGenerator },
             { _, _ -> NoopLimbMotionPlanFollower },
             { _, _, _, _ -> NoopJointAngleController },
@@ -142,6 +146,8 @@ internal class RobotConverterTest {
         val converter = RobotConverter(mobileBase)
         val result = converter.convertToKinematicBase(
             NoopBodyController,
+            { _, _ -> NoopForwardKinematicsSolver },
+            { _, _, _ -> NoopInverseKinematicsSolver },
             { _, _ -> NoopLimbMotionPlanGenerator },
             { _, _ -> NoopLimbMotionPlanFollower },
             { _, _, _, _ -> NoopJointAngleController },
