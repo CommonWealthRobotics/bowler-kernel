@@ -95,9 +95,16 @@ sealed class DefaultDeviceTypes(
 
     object Teensy35 : DefaultDeviceTypes("Teensy 3.5", 0, 58) {
 
-        override fun isResourceInRange(resourceId: ResourceId): Boolean {
-            TODO("not implemented")
+        private val implementation = implementDeviceType(Teensy35) {
+            digitalOut(0..57)
+            digitalIn(0..57)
+            analogOut(2..10, 14, 20..23, 29..30, 35..38)
+            analogIn(0..26)
+            serial(1 to 0, 10 to 9, 8 to 7, 32 to 31, 33 to 34, 48 to 47)
         }
+
+        override fun isResourceInRange(resourceId: ResourceId) =
+            implementation.isResourceInRange(resourceId)
     }
 
     object UnknownDevice : DefaultDeviceTypes("Unknown Device", 0, 0) {
