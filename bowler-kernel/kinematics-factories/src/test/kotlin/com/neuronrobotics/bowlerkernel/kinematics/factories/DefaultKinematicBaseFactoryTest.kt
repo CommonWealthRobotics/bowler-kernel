@@ -46,6 +46,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlan
 import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultGitScriptFactory
 import com.neuronrobotics.bowlerkernel.scripting.parser.DefaultScriptLanguageParser
 import com.nhaarman.mockitokotlin2.mock
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -54,7 +55,6 @@ import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableMapOf
 import org.octogonapus.ktguava.collections.immutableSetOf
-import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DefaultKinematicBaseFactoryTest {

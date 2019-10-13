@@ -20,7 +20,6 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.util.JointLimits
-import org.octogonapus.ktguava.collections.toImmutableList
 import java.lang.Math.toDegrees
 import java.lang.Math.toRadians
 import kotlin.math.PI
@@ -33,6 +32,7 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
+import org.octogonapus.ktguava.collections.toImmutableList
 
 /**
  * Solves 3 DOF open chains.

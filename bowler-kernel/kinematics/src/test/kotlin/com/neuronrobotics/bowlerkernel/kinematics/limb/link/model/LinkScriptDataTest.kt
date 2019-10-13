@@ -19,10 +19,10 @@ package com.neuronrobotics.bowlerkernel.kinematics.limb.link.model
 import arrow.core.right
 import com.beust.klaxon.Klaxon
 import com.neuronrobotics.bowlerkernel.kinematics.linkScriptData
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
-import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class LinkScriptDataTest {

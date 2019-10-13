@@ -35,12 +35,12 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Resour
 import com.neuronrobotics.bowlerkernel.internal.logging.LoggerUtilities.Companion.joinWithIndent
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
 import edu.wpi.SimplePacketComs.BytePacketType
-import mu.KotlinLogging
-import org.octogonapus.ktguava.collections.toImmutableList
 import java.nio.ByteBuffer
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.pow
+import mu.KotlinLogging
+import org.octogonapus.ktguava.collections.toImmutableList
 
 /**
  * An implementation of [BowlerRPCProtocol] using SimplePacketComs. Uses a continuous range of

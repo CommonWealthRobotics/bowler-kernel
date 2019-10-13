@@ -20,10 +20,10 @@ import com.beust.klaxon.Klaxon
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.VexEDRMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultVexWheel
 import com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.gitvitaminsupplier.KlaxonGitVitamin
+import kotlin.reflect.KClass
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktguava.klaxon.immutableMapConverter
-import kotlin.reflect.KClass
 
 /**
  * Finds all nested classes in a sealed hierarchy. All subclasses must be nested inside the

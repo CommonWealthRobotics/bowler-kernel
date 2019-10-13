@@ -44,6 +44,7 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonRoundMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonStepperMotor
+import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.fail
 import org.octogonapus.ktguava.collections.immutableMapOf
 import org.octogonapus.ktunits.quantities.Stiffness
@@ -56,7 +57,6 @@ import org.octogonapus.ktunits.quantities.nM
 import org.octogonapus.ktunits.quantities.radianPerMinute
 import org.octogonapus.ktunits.quantities.volt
 import org.octogonapus.ktunits.quantities.watt
-import kotlin.random.Random
 
 internal fun <T : Random> T.allVitamins() = listOf(
     randomBallBearing(),

@@ -25,6 +25,8 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -35,8 +37,6 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.octogonapus.ktguava.collections.immutableSetOf
-import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class SimplePacketComsProtocolTest {

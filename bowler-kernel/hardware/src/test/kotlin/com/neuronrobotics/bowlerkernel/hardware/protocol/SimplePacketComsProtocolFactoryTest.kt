@@ -20,10 +20,10 @@ import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectio
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.nhaarman.mockitokotlin2.mock
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
-import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class SimplePacketComsProtocolFactoryTest {

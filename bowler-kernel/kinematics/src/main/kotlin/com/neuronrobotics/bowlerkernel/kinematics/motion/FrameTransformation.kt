@@ -37,14 +37,14 @@ import helios.core.NumberDecodingError
 import helios.instances.decoder
 import helios.typeclasses.Decoder
 import helios.typeclasses.Encoder
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation
-import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
 import java.lang.Math.toDegrees
 import java.lang.Math.toRadians
 import java.util.Arrays
 import kotlin.math.pow
 import kotlin.math.sqrt
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention
+import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
 
 /**
  * An immutable frame transformation, internally back by a [Matrix].

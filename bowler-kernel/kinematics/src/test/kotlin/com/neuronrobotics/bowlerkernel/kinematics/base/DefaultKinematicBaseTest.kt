@@ -37,6 +37,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.randomFrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.seaArmLinks
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -47,7 +48,6 @@ import org.octogonapus.ktguava.collections.emptyImmutableSet
 import org.octogonapus.ktguava.collections.immutableMapOf
 import org.octogonapus.ktguava.collections.immutableSetOf
 import org.octogonapus.ktguava.collections.toImmutableList
-import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DefaultKinematicBaseTest {

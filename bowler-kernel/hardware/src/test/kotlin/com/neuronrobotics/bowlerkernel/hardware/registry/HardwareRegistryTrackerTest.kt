@@ -35,6 +35,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.non
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResource
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.fail
@@ -45,7 +46,6 @@ import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.emptyImmutableSetMultimap
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.toImmutableList
-import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class HardwareRegistryTrackerTest {

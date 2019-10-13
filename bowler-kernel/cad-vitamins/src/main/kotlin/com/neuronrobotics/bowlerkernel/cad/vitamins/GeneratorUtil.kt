@@ -17,11 +17,11 @@
 package com.neuronrobotics.bowlerkernel.cad.vitamins
 
 import eu.mihosoft.vrl.v3d.CSG
+import kotlin.math.truncate
 import org.octogonapus.ktunits.quantities.Angle
 import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.degree
 import org.octogonapus.ktunits.quantities.millimeter
-import kotlin.math.truncate
 
 /**
  * Unions a [bolt] [CSG] in a circle of a given [diameter], starting at angle [angleOffset] and

@@ -21,9 +21,9 @@ import com.google.common.cache.CacheLoader
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Nut
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cylinder
+import kotlin.math.sqrt
 import org.octogonapus.ktunits.quantities.div
 import org.octogonapus.ktunits.quantities.millimeter
-import kotlin.math.sqrt
 
 class NutGenerator(
     numPoints: Int = 6,

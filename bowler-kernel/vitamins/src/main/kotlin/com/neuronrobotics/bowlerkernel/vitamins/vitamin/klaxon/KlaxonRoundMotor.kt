@@ -19,10 +19,10 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 import com.beust.klaxon.TypeFor
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.RoundMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBolt
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultRoundMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultShaft
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.RoundMotor
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.Angle
 import org.octogonapus.ktunits.quantities.AngularVelocity

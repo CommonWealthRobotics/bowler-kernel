@@ -17,11 +17,11 @@
 package com.neuronrobotics.bowlerkernel.kinematics.solvers.dhparam
 
 import com.neuronrobotics.bowlerkernel.kinematics.solvers.TestUtil
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.octogonapus.ktguava.collections.immutableListOf
-import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DhChainElementTest {
