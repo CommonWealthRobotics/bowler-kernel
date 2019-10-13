@@ -27,9 +27,7 @@ import com.neuronrobotics.bowlerkernel.util.isAllUnique
 annotation class DeviceTypeDsl
 
 @DeviceTypeDsl
-class DeviceTypeImplementation(
-    private val type: DefaultDeviceTypes
-) {
+class DeviceTypeImplementation {
 
     private lateinit var digitalInPins: List<Byte>
     private lateinit var digitalOutPins: List<Byte>
@@ -177,10 +175,9 @@ private fun ByteArray.asTuple2(): Tuple2<Byte, Byte> {
 
 @DeviceTypeDsl
 fun implementDeviceType(
-    type: DefaultDeviceTypes,
     configure: DeviceTypeImplementation.() -> Unit
 ): DeviceTypeImplementation {
-    val scenario = DeviceTypeImplementation(type)
+    val scenario = DeviceTypeImplementation()
     scenario.configure()
     return scenario
 }

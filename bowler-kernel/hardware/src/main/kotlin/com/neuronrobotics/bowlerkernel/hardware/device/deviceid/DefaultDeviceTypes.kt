@@ -29,7 +29,7 @@ sealed class DefaultDeviceTypes(
 
     object Esp32wroom32 : DefaultDeviceTypes("ESP32-WROOM-32", 0, 40) {
 
-        private val implementation = implementDeviceType(Esp32wroom32) {
+        private val implementation = implementDeviceType {
             digitalOut(2, 4..5, 12..19, 21..23, 25..27, 32..33)
             digitalIn(4, 14, 16..19, 21..23, 25..27, 32..36, 39)
             analogOut(4, 5, 12..19, 21..23, 25..27, 32..33)
@@ -43,7 +43,7 @@ sealed class DefaultDeviceTypes(
 
     object Teensy35 : DefaultDeviceTypes("Teensy 3.5", 0, 58) {
 
-        private val implementation = implementDeviceType(Teensy35) {
+        private val implementation = implementDeviceType {
             digitalOut(0..57)
             digitalIn(0..57)
             analogOut(2..10, 14, 20..23, 29..30, 35..38)
