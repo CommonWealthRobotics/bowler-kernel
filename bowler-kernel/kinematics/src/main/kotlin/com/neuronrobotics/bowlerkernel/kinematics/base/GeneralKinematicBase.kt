@@ -70,6 +70,20 @@ class GeneralKinematicBase(
         TODO("not implemented")
     }
 
+    override fun getWorldSpaceTransformInLimbSpace(
+        limbId: LimbId,
+        worldSpaceTransform: FrameTransformation
+    ): FrameTransformation {
+        TODO("not implemented")
+    }
+
+    override fun getLimbSpaceTransformInWorldSpace(
+        limbId: LimbId,
+        limbSpaceTransform: FrameTransformation
+    ): FrameTransformation {
+        TODO("not implemented")
+    }
+
     override fun computeJacobian(limbId: LimbId, linkIndex: Int): Matrix {
         TODO("not implemented")
     }

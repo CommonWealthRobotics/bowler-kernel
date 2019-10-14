@@ -46,7 +46,6 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlan
 import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultGitScriptFactory
 import com.neuronrobotics.bowlerkernel.scripting.parser.DefaultScriptLanguageParser
 import com.nhaarman.mockitokotlin2.mock
-import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -55,6 +54,7 @@ import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableMapOf
 import org.octogonapus.ktguava.collections.immutableSetOf
+import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DefaultKinematicBaseFactoryTest {
@@ -137,14 +137,16 @@ internal class DefaultKinematicBaseFactoryTest {
             immutableMapOf(
                 SimpleLimbId("limb 1 id") to
                     FrameTransformation.fromTranslation(10, 20, 30)
-            )
+            ),
+            FrameTransformation.identity
         )
 
         val actual = factory.create(
             configData,
             scriptData,
             listOf(limbConfigurationData to limbScriptData),
-            listOf(limbBaseTransform).toMap()
+            listOf(limbBaseTransform).toMap(),
+            FrameTransformation.identity
         )
 
         assertTrue(actual is Either.Right, "actual was $actual")
