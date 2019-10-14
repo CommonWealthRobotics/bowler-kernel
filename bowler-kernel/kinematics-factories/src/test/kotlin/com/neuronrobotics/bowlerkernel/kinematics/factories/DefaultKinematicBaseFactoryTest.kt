@@ -138,7 +138,7 @@ internal class DefaultKinematicBaseFactoryTest {
                 SimpleLimbId("limb 1 id") to
                     FrameTransformation.fromTranslation(10, 20, 30)
             ),
-            FrameTransformation.identity
+            FrameTransformation.fromTranslation(1, 2, 3)
         )
 
         val actual = factory.create(
@@ -146,7 +146,7 @@ internal class DefaultKinematicBaseFactoryTest {
             scriptData,
             listOf(limbConfigurationData to limbScriptData),
             listOf(limbBaseTransform).toMap(),
-            FrameTransformation.identity
+            FrameTransformation.fromTranslation(1, 2, 3)
         )
 
         assertTrue(actual is Either.Right, "actual was $actual")
@@ -160,7 +160,8 @@ internal class DefaultKinematicBaseFactoryTest {
             { assertEquals(expected.limbs.first().id, base.limbs.first().id) },
             { assertEquals(expected.limbs.first().links, base.limbs.first().links) },
             { assertEquals(expected.limbBaseTransforms.entries, base.limbBaseTransforms.entries) },
-            { assertEquals(expected.bodyController::class, base.bodyController::class) }
+            { assertEquals(expected.bodyController::class, base.bodyController::class) },
+            { assertEquals(expected.imuTransform, base.imuTransform) }
         )
     }
 }
