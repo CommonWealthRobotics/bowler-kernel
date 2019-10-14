@@ -38,7 +38,6 @@ import com.neuronrobotics.bowlerkernel.kinematics.seaArmLinks
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturnConsecutively
 import com.nhaarman.mockitokotlin2.mock
-import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -47,6 +46,7 @@ import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.toImmutableList
 import org.octogonapus.ktguava.collections.toImmutableNetwork
+import java.util.concurrent.TimeUnit
 
 @Suppress("UnstableApiUsage")
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
@@ -74,7 +74,12 @@ internal class KinematicGraphTest {
     fun `test create`() {
         val baseId = SimpleKinematicBaseId("BaseA")
         val bodyController = NoopBodyController
-        val base = DefaultKinematicBase.create(kinematicGraph, baseId, bodyController)
+        val base = DefaultKinematicBase.create(
+            kinematicGraph,
+            baseId,
+            bodyController,
+            FrameTransformation.identity
+        )
 
         assertAll(
             { assertEquals(setOf(limbA.b, limbB.b), base.limbs) },
@@ -94,7 +99,8 @@ internal class KinematicGraphTest {
         val baseA = DefaultKinematicBase.create(
             kinematicGraph,
             SimpleKinematicBaseId("BaseA"),
-            NoopBodyController
+            NoopBodyController,
+            FrameTransformation.identity
         )
 
         val kinematicGraphData = kinematicGraph.convertToKinematicGraphData(setOf(baseA))
