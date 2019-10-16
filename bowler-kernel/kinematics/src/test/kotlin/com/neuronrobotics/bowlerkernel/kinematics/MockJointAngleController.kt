@@ -25,7 +25,7 @@ internal class MockJointAngleController : JointAngleController {
     internal val times = mutableListOf<Long>()
     internal val targets = mutableListOf<Double>()
 
-    override var jointLimits: JointLimits = JointLimits(180, -180)
+    override val jointLimits: JointLimits = JointLimits(180, -180)
 
     override fun setTargetAngle(angle: Double, motionConstraints: MotionConstraints) {
         times.add(System.currentTimeMillis())

@@ -20,6 +20,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DefaultLink
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
+import com.neuronrobotics.bowlerkernel.util.JointLimits
 import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -46,7 +47,13 @@ internal class LengthBasedReachabilityCalculatorTest {
         // solver isn't meant to catch this case
         val target = FrameTransformation.fromTranslation(10, 0, 0)
 
-        assertTrue(calculator.isFrameTransformationReachable(target, links))
+        assertTrue(
+            calculator.isFrameTransformationReachable(
+                target,
+                links,
+                listOf(JointLimits.NoLimit)
+            )
+        )
     }
 
     @Test
@@ -61,7 +68,13 @@ internal class LengthBasedReachabilityCalculatorTest {
 
         val target = FrameTransformation.fromTranslation(10, 0, 0)
 
-        assertTrue(calculator.isFrameTransformationReachable(target, links))
+        assertTrue(
+            calculator.isFrameTransformationReachable(
+                target,
+                links,
+                listOf(JointLimits.NoLimit)
+            )
+        )
     }
 
     @Test
@@ -76,6 +89,12 @@ internal class LengthBasedReachabilityCalculatorTest {
 
         val target = FrameTransformation.fromTranslation(15, 0, 0)
 
-        assertFalse(calculator.isFrameTransformationReachable(target, links))
+        assertFalse(
+            calculator.isFrameTransformationReachable(
+                target,
+                links,
+                listOf(JointLimits.NoLimit)
+            )
+        )
     }
 }
