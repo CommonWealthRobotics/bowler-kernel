@@ -15,9 +15,7 @@
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
 @file:SuppressWarnings("LargeClass")
-
 package com.neuronrobotics.bowlerkernel.hardware.protocol
-
 import arrow.core.Either
 import arrow.core.Option
 import arrow.core.Try
@@ -34,12 +32,12 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Resour
 import com.neuronrobotics.bowlerkernel.internal.logging.LoggerUtilities.Companion.joinWithIndent
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
 import edu.wpi.SimplePacketComs.BytePacketType
-import mu.KotlinLogging
-import org.octogonapus.ktguava.collections.toImmutableList
 import java.nio.ByteBuffer
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.pow
+import mu.KotlinLogging
+import org.octogonapus.ktguava.collections.toImmutableList
 
 /**
  * Parses a received payload into a value. The parameter format is:
