@@ -18,6 +18,7 @@ package com.neuronrobotics.bowlerkernel.kinematics.motion
 
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
+import com.neuronrobotics.bowlerkernel.util.JointLimits
 
 /**
  * Determines whether a frame transform is reachable.
@@ -29,10 +30,12 @@ interface ReachabilityCalculator {
      *
      * @param frameTransformation The task space transform to test.
      * @param links The links that make up the limb.
+     * @param jointLimits The joint limits for each link.
      * @return Whether the [frameTransformation] is reachable.
      */
     fun isFrameTransformationReachable(
         frameTransformation: FrameTransformation,
-        links: ImmutableList<Link>
+        links: List<Link>,
+        jointLimits: List<JointLimits>
     ): Boolean
 }

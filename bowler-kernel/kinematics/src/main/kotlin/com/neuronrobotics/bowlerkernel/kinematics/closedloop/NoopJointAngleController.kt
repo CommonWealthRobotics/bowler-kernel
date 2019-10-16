@@ -24,7 +24,7 @@ import com.neuronrobotics.bowlerkernel.util.JointLimits
  */
 object NoopJointAngleController : JointAngleController {
 
-    override var jointLimits: JointLimits = JointLimits(180, -180)
+    override val jointLimits: JointLimits = JointLimits(180, -180)
 
     @SuppressWarnings("EmptyFunctionBlock")
     override fun setTargetAngle(angle: Double, motionConstraints: MotionConstraints) {

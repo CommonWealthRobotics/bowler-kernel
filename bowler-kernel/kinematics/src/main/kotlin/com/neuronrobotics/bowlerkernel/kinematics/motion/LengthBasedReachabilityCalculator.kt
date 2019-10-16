@@ -19,6 +19,7 @@ package com.neuronrobotics.bowlerkernel.kinematics.motion
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.toFrameTransformation
+import com.neuronrobotics.bowlerkernel.util.JointLimits
 
 /**
  * A simple implementation using only the distance to the transform from the origin and the
@@ -28,8 +29,9 @@ class LengthBasedReachabilityCalculator : ReachabilityCalculator {
 
     override fun isFrameTransformationReachable(
         frameTransformation: FrameTransformation,
-        links: ImmutableList<Link>
-    ) = frameTransformation.translation.length() <=
+        links: List<Link>,
+        jointLimits: List<JointLimits>
+    ): Boolean = frameTransformation.translation.length() <=
         links.map { it.dhParam }.toFrameTransformation().translation.length()
 
     override fun equals(other: Any?): Boolean {

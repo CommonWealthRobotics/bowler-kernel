@@ -103,7 +103,10 @@ class DefaultLimb(
         jointAngleControllers.map { it.getCurrentAngle() }.toImmutableList()
 
     override fun isTaskSpaceTransformReachable(taskSpaceTransform: FrameTransformation) =
-        reachabilityCalculator.isFrameTransformationReachable(taskSpaceTransform, links)
+        reachabilityCalculator.isFrameTransformationReachable(
+            taskSpaceTransform,
+            links,
+            jointAngleControllers.map { it.jointLimits })
 
     override fun getInertialState() = inertialStateEstimator.getInertialState()
 

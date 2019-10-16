@@ -33,4 +33,12 @@ data class JointLimits(
             "Maximum ($maximum) was less than minimum ($minimum)."
         }
     }
+
+    companion object {
+
+        /**
+         * An unconstrained joint.
+         */
+        val NoLimit = JointLimits(180, -180)
+    }
 }
