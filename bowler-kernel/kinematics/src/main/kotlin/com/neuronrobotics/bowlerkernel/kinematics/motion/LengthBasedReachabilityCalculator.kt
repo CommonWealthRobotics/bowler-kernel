@@ -16,7 +16,6 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.motion
 
-import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.toFrameTransformation
 import com.neuronrobotics.bowlerkernel.util.JointLimits
