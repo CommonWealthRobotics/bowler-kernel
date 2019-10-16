@@ -85,7 +85,9 @@ class RobotConverter(
                 limbInertialStateEstimatorFactory = limbInertialStateEstimatorFactory
             ),
             baseId = baseId,
-            bodyController = bodyController
+            bodyController = bodyController,
+            imuTransform =
+            FrameTransformation.fromMatrix(mobileBase.imuFromCentroid.matrixTransform)
         )
     }
 
