@@ -21,12 +21,12 @@ import arrow.core.left
 import arrow.core.right
 import com.beust.klaxon.Klaxon
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
-import java.util.concurrent.TimeUnit
 
 interface IFoo
 data class Foo(val bar: Int) : IFoo

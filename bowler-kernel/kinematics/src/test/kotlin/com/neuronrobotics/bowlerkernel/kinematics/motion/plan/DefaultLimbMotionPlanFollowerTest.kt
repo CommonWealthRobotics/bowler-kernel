@@ -23,6 +23,8 @@ import com.neuronrobotics.bowlerkernel.kinematics.createMotionConstraints
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
+import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -34,8 +36,6 @@ import org.junit.jupiter.api.assertThrows
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.toImmutableList
-import java.util.concurrent.TimeUnit
-import kotlin.math.abs
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DefaultLimbMotionPlanFollowerTest {

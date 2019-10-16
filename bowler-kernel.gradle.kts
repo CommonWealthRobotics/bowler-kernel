@@ -1,10 +1,10 @@
 import com.adarshr.gradle.testlogger.theme.ThemeType
 import com.github.spotbugs.SpotBugsTask
 import info.solidsoft.gradle.pitest.PitestTask
+import java.nio.file.Paths
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.nio.file.Paths
 
 plugins {
     id("com.diffplug.gradle.spotless")

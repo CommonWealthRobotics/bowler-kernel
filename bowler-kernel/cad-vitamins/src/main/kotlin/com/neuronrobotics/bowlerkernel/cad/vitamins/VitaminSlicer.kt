@@ -21,10 +21,10 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cube
 import eu.mihosoft.vrl.v3d.Vector3d
-import mu.KotlinLogging
-import org.octogonapus.ktunits.quantities.millimeter
 import java.util.concurrent.atomic.AtomicLong
 import java.util.stream.Collectors
+import mu.KotlinLogging
+import org.octogonapus.ktunits.quantities.millimeter
 
 class VitaminSlicer {
 

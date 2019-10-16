@@ -23,11 +23,11 @@ import com.neuronrobotics.bowlerkernel.gitfs.GitFS
 import com.neuronrobotics.bowlerkernel.gitfs.GitFile
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.getConfiguredKlaxon
 import com.neuronrobotics.bowlerkernel.vitamins.vitaminsupplier.VitaminSupplierFactory
-import org.octogonapus.ktguava.collections.toImmutableMap
-import org.octogonapus.ktguava.collections.toImmutableSet
 import java.io.File
 import java.io.FileReader
 import kotlin.reflect.KClass
+import org.octogonapus.ktguava.collections.toImmutableMap
+import org.octogonapus.ktguava.collections.toImmutableSet
 
 /**
  * Creates [GitVitaminSupplier] using a supplier file in a Git repository. The expected

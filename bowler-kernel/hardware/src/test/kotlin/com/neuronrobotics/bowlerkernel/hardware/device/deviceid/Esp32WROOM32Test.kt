@@ -16,9 +16,9 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.device.deviceid
 
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
-import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class Esp32WROOM32Test {

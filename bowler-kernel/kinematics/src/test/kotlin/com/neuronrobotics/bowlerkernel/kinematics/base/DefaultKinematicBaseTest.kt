@@ -37,6 +37,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.randomFrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.seaArmLinks
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -47,7 +48,6 @@ import org.octogonapus.ktguava.collections.emptyImmutableSet
 import org.octogonapus.ktguava.collections.immutableMapOf
 import org.octogonapus.ktguava.collections.immutableSetOf
 import org.octogonapus.ktguava.collections.toImmutableList
-import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DefaultKinematicBaseTest {
@@ -72,7 +72,8 @@ internal class DefaultKinematicBaseTest {
         SimpleKinematicBaseId("base"),
         NoopBodyController,
         immutableSetOf(limb),
-        immutableMapOf(limb.id to limbRootTransform)
+        immutableMapOf(limb.id to limbRootTransform),
+        FrameTransformation.identity
     )
 
     @Test
@@ -130,7 +131,8 @@ internal class DefaultKinematicBaseTest {
             SimpleKinematicBaseId("base"),
             mockBodyController,
             emptyImmutableSet(),
-            emptyImmutableMap()
+            emptyImmutableMap(),
+            FrameTransformation.identity
         )
 
         val baseCurrentFT = randomFrameTransformation()
@@ -144,10 +146,10 @@ internal class DefaultKinematicBaseTest {
 
     @Test
     fun `test get current limb tip transform`() {
-        val limbCurrentFT = randomFrameTransformation()
+        val limbTipFT = randomFrameTransformation()
         val limb = mock<Limb> {
             on { id } doReturn SimpleLimbId("limb")
-            on { getCurrentTaskSpaceTransform() } doReturn limbCurrentFT
+            on { getCurrentTaskSpaceTransform() } doReturn limbTipFT
         }
 
         val baseDeltaFT = randomFrameTransformation()
@@ -158,14 +160,89 @@ internal class DefaultKinematicBaseTest {
                 on { getDeltaSinceLastDesiredTransform() } doReturn baseDeltaFT
             },
             immutableSetOf(limb),
-            immutableMapOf(limb.id to limbBaseFT)
+            immutableMapOf(limb.id to limbBaseFT),
+            FrameTransformation.identity
         )
 
         val baseCurrentFT = randomFrameTransformation()
         base.setCurrentWorldSpaceTransform(baseCurrentFT)
 
-        val expected = limbCurrentFT * limbBaseFT * baseCurrentFT * baseDeltaFT
+        val expected = limbTipFT * limbBaseFT * baseCurrentFT * baseDeltaFT
         val actual = base.getCurrentLimbTipTransform(limb.id)
+        assertTrue(
+            expected.approxEquals(actual, tolerance),
+            """
+            |Expected:
+            |$expected
+            |Actual:
+            |$actual
+            """.trimMargin()
+        )
+    }
+
+    @Test
+    fun `get world space transform in limb space`() {
+        val limb = mock<Limb> {
+            on { id } doReturn SimpleLimbId("limb")
+        }
+
+        val baseDeltaFT = randomFrameTransformation()
+        val limbBaseFT = randomFrameTransformation()
+        val base = DefaultKinematicBase(
+            SimpleKinematicBaseId("base"),
+            mock {
+                on { getDeltaSinceLastDesiredTransform() } doReturn baseDeltaFT
+            },
+            immutableSetOf(limb),
+            immutableMapOf(limb.id to limbBaseFT),
+            FrameTransformation.identity
+        )
+
+        val baseWorldSpaceFT = randomFrameTransformation()
+        base.setCurrentWorldSpaceTransform(baseWorldSpaceFT)
+
+        val testWorldSpaceFT = randomFrameTransformation()
+
+        val expected =
+            testWorldSpaceFT * (baseWorldSpaceFT * baseDeltaFT).inverse * limbBaseFT.inverse
+        val actual = base.getWorldSpaceTransformInLimbSpace(limb.id, testWorldSpaceFT)
+        assertTrue(
+            expected.approxEquals(actual, tolerance),
+            """
+            |Expected:
+            |$expected
+            |Actual:
+            |$actual
+            """.trimMargin()
+        )
+    }
+
+    @Test
+    fun `get limb space transform in world space`() {
+        val limb = mock<Limb> {
+            on { id } doReturn SimpleLimbId("limb")
+        }
+
+        val baseDeltaFT = randomFrameTransformation()
+        val limbBaseFT = randomFrameTransformation()
+        val base = DefaultKinematicBase(
+            SimpleKinematicBaseId("base"),
+            mock {
+                on { getDeltaSinceLastDesiredTransform() } doReturn baseDeltaFT
+            },
+            immutableSetOf(limb),
+            immutableMapOf(limb.id to limbBaseFT),
+            FrameTransformation.identity
+        )
+
+        val baseWorldSpaceFT = randomFrameTransformation()
+        base.setCurrentWorldSpaceTransform(baseWorldSpaceFT)
+
+        val testLimbSpaceFt = randomFrameTransformation()
+
+        val expected =
+            testLimbSpaceFt * limbBaseFT * (baseWorldSpaceFT * baseDeltaFT)
+        val actual = base.getLimbSpaceTransformInWorldSpace(limb.id, testLimbSpaceFt)
         assertTrue(
             expected.approxEquals(actual, tolerance),
             """

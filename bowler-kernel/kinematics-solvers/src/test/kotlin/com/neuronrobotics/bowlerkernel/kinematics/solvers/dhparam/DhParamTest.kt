@@ -17,13 +17,13 @@
 package com.neuronrobotics.bowlerkernel.kinematics.solvers.dhparam
 
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
+import java.util.concurrent.TimeUnit
+import kotlin.math.sqrt
+import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import java.util.concurrent.TimeUnit
-import kotlin.math.sqrt
-import kotlin.random.Random
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DhParamTest {

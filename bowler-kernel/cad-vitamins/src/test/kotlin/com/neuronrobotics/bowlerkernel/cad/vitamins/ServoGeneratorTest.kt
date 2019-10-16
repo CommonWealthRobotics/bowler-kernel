@@ -19,6 +19,7 @@ package com.neuronrobotics.bowlerkernel.cad.vitamins
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultServo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultShaft
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
@@ -34,7 +35,6 @@ import org.octogonapus.ktunits.quantities.minus
 import org.octogonapus.ktunits.quantities.plus
 import org.octogonapus.ktunits.quantities.second
 import org.octogonapus.ktunits.quantities.volt
-import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class ServoGeneratorTest {

@@ -21,11 +21,11 @@ import com.neuronrobotics.bowlerkernel.kinematics.solvers.GeneralForwardKinemati
 import com.neuronrobotics.bowlerkernel.kinematics.solvers.TestUtil.hephaestusArmLinks
 import com.neuronrobotics.bowlerkernel.util.JointLimits
 import com.neuronrobotics.bowlerkinematicsnative.solver.NativeIKSolver
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
-import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class NativeIKSolverBridgeTest {

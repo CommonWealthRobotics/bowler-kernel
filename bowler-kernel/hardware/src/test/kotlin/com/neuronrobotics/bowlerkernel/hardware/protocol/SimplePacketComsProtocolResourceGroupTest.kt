@@ -24,6 +24,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.fail
@@ -31,7 +32,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableSetOf
-import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class SimplePacketComsProtocolResourceGroupTest {
@@ -101,6 +101,6 @@ internal class SimplePacketComsProtocolResourceGroupTest {
         @JvmStatic
         fun defaultResourceTypesSource() =
             DefaultResourceTypes::class.nestedClasses
-                .filter { !it.isCompanion }.map { it.objectInstance }
+                .filter { !it.isCompanion && it.objectInstance != null }.map { it.objectInstance }
     }
 }

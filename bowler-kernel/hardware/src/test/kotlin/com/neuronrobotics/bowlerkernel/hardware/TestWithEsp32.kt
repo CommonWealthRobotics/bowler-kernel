@@ -25,12 +25,12 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocol
 import edu.wpi.SimplePacketComs.device.UdpDevice
+import java.net.InetAddress
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableSetOf
-import java.net.InetAddress
 
 internal class TestWithEsp32 {
 

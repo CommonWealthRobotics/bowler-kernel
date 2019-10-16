@@ -20,6 +20,7 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBolt
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultDCMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultShaft
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
@@ -36,7 +37,6 @@ import org.octogonapus.ktunits.quantities.plus
 import org.octogonapus.ktunits.quantities.radianPerMinute
 import org.octogonapus.ktunits.quantities.volt
 import org.octogonapus.ktunits.quantities.watt
-import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DCMotorGeneratorTest {

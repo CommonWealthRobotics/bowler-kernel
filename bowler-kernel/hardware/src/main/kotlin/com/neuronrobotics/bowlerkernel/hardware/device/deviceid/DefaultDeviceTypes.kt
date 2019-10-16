@@ -16,10 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.device.deviceid
 
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import com.neuronrobotics.bowlerkernel.util.isAllUnique
 
 /**
  * The device types Bowler supports out-of-the-box.
@@ -32,65 +29,30 @@ sealed class DefaultDeviceTypes(
 
     object Esp32wroom32 : DefaultDeviceTypes("ESP32-WROOM-32", 0, 40) {
 
-        private val digitalInPins = listOf(
-            4, 14, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33, 34, 35, 36, 39
-        ).map { it.toByte() }
-
-        private val digitalOutPins = listOf(
-            2, 4, 5, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33
-        ).map { it.toByte() }
-
-        private val analogInPins = listOf(
-            4, 14, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33, 34, 35, 36, 39
-        ).map { it.toByte() }
-
-        private val analogOutPins = listOf(
-            4, 5, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33
-        ).map { it.toByte() }
-
-        private val serialPins = listOf(1, 3).map { it.toByte() }.toByteArray()
-
-        override fun isResourceInRange(resourceId: ResourceId): Boolean {
-            return when (val p = resourceId.attachmentPoint) {
-                is DefaultAttachmentPoints.Pin -> checkPin(p)
-                is DefaultAttachmentPoints.PinGroup -> checkPinGroup(resourceId, p)
-                else -> false
-            }
+        private val implementation = implementDeviceType {
+            digitalOut(2, 4..5, 12..19, 21..23, 25..27, 32..33)
+            digitalIn(4, 14, 16..19, 21..23, 25..27, 32..36, 39)
+            analogOut(4, 5, 12..19, 21..23, 25..27, 32..33)
+            analogIn(4, 14, 16..19, 21..23, 25..27, 32..36, 39)
+            serial(1 to 3)
         }
 
-        private fun checkPin(p: DefaultAttachmentPoints.Pin) =
-            p.pinNumber in digitalInPins ||
-                p.pinNumber in digitalOutPins ||
-                p.pinNumber in analogInPins ||
-                p.pinNumber in analogOutPins
+        override fun isResourceInRange(resourceId: ResourceId) =
+            implementation.isResourceInRange(resourceId)
+    }
 
-        private fun checkPinGroup(
-            resourceId: ResourceId,
-            p: DefaultAttachmentPoints.PinGroup
-        ) = when (resourceId.resourceType) {
-            is DefaultResourceTypes.Encoder -> checkEncoder(p)
-            is DefaultResourceTypes.SerialConnection -> checkSerial(p)
-            is DefaultResourceTypes.Ultrasonic -> checkUltrasonic(p)
-            is DefaultResourceTypes.Stepper -> checkStepper(p)
-            else -> false
+    object Teensy35 : DefaultDeviceTypes("Teensy 3.5", 0, 58) {
+
+        private val implementation = implementDeviceType {
+            digitalOut(0..57)
+            digitalIn(0..57)
+            analogOut(2..10, 14, 20..23, 29..30, 35..38)
+            analogIn(0..26)
+            serial(1 to 0, 10 to 9, 8 to 7, 32 to 31, 33 to 34, 48 to 47)
         }
 
-        private fun checkStepper(p: DefaultAttachmentPoints.PinGroup) =
-            p.pinNumbers.isAllUnique() &&
-                p.pinNumbers.size in listOf(2, 4, 5) &&
-                p.pinNumbers.all { it in digitalOutPins }
-
-        private fun checkEncoder(p: DefaultAttachmentPoints.PinGroup) =
-            p.pinNumbers.isAllUnique() && p.pinNumbers.all { it in digitalInPins }
-
-        private fun checkSerial(p: DefaultAttachmentPoints.PinGroup) =
-            p.pinNumbers.isAllUnique() && p.pinNumbers.all { it in serialPins }
-
-        @SuppressWarnings("UnnecessaryParentheses")
-        private fun checkUltrasonic(p: DefaultAttachmentPoints.PinGroup) =
-            p.pinNumbers.isAllUnique() && p.pinNumbers.size == 2 &&
-                ((p.pinNumbers[0] in digitalInPins && p.pinNumbers[1] in digitalOutPins) ||
-                    (p.pinNumbers[1] in digitalInPins && p.pinNumbers[0] in digitalOutPins))
+        override fun isResourceInRange(resourceId: ResourceId) =
+            implementation.isResourceInRange(resourceId)
     }
 
     object UnknownDevice : DefaultDeviceTypes("Unknown Device", 0, 0) {

@@ -18,14 +18,14 @@ package com.neuronrobotics.bowlerkernel.cad.core
 
 import arrow.core.Either
 import eu.mihosoft.vrl.v3d.Cylinder
+import java.io.IOException
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
-import java.io.IOException
-import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class BlenderDeduplicatorTest {

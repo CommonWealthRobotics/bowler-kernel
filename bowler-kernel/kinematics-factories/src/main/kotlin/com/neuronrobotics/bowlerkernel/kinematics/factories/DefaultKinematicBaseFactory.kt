@@ -45,7 +45,8 @@ class DefaultKinematicBaseFactory(
         kinematicBaseConfigurationData: KinematicBaseConfigurationData,
         kinematicBaseScriptData: KinematicBaseScriptData,
         limbData: List<Pair<LimbConfigurationData, LimbScriptData>>,
-        limbTransforms: Map<LimbId, FrameTransformation>
+        limbTransforms: Map<LimbId, FrameTransformation>,
+        imuTransformation: FrameTransformation
     ): Either<String, KinematicBase> = binding {
         val (bodyController) = kinematicBaseScriptData.bodyController
             .createInstance<BodyController>(scriptFactory, klaxon)
@@ -58,7 +59,8 @@ class DefaultKinematicBaseFactory(
             SimpleKinematicBaseId(kinematicBaseConfigurationData.id),
             bodyController,
             limbs.toImmutableSet(),
-            limbTransforms.toImmutableMap()
+            limbTransforms.toImmutableMap(),
+            imuTransformation
         )
     }
 }

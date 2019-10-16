@@ -23,10 +23,10 @@ import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInertialStateEstimator
 import com.nhaarman.mockitokotlin2.eq
+import kotlin.random.Random
 import org.mockito.AdditionalMatchers
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.toImmutableList
-import kotlin.random.Random
 
 internal object TestUtil {
 

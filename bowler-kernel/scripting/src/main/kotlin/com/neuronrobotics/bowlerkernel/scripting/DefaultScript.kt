@@ -25,13 +25,13 @@ import com.neuronrobotics.bowlerkernel.hardware.Script
 import de.swirtz.ktsrunner.objectloader.KtsObjectLoader
 import groovy.lang.Binding
 import groovy.lang.GroovyShell
+import kotlin.reflect.KClass
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
-import kotlin.reflect.KClass
 
 /**
  * A meta-script which can compile and run any known [ScriptLanguage].

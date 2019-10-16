@@ -18,6 +18,8 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 
 import com.beust.klaxon.Klaxon
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultVexWheel
+import java.util.concurrent.TimeUnit
+import kotlin.reflect.KClass
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
@@ -25,8 +27,6 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import java.util.concurrent.TimeUnit
-import kotlin.reflect.KClass
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class SealedObjectHierarchyConverterTest {

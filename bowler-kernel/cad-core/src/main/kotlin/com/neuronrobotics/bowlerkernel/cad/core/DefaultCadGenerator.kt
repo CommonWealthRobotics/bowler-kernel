@@ -30,14 +30,14 @@ import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cube
 import eu.mihosoft.vrl.v3d.Extrude
 import javafx.scene.paint.Color
+import kotlin.concurrent.thread
+import kotlin.math.absoluteValue
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableSetOf
 import org.octogonapus.ktguava.collections.plus
 import org.octogonapus.ktguava.collections.toImmutableList
 import org.octogonapus.ktguava.collections.toImmutableSet
 import org.octogonapus.ktguava.collections.toImmutableSetMultimap
-import kotlin.concurrent.thread
-import kotlin.math.absoluteValue
 
 /**
  * A simple [CadGenerator] that visualizes DH params as colored cuboids. The [DhParam.r] term is

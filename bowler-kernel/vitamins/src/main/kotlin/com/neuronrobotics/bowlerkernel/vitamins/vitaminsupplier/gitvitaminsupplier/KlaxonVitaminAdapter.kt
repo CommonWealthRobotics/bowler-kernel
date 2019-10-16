@@ -36,8 +36,8 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonServo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonShaft
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonStepperMotor
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.KlaxonVitaminTo
-import org.octogonapus.ktguava.collections.toImmutableMap
 import kotlin.reflect.KClass
+import org.octogonapus.ktguava.collections.toImmutableMap
 
 /**
  * Adapts [KlaxonVitaminTo] for [KlaxonGitVitamin.type] so Klaxon can handle polymorphism.

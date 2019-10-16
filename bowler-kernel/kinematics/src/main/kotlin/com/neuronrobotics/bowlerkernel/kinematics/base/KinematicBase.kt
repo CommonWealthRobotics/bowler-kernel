@@ -100,6 +100,33 @@ interface KinematicBase {
     fun getDesiredLimbTipTransform(limbId: LimbId): FrameTransformation
 
     /**
+     * Calculates the value of a world space transform in limb space. This is what
+     * [setDesiredLimbTipTransform] does before setting the transform on the limb.
+     *
+     * @param limbId The id of the limb (will use this limb's limb space).
+     * @param worldSpaceTransform The world space transform to map.
+     * @return The [worldSpaceTransform] in limb space.
+     */
+    fun getWorldSpaceTransformInLimbSpace(
+        limbId: LimbId,
+        worldSpaceTransform: FrameTransformation
+    ): FrameTransformation
+
+    /**
+     * Calculates the value of a limb space transform in world space. This is what
+     * [getCurrentLimbTipTransform] and [getDesiredLimbTipTransform] do before returning the
+     * transform. The world space transform used is the [getCurrentWorldSpaceTransformWithDelta].
+     *
+     * @param limbId The id of the limb (will use this limb's limb space).
+     * @param limbSpaceTransform The limb space transform to map.
+     * @return The [limbSpaceTransform] in world space.
+     */
+    fun getLimbSpaceTransformInWorldSpace(
+        limbId: LimbId,
+        limbSpaceTransform: FrameTransformation
+    ): FrameTransformation
+
+    /**
      * Computes the current Jacobian matrix for the given link.
      *
      * @param limbId The id of the limb.
