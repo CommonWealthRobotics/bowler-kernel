@@ -34,6 +34,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInertialStateEstima
 import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInverseKinematicsSolver
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanGenerator
+import com.neuronrobotics.bowlerkernel.kinematics.randomFrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.seaArmLinks
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturnConsecutively
@@ -74,7 +75,13 @@ internal class KinematicGraphTest {
     fun `test create`() {
         val baseId = SimpleKinematicBaseId("BaseA")
         val bodyController = NoopBodyController
-        val base = DefaultKinematicBase.create(kinematicGraph, baseId, bodyController)
+        val imuTransform = randomFrameTransformation()
+        val base = DefaultKinematicBase.create(
+            kinematicGraph,
+            baseId,
+            bodyController,
+            imuTransform
+        )
 
         assertAll(
             { assertEquals(setOf(limbA.b, limbB.b), base.limbs) },
@@ -85,7 +92,8 @@ internal class KinematicGraphTest {
                     mapOf(limbA.b.id to limbABaseTransform, limbB.b.id to limbBBaseTransform),
                     base.limbBaseTransforms
                 )
-            }
+            },
+            { assertEquals(imuTransform, base.imuTransform) }
         )
     }
 
@@ -94,7 +102,8 @@ internal class KinematicGraphTest {
         val baseA = DefaultKinematicBase.create(
             kinematicGraph,
             SimpleKinematicBaseId("BaseA"),
-            NoopBodyController
+            NoopBodyController,
+            FrameTransformation.identity
         )
 
         val kinematicGraphData = kinematicGraph.convertToKinematicGraphData(setOf(baseA))

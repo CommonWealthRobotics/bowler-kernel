@@ -47,19 +47,19 @@ internal class SimplePacketComsProtocolReadTest {
 
     @Test
     fun `test adding a read`() {
-        setupRead()
+        setupRead(lineSensor)
     }
 
     @Test
     fun `test adding a polling read`() {
         device.pollingPayload = getPayload()
-        setupPollingRead()
+        setupPollingRead(lineSensor)
         device.pollingLatch.await()
     }
 
     @Test
     fun `test reading`() {
-        setupRead()
+        setupRead(lineSensor)
 
         protocolTest(protocol, device) {
             operation {
@@ -80,7 +80,7 @@ internal class SimplePacketComsProtocolReadTest {
     @Test
     fun `test reading with polling`() {
         device.pollingPayload = getPayload(0, 1)
-        setupPollingRead()
+        setupPollingRead(lineSensor)
         device.pollingLatch.await()
 
         protocolTest(protocol, device) {
@@ -132,18 +132,29 @@ internal class SimplePacketComsProtocolReadTest {
         }
     }
 
-    private fun setupRead() = setupReadImpl { addRead(lineSensor) }
+    private fun setupRead(resourceId: ResourceId) =
+        setupReadImpl(resourceId) { addRead(resourceId) }
 
-    private fun setupPollingRead() = setupReadImpl { addPollingRead(lineSensor) }
+    private fun setupPollingRead(resourceId: ResourceId) =
+        setupReadImpl(resourceId) { addPollingRead(resourceId) }
 
-    private fun setupReadImpl(operation: SimplePacketComsProtocol.() -> Either<String, Unit>) {
+    private fun setupReadImpl(
+        resourceId: ResourceId,
+        operation: SimplePacketComsProtocol.() -> Either<String, Unit>
+    ) {
         protocolTest(protocol, device) {
             operation {
                 val result = it.operation()
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
-                    getPayload(1, 2, 3, 1, 32)
+                    getPayload(
+                        1,
+                        2,
+                        resourceId.resourceType.type,
+                        resourceId.attachmentPoint.type,
+                        *resourceId.attachmentPoint.data
+                    )
                 )
             } deviceResponds {
                 immutableListOf(

@@ -20,7 +20,6 @@ import arrow.core.Either
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.DigitalState
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.IMUState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
 /**
@@ -218,6 +217,7 @@ interface BowlerRPCProtocol {
      */
     fun toneWrite(resourceId: ResourceId, frequency: Int, duration: Long)
 
+    // TODO: Serial needs to be a read + write only
     /**
      * Performs a serial write.
      *
@@ -280,20 +280,4 @@ interface BowlerRPCProtocol {
      * @return The raw distances in the same order as [resourceIds].
      */
     fun ultrasonicRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Long>
-
-    /**
-     * Performs an IMU read.
-     *
-     * @param resourceId The id of a resource on this device.
-     * @return The IMU state.
-     */
-    fun imuRead(resourceId: ResourceId): IMUState
-
-    /**
-     * Performs an IMU read.
-     *
-     * @param resourceIds The resources in the group.
-     * @return The IMU states in the same order as [resourceIds].
-     */
-    fun imuRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<IMUState>
 }

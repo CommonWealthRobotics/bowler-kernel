@@ -43,13 +43,15 @@ import org.octogonapus.ktguava.collections.toImmutableSet
  * @param bodyController The body controller this base uses.
  * @param limbs The limbs attached directly to this base.
  * @param limbBaseTransforms The base transforms of the limbs attached directly to this base.
+ * @param imuTransform The transform from the base to the IMU.
  */
 @SuppressWarnings("TooManyFunctions")
 class DefaultKinematicBase(
     override val id: KinematicBaseId,
     override val bodyController: BodyController,
     val limbs: ImmutableSet<Limb>,
-    val limbBaseTransforms: ImmutableMap<LimbId, FrameTransformation>
+    val limbBaseTransforms: ImmutableMap<LimbId, FrameTransformation>,
+    val imuTransform: FrameTransformation
 ) : KinematicBase {
 
     private var currentWorldSpaceTransform = FrameTransformation.identity
@@ -75,26 +77,34 @@ class DefaultKinematicBase(
     ) {
         val limb = limbs.first { it.id == limbId }
         limb.setDesiredTaskSpaceTransform(
-            worldSpaceTransform *
-                getCurrentWorldSpaceTransformWithDelta().inverse *
-                (limbBaseTransforms[limb.id] ?: error("")).inverse,
+            getWorldSpaceTransformInLimbSpace(limbId, worldSpaceTransform),
             motionConstraints
         )
     }
 
     override fun getCurrentLimbTipTransform(limbId: LimbId): FrameTransformation {
         val limb = limbs.first { it.id == limbId }
-        return limb.getCurrentTaskSpaceTransform() *
-            (limbBaseTransforms[limb.id] ?: error("")) *
-            getCurrentWorldSpaceTransformWithDelta()
+        return getLimbSpaceTransformInWorldSpace(limbId, limb.getCurrentTaskSpaceTransform())
     }
 
     override fun getDesiredLimbTipTransform(limbId: LimbId): FrameTransformation {
         val limb = limbs.first { it.id == limbId }
-        return limb.getDesiredTaskSpaceTransform() *
-            (limbBaseTransforms[limb.id] ?: error("")) *
-            getCurrentWorldSpaceTransformWithDelta()
+        return getLimbSpaceTransformInWorldSpace(limbId, limb.getDesiredTaskSpaceTransform())
     }
+
+    override fun getWorldSpaceTransformInLimbSpace(
+        limbId: LimbId,
+        worldSpaceTransform: FrameTransformation
+    ) = worldSpaceTransform *
+        getCurrentWorldSpaceTransformWithDelta().inverse *
+        (limbBaseTransforms[limbId] ?: error("")).inverse
+
+    override fun getLimbSpaceTransformInWorldSpace(
+        limbId: LimbId,
+        limbSpaceTransform: FrameTransformation
+    ) = limbSpaceTransform *
+        (limbBaseTransforms[limbId] ?: error("")) *
+        getCurrentWorldSpaceTransformWithDelta()
 
     override fun computeJacobian(limbId: LimbId, linkIndex: Int): Matrix {
         TODO("not implemented")
@@ -111,11 +121,13 @@ class DefaultKinematicBase(
          * @param kinematicGraph The graph containing the base and the limbs attached to it.
          * @param baseId The id of this base.
          * @param bodyController The body controller this base uses.
+         * @param imuTransform The transform from the base to the IMU.
          */
         fun create(
             kinematicGraph: KinematicGraph,
             baseId: KinematicBaseId,
-            bodyController: BodyController
+            bodyController: BodyController,
+            imuTransform: FrameTransformation
         ): DefaultKinematicBase {
             val limbs = kinematicGraph.outNodes(BaseNode(baseId).left()).filter {
                 it.isRight()
@@ -134,7 +146,8 @@ class DefaultKinematicBase(
                 baseId,
                 bodyController,
                 limbs.toImmutableSet(),
-                limbBaseTransforms.toImmutableMap()
+                limbBaseTransforms.toImmutableMap(),
+                imuTransform
             )
         }
     }
