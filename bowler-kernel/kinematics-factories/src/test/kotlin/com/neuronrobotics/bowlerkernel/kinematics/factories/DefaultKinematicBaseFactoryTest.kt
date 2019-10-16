@@ -46,6 +46,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlan
 import com.neuronrobotics.bowlerkernel.scripting.factory.DefaultGitScriptFactory
 import com.neuronrobotics.bowlerkernel.scripting.parser.DefaultScriptLanguageParser
 import com.nhaarman.mockitokotlin2.mock
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -54,7 +55,6 @@ import org.junit.jupiter.api.assertAll
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableMapOf
 import org.octogonapus.ktguava.collections.immutableSetOf
-import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DefaultKinematicBaseFactoryTest {
@@ -137,14 +137,16 @@ internal class DefaultKinematicBaseFactoryTest {
             immutableMapOf(
                 SimpleLimbId("limb 1 id") to
                     FrameTransformation.fromTranslation(10, 20, 30)
-            )
+            ),
+            FrameTransformation.fromTranslation(1, 2, 3)
         )
 
         val actual = factory.create(
             configData,
             scriptData,
             listOf(limbConfigurationData to limbScriptData),
-            listOf(limbBaseTransform).toMap()
+            listOf(limbBaseTransform).toMap(),
+            FrameTransformation.fromTranslation(1, 2, 3)
         )
 
         assertTrue(actual is Either.Right, "actual was $actual")
@@ -158,7 +160,8 @@ internal class DefaultKinematicBaseFactoryTest {
             { assertEquals(expected.limbs.first().id, base.limbs.first().id) },
             { assertEquals(expected.limbs.first().links, base.limbs.first().links) },
             { assertEquals(expected.limbBaseTransforms.entries, base.limbBaseTransforms.entries) },
-            { assertEquals(expected.bodyController::class, base.bodyController::class) }
+            { assertEquals(expected.bodyController::class, base.bodyController::class) },
+            { assertEquals(expected.imuTransform, base.imuTransform) }
         )
     }
 }

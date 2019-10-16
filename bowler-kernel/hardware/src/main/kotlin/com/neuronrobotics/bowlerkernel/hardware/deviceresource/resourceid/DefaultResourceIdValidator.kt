@@ -30,9 +30,7 @@ class DefaultResourceIdValidator : ResourceIdValidator {
                 is DefaultResourceTypes.SerialConnection,
                 is DefaultResourceTypes.Encoder,
                 is DefaultResourceTypes.Button,
-                is DefaultResourceTypes.Ultrasonic,
-                is DefaultResourceTypes.IMU6,
-                is DefaultResourceTypes.IMU9 -> Unit.right()
+                is DefaultResourceTypes.Ultrasonic -> Unit.right()
 
                 else ->
                     """

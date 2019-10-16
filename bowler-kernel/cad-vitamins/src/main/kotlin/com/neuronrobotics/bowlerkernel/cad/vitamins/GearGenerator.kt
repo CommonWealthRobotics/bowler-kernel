@@ -19,6 +19,13 @@ package com.neuronrobotics.bowlerkernel.cad.vitamins
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cube
 import eu.mihosoft.vrl.v3d.Cylinder
+import java.lang.Math.cos
+import kotlin.math.PI
+import kotlin.math.acos
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.sqrt
+import kotlin.math.tan
 import org.octogonapus.ktunits.quantities.Angle
 import org.octogonapus.ktunits.quantities.Length
 import org.octogonapus.ktunits.quantities.compareTo
@@ -31,13 +38,6 @@ import org.octogonapus.ktunits.quantities.plus
 import org.octogonapus.ktunits.quantities.radian
 import org.octogonapus.ktunits.quantities.times
 import org.octogonapus.ktunits.quantities.unaryMinus
-import java.lang.Math.cos
-import kotlin.math.PI
-import kotlin.math.acos
-import kotlin.math.pow
-import kotlin.math.sin
-import kotlin.math.sqrt
-import kotlin.math.tan
 
 class GearGenerator {
 

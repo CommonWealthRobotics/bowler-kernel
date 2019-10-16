@@ -24,6 +24,9 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon.getConfiguredKlax
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
+import java.io.File
+import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
@@ -32,9 +35,6 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import org.octogonapus.ktguava.collections.immutableSetOf
 import org.octogonapus.ktguava.collections.plus
-import java.io.File
-import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class GitVitaminSupplierFactoryTest {

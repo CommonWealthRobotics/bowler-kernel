@@ -40,6 +40,7 @@ import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
@@ -48,7 +49,6 @@ import org.junit.jupiter.api.Timeout
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableSetOf
 import org.octogonapus.ktguava.collections.toImmutableSet
-import java.util.concurrent.TimeUnit
 
 @SuppressWarnings("TooManyFunctions")
 @Timeout(value = 30, unit = TimeUnit.SECONDS)

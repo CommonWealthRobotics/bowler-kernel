@@ -28,8 +28,8 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
 import com.neuronrobotics.bowlerkernel.kinematics.motion.ReachabilityCalculator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanGenerator
-import org.octogonapus.ktguava.collections.toImmutableList
 import java.util.concurrent.Executors
+import org.octogonapus.ktguava.collections.toImmutableList
 
 class DefaultLimb(
     override val id: LimbId,

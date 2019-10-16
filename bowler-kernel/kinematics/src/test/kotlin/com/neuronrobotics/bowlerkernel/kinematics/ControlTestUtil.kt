@@ -50,10 +50,10 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.NoopInverseKinematicsSo
 import com.neuronrobotics.bowlerkernel.kinematics.motion.model.ClassData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanFollower
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.NoopLimbMotionPlanGenerator
+import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.toImmutableNetwork
-import kotlin.random.Random
 
 internal fun createMotionConstraints(duration: Number) = BasicMotionConstraints(
     duration, 0, 0, 0

@@ -19,9 +19,9 @@ package com.neuronrobotics.bowlerkernel.vitamins.vitamin.klaxon
 import com.beust.klaxon.TypeFor
 import com.google.common.collect.ImmutableMap
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
-import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultServo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Servo
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.Shaft
+import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultServo
 import org.octogonapus.ktguava.klaxon.ConvertImmutableMap
 import org.octogonapus.ktunits.quantities.AngularVelocity
 import org.octogonapus.ktunits.quantities.ElectricPotential

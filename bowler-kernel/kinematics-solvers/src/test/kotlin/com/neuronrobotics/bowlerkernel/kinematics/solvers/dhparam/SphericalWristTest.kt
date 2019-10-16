@@ -19,6 +19,7 @@ package com.neuronrobotics.bowlerkernel.kinematics.solvers.dhparam
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.solvers.TestUtil.randomDhParam
+import java.util.concurrent.TimeUnit
 import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -27,7 +28,6 @@ import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.octogonapus.ktguava.collections.immutableListOf
-import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class SphericalWristTest {

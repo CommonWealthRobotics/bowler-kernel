@@ -18,6 +18,7 @@ package com.neuronrobotics.bowlerkernel.cad.vitamins
 
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.CenterOfMass
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultBolt
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
@@ -27,7 +28,6 @@ import org.octogonapus.ktunits.quantities.gram
 import org.octogonapus.ktunits.quantities.inch
 import org.octogonapus.ktunits.quantities.millimeter
 import org.octogonapus.ktunits.quantities.plus
-import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class BoltGeneratorTest {

@@ -34,12 +34,12 @@ import com.neuronrobotics.bowlerkernel.kinematics.solvers.eulerangle.EulerAngleZ
 import com.neuronrobotics.bowlerkernel.kinematics.solvers.eulerangle.EulerAngleZXZ
 import com.neuronrobotics.bowlerkernel.kinematics.solvers.eulerangle.EulerAngleZYX
 import com.neuronrobotics.bowlerkernel.kinematics.solvers.eulerangle.EulerAngleZYZ
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import org.octogonapus.ktguava.collections.toImmutableList
-import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 class DefaultDhClassifierTest {

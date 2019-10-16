@@ -36,10 +36,10 @@ import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterError
 import com.neuronrobotics.bowlerkernel.util.ServoLimits
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
-import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class UnprovisionedDeviceResourceFactoryTest {

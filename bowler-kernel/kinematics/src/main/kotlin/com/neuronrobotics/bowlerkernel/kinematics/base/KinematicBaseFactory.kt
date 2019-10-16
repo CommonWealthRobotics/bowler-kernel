@@ -33,12 +33,14 @@ interface KinematicBaseFactory {
      * @param kinematicBaseScriptData The script data.
      * @param limbData The data for all the limbs attached to the base.
      * @param limbTransforms The base transforms for all the limbs attached to the base.
+     * @param imuTransformation The transform from the base to the IMU.
      * @return A new kinematic base.
      */
     fun create(
         kinematicBaseConfigurationData: KinematicBaseConfigurationData,
         kinematicBaseScriptData: KinematicBaseScriptData,
         limbData: List<Pair<LimbConfigurationData, LimbScriptData>>,
-        limbTransforms: Map<LimbId, FrameTransformation>
+        limbTransforms: Map<LimbId, FrameTransformation>,
+        imuTransformation: FrameTransformation
     ): Either<String, KinematicBase>
 }

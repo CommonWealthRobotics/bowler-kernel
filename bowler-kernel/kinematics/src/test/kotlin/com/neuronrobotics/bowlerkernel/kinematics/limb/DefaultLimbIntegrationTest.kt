@@ -34,6 +34,8 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlan
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanGenerator
 import com.neuronrobotics.bowlerkernel.kinematics.motion.plan.LimbMotionPlanStep
 import com.nhaarman.mockitokotlin2.mock
+import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -42,8 +44,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.toImmutableList
-import java.util.concurrent.TimeUnit
-import kotlin.math.abs
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DefaultLimbIntegrationTest {

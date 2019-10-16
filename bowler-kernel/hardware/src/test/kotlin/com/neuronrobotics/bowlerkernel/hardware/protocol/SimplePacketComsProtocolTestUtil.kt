@@ -16,12 +16,28 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
+import kotlin.random.Random
+
 /**
  * Creates a mock payload. The payload starts with the given [bytes] and is padded with
  * zeroes to a length of [SimplePacketComsProtocol.PAYLOAD_SIZE].
  *
  * @param bytes The first bytes in the payload.
+ * @param padding Whether to pad the payload to [SimplePacketComsProtocol.PAYLOAD_SIZE].
  * @return The payload.
  */
-internal fun getPayload(vararg bytes: Byte): ByteArray =
-    bytes + (1..SimplePacketComsProtocol.PAYLOAD_SIZE - bytes.size).map { 0.toByte() }
+internal fun getPayload(vararg bytes: Byte, padding: Boolean = true): ByteArray =
+    if (padding)
+        bytes + (1..SimplePacketComsProtocol.PAYLOAD_SIZE - bytes.size).map { 0.toByte() }
+    else
+        bytes
+
+/**
+ * Creates a mock payload filled with random bytes.
+ *
+ * @param length The number of random bytes to generate.
+ * @param padding Whether to pad the payload to [SimplePacketComsProtocol.PAYLOAD_SIZE].
+ * @return The payload.
+ */
+internal fun randomPayload(length: Int, padding: Boolean = true): ByteArray =
+    getPayload(*Random.nextBytes(length), padding = padding)

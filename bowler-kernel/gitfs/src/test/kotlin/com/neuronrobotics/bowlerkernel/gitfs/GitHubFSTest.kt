@@ -21,6 +21,11 @@ import arrow.core.Option
 import arrow.core.right
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import java.io.File
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -34,11 +39,6 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.kohsuke.github.GitHub
 import org.octogonapus.ktguava.collections.immutableSetOf
-import java.io.File
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class GitHubFSTest {

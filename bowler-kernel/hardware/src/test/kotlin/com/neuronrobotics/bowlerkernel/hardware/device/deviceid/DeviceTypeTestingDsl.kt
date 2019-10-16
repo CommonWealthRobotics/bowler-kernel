@@ -21,6 +21,7 @@ import arrow.core.Tuple4
 import arrow.core.Tuple5
 import arrow.data.ListK
 import arrow.data.extensions.listk.applicative.applicative
+import arrow.data.extensions.sequence.applicative.product
 import arrow.data.fix
 import arrow.data.k
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
@@ -29,6 +30,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Resour
 import com.neuronrobotics.bowlerkernel.util.isAllUnique
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.fail
 
 @DslMarker
 internal annotation class DeviceTypeTestDsl
@@ -85,7 +87,7 @@ internal class DeviceTypeScenario(
     }
 
     private fun assertDisallowedPins() {
-        val disallowedPins = (type.firstPinNumber until type.numberOfPins).toList()
+        val disallowedPins = (type.firstPinNumber until type.numberOfPins)
             .map { it.toByte() } - digitalInPins - digitalOutPins - analogInPins - analogOutPins -
             serialPins.flatMap { listOf(it.a, it.b) }
 
@@ -99,16 +101,14 @@ internal class DeviceTypeScenario(
         ListK.applicative()
             .tupled(disallowedPins.k(), disallowedPins.k())
             .fix()
-            .forEach {
-                assertDisallowed(DefaultResourceTypes.SerialConnection, it)
-            }
+            .map { it.toList() }
+            .forEach { assertDisallowed(DefaultResourceTypes.SerialConnection, it) }
 
         ListK.applicative()
             .tupled(disallowedPins.k(), disallowedPins.k())
             .fix()
-            .forEach {
-                assertDisallowed(DefaultResourceTypes.Encoder, it)
-            }
+            .map { it.toList() }
+            .forEach { assertDisallowed(DefaultResourceTypes.Encoder, it) }
 
         assertDisallowedSteppers(disallowedPins)
     }
@@ -117,16 +117,14 @@ internal class DeviceTypeScenario(
         ListK.applicative()
             .tupled(disallowedPins.k(), disallowedPins.k())
             .fix()
-            .forEach {
-                assertDisallowed(DefaultResourceTypes.Stepper, it)
-            }
+            .map { it.toList() }
+            .forEach { assertDisallowed(DefaultResourceTypes.Stepper, it) }
 
         ListK.applicative()
             .tupled(disallowedPins.k(), disallowedPins.k(), disallowedPins.k(), disallowedPins.k())
             .fix()
-            .forEach {
-                assertDisallowed(DefaultResourceTypes.Stepper, it)
-            }
+            .map { it.toList() }
+            .forEach { assertDisallowed(DefaultResourceTypes.Stepper, it) }
 
         ListK.applicative()
             .tupled(
@@ -137,17 +135,16 @@ internal class DeviceTypeScenario(
                 disallowedPins.k()
             )
             .fix()
-            .forEach {
-                assertDisallowed(DefaultResourceTypes.Stepper, it)
-            }
+            .map { it.toList() }
+            .forEach { assertDisallowed(DefaultResourceTypes.Stepper, it) }
     }
 
     private fun assertSerial() {
         serialPins.forEach {
-            assertAllowed(DefaultResourceTypes.SerialConnection, it)
-            assertAllowed(DefaultResourceTypes.SerialConnection, it.reverse())
-            assertDisallowed(DefaultResourceTypes.SerialConnection, Tuple2(it.a, it.a))
-            assertDisallowed(DefaultResourceTypes.SerialConnection, Tuple2(it.b, it.b))
+            assertAllowed(DefaultResourceTypes.SerialConnection, it.toList())
+            assertAllowed(DefaultResourceTypes.SerialConnection, it.reverse().toList())
+            assertDisallowed(DefaultResourceTypes.SerialConnection, Tuple2(it.a, it.a).toList())
+            assertDisallowed(DefaultResourceTypes.SerialConnection, Tuple2(it.b, it.b).toList())
         }
     }
 
@@ -155,11 +152,12 @@ internal class DeviceTypeScenario(
         ListK.applicative()
             .tupled(digitalInPins.k(), digitalInPins.k())
             .fix()
+            .map { it.toList() }
             .forEach {
-                if (it.a == it.b) {
-                    assertDisallowed(DefaultResourceTypes.Encoder, it)
-                } else {
+                if (it.isAllUnique()) {
                     assertAllowed(DefaultResourceTypes.Encoder, it)
+                } else {
+                    assertDisallowed(DefaultResourceTypes.Encoder, it)
                 }
             }
     }
@@ -173,107 +171,110 @@ internal class DeviceTypeScenario(
         ListK.applicative()
             .tupled(digitalInPins.k(), digitalOutPins.k())
             .fix()
+            .map { it.toList() }
             .forEach {
-                if (it.a == it.b) {
-                    assertDisallowed(DefaultResourceTypes.Ultrasonic, it)
-                } else {
+                if (it.isAllUnique()) {
                     assertAllowed(DefaultResourceTypes.Ultrasonic, it)
-                    assertAllowed(DefaultResourceTypes.Ultrasonic, it.reverse())
+                    assertAllowed(DefaultResourceTypes.Ultrasonic, it.reversed())
+                } else {
+                    assertDisallowed(DefaultResourceTypes.Ultrasonic, it)
                 }
             }
     }
 
     private fun assertStepper() {
-        ListK.applicative()
-            .tupled(digitalOutPins.k(), digitalOutPins.k())
-            .fix()
-            .filter { it.a != it.b }
-            .forEach {
-                assertAllowed(DefaultResourceTypes.Stepper, it)
-            }
+        val edgeCasePins = digitalOutPins.firstFive() + digitalOutPins.lastFive()
 
-        ListK.applicative()
-            .tupled(digitalOutPins.k(), digitalOutPins.k(), digitalOutPins.k(), digitalOutPins.k())
-            .fix()
-            .filter { it.allUnique() }
-            .forEach {
-                assertAllowed(DefaultResourceTypes.Stepper, it)
-            }
+        edgeCasePins.asSequence().k().let {
+            it.product(it)
+        }.map { it.toList() }
+            .filter { it.isAllUnique() }
+            .forEach { assertAllowed(DefaultResourceTypes.Stepper, it) }
 
-        ListK.applicative()
-            .tupled(
-                digitalOutPins.k(),
-                digitalOutPins.k(),
-                digitalOutPins.k(),
-                digitalOutPins.k(),
-                digitalOutPins.k()
-            )
-            .fix()
-            .filter { it.allUnique() }
-            .forEach {
-                assertAllowed(DefaultResourceTypes.Stepper, it)
-            }
+        edgeCasePins.asSequence().k().let {
+            it.product(it).product(it).product(it)
+        }.map { it.toList() }
+            .filter { it.isAllUnique() }
+            .forEach { assertAllowed(DefaultResourceTypes.Stepper, it) }
+
+        edgeCasePins.asSequence().k().let {
+            it.product(it).product(it).product(it).product(it)
+        }.map { it.toList() }
+            .filter { it.isAllUnique() }
+            .forEach { assertAllowed(DefaultResourceTypes.Stepper, it) }
+
+        digitalOutPins.asSequence().k().let {
+            it.product(it)
+        }.map { it.toList() }
+            .filter { it.isAllUnique() }
+            .checkFirstNPins(DefaultResourceTypes.Stepper)
+
+        digitalOutPins.asSequence().k().let {
+            it.product(it).product(it).product(it)
+        }.map { it.toList() }
+            .filter { it.isAllUnique() }
+            .checkFirstNPins(DefaultResourceTypes.Stepper)
+
+        digitalOutPins.asSequence().k().let {
+            it.product(it).product(it).product(it).product(it)
+        }.map { it.toList() }
+            .filter { it.isAllUnique() }
+            .checkFirstNPins(DefaultResourceTypes.Stepper)
     }
 
-    fun digitalIn(vararg pins: Byte) {
-        digitalInPins = pins.toSet().toList()
+    fun digitalIn(vararg pins: Any) {
+        digitalInPins = pins.collectPins()
     }
 
-    fun digitalOut(vararg pins: Byte) {
-        digitalOutPins = pins.toSet().toList()
+    fun digitalOut(vararg pins: Any) {
+        digitalOutPins = pins.collectPins()
     }
 
-    fun analogIn(vararg pins: Byte) {
-        analogInPins = pins.toSet().toList()
+    fun analogIn(vararg pins: Any) {
+        analogInPins = pins.collectPins()
     }
 
-    fun analogOut(vararg pins: Byte) {
-        analogOutPins = pins.toSet().toList()
+    fun analogOut(vararg pins: Any) {
+        analogOutPins = pins.collectPins()
     }
 
     fun serial(vararg pins: Pair<Number, Number>) {
         serialPins = pins.map { Tuple2(it.first.toByte(), it.second.toByte()) }.toSet().toList()
     }
 
+    private fun Array<out Any>.collectPins() = flatMap {
+        when (it) {
+            is Int -> listOf(it.toByte())
+            is IntRange -> it.map { it.toByte() }
+            else -> fail { "Unknown pin input: $it" }
+        }
+    }.toSet().toList()
+
+    private fun Sequence<List<Byte>>.checkFirstNPins(
+        type: DefaultResourceTypes,
+        count: Int = 1000
+    ) {
+        // Check the first count pins
+        var index = 0
+        for (elem in this) {
+            if (index >= count) {
+                return
+            }
+
+            assertAllowed(type, elem)
+
+            index++
+        }
+    }
+
     private fun assertAllowed(resourceType: DefaultResourceTypes, pin: Byte) =
         assertAllowed(resourceType, DefaultAttachmentPoints.Pin(pin))
 
-    private fun assertAllowed(resourceType: DefaultResourceTypes, pinGroup: Tuple2<Byte, Byte>) =
+    private fun assertAllowed(resourceType: DefaultResourceTypes, pinGroup: List<Byte>) =
         assertAllowed(
             resourceType,
-            DefaultAttachmentPoints.PinGroup(byteArrayOf(pinGroup.a, pinGroup.b))
+            DefaultAttachmentPoints.PinGroup(pinGroup.toByteArray())
         )
-
-    private fun assertAllowed(
-        resourceType: DefaultResourceTypes,
-        pinGroup: Tuple4<Byte, Byte, Byte, Byte>
-    ) = assertAllowed(
-        resourceType,
-        DefaultAttachmentPoints.PinGroup(
-            byteArrayOf(
-                pinGroup.a,
-                pinGroup.b,
-                pinGroup.c,
-                pinGroup.d
-            )
-        )
-    )
-
-    private fun assertAllowed(
-        resourceType: DefaultResourceTypes,
-        pinGroup: Tuple5<Byte, Byte, Byte, Byte, Byte>
-    ) = assertAllowed(
-        resourceType,
-        DefaultAttachmentPoints.PinGroup(
-            byteArrayOf(
-                pinGroup.a,
-                pinGroup.b,
-                pinGroup.c,
-                pinGroup.d,
-                pinGroup.e
-            )
-        )
-    )
 
     private fun assertAllowed(
         resourceType: DefaultResourceTypes,
@@ -292,41 +293,10 @@ internal class DeviceTypeScenario(
 
     private fun assertDisallowed(
         resourceType: DefaultResourceTypes,
-        pinGroup: Tuple2<Byte, Byte>
+        pinGroup: List<Byte>
     ) = assertDisallowed(
         resourceType,
-        DefaultAttachmentPoints.PinGroup(byteArrayOf(pinGroup.a, pinGroup.b))
-    )
-
-    private fun assertDisallowed(
-        resourceType: DefaultResourceTypes,
-        pinGroup: Tuple4<Byte, Byte, Byte, Byte>
-    ) = assertDisallowed(
-        resourceType,
-        DefaultAttachmentPoints.PinGroup(
-            byteArrayOf(
-                pinGroup.a,
-                pinGroup.b,
-                pinGroup.c,
-                pinGroup.d
-            )
-        )
-    )
-
-    private fun assertDisallowed(
-        resourceType: DefaultResourceTypes,
-        pinGroup: Tuple5<Byte, Byte, Byte, Byte, Byte>
-    ) = assertDisallowed(
-        resourceType,
-        DefaultAttachmentPoints.PinGroup(
-            byteArrayOf(
-                pinGroup.a,
-                pinGroup.b,
-                pinGroup.c,
-                pinGroup.d,
-                pinGroup.e
-            )
-        )
+        DefaultAttachmentPoints.PinGroup(pinGroup.toByteArray())
     )
 
     private fun assertDisallowed(
@@ -340,8 +310,19 @@ internal class DeviceTypeScenario(
     }
 }
 
-private fun <A, B, C, D> Tuple4<A, B, C, D>.allUnique() = listOf(a, b, c, d).isAllUnique()
-private fun <A, B, C, D, E> Tuple5<A, B, C, D, E>.allUnique() = listOf(a, b, c, d, e).isAllUnique()
+private fun <A> Tuple2<A, A>.toList(): List<A> = listOf(a, b)
+private fun <A> Tuple4<A, A, A, A>.toList(): List<A> = listOf(a, b, c, d)
+private fun <A> Tuple5<A, A, A, A, A>.toList(): List<A> = listOf(a, b, c, d, e)
+
+private fun <E> List<E>.firstFive(): List<E> {
+    val endIndex = if (size <= 4) size else 5
+    return subList(0, endIndex)
+}
+
+private fun <E> List<E>.lastFive(): List<E> {
+    val startIndex = if (size - 5 < 0) 0 else size - 5
+    return subList(startIndex, size)
+}
 
 @DeviceTypeTestDsl
 internal fun deviceTypeTest(

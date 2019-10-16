@@ -24,6 +24,7 @@ import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultSh
 import com.neuronrobotics.bowlerkernel.vitamins.vitamin.defaultvitamin.DefaultStepperMotor
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.Cylinder
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
@@ -38,7 +39,6 @@ import org.octogonapus.ktunits.quantities.minus
 import org.octogonapus.ktunits.quantities.nM
 import org.octogonapus.ktunits.quantities.plus
 import org.octogonapus.ktunits.quantities.volt
-import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class StepperGeneratorTest {

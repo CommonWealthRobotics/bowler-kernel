@@ -17,9 +17,9 @@
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
-import org.junit.jupiter.api.fail
 import java.util.ArrayDeque
 import java.util.concurrent.CountDownLatch
+import org.junit.jupiter.api.fail
 
 internal class MockDevice : AbstractSimpleComsDevice() {
 

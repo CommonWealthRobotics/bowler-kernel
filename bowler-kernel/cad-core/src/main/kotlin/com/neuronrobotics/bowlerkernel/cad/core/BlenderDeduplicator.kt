@@ -19,11 +19,11 @@ package com.neuronrobotics.bowlerkernel.cad.core
 import arrow.effects.IO
 import eu.mihosoft.vrl.v3d.CSG
 import eu.mihosoft.vrl.v3d.STL
-import mu.KotlinLogging
 import java.io.File
 import java.nio.file.Paths
 import java.text.NumberFormat
 import kotlin.random.Random
+import mu.KotlinLogging
 
 class BlenderDeduplicator(
     private val blenderExec: String = "blender",

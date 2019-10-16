@@ -90,6 +90,11 @@ sealed class DefaultAttachmentPoints(
         )
 
     /**
+     * No attachment point data.
+     */
+    object None : DefaultAttachmentPoints(5)
+
+    /**
      * The lowest used type number.
      */
     @SuppressWarnings("FunctionOnlyReturningConstant")
@@ -99,7 +104,7 @@ sealed class DefaultAttachmentPoints(
      * The highest used type number.
      */
     @SuppressWarnings("FunctionOnlyReturningConstant")
-    fun getHighestTypeNumber(): Byte = 4
+    fun getHighestTypeNumber(): Byte = 5
 }
 
 private fun Short.asByteArray(): ByteArray =
