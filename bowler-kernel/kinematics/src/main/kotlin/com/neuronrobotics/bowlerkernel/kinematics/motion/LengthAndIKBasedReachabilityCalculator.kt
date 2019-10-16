@@ -16,25 +16,34 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.motion
 
+import arrow.effects.IO
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.util.JointLimits
 
 /**
- * Determines whether a frame transform is reachable.
+ * Uses a [LengthBasedReachabilityCalculator] and an [InverseKinematicsSolver] to determine if
+ * a [FrameTransformation] is reachable.
  */
-interface ReachabilityCalculator {
+class LengthAndIKBasedReachabilityCalculator(
+    private val inverseKinematicsSolver: InverseKinematicsSolver,
+    private val lengthBasedReachabilityCalculator: LengthBasedReachabilityCalculator =
+        LengthBasedReachabilityCalculator()
+) : ReachabilityCalculator {
 
-    /**
-     * Compute whether the [frameTransformation] is reachable.
-     *
-     * @param frameTransformation The task space transform to test.
-     * @param links The links that make up the limb.
-     * @param jointLimits The joint limits for each link.
-     * @return Whether the [frameTransformation] is reachable.
-     */
-    fun isFrameTransformationReachable(
+    override fun isFrameTransformationReachable(
         frameTransformation: FrameTransformation,
         links: List<Link>,
         jointLimits: List<JointLimits>
-    ): Boolean
+    ): Boolean = lengthBasedReachabilityCalculator.isFrameTransformationReachable(
+        frameTransformation,
+        links,
+        jointLimits
+    ) && IO {
+        inverseKinematicsSolver.solveChain(
+            links,
+            links.map { 0.0 },
+            jointLimits,
+            frameTransformation
+        )
+    }.attempt().unsafeRunSync().isRight()
 }

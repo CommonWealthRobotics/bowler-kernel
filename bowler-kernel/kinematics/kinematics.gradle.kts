@@ -80,4 +80,9 @@ dependencies {
         name = "mockito-kotlin",
         version = property("mockito-kotlin.version") as String
     )
+    testImplementation(
+        group = "io.mockk",
+        name = "mockk",
+        version = property("mockk.version") as String
+    )
 }
