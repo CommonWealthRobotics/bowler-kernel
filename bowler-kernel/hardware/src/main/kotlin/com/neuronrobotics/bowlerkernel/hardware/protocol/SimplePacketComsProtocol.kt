@@ -28,19 +28,26 @@ import arrow.core.right
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.DigitalState
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.IMUState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceType
 import com.neuronrobotics.bowlerkernel.internal.logging.LoggerUtilities.Companion.joinWithIndent
 import edu.wpi.SimplePacketComs.AbstractSimpleComsDevice
 import edu.wpi.SimplePacketComs.BytePacketType
+import mu.KotlinLogging
+import org.octogonapus.ktguava.collections.toImmutableList
 import java.nio.ByteBuffer
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.pow
-import mu.KotlinLogging
-import org.octogonapus.ktguava.collections.toImmutableList
+
+/**
+ * Parses a received payload into a value. The parameter format is:
+ *  `(payload, start index (inclusive), end index (exclusive))`.
+ * The valid slice of the payload this method is allowed to access is
+ * `payload.sliceArray(start until end)`.
+ */
+typealias ParseReceivePayload<T> = (ByteArray, Int, Int) -> T
 
 /**
  * An implementation of [BowlerRPCProtocol] using SimplePacketComs. Uses a continuous range of
@@ -569,7 +576,8 @@ open class SimplePacketComsProtocol(
     }
 
     /**
-     * Creates the send payload for a group.
+     * Creates the send payload for a group. Sorts the [resourcesAndValues] into the correct
+     * ordering based on their send indices.
      *
      * @param resourcesAndValues The group members and their associated values to send.
      * @param makeResourcePayload Creates the payload for one resource given its value.
@@ -597,9 +605,9 @@ open class SimplePacketComsProtocol(
      * @return The parsed values in the same order as [resourceIds].
      */
     private fun <T> parseGroupReceivePayload(
-        resourceIds: ImmutableList<ResourceId>,
+        resourceIds: List<ResourceId>,
         fullPayload: ByteArray,
-        parseResourcePayload: (ByteArray, Int, Int) -> T
+        parseResourcePayload: ParseReceivePayload<T>
     ): ImmutableList<T> {
         return resourceIds.map {
             val receiveRange = groupMemberToReceiveRange[it]!!
@@ -625,7 +633,7 @@ open class SimplePacketComsProtocol(
     @Suppress("MemberVisibilityCanBePrivate")
     protected fun <T> handleRead(
         resourceId: ResourceId,
-        parseReceivePayload: (ByteArray, Int, Int) -> T
+        parseReceivePayload: ParseReceivePayload<T>
     ): T {
         val packetId = getValidatedPacketId(resourceId)
         idToSendData[packetId] = ByteArray(PAYLOAD_SIZE) { 0 }
@@ -651,7 +659,7 @@ open class SimplePacketComsProtocol(
     @Suppress("MemberVisibilityCanBePrivate")
     protected fun <T> handleGroupRead(
         resourceIds: ImmutableList<ResourceId>,
-        parseReceivePayload: (ByteArray, Int, Int) -> T
+        parseReceivePayload: ParseReceivePayload<T>
     ): ImmutableList<T> {
         val groupId = validateGroupReceiveResources(resourceIds)
         val packetId = groupIdToPacketId[groupId]!!
@@ -700,12 +708,11 @@ open class SimplePacketComsProtocol(
      * @param parseReceivePayload Parses the receive payload into a value.
      * @return The value.
      */
-    @Suppress("unused")
     protected fun <S, R> handleWrite(
         resourceId: ResourceId,
         value: S,
         makeSendPayload: (S) -> ByteArray,
-        parseReceivePayload: (ByteArray, Int, Int) -> R
+        parseReceivePayload: ParseReceivePayload<R>
     ): R {
         val packetId = getValidatedPacketId(resourceId)
         idToSendData[packetId] = makeSendPayload(value)
@@ -737,6 +744,9 @@ open class SimplePacketComsProtocol(
      * 2. Get packet id
      * 3. Call [makeGroupSendPayload] with [makeSendPayload] and write the result to [idToSendData]
      * 4. Call [callAndWait]
+     *
+     * @param resourcesAndValues The resource ids paired with their values.
+     * @param makeSendPayload Makes a send payload from a value.
      */
     @Suppress("MemberVisibilityCanBePrivate")
     protected fun <T> handleGroupWrite(
@@ -752,6 +762,42 @@ open class SimplePacketComsProtocol(
         )
 
         callAndWait(packetId)
+    }
+
+    /**
+     * Performs a full RPC group write call:
+     * 1. Validate group and get group id
+     * 2. Get packet id
+     * 3. Call [makeGroupSendPayload] with [makeSendPayload] and write the result to [idToSendData]
+     * 4. Call [callAndWait]
+     * 5. Call [parseGroupReceivePayload] with [parseReceivePayload] and return the result
+     *
+     * @param resourcesAndValues The resource ids paired with their values.
+     * @param makeSendPayload Makes a send payload from a value.
+     * @param parseReceivePayload Parses the receive payload into a value.
+     * @return The values in the same order as [resourcesAndValues].
+     */
+    @Suppress("MemberVisibilityCanBePrivate")
+    protected fun <T, R> handleGroupWrite(
+        resourcesAndValues: ImmutableList<Pair<ResourceId, T>>,
+        makeSendPayload: (T) -> ByteArray,
+        parseReceivePayload: ParseReceivePayload<R>
+    ): ImmutableList<R> {
+        val groupId = validateGroupSendResources(resourcesAndValues)
+        val packetId = groupIdToPacketId[groupId]!!
+
+        idToSendData[packetId] = makeGroupSendPayload(
+            resourcesAndValues,
+            makeSendPayload
+        )
+
+        callAndWait(packetId)
+
+        return parseGroupReceivePayload(
+            resourcesAndValues.map { it.first },
+            idToReceiveData[packetId]!!,
+            parseReceivePayload
+        )
     }
 
     override fun connect(): Either<String, Unit> = Try {
@@ -1008,17 +1054,6 @@ open class SimplePacketComsProtocol(
 
     override fun ultrasonicRead(resourceIds: ImmutableList<ResourceId>) =
         handleGroupRead(resourceIds, this::parseUltrasonicReadPayload)
-
-    @Suppress("UNUSED_PARAMETER")
-    protected fun parseIMUReadPayload(payload: ByteArray, start: Int, end: Int): IMUState {
-        TODO()
-    }
-
-    override fun imuRead(resourceId: ResourceId) =
-        handleRead(resourceId, this::parseIMUReadPayload)
-
-    override fun imuRead(resourceIds: ImmutableList<ResourceId>) =
-        handleGroupRead(resourceIds, this::parseIMUReadPayload)
 
     /**
      * The lowest packet id.

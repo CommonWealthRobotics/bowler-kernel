@@ -88,16 +88,6 @@ sealed class DefaultResourceTypes(
      */
     object PiezoelectricSpeaker : DefaultResourceTypes(11, 8, 0)
 
-    /**
-     * A 6DOF IMU.
-     */
-    object IMU6 : DefaultResourceTypes(12, 0, 27)
-
-    /**
-     * A 9DOF IMU.
-     */
-    object IMU9 : DefaultResourceTypes(13, 0, 36)
-
     companion object {
 
         /**

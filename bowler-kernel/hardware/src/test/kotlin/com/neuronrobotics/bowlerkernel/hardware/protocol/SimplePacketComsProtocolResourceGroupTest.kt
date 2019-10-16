@@ -101,6 +101,6 @@ internal class SimplePacketComsProtocolResourceGroupTest {
         @JvmStatic
         fun defaultResourceTypesSource() =
             DefaultResourceTypes::class.nestedClasses
-                .filter { !it.isCompanion }.map { it.objectInstance }
+                .filter { !it.isCompanion && it.objectInstance != null }.map { it.objectInstance }
     }
 }
