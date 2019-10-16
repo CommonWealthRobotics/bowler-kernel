@@ -100,6 +100,6 @@ sealed class DefaultResourceTypes(
          * The highest used type number.
          */
         @SuppressWarnings("FunctionOnlyReturningConstant")
-        fun getHighestTypeNumber(): Byte = 13
+        fun getHighestTypeNumber(): Byte = 11
     }
 }
