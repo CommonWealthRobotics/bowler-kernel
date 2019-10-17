@@ -29,9 +29,9 @@ internal constructor(
     override val limits: ImmutableList<ServoLimits>
 ) : ServoGroup {
 
-    private var lastWrite = resourceIds.map { 0.0 }.toImmutableList()
+    private var lastWrite = resourceIds.map { 0.0 }
 
-    override fun write(angles: ImmutableList<Double>) {
+    override fun write(angles: List<Double>) {
         device.bowlerRPCProtocol.servoWrite(resourceIds.zip(angles).toImmutableList())
         lastWrite = angles
     }

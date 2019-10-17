@@ -32,7 +32,7 @@ interface ServoGroup : ProvisionedDeviceResourceGroup {
      *
      * @param angles The angles to write.
      */
-    fun write(angles: ImmutableList<Double>)
+    fun write(angles: List<Double>)
 
     /**
      * Reads the current angles of the servos. Typically, this is just the last value passed to
@@ -40,5 +40,5 @@ interface ServoGroup : ProvisionedDeviceResourceGroup {
      *
      * @return The current angles of the servos.
      */
-    fun read(): ImmutableList<Double>
+    fun read(): List<Double>
 }
