@@ -17,7 +17,6 @@
 package com.neuronrobotics.bowlerkernel.kinematics.solvers
 
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DefaultLink
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
@@ -83,7 +82,7 @@ internal object TestUtil {
     )
 
     internal val hephaestusArmLinks: ImmutableList<Link> = hephaestusArmDhParams.map {
-        DefaultLink(
+        Link(
             LinkType.Rotary,
             it,
             NoopInertialStateEstimator

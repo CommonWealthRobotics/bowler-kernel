@@ -16,8 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.motion.plan
 
-import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.kinematics.closedloop.JointAngleController
+import com.neuronrobotics.bowlerkernel.kinematics.closedloop.LimbJointsController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
@@ -26,26 +25,23 @@ import java.util.concurrent.TimeUnit
 /**
  * A [LimbMotionPlanFollower] which schedules each plan step using an
  * [Executors.newScheduledThreadPool] and sets the step's target joint angles to the
- * [Limb.jointAngleControllers].
+ * [Limb.jointsController].
  */
 class DefaultLimbMotionPlanFollower : LimbMotionPlanFollower {
 
     private val pool = Executors.newScheduledThreadPool(1)
 
-    override fun followPlan(
-        jointAngleControllers: ImmutableList<JointAngleController>,
-        plan: LimbMotionPlan
-    ) {
+    override fun followPlan(limbJointsController: LimbJointsController, plan: LimbMotionPlan) {
         if (plan.steps.isEmpty()) {
             return
         }
 
         plan.steps.forEach {
-            require(it.jointAngles.size == jointAngleControllers.size) {
+            require(it.jointAngles.size == limbJointsController.size) {
                 """
                 |Must have an equal number of target joint angles and joint angle controllers.
                 |Number of target joint angles in the first plan step: $it.jointAngles.size
-                |Number of joint angle controllers: ${jointAngleControllers.size}
+                |Number of joint angle controllers: ${limbJointsController.size}
                 """.trimMargin()
             }
         }
@@ -57,12 +53,10 @@ class DefaultLimbMotionPlanFollower : LimbMotionPlanFollower {
             pool.schedule(
                 {
                     try {
-                        step.jointAngles.forEachIndexed { index, targetJointAngle ->
-                            jointAngleControllers[index].setTargetAngle(
-                                targetJointAngle,
-                                step.motionConstraints
-                            )
-                        }
+                        limbJointsController.setTargetAngles(
+                            step.jointAngles,
+                            step.motionConstraints
+                        )
                     } finally {
                         latch.countDown()
                     }

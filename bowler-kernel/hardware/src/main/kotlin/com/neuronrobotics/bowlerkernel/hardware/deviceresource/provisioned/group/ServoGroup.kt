@@ -17,8 +17,14 @@
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group
 
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.util.ServoLimits
 
 interface ServoGroup : ProvisionedDeviceResourceGroup {
+
+    /**
+     * The limits of each servo in the group.
+     */
+    val limits: ImmutableList<ServoLimits>
 
     /**
      * Sets the angles of the servos. On continuous rotation servos, this will set the speed

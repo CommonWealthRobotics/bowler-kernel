@@ -17,7 +17,7 @@
 package com.neuronrobotics.bowlerkernel.kinematics.limb
 
 import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.kinematics.closedloop.JointAngleController
+import com.neuronrobotics.bowlerkernel.kinematics.closedloop.LimbJointsController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.motion.ForwardKinematicsSolver
@@ -39,7 +39,7 @@ class DefaultLimb(
     override val reachabilityCalculator: ReachabilityCalculator,
     override val motionPlanGenerator: LimbMotionPlanGenerator,
     override val motionPlanFollower: LimbMotionPlanFollower,
-    override val jointAngleControllers: ImmutableList<JointAngleController>,
+    override val jointsController: LimbJointsController,
     override val inertialStateEstimator: InertialStateEstimator
 ) : Limb {
 
@@ -53,11 +53,11 @@ class DefaultLimb(
     private val moveLimbPool = Executors.newSingleThreadExecutor()
 
     init {
-        require(links.size == jointAngleControllers.size) {
+        require(links.size == jointsController.size) {
             """
-            |Must have an equal number of DH chain elements and joint angle controllers.
+            |Must have an equal number of DH chain elements and joints in the LimbJointsController.
             |Chain size: ${links.size}
-            |Controllers size: ${jointAngleControllers.size}
+            |LimbJointsController size: ${jointsController.size}
             """.trimMargin()
         }
     }
@@ -79,7 +79,7 @@ class DefaultLimb(
                     motionConstraints
                 )
 
-                motionPlanFollower.followPlan(jointAngleControllers, plan)
+                motionPlanFollower.followPlan(jointsController, plan)
             } finally {
                 movingToTaskSpaceTransform = false
             }
@@ -94,23 +94,23 @@ class DefaultLimb(
     override fun isMovingToTaskSpaceTransform() = movingToTaskSpaceTransform
 
     override fun setDesiredJointAngle(
-        jointIndex: Int,
-        jointAngle: Number,
+        jointAngles: List<Double>,
         motionConstraints: MotionConstraints
-    ) = jointAngleControllers[jointIndex].setTargetAngle(jointAngle.toDouble(), motionConstraints)
+    ) = jointsController.setTargetAngles(jointAngles, motionConstraints)
 
-    override fun getCurrentJointAngles() =
-        jointAngleControllers.map { it.getCurrentAngle() }.toImmutableList()
+    override fun getCurrentJointAngles() = jointsController.getCurrentAngles()
 
     override fun isTaskSpaceTransformReachable(taskSpaceTransform: FrameTransformation) =
         reachabilityCalculator.isFrameTransformationReachable(
             taskSpaceTransform,
             links,
-            jointAngleControllers.map { it.jointLimits })
+            jointsController.jointLimits
+        )
 
     override fun getInertialState() = inertialStateEstimator.getInertialState()
 
     @SuppressWarnings("ComplexMethod")
+    @Suppress("DuplicatedCode")
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is DefaultLimb) return false
@@ -122,12 +122,17 @@ class DefaultLimb(
         if (reachabilityCalculator != other.reachabilityCalculator) return false
         if (motionPlanGenerator != other.motionPlanGenerator) return false
         if (motionPlanFollower != other.motionPlanFollower) return false
-        if (jointAngleControllers != other.jointAngleControllers) return false
+        if (jointsController != other.jointsController) return false
         if (inertialStateEstimator != other.inertialStateEstimator) return false
+        if (desiredTaskSpaceTransform != other.desiredTaskSpaceTransform) return false
+        if (movingToTaskSpaceTransform != other.movingToTaskSpaceTransform) return false
+        if (moveLimbPool != other.moveLimbPool) return false
 
         return true
     }
 
+    @SuppressWarnings("ComplexMethod")
+    @Suppress("DuplicatedCode")
     override fun hashCode(): Int {
         var result = id.hashCode()
         result = 31 * result + links.hashCode()
@@ -136,8 +141,11 @@ class DefaultLimb(
         result = 31 * result + reachabilityCalculator.hashCode()
         result = 31 * result + motionPlanGenerator.hashCode()
         result = 31 * result + motionPlanFollower.hashCode()
-        result = 31 * result + jointAngleControllers.hashCode()
+        result = 31 * result + jointsController.hashCode()
         result = 31 * result + inertialStateEstimator.hashCode()
+        result = 31 * result + desiredTaskSpaceTransform.hashCode()
+        result = 31 * result + movingToTaskSpaceTransform.hashCode()
+        result = 31 * result + (moveLimbPool.hashCode() ?: 0)
         return result
     }
 }

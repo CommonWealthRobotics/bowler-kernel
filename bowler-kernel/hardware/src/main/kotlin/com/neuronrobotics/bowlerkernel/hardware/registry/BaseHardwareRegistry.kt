@@ -44,7 +44,7 @@ import org.octogonapus.ktguava.collections.toImmutableSetMultimap
  * The base implementation of [HardwareRegistry]. This class should always be wrapped with a
  * [HardwareRegistryTracker].
  */
-internal class BaseHardwareRegistry : HardwareRegistry {
+class BaseHardwareRegistry : HardwareRegistry {
 
     private val internalRegisteredDeviceIds: MutableSet<DeviceId> = mutableSetOf()
     private val internalRegisteredDevices: MutableSet<Device> = mutableSetOf()

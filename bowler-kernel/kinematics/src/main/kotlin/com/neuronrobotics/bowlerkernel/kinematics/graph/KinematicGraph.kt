@@ -19,25 +19,13 @@
 package com.neuronrobotics.bowlerkernel.kinematics.graph
 
 import arrow.core.Either
-import arrow.core.Tuple2
-import arrow.core.Tuple3
-import arrow.core.right
-import com.beust.klaxon.Klaxon
 import com.google.common.graph.ImmutableNetwork
 import com.google.common.graph.MutableNetwork
 import com.google.common.graph.NetworkBuilder
 import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBase
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.KinematicBaseId
-import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseConfigurationData
-import com.neuronrobotics.bowlerkernel.kinematics.base.model.KinematicBaseScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.DhParamData
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkConfigurationData
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkScriptData
-import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbConfigurationData
-import com.neuronrobotics.bowlerkernel.kinematics.limb.model.LimbScriptData
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
-import com.neuronrobotics.bowlerkernel.kinematics.motion.model.ClassData
 
 /**
  * An identifier of a [KinematicBase] in a [KinematicGraph].
@@ -57,73 +45,3 @@ fun buildMutableKinematicGraph(): MutableKinematicGraph =
         .allowsParallelEdges(false)
         .allowsSelfLoops(false)
         .build()
-
-/**
- * Converts a [KinematicGraph] to a [KinematicGraphData].
- *
- * @param bases The kinematic bases corresponding to the base nodes in the graph.
- * @param klaxon The [Klaxon] instance used to map scripts to [ClassData].
- * @return A [KinematicGraphData] representing this [KinematicGraph].
- */
-fun KinematicGraph.convertToKinematicGraphData(
-    bases: Set<KinematicBase>,
-    klaxon: Klaxon = Klaxon().converter(FrameTransformation)
-): KinematicGraphData {
-    val mappedNodes = nodes().map {
-        it to it.bimap(
-            { baseNode -> bases.first { it.id == baseNode.id } },
-            { it }
-        ).mapToKinematicGraphDataNode(klaxon)
-    }.toMap()
-
-    return KinematicGraphData(
-        mappedNodes.values.toList(),
-        fullEdges().map { (nodeU, nodeV, edge) ->
-            Tuple3(
-                mappedNodes[nodeU] ?: error(""),
-                mappedNodes[nodeV] ?: error(""),
-                edge
-            )
-        }
-    )
-}
-
-private fun Either<KinematicBase, Limb>.mapToKinematicGraphDataNode(
-    klaxon: Klaxon
-): KinematicGraphDataNode = bimap(
-    {
-        Tuple2(
-            KinematicBaseConfigurationData(it.id.toString()),
-            KinematicBaseScriptData(
-                ClassData.fromInstance(it.bodyController, klaxon).right()
-            )
-        )
-    },
-    { limb ->
-        Tuple2(
-            LimbConfigurationData(
-                limb.id.toString(),
-                limb.links.map { link ->
-                    LinkConfigurationData(link.type, DhParamData(link.dhParam))
-                }
-            ),
-            LimbScriptData(
-                ClassData.fromInstance(limb.forwardKinematicsSolver, klaxon).right(),
-                ClassData.fromInstance(limb.inverseKinematicsSolver, klaxon).right(),
-                ClassData.fromInstance(limb.reachabilityCalculator, klaxon).right(),
-                ClassData.fromInstance(limb.motionPlanGenerator, klaxon).right(),
-                ClassData.fromInstance(limb.motionPlanFollower, klaxon).right(),
-                ClassData.fromInstance(limb.inertialStateEstimator, klaxon).right(),
-                limb.links.mapIndexed { index, link ->
-                    LinkScriptData(
-                        ClassData.fromInstance(
-                            limb.jointAngleControllers[index],
-                            klaxon
-                        ).right(),
-                        ClassData.fromInstance(link.inertialStateEstimator, klaxon).right()
-                    )
-                }
-            )
-        )
-    }
-)

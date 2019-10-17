@@ -71,18 +71,16 @@ class DefaultCadGenerator(
         }
 
         return base.limbs.map { limb ->
-            val limbCad = limb.links
-                .zip(limb.jointAngleControllers)
-                .map { (link, jointAngleController) ->
-                    getCadForLink(link, jointAngleController.jointLimits)
-                }.toImmutableSet()
+            val limbCad = limb.links.mapIndexed { index, link ->
+                getCadForLink(link, limb.jointsController.jointLimits[index])
+            }.toImmutableSet()
 
             updateCadThreads.add(
                 thread(name = "Update Limb CAD (${limb.id})", isDaemon = true) {
                     val linkTransforms =
                         limb.links.map { it.dhParam.frameTransformation }.toImmutableList()
 
-                    val limbAngleBuffer = MutableList(limb.jointAngleControllers.size) {
+                    val limbAngleBuffer = MutableList(limb.jointsController.size) {
                         FrameTransformation.identity
                     }
 
@@ -93,8 +91,8 @@ class DefaultCadGenerator(
                             limbCad,
                             baseTransform,
                             linkTransforms,
-                            limb.jointAngleControllers.map(limbAngleBuffer) {
-                                FrameTransformation.fromRotation(it.getCurrentAngle(), 0, 0)
+                            limb.jointsController.getCurrentAngles().map(limbAngleBuffer) {
+                                FrameTransformation.fromRotation(it, 0, 0)
                             }
                         )
 
