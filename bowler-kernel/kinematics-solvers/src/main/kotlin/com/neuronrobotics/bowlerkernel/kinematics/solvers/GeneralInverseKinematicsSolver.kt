@@ -16,7 +16,6 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.solvers
 
-import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.InverseKinematicsSolver
@@ -27,12 +26,7 @@ import com.neuronrobotics.bowlerkernel.util.JointLimits
 /**
  * Detects the type of serial manipulator and uses the correct solver for it.
  */
-class GeneralInverseKinematicsSolver(
-    private val links: ImmutableList<Link>
-) : InverseKinematicsSolver {
-
-    @Suppress("MemberVisibilityCanBePrivate")
-    val solver: InverseKinematicsSolver = identifySolver(links)
+class GeneralInverseKinematicsSolver : InverseKinematicsSolver {
 
     override fun solveChain(
         links: List<Link>,

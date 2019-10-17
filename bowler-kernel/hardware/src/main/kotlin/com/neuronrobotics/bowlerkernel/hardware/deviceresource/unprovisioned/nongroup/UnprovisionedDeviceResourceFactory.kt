@@ -24,6 +24,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.DigitalInGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.DigitalOutGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.ProvisionedDeviceResourceGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.ServoGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.ProvisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.Servo
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
@@ -36,6 +37,8 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.gro
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDigitalInGroupFactory
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDigitalOutGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDigitalOutGroupFactory
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedServoGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedServoGroupFactory
 import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistry
 import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterDeviceResourceError
 import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterDeviceResourceGroupError
@@ -63,7 +66,8 @@ class UnprovisionedDeviceResourceFactory(
     UnprovisionedUltrasonicFactory,
     UnprovisionedAnalogInGroupFactory,
     UnprovisionedDigitalInGroupFactory,
-    UnprovisionedDigitalOutGroupFactory {
+    UnprovisionedDigitalOutGroupFactory,
+    UnprovisionedServoGroupFactory {
 
     private fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> makeUnprovisionedResource(
         device: BowlerDevice,
@@ -251,5 +255,22 @@ class UnprovisionedDeviceResourceFactory(
             }.toImmutableList()
         ) { registeredDevice, resourceIds ->
             UnprovisionedDigitalOutGroup(registeredDevice, resourceIds)
+        }
+
+    override fun makeUnprovisionedServoGroup(
+        device: BowlerDevice,
+        attachmentPointsAndLimits: ImmutableList<Pair<AttachmentPoint, ServoLimits>>
+    ): Either<RegisterError, UnprovisionedDeviceResourceGroup<ServoGroup>> =
+        makeUnprovisionedResourceGroup(
+            device,
+            attachmentPointsAndLimits.map {
+                ResourceId(DefaultResourceTypes.Servo, it.first)
+            }.toImmutableList()
+        ) { registeredDevice, resourceIds ->
+            UnprovisionedServoGroup(
+                registeredDevice,
+                resourceIds,
+                attachmentPointsAndLimits.map { it.second }.toImmutableList()
+            )
         }
 }

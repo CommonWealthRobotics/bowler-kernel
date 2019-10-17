@@ -14,23 +14,22 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics.limb.link
+package com.neuronrobotics.bowlerkernel.kinematics.closedloop
 
-import arrow.core.Either
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkConfigurationData
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.model.LinkScriptData
+import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
+import com.neuronrobotics.bowlerkernel.util.JointLimits
+import org.octogonapus.ktguava.collections.emptyImmutableList
 
-interface LinkFactory {
+/**
+ * A [LimbJointsController] which does nothing.
+ */
+object NoopLimbJointsController : LimbJointsController {
 
-    /**
-     * Creates a new link.
-     *
-     * @param linkConfigurationData The configuration data.
-     * @param linkScriptData The script data.
-     * @return A new link.
-     */
-    fun createLink(
-        linkConfigurationData: LinkConfigurationData,
-        linkScriptData: LinkScriptData
-    ): Either<String, Link>
+    override val jointLimits = emptyImmutableList<JointLimits>()
+
+    @SuppressWarnings("EmptyFunctionBlock")
+    override fun setTargetAngles(angles: List<Double>, motionConstraints: MotionConstraints) {
+    }
+
+    override fun getCurrentAngles() = emptyImmutableList<Double>()
 }

@@ -21,21 +21,13 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialStateEstimator
 
 /**
  * A link which can form the chain of a [Limb].
+ *
+ * @param type The type of this link.
+ * @param dhParam The DH description of this link.
+ * @param inertialStateEstimator The [InertialStateEstimator].
  */
-interface Link {
-
-    /**
-     * The type of this link.
-     */
-    val type: LinkType
-
-    /**
-     * The DH description of this link.
-     */
-    val dhParam: DhParam
-
-    /**
-     * The [InertialStateEstimator].
-     */
+data class Link(
+    val type: LinkType,
+    val dhParam: DhParam,
     val inertialStateEstimator: InertialStateEstimator
-}
+)

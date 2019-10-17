@@ -16,8 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.motion.plan
 
-import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.kinematics.closedloop.JointAngleController
+import com.neuronrobotics.bowlerkernel.kinematics.closedloop.LimbJointsController
 
 /**
  * A [LimbMotionPlanFollower] which does nothing.
@@ -25,9 +24,6 @@ import com.neuronrobotics.bowlerkernel.kinematics.closedloop.JointAngleControlle
 object NoopLimbMotionPlanFollower : LimbMotionPlanFollower {
 
     @SuppressWarnings("EmptyFunctionBlock")
-    override fun followPlan(
-        jointAngleControllers: ImmutableList<JointAngleController>,
-        plan: LimbMotionPlan
-    ) {
+    override fun followPlan(limbJointsController: LimbJointsController, plan: LimbMotionPlan) {
     }
 }

@@ -21,11 +21,11 @@ import com.neuronrobotics.bowlerkernel.kinematics.base.DefaultKinematicBase
 import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBase
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopBodyController
-import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopJointAngleController
+import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopLimbJointsController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.DefaultLimb
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DefaultLink
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
+import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.LengthBasedReachabilityCalculator
@@ -47,7 +47,7 @@ internal fun createMockKinematicBase(limbs: ImmutableList<ImmutableList<DhParam>
             DefaultLimb(
                 SimpleLimbId(index.toString()),
                 limb.map { linkParam ->
-                    DefaultLink(
+                    Link(
                         LinkType.Rotary,
                         linkParam,
                         NoopInertialStateEstimator
@@ -58,7 +58,7 @@ internal fun createMockKinematicBase(limbs: ImmutableList<ImmutableList<DhParam>
                 LengthBasedReachabilityCalculator(),
                 NoopLimbMotionPlanGenerator,
                 NoopLimbMotionPlanFollower,
-                limb.map { NoopJointAngleController }.toImmutableList(),
+                NoopLimbJointsController,
                 NoopInertialStateEstimator
             )
         }.toImmutableSet(),

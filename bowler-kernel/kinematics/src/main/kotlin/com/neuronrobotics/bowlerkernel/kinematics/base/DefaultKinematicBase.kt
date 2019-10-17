@@ -19,22 +19,14 @@
 package com.neuronrobotics.bowlerkernel.kinematics.base
 
 import Jama.Matrix
-import arrow.core.Either
-import arrow.core.left
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.KinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
-import com.neuronrobotics.bowlerkernel.kinematics.graph.BaseNode
-import com.neuronrobotics.bowlerkernel.kinematics.graph.KinematicGraph
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
-import org.octogonapus.ktguava.collections.outNodes
-import org.octogonapus.ktguava.collections.outNodesAndEdges
-import org.octogonapus.ktguava.collections.toImmutableMap
-import org.octogonapus.ktguava.collections.toImmutableSet
 
 /**
  * A [KinematicBase] which only considers limbs directly attached to it.
@@ -111,44 +103,4 @@ class DefaultKinematicBase(
     }
 
     override fun getInertialState() = bodyController.getInertialState()
-
-    companion object {
-
-        /**
-         * Creates a [DefaultKinematicBase] using a [KinematicGraph]. Only considers the limbs
-         * attached directly to the base in the graph.
-         *
-         * @param kinematicGraph The graph containing the base and the limbs attached to it.
-         * @param baseId The id of this base.
-         * @param bodyController The body controller this base uses.
-         * @param imuTransform The transform from the base to the IMU.
-         */
-        fun create(
-            kinematicGraph: KinematicGraph,
-            baseId: KinematicBaseId,
-            bodyController: BodyController,
-            imuTransform: FrameTransformation
-        ): DefaultKinematicBase {
-            val limbs = kinematicGraph.outNodes(BaseNode(baseId).left()).filter {
-                it.isRight()
-            }.mapTo(hashSetOf()) {
-                (it as Either.Right).b
-            }
-
-            val limbBaseTransforms =
-                kinematicGraph.outNodesAndEdges(BaseNode(baseId).left()).filter {
-                    it.first.nodeV() is Either.Right
-                }.map {
-                    (it.first.nodeV() as Either.Right).b.id to it.second
-                }.toMap()
-
-            return DefaultKinematicBase(
-                baseId,
-                bodyController,
-                limbs.toImmutableSet(),
-                limbBaseTransforms.toImmutableMap(),
-                imuTransform
-            )
-        }
-    }
 }

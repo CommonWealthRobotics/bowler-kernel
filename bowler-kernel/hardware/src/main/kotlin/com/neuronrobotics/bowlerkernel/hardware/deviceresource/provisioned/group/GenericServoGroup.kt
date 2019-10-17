@@ -19,17 +19,19 @@ package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.grou
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import com.neuronrobotics.bowlerkernel.util.ServoLimits
 import org.octogonapus.ktguava.collections.toImmutableList
 
 class GenericServoGroup
 internal constructor(
     override val device: BowlerDevice,
-    override val resourceIds: ImmutableList<ResourceId>
+    override val resourceIds: ImmutableList<ResourceId>,
+    override val limits: ImmutableList<ServoLimits>
 ) : ServoGroup {
 
-    private var lastWrite = resourceIds.map { 0.0 }.toImmutableList()
+    private var lastWrite = resourceIds.map { 0.0 }
 
-    override fun write(angles: ImmutableList<Double>) {
+    override fun write(angles: List<Double>) {
         device.bowlerRPCProtocol.servoWrite(resourceIds.zip(angles).toImmutableList())
         lastWrite = angles
     }

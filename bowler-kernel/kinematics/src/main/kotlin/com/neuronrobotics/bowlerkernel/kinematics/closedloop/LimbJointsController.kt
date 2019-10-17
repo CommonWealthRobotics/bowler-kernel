@@ -14,23 +14,36 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics
+package com.neuronrobotics.bowlerkernel.kinematics.closedloop
 
-import com.neuronrobotics.bowlerkernel.kinematics.closedloop.JointAngleController
+import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
 import com.neuronrobotics.bowlerkernel.util.JointLimits
 
-internal class MockJointAngleController : JointAngleController {
+/**
+ * A closed-loop joint angle controller.
+ */
+interface LimbJointsController {
 
-    internal val times = mutableListOf<Long>()
-    internal val targets = mutableListOf<Double>()
+    /**
+     * The number of joints.
+     */
+    val size
+        get() = jointLimits.size
 
-    override val jointLimits: JointLimits = JointLimits(180, -180)
+    /**
+     * The limits of the joints.
+     */
+    val jointLimits: ImmutableList<JointLimits>
 
-    override fun setTargetAngle(angle: Double, motionConstraints: MotionConstraints) {
-        times.add(System.currentTimeMillis())
-        targets.add(angle)
-    }
+    /**
+     * Move to the target [angles].
+     *
+     * @param angles The target joint angles.
+     * @param motionConstraints The constraints on the motion to move from the current joint
+     * angles to the target [angles].
+     */
+    fun setTargetAngles(angles: List<Double>, motionConstraints: MotionConstraints)
 
-    override fun getCurrentAngle() = targets.lastOrNull() ?: 0.0
+    fun getCurrentAngles(): List<Double>
 }

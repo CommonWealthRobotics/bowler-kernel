@@ -22,6 +22,7 @@ import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.ServoGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
 import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterError
+import com.neuronrobotics.bowlerkernel.util.ServoLimits
 
 interface UnprovisionedServoGroupFactory {
 
@@ -29,11 +30,11 @@ interface UnprovisionedServoGroupFactory {
      * Makes an unprovisioned [ServoGroup] attached to a device.
      *
      * @param device The device this [ServoGroup] is attached to.
-     * @param attachmentPoints The attachment points.
+     * @param attachmentPointsAndLimits The attachment points and limits for each servo.
      * @return An unprovisioned [ServoGroup] on success, a [RegisterError] on failure.
      */
     fun makeUnprovisionedServoGroup(
         device: BowlerDevice,
-        attachmentPoints: ImmutableList<AttachmentPoint>
+        attachmentPointsAndLimits: ImmutableList<Pair<AttachmentPoint, ServoLimits>>
     ): Either<RegisterError, UnprovisionedDeviceResourceGroup<ServoGroup>>
 }

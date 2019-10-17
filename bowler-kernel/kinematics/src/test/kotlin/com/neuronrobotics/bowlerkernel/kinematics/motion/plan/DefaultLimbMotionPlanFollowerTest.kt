@@ -16,9 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.motion.plan
 
-import com.google.common.collect.ImmutableList
-import com.neuronrobotics.bowlerkernel.kinematics.MockJointAngleController
-import com.neuronrobotics.bowlerkernel.kinematics.closedloop.JointAngleController
+import com.neuronrobotics.bowlerkernel.kinematics.MockLimbJointsController
 import com.neuronrobotics.bowlerkernel.kinematics.createMotionConstraints
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import com.nhaarman.mockitokotlin2.doReturn
@@ -40,12 +38,11 @@ import org.octogonapus.ktguava.collections.toImmutableList
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DefaultLimbMotionPlanFollowerTest {
 
-    private val controller = MockJointAngleController()
+    private val controller = MockLimbJointsController(1)
 
     @Suppress("UNCHECKED_CAST")
     private val limb = mock<Limb> {
-        on { jointAngleControllers } doReturn
-            immutableListOf(controller) as ImmutableList<JointAngleController>
+        on { jointsController } doReturn controller
     }
 
     private val follower = DefaultLimbMotionPlanFollower()
@@ -68,7 +65,7 @@ internal class DefaultLimbMotionPlanFollowerTest {
         )
 
         fun timeOnce(): Long {
-            follower.followPlan(limb.jointAngleControllers, plan)
+            follower.followPlan(limb.jointsController, plan)
             runBlocking { delay(timestep * 4L) }
             val time = controller.times[1] - controller.times[0]
             controller.times.clear()
@@ -87,14 +84,14 @@ internal class DefaultLimbMotionPlanFollowerTest {
 
     @Test
     fun `test angles are set in order`() {
-        val targetAngles = (0..10 step 1).map { it.toDouble() }.toImmutableList()
+        val targetAngles = (0..10 step 1).map { immutableListOf(it.toDouble()) }.toImmutableList()
         val plan = LimbMotionPlan(
             targetAngles.map {
-                LimbMotionPlanStep(immutableListOf(it), createMotionConstraints(10))
+                LimbMotionPlanStep(it, createMotionConstraints(10))
             }.toImmutableList()
         )
 
-        follower.followPlan(limb.jointAngleControllers, plan)
+        follower.followPlan(limb.jointsController, plan)
 
         assertEquals(targetAngles, controller.targets)
     }
@@ -102,7 +99,7 @@ internal class DefaultLimbMotionPlanFollowerTest {
     @Test
     fun `test plan length validation with empty plan`() {
         val plan = LimbMotionPlan(emptyImmutableList())
-        follower.followPlan(limb.jointAngleControllers, plan) // Should not get an exception
+        follower.followPlan(limb.jointsController, plan) // Should not get an exception
     }
 
     @Test
@@ -117,7 +114,7 @@ internal class DefaultLimbMotionPlanFollowerTest {
         )
 
         assertThrows<IllegalArgumentException> {
-            follower.followPlan(limb.jointAngleControllers, plan)
+            follower.followPlan(limb.jointsController, plan)
         }
     }
 
@@ -137,7 +134,7 @@ internal class DefaultLimbMotionPlanFollowerTest {
         )
 
         assertThrows<IllegalArgumentException> {
-            follower.followPlan(limb.jointAngleControllers, plan)
+            follower.followPlan(limb.jointsController, plan)
         }
     }
 
@@ -153,7 +150,7 @@ internal class DefaultLimbMotionPlanFollowerTest {
         )
 
         assertThrows<IllegalArgumentException> {
-            follower.followPlan(limb.jointAngleControllers, plan)
+            follower.followPlan(limb.jointsController, plan)
         }
     }
 }

@@ -30,7 +30,6 @@ val bowlerKernelConfigProject = project(":bowler-kernel:config")
 val bowlerKernelGitFSProject = project(":bowler-kernel:gitfs")
 val bowlerKernelHardwareProject = project(":bowler-kernel:hardware")
 val bowlerKernelKinematicsProject = project(":bowler-kernel:kinematics")
-val bowlerKernelKinematicsFactoriesProject = project(":bowler-kernel:kinematics-factories")
 val bowlerKernelKinematicsSolversProject = project(":bowler-kernel:kinematics-solvers")
 val bowlerKernelLoggingProject = project(":bowler-kernel:logging")
 val bowlerKernelScriptingProject = project(":bowler-kernel:scripting")
@@ -45,7 +44,6 @@ val kotlinProjects = setOf(
     bowlerKernelGitFSProject,
     bowlerKernelHardwareProject,
     bowlerKernelKinematicsProject,
-    bowlerKernelKinematicsFactoriesProject,
     bowlerKernelKinematicsSolversProject,
     bowlerKernelLoggingProject,
     bowlerKernelScriptingProject,
@@ -62,7 +60,6 @@ val publishedProjects = setOf(
     bowlerKernelGitFSProject,
     bowlerKernelHardwareProject,
     bowlerKernelKinematicsProject,
-    bowlerKernelKinematicsFactoriesProject,
     bowlerKernelKinematicsSolversProject,
     bowlerKernelLoggingProject,
     bowlerKernelScriptingProject,
@@ -76,7 +73,6 @@ val pitestProjects = setOf(
     bowlerKernelGitFSProject,
     bowlerKernelHardwareProject,
     bowlerKernelKinematicsProject,
-    bowlerKernelKinematicsFactoriesProject,
     bowlerKernelKinematicsSolversProject,
     bowlerKernelScriptingProject,
     bowlerKernelVitaminsProject
@@ -114,7 +110,6 @@ allprojects {
         mavenCentral()
         maven("https://dl.bintray.com/octogonapus/maven-artifacts")
         maven("https://oss.sonatype.org/content/repositories/staging/")
-        maven("https://dl.bintray.com/47deg/helios")
         maven("https://dl.bintray.com/s1m0nw1/KtsRunner")
     }
 

@@ -18,7 +18,7 @@ package com.neuronrobotics.bowlerkernel.kinematics.limb
 
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBase
-import com.neuronrobotics.bowlerkernel.kinematics.closedloop.JointAngleController
+import com.neuronrobotics.bowlerkernel.kinematics.closedloop.LimbJointsController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.motion.ForwardKinematicsSolver
@@ -73,9 +73,9 @@ interface Limb {
     val motionPlanFollower: LimbMotionPlanFollower
 
     /**
-     * The controllers for the joints.
+     * The controller for the joints.
      */
-    val jointAngleControllers: ImmutableList<JointAngleController>
+    val jointsController: LimbJointsController
 
     /**
      * The [InertialStateEstimator].
@@ -110,23 +110,18 @@ interface Limb {
     fun isMovingToTaskSpaceTransform(): Boolean
 
     /**
-     * Sets a joint's desired angle.
+     * Sets new desired joint angles.
      *
-     * @param jointIndex The index of the joint.
-     * @param jointAngle The new joint angle.
+     * @param jointAngles The new joint angles.
      * @param motionConstraints The constraints of the motion to move from the current joint
-     * angle to the desired [jointAngle].
+     * angles to the desired [jointAngles].
      */
-    fun setDesiredJointAngle(
-        jointIndex: Int,
-        jointAngle: Number,
-        motionConstraints: MotionConstraints
-    )
+    fun setDesiredJointAngle(jointAngles: List<Double>, motionConstraints: MotionConstraints)
 
     /**
      * The current joint angles.
      */
-    fun getCurrentJointAngles(): ImmutableList<Double>
+    fun getCurrentJointAngles(): List<Double>
 
     /**
      * Compute whether the [taskSpaceTransform] is reachable by this limb.

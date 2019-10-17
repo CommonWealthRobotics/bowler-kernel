@@ -17,6 +17,5 @@ Get the artifacts [here](https://bintray.com/commonwealthrobotics/maven-artifact
 ```kotlin
 maven("https://dl.bintray.com/octogonapus/maven-artifacts")
 maven("https://oss.sonatype.org/content/repositories/staging/")
-maven("https://dl.bintray.com/47deg/helios")
 maven("https://dl.bintray.com/s1m0nw1/KtsRunner")
 ```

@@ -20,12 +20,14 @@ import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.GenericServoGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import com.neuronrobotics.bowlerkernel.util.ServoLimits
 
 data class UnprovisionedServoGroup
 internal constructor(
     override val device: BowlerDevice,
-    override val resourceIds: ImmutableList<ResourceId>
+    override val resourceIds: ImmutableList<ResourceId>,
+    val limits: ImmutableList<ServoLimits>
 ) : UnprovisionedDeviceResourceGroup<GenericServoGroup> {
 
-    override fun provision() = GenericServoGroup(device, resourceIds)
+    override fun provision() = GenericServoGroup(device, resourceIds, limits)
 }
