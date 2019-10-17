@@ -1,11 +1,3 @@
-plugins {
-    kotlin("kapt")
-}
-
-apply {
-    from(rootProject.file("gradle/generated-kotlin-sources.gradle"))
-}
-
 description = "An interface to a Git-based filesystem."
 
 fun DependencyHandler.arrow(name: String) =
@@ -40,32 +32,6 @@ dependencies {
         group = "org.eclipse.jgit",
         name = "org.eclipse.jgit",
         version = property("jgit.version") as String
-    )
-
-    implementation(
-        group = "com.47deg",
-        name = "helios-core",
-        version = property("helios.version") as String
-    )
-    implementation(
-        group = "com.47deg",
-        name = "helios-parser",
-        version = property("helios.version") as String
-    )
-    implementation(
-        group = "com.47deg",
-        name = "helios-optics",
-        version = property("helios.version") as String
-    )
-    kapt(
-        group = "com.47deg",
-        name = "helios-meta",
-        version = property("helios.version") as String
-    )
-    kapt(
-        group = "com.47deg",
-        name = "helios-dsl-meta",
-        version = property("helios.version") as String
     )
 
     testImplementation(

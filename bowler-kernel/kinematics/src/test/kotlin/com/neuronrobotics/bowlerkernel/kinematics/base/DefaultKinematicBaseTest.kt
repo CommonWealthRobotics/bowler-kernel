@@ -18,10 +18,10 @@
 
 package com.neuronrobotics.bowlerkernel.kinematics.base
 
+import com.neuronrobotics.bowlerkernel.kinematics.MockLimbJointsController
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopBodyController
-import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopJointAngleController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.DefaultLimb
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
@@ -47,7 +47,6 @@ import org.octogonapus.ktguava.collections.emptyImmutableMap
 import org.octogonapus.ktguava.collections.emptyImmutableSet
 import org.octogonapus.ktguava.collections.immutableMapOf
 import org.octogonapus.ktguava.collections.immutableSetOf
-import org.octogonapus.ktguava.collections.toImmutableList
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DefaultKinematicBaseTest {
@@ -62,9 +61,7 @@ internal class DefaultKinematicBaseTest {
         LengthBasedReachabilityCalculator(),
         NoopLimbMotionPlanGenerator,
         NoopLimbMotionPlanFollower,
-        seaArmLinks.map {
-            NoopJointAngleController
-        }.toImmutableList(),
+        MockLimbJointsController(seaArmLinks.size),
         NoopInertialStateEstimator
     )
 

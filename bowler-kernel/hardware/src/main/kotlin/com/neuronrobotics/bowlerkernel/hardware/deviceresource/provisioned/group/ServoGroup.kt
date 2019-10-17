@@ -17,8 +17,14 @@
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group
 
 import com.google.common.collect.ImmutableList
+import com.neuronrobotics.bowlerkernel.util.ServoLimits
 
 interface ServoGroup : ProvisionedDeviceResourceGroup {
+
+    /**
+     * The limits of each servo in the group.
+     */
+    val limits: ImmutableList<ServoLimits>
 
     /**
      * Sets the angles of the servos. On continuous rotation servos, this will set the speed
@@ -26,7 +32,7 @@ interface ServoGroup : ProvisionedDeviceResourceGroup {
      *
      * @param angles The angles to write.
      */
-    fun write(angles: ImmutableList<Double>)
+    fun write(angles: List<Double>)
 
     /**
      * Reads the current angles of the servos. Typically, this is just the last value passed to
@@ -34,5 +40,5 @@ interface ServoGroup : ProvisionedDeviceResourceGroup {
      *
      * @return The current angles of the servos.
      */
-    fun read(): ImmutableList<Double>
+    fun read(): List<Double>
 }

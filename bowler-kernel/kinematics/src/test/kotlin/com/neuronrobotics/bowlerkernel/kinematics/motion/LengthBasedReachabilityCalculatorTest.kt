@@ -16,7 +16,6 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.motion
 
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DefaultLink
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
@@ -36,7 +35,7 @@ internal class LengthBasedReachabilityCalculatorTest {
     @Test
     fun `test easily reachable target`() {
         val links = immutableListOf(
-            DefaultLink(
+            Link(
                 LinkType.Rotary,
                 DhParam(0, 0, 15, 0),
                 NoopInertialStateEstimator
@@ -59,7 +58,7 @@ internal class LengthBasedReachabilityCalculatorTest {
     @Test
     fun `test target the length of the limb`() {
         val links = immutableListOf(
-            DefaultLink(
+            Link(
                 LinkType.Rotary,
                 DhParam(0, 0, 10, 0),
                 NoopInertialStateEstimator
@@ -80,7 +79,7 @@ internal class LengthBasedReachabilityCalculatorTest {
     @Test
     fun `test target longer than the limb`() {
         val links = immutableListOf(
-            DefaultLink(
+            Link(
                 LinkType.Rotary,
                 DhParam(0, 0, 10, 0),
                 NoopInertialStateEstimator

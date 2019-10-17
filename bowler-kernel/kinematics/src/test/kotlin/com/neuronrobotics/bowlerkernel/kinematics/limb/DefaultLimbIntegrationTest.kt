@@ -18,10 +18,9 @@
 
 package com.neuronrobotics.bowlerkernel.kinematics.limb
 
-import com.neuronrobotics.bowlerkernel.kinematics.MockJointAngleController
+import com.neuronrobotics.bowlerkernel.kinematics.MockLimbJointsController
 import com.neuronrobotics.bowlerkernel.kinematics.createMotionConstraints
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
-import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DefaultLink
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
@@ -43,7 +42,6 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.octogonapus.ktguava.collections.immutableListOf
-import org.octogonapus.ktguava.collections.toImmutableList
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DefaultLimbIntegrationTest {
@@ -54,17 +52,17 @@ internal class DefaultLimbIntegrationTest {
         val timestep = 100
 
         val links = immutableListOf(
-            DefaultLink(
+            Link(
                 LinkType.Rotary, DhParam.zero,
                 mock {}
             )
         )
 
-        val controller = MockJointAngleController()
+        val controller = MockLimbJointsController(1)
 
         val limb = DefaultLimb(
             SimpleLimbId(""),
-            links.map { it as Link }.toImmutableList(),
+            links,
             object : ForwardKinematicsSolver {
                 override fun solveChain(
                     links: List<Link>,
@@ -101,7 +99,7 @@ internal class DefaultLimbIntegrationTest {
                 }
             },
             DefaultLimbMotionPlanFollower(),
-            immutableListOf(controller),
+            controller,
             mock {}
         )
 

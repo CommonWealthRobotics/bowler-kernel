@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.kinematics.limb
 
+import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopLimbJointsController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
 import com.neuronrobotics.bowlerkernel.kinematics.motion.BasicMotionConstraints
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
@@ -50,7 +51,7 @@ internal class DefaultLimbTest {
                 } doThrow RuntimeException("Boom!")
             },
             NoopLimbMotionPlanFollower,
-            emptyImmutableList(),
+            NoopLimbJointsController,
             NoopInertialStateEstimator
         )
 
