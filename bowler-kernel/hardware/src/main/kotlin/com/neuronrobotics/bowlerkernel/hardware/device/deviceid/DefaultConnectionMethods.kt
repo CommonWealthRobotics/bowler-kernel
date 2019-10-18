@@ -31,6 +31,13 @@ sealed class DefaultConnectionMethods : ConnectionMethod {
     data class InternetAddress(val inetAddress: InetAddress) : DefaultConnectionMethods()
 
     /**
+     * The name of a device that the device looks for using a NameCheckerServer.
+     *
+     * @param name The name.
+     */
+    data class DeviceName(val name: String) : DefaultConnectionMethods()
+
+    /**
      * Raw HID.
      *
      * @param vid The vendor id.
