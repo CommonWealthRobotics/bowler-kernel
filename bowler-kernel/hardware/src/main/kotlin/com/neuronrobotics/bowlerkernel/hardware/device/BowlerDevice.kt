@@ -35,7 +35,8 @@ import org.octogonapus.ktguava.collections.toImmutableSet
  *
  * @param deviceId The serial port the device is on.
  */
-class BowlerDevice(
+class BowlerDevice
+internal constructor(
     override val deviceId: DeviceId,
     val bowlerRPCProtocol: BowlerRPCProtocol,
     private val resourceIdValidator: ResourceIdValidator

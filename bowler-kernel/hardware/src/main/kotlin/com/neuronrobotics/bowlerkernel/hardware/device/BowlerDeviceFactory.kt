@@ -24,15 +24,6 @@ import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterError
 interface BowlerDeviceFactory {
 
     /**
-     * Makes a Bowler device (which runs the Bowler RPC protocol) with the specified id. Uses
-     * whatever protocol implementation is returned from the bound [BowlerDeviceFactory].
-     *
-     * @param deviceId The id of the device.
-     * @return A [BowlerDevice] on success, a [RegisterError] on failure.
-     */
-    fun makeBowlerDevice(deviceId: DeviceId): Either<RegisterError, BowlerDevice>
-
-    /**
      * Makes a Bowler device (which runs the Bowler RPC protocol) with the specified id.
      *
      * @param deviceId The id of the device.

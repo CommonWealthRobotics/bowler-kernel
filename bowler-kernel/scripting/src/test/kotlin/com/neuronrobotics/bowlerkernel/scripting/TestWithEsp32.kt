@@ -43,23 +43,24 @@ internal class TestWithEsp32 {
 
         val deviceFactory = DeviceFactory(
             hardwareRegistry,
-            DefaultResourceIdValidator(),
-            SimplePacketComsProtocolFactory(
-                DefaultResourceIdValidator()
-            )
+            DefaultResourceIdValidator()
         )
 
         val resourceFactory = UnprovisionedDeviceResourceFactory(hardwareRegistry)
 
-        val device = deviceFactory.makeBowlerDevice(
-            DeviceId(
-                DefaultDeviceTypes.Esp32wroom32,
-                DefaultConnectionMethods.InternetAddress(
-                    InetAddress.getByAddress(
-                        listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
-                    )
+        val deviceId = DeviceId(
+            DefaultDeviceTypes.Esp32wroom32,
+            DefaultConnectionMethods.InternetAddress(
+                InetAddress.getByAddress(
+                    listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
                 )
             )
+        )
+        val device = deviceFactory.makeBowlerDevice(
+            deviceId,
+            SimplePacketComsProtocolFactory(
+                DefaultResourceIdValidator()
+            ).create(deviceId)
         ).fold({ fail(it.toString()) }, { it })
 
         val unprovisionedLedGroup = resourceFactory.makeUnprovisionedDigitalOutGroup(
