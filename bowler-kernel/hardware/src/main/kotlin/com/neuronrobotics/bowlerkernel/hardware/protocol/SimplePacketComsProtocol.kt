@@ -1143,6 +1143,7 @@ open class SimplePacketComsProtocol(
         const val STATUS_REJECTED_UNKNOWN_OPERATION = 9.toByte()
         const val STATUS_DISCARD_IN_PROGRESS = 10.toByte()
         const val STATUS_DISCARD_COMPLETE = 11.toByte()
+        const val STATUS_REJECTED_INVALID_PACKET_ID = 12.toByte()
 
         private val LOGGER = KotlinLogging.logger { }
 

@@ -7,7 +7,7 @@
 \usepackage[acronym, toc]{glossaries}
 \usepackage{pgf-umlsd}
 
-\makenoidxglossaries
+\makenoidxglossaries{}
 
 \input{glossary.tex}
 
@@ -119,7 +119,7 @@ protocol with 60 bytes.
     \label{fig:discovery-time-send-packet-format}
 \end{figure}
 
-\FloatBarrier
+\FloatBarrier{}
 
 \begin{itemize}
     \item Operation: 1 byte
@@ -128,7 +128,7 @@ protocol with 60 bytes.
     \end{itemize}
 \end{itemize}
 
-\FloatBarrier
+\FloatBarrier{}
 
 Figure~\ref{fig:discovery-time-receive-packet-format} shows what the \gls{device} sends the \gls{pc}
 to complete \gls{discovery}. Any additional operation-specific data is sent in the Payload section.
@@ -150,7 +150,7 @@ protocol with 60 bytes.
     \label{fig:discovery-time-receive-packet-format}
 \end{figure}
 
-\FloatBarrier
+\FloatBarrier{}
 
 \begin{itemize}
     \item Status: 1 byte
@@ -160,7 +160,7 @@ protocol with 60 bytes.
     \end{itemize}
 \end{itemize}
 
-\FloatBarrier
+\FloatBarrier{}
 \clearpage
 \subsubsection{Discovery Packet}
 
@@ -182,7 +182,7 @@ protocol with 60 bytes.
     \label{fig:discovery-send-packet}
 \end{figure}
 
-\FloatBarrier
+\FloatBarrier{}
 
 \begin{itemize}
     \item Packet ID: 1 byte
@@ -209,7 +209,7 @@ protocol with 60 bytes.
     \end{itemize}
 \end{itemize}
 
-\FloatBarrier
+\FloatBarrier{}
 
 \begin{figure}[h]
     \centering
@@ -225,7 +225,7 @@ protocol with 60 bytes.
     \label{fig:discovery-receive-packet}
 \end{figure}
 
-\FloatBarrier
+\FloatBarrier{}
 
 \begin{itemize}
     \item Status: 1 byte
@@ -235,7 +235,7 @@ protocol with 60 bytes.
     \end{itemize}
 \end{itemize}
 
-\FloatBarrier
+\FloatBarrier{}
 \clearpage
 \subsubsection{Group Discovery Packet}
 
@@ -255,7 +255,7 @@ protocol with 60 bytes.
     \label{fig:group-discovery-send-packet}
 \end{figure}
 
-\FloatBarrier
+\FloatBarrier{}
 
 \begin{itemize}
     \item Group ID: 1 byte
@@ -277,7 +277,7 @@ protocol with 60 bytes.
     \end{itemize}
 \end{itemize}
 
-\FloatBarrier
+\FloatBarrier{}
 
 \begin{figure}[h]
     \centering
@@ -293,7 +293,7 @@ protocol with 60 bytes.
     \label{fig:group-discovery-receive-packet}
 \end{figure}
 
-\FloatBarrier
+\FloatBarrier{}
 
 \begin{itemize}
     \item Status: 1 byte
@@ -303,7 +303,7 @@ protocol with 60 bytes.
     \end{itemize}
 \end{itemize}
 
-\FloatBarrier
+\FloatBarrier{}
 \clearpage
 \subsubsection{Group Member Discovery Packet}
 
@@ -333,7 +333,7 @@ protocol with 60 bytes.
     \label{fig:group-member-discovery-send-packet}
 \end{figure}
 
-\FloatBarrier
+\FloatBarrier{}
 
 \begin{itemize}
     \item Group ID: 1 byte
@@ -384,7 +384,7 @@ protocol with 60 bytes.
     \end{itemize}
 \end{itemize}
 
-\FloatBarrier
+\FloatBarrier{}
 
 \begin{figure}[h]
     \centering
@@ -400,7 +400,7 @@ protocol with 60 bytes.
     \label{fig:group-member-discovery-receive-packet}
 \end{figure}
 
-\FloatBarrier
+\FloatBarrier{}
 
 \begin{itemize}
     \item Status: 1 byte
@@ -410,7 +410,7 @@ protocol with 60 bytes.
     \end{itemize}
 \end{itemize}
 
-\FloatBarrier
+\FloatBarrier{}
 \clearpage
 \subsubsection{Discard Discovery Packet}
 
@@ -434,7 +434,7 @@ process is complete.
     \label{fig:discard-discovery-send-packet}
 \end{figure}
 
-\FloatBarrier
+\FloatBarrier{}
 
 \begin{figure}[h]
     \centering
@@ -450,7 +450,7 @@ process is complete.
     \label{fig:discard-discovery-receive-packet}
 \end{figure}
 
-\FloatBarrier
+\FloatBarrier{}
 
 \begin{itemize}
     \item Status: 1 byte
@@ -460,7 +460,7 @@ process is complete.
     \end{itemize}
 \end{itemize}
 
-\FloatBarrier
+\FloatBarrier{}
 \clearpage
 \subsection{Discovery Process}
 \subsubsection{Discovery}
@@ -491,7 +491,7 @@ process is complete.
     \label{fig:unsuccessful-discovery}
 \end{figure}
 
-\FloatBarrier
+\FloatBarrier{}
 \clearpage
 \subsubsection{Group Discovery}
 
@@ -530,7 +530,7 @@ process is complete.
     \label{fig:unsuccessful-group-discovery}
 \end{figure}
 
-\FloatBarrier
+\FloatBarrier{}
 \clearpage
 \subsubsection{Discard Discovery}
 
@@ -556,7 +556,7 @@ process is complete.
     \label{fig:discard-discovery}
 \end{figure}
 
-\FloatBarrier
+\FloatBarrier{}
 \clearpage
 \section{RPC}
 
@@ -586,7 +586,7 @@ The non-\gls{group} send packet format consists of the write payload.
     \label{fig:non-group-rpc-send-packet-format}
 \end{figure}
 
-\FloatBarrier
+\FloatBarrier{}
 
 The non-\gls{group} receive packet format consists of the read payload.
 
@@ -604,7 +604,7 @@ The non-\gls{group} receive packet format consists of the read payload.
     \label{fig:non-group-rpc-receive-packet-format}
 \end{figure}
 
-\FloatBarrier
+\FloatBarrier{}
 \clearpage
 \subsubsection{Group}
 
@@ -664,7 +664,7 @@ Figure~\ref{fig:group-member-discovery-send-packet}.
     \label{fig:group-rpc-send-packet-format}
 \end{figure}
 
-\FloatBarrier
+\FloatBarrier{}
 
 The \gls{group} receive packet format consists of packed \gls{resource} read payloads as specified
 by the Receive Start and Receive End indices from the \gls{group-member-discovery} packet in
@@ -718,13 +718,13 @@ Figure~\ref{fig:group-member-discovery-send-packet}.
     \label{fig:group-rpc-receive-packet-format}
 \end{figure}
 
-\FloatBarrier
+\FloatBarrier{}
 \clearpage
 
 \appendix
 \section{Tables}
 
-\FloatBarrier
+\FloatBarrier{}
 
 \begin{table}[h]
     \centering
@@ -741,15 +741,16 @@ Figure~\ref{fig:group-member-discovery-send-packet}.
         8 & Rejected: Group Full \\
         9 & Rejected: Unknown Operation \\
         10 & Discard in progress \\
-        11 & Discard complete
+        11 & Discard complete \\
+        12 & Rejected: Invalid Packet ID
     \end{tabular}
     \caption{Status codes.}
     \label{tab:status-codes}
 \end{table}
 
-\FloatBarrier
+\FloatBarrier{}
 \clearpage
 
-\printnoidxglossaries
+\printnoidxglossaries{}
 
 \end{document}
