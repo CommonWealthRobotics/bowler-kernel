@@ -20,7 +20,6 @@ import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.util.ServoLimits
-import org.octogonapus.ktguava.collections.toImmutableList
 
 class GenericServoGroup
 internal constructor(
@@ -32,7 +31,7 @@ internal constructor(
     private var lastWrite = resourceIds.map { 0.0 }
 
     override fun write(angles: List<Double>) {
-        device.bowlerRPCProtocol.servoWrite(resourceIds.zip(angles).toImmutableList())
+        device.bowlerRPCProtocol.servoWrite(resourceIds.zip(angles))
         lastWrite = angles
     }
 

@@ -16,9 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group
 
-import com.google.common.collect.ImmutableList
-
 interface AnalogInGroup : ProvisionedDeviceResourceGroup {
 
-    fun read(): ImmutableList<Double>
+    fun read(): List<Double>
 }

@@ -121,6 +121,39 @@ internal class SimplePacketComsProtocolWriteTest {
         }
     }
 
+    @Test
+    fun `test generic write`() {
+        val id = ResourceId(
+            DefaultResourceTypes.DigitalOut,
+            DefaultAttachmentPoints.Pin(7)
+        )
+
+        protocolTest(protocol, device) {
+            operation {
+                val result = it.addWrite(id)
+                assertTrue(result.isRight())
+            } pcSends {
+                immutableListOf(
+                    getPayload(1, 2, 2, 1, 7)
+                )
+            } deviceResponds {
+                immutableListOf(
+                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                )
+            }
+        }
+
+        protocolTest(protocol, device) {
+            operation {
+                it.genericWrite(id, getPayload(1))
+            } pcSends {
+                immutableListOf(getPayload(1))
+            } deviceResponds {
+                immutableListOf(getPayload())
+            }
+        }
+    }
+
     private fun setupWrite() {
         protocolTest(protocol, device) {
             operation {

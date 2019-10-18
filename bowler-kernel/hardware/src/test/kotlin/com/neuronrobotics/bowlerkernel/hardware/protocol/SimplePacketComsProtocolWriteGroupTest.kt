@@ -239,6 +239,99 @@ internal class SimplePacketComsProtocolWriteGroupTest {
         }
     }
 
+    @Test
+    fun `test generic write group`() {
+        val id1 = ResourceId(
+            DefaultResourceTypes.DigitalOut,
+            DefaultAttachmentPoints.Pin(7)
+        )
+
+        val id2 = ResourceId(
+            DefaultResourceTypes.DigitalOut,
+            DefaultAttachmentPoints.Pin(8)
+        )
+
+        protocolTest(protocol, device) {
+            operation {
+                val result = it.addWriteGroup(immutableSetOf(id1, id2))
+                assertTrue(result.isRight())
+            } pcSends {
+                immutableListOf(
+                    getPayload(2, 1, 2, 2),
+                    getPayload(3, 1, 0, 1, 0, 0, 2, 1, 7),
+                    getPayload(3, 1, 1, 2, 0, 0, 2, 1, 8)
+                )
+            } deviceResponds {
+                immutableListOf(
+                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                )
+            }
+        }
+
+        protocolTest(protocol, device) {
+            operation {
+                it.genericWrite(
+                    immutableListOf(
+                        id1 to byteArrayOf(1),
+                        id2 to byteArrayOf(2)
+                    )
+                )
+            } pcSends {
+                immutableListOf(getPayload(1, 2))
+            } deviceResponds {
+                immutableListOf(getPayload())
+            }
+        }
+    }
+
+    @Test
+    fun `test generic write group where the written payload is too large`() {
+        val id1 = ResourceId(
+            DefaultResourceTypes.DigitalOut,
+            DefaultAttachmentPoints.Pin(7)
+        )
+
+        val id2 = ResourceId(
+            DefaultResourceTypes.DigitalOut,
+            DefaultAttachmentPoints.Pin(8)
+        )
+
+        protocolTest(protocol, device) {
+            operation {
+                val result = it.addWriteGroup(immutableSetOf(id1, id2))
+                assertTrue(result.isRight())
+            } pcSends {
+                immutableListOf(
+                    getPayload(2, 1, 2, 2),
+                    getPayload(3, 1, 0, 1, 0, 0, 2, 1, 7),
+                    getPayload(3, 1, 1, 2, 0, 0, 2, 1, 8)
+                )
+            } deviceResponds {
+                immutableListOf(
+                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                )
+            }
+        }
+
+        protocolTest(protocol, device) {
+            operation {
+                it.genericWrite(
+                    immutableListOf(
+                        // Both of these should be one element but are purposefully too long
+                        id1 to byteArrayOf(1, 3),
+                        id2 to byteArrayOf(2, 4)
+                    )
+                )
+            } pcSends {
+                // A correct implementation will cut off the extra from the payloads and only send
+                // `[1, 2]` instead of `[1, 3, 2, 4]`
+                immutableListOf(getPayload(1, 2))
+            } deviceResponds {
+                immutableListOf(getPayload())
+            }
+        }
+    }
+
     private fun setupWriteGroup() {
         protocolTest(protocol, device) {
             operation {

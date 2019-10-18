@@ -24,6 +24,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import java.util.concurrent.TimeUnit
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -326,6 +327,48 @@ internal class SimplePacketComsProtocolReadGroupTest {
 
         assertThrows<IllegalStateException> {
             discoverGroupWithId(255.toByte())
+        }
+    }
+
+    @Test
+    fun `test generic read group`() {
+        val id1 = ResourceId(
+            DefaultResourceTypes.AnalogIn,
+            DefaultAttachmentPoints.Pin(7)
+        )
+
+        val id2 = ResourceId(
+            DefaultResourceTypes.AnalogIn,
+            DefaultAttachmentPoints.Pin(8)
+        )
+
+        protocolTest(protocol, device) {
+            operation {
+                val result = it.addReadGroup(immutableSetOf(id1, id2))
+                assertTrue(result.isRight())
+            } pcSends {
+                immutableListOf(
+                    getPayload(2, 1, 2, 2),
+                    getPayload(3, 1, 0, 0, 0, 2, 3, 1, 7),
+                    getPayload(3, 1, 0, 0, 2, 4, 3, 1, 8)
+                )
+            } deviceResponds {
+                immutableListOf(
+                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                )
+            }
+        }
+
+        protocolTest(protocol, device) {
+            operation {
+                val result = it.genericRead(immutableListOf(id1, id2))
+                assertArrayEquals(byteArrayOf(1, 2), result[0])
+                assertArrayEquals(byteArrayOf(3, 4), result[1])
+            } pcSends {
+                immutableListOf(getPayload())
+            } deviceResponds {
+                immutableListOf(getPayload(1, 2, 3, 4))
+            }
         }
     }
 

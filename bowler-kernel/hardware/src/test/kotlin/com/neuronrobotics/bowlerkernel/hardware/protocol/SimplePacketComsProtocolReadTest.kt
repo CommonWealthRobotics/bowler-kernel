@@ -22,6 +22,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import java.util.concurrent.TimeUnit
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -128,6 +129,41 @@ internal class SimplePacketComsProtocolReadTest {
                 immutableListOf(
                     getPayload(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC)
                 )
+            }
+        }
+    }
+
+    @Test
+    fun `test generic read`() {
+        val id = ResourceId(
+            DefaultResourceTypes.AnalogIn,
+            DefaultAttachmentPoints.Pin(7)
+        )
+
+        protocolTest(protocol, device) {
+            operation {
+                val result = it.addRead(id)
+                assertTrue(result.isRight())
+            } pcSends {
+                immutableListOf(
+                    getPayload(1, 2, 3, 1, 7)
+                )
+            } deviceResponds {
+                immutableListOf(
+                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                )
+            }
+        }
+
+        val response = getPayload(1, 2)
+        protocolTest(protocol, device) {
+            operation {
+                val result = it.genericRead(id)
+                assertArrayEquals(response, result)
+            } pcSends {
+                immutableListOf(getPayload())
+            } deviceResponds {
+                immutableListOf(response)
             }
         }
     }
