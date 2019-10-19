@@ -20,6 +20,7 @@ package com.neuronrobotics.bowlerkernel.hardware.protocol
 
 import arrow.core.Either
 import arrow.core.Option
+import arrow.core.Right
 import arrow.core.Try
 import arrow.core.flatMap
 import arrow.core.getOrHandle
@@ -805,6 +806,10 @@ open class SimplePacketComsProtocol(
     }.toEither { it.localizedMessage }
 
     override fun disconnect(): Either<String, Unit> {
+        if (!isConnected) {
+            return Right(Unit)
+        }
+
         var status = sendDiscardDiscoveryPacket()
 
         // Wait for the discard operation to complete
