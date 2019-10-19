@@ -20,7 +20,6 @@ import arrow.core.Either
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
-import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocolFactory
 import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistry
 import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterError
 
@@ -29,18 +28,8 @@ import com.neuronrobotics.bowlerkernel.hardware.registry.error.RegisterError
  */
 class DeviceFactory(
     private val registry: HardwareRegistry,
-    private val resourceIdValidator: ResourceIdValidator,
-    private val protocolFactory: BowlerRPCProtocolFactory
+    private val resourceIdValidator: ResourceIdValidator
 ) : BowlerDeviceFactory {
-
-    override fun makeBowlerDevice(deviceId: DeviceId): Either<RegisterError, BowlerDevice> =
-        registry.registerDevice(deviceId) {
-            BowlerDevice(
-                it,
-                protocolFactory.create(deviceId),
-                resourceIdValidator
-            )
-        }
 
     override fun makeBowlerDevice(
         deviceId: DeviceId,

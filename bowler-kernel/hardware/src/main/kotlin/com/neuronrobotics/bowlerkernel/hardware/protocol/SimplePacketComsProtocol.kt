@@ -15,15 +15,17 @@
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
 @file:SuppressWarnings("LargeClass")
+
 package com.neuronrobotics.bowlerkernel.hardware.protocol
+
 import arrow.core.Either
 import arrow.core.Option
+import arrow.core.Right
 import arrow.core.Try
 import arrow.core.flatMap
 import arrow.core.getOrHandle
 import arrow.core.left
 import arrow.core.right
-import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
@@ -37,7 +39,6 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.pow
 import mu.KotlinLogging
-import org.octogonapus.ktguava.collections.toImmutableList
 
 /**
  * Parses a received payload into a value. The parameter format is:
@@ -526,7 +527,7 @@ open class SimplePacketComsProtocol(
      * @return The group id.
      */
     private fun <T> validateGroupSendResources(
-        resourcesAndValues: ImmutableList<Pair<ResourceId, T>>
+        resourcesAndValues: List<Pair<ResourceId, T>>
     ): Int {
         val groupId = getValidatedGroupId(resourcesAndValues.first().first)
 
@@ -548,7 +549,7 @@ open class SimplePacketComsProtocol(
      * @param resourceIds The group members.
      * @return The group id.
      */
-    private fun validateGroupReceiveResources(resourceIds: ImmutableList<ResourceId>): Int {
+    private fun validateGroupReceiveResources(resourceIds: List<ResourceId>): Int {
         val groupId = getValidatedGroupId(resourceIds.first())
 
         require(resourceIds.size == groupIdToCount[groupId])
@@ -582,14 +583,15 @@ open class SimplePacketComsProtocol(
      * @return The payload.
      */
     private fun <T> makeGroupSendPayload(
-        resourcesAndValues: ImmutableList<Pair<ResourceId, T>>,
+        resourcesAndValues: List<Pair<ResourceId, T>>,
         makeResourcePayload: (T) -> ByteArray
     ): ByteArray {
         return resourcesAndValues.sortedWith(Comparator { first, second ->
             groupMemberToSendRange[first.first]!!.first -
                 groupMemberToSendRange[second.first]!!.first
-        }).fold(byteArrayOf()) { acc, (_, value) ->
-            acc + makeResourcePayload(value)
+        }).fold(byteArrayOf()) { acc, (a, value) ->
+            val sendRange = groupMemberToSendRange[a]!!
+            acc + makeResourcePayload(value).sliceArray(0 until sendRange.second - sendRange.first)
         }
     }
 
@@ -606,7 +608,7 @@ open class SimplePacketComsProtocol(
         resourceIds: List<ResourceId>,
         fullPayload: ByteArray,
         parseResourcePayload: ParseReceivePayload<T>
-    ): ImmutableList<T> {
+    ): List<T> {
         return resourceIds.map {
             val receiveRange = groupMemberToReceiveRange[it]!!
             parseResourcePayload(
@@ -614,7 +616,7 @@ open class SimplePacketComsProtocol(
                 receiveRange.first.toInt(),
                 receiveRange.second.toInt()
             )
-        }.toImmutableList()
+        }
     }
 
     /**
@@ -656,9 +658,9 @@ open class SimplePacketComsProtocol(
      */
     @Suppress("MemberVisibilityCanBePrivate")
     protected fun <T> handleGroupRead(
-        resourceIds: ImmutableList<ResourceId>,
+        resourceIds: List<ResourceId>,
         parseReceivePayload: ParseReceivePayload<T>
-    ): ImmutableList<T> {
+    ): List<T> {
         val groupId = validateGroupReceiveResources(resourceIds)
         val packetId = groupIdToPacketId[groupId]!!
 
@@ -748,7 +750,7 @@ open class SimplePacketComsProtocol(
      */
     @Suppress("MemberVisibilityCanBePrivate")
     protected fun <T> handleGroupWrite(
-        resourcesAndValues: ImmutableList<Pair<ResourceId, T>>,
+        resourcesAndValues: List<Pair<ResourceId, T>>,
         makeSendPayload: (T) -> ByteArray
     ) {
         val groupId = validateGroupSendResources(resourcesAndValues)
@@ -777,10 +779,10 @@ open class SimplePacketComsProtocol(
      */
     @Suppress("MemberVisibilityCanBePrivate")
     protected fun <T, R> handleGroupWrite(
-        resourcesAndValues: ImmutableList<Pair<ResourceId, T>>,
+        resourcesAndValues: List<Pair<ResourceId, T>>,
         makeSendPayload: (T) -> ByteArray,
         parseReceivePayload: ParseReceivePayload<R>
-    ): ImmutableList<R> {
+    ): List<R> {
         val groupId = validateGroupSendResources(resourcesAndValues)
         val packetId = groupIdToPacketId[groupId]!!
 
@@ -804,6 +806,10 @@ open class SimplePacketComsProtocol(
     }.toEither { it.localizedMessage }
 
     override fun disconnect(): Either<String, Unit> {
+        if (!isConnected) {
+            return Right(Unit)
+        }
+
         var status = sendDiscardDiscoveryPacket()
 
         // Wait for the discard operation to complete
@@ -927,7 +933,7 @@ open class SimplePacketComsProtocol(
     override fun analogRead(resourceId: ResourceId) =
         handleRead(resourceId, this::parseAnalogReadPayload)
 
-    override fun analogRead(resourceIds: ImmutableList<ResourceId>) =
+    override fun analogRead(resourceIds: List<ResourceId>) =
         handleGroupRead(resourceIds, this::parseAnalogReadPayload)
 
     @Suppress("MemberVisibilityCanBePrivate")
@@ -940,7 +946,7 @@ open class SimplePacketComsProtocol(
     override fun analogWrite(resourceId: ResourceId, value: Short) =
         handleWrite(resourceId, value, this::makeAnalogWritePayload)
 
-    override fun analogWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Short>>) =
+    override fun analogWrite(resourcesAndValues: List<Pair<ResourceId, Short>>) =
         handleGroupWrite(resourcesAndValues, this::makeAnalogWritePayload)
 
     @Suppress("UNUSED_PARAMETER")
@@ -950,7 +956,7 @@ open class SimplePacketComsProtocol(
     override fun buttonRead(resourceId: ResourceId) =
         handleRead(resourceId, this::parseButtonReadPayload)
 
-    override fun buttonRead(resourceIds: ImmutableList<ResourceId>) =
+    override fun buttonRead(resourceIds: List<ResourceId>) =
         handleGroupRead(resourceIds, this::parseButtonReadPayload)
 
     @Suppress("UNUSED_PARAMETER")
@@ -965,7 +971,7 @@ open class SimplePacketComsProtocol(
     override fun digitalRead(resourceId: ResourceId) =
         handleRead(resourceId, this::parseDigitalReadPayload)
 
-    override fun digitalRead(resourceIds: ImmutableList<ResourceId>) =
+    override fun digitalRead(resourceIds: List<ResourceId>) =
         handleGroupRead(resourceIds, this::parseDigitalReadPayload)
 
     protected fun makeDigitalWritePayload(value: DigitalState): ByteArray {
@@ -977,7 +983,7 @@ open class SimplePacketComsProtocol(
     override fun digitalWrite(resourceId: ResourceId, value: DigitalState) =
         handleWrite(resourceId, value, this::makeDigitalWritePayload)
 
-    override fun digitalWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, DigitalState>>) =
+    override fun digitalWrite(resourcesAndValues: List<Pair<ResourceId, DigitalState>>) =
         handleGroupWrite(resourcesAndValues, this::makeDigitalWritePayload)
 
     @Suppress("UNUSED_PARAMETER")
@@ -988,7 +994,7 @@ open class SimplePacketComsProtocol(
     override fun encoderRead(resourceId: ResourceId) =
         handleRead(resourceId, this::parseEncoderReadPayload)
 
-    override fun encoderRead(resourceIds: ImmutableList<ResourceId>) =
+    override fun encoderRead(resourceIds: List<ResourceId>) =
         handleGroupRead(resourceIds, this::parseEncoderReadPayload)
 
     @Suppress("UNUSED_PARAMETER")
@@ -1028,7 +1034,7 @@ open class SimplePacketComsProtocol(
     override fun servoWrite(resourceId: ResourceId, angle: Double) =
         handleWrite(resourceId, angle, this::makeServoWritePayload)
 
-    override fun servoWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Double>>) =
+    override fun servoWrite(resourcesAndValues: List<Pair<ResourceId, Double>>) =
         handleGroupWrite(resourcesAndValues, this::makeServoWritePayload)
 
     @Suppress("UNUSED_PARAMETER")
@@ -1039,7 +1045,7 @@ open class SimplePacketComsProtocol(
     override fun stepperWrite(resourceId: ResourceId, steps: Int, speed: Int) =
         handleWrite(resourceId, steps to speed, this::makeStepperWritePayload)
 
-    override fun stepperWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Pair<Int, Int>>>) =
+    override fun stepperWrite(resourcesAndValues: List<Pair<ResourceId, Pair<Int, Int>>>) =
         handleGroupWrite(resourcesAndValues, this::makeStepperWritePayload)
 
     @Suppress("UNUSED_PARAMETER")
@@ -1050,8 +1056,41 @@ open class SimplePacketComsProtocol(
     override fun ultrasonicRead(resourceId: ResourceId) =
         handleRead(resourceId, this::parseUltrasonicReadPayload)
 
-    override fun ultrasonicRead(resourceIds: ImmutableList<ResourceId>) =
+    override fun ultrasonicRead(resourceIds: List<ResourceId>) =
         handleGroupRead(resourceIds, this::parseUltrasonicReadPayload)
+
+    protected fun parseGenericReadPayload(payload: ByteArray, start: Int, end: Int) =
+        payload.sliceArray(start until end)
+
+    protected fun makeGenericWritePayload(payload: ByteArray) =
+        payload
+
+    override fun genericRead(resourceId: ResourceId) =
+        handleRead(resourceId, this::parseGenericReadPayload)
+
+    override fun genericRead(resourceIds: List<ResourceId>) =
+        handleGroupRead(resourceIds, this::parseGenericReadPayload)
+
+    override fun genericWrite(resourceId: ResourceId, payload: ByteArray) =
+        handleWrite(resourceId, payload, this::makeGenericWritePayload)
+
+    override fun genericWrite(resourcesAndValues: List<Pair<ResourceId, ByteArray>>) =
+        handleGroupWrite(resourcesAndValues, this::makeGenericWritePayload)
+
+    override fun genericWriteRead(resourceId: ResourceId, payload: ByteArray) =
+        handleWrite(
+            resourceId,
+            payload,
+            this::makeGenericWritePayload,
+            this::parseGenericReadPayload
+        )
+
+    override fun genericWriteRead(resourcesAndValues: List<Pair<ResourceId, ByteArray>>) =
+        handleGroupWrite(
+            resourcesAndValues,
+            this::makeGenericWritePayload,
+            this::parseGenericReadPayload
+        )
 
     /**
      * The lowest packet id.
@@ -1109,6 +1148,7 @@ open class SimplePacketComsProtocol(
         const val STATUS_REJECTED_UNKNOWN_OPERATION = 9.toByte()
         const val STATUS_DISCARD_IN_PROGRESS = 10.toByte()
         const val STATUS_DISCARD_COMPLETE = 11.toByte()
+        const val STATUS_REJECTED_INVALID_PACKET_ID = 12.toByte()
 
         private val LOGGER = KotlinLogging.logger { }
 

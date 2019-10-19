@@ -32,7 +32,6 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDigitalOutGroupFactory
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResourceFactory
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedServoFactory
-import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocolFactory
 import com.neuronrobotics.bowlerkernel.util.ServoLimits
 import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -51,8 +50,7 @@ internal class HardwareScriptIntegrationTest {
             override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
                 val deviceFactory = DeviceFactory(
                     hardwareRegistry,
-                    DefaultResourceIdValidator(),
-                    SimplePacketComsProtocolFactory(DefaultResourceIdValidator())
+                    DefaultResourceIdValidator()
                 )
 
                 val resourceFactory = UnprovisionedDeviceResourceFactory(hardwareRegistry)

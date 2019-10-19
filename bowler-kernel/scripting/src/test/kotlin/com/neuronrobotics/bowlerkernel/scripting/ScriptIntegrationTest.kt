@@ -30,7 +30,6 @@ import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResourceFactory
-import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocolFactory
 import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -49,10 +48,7 @@ internal class ScriptIntegrationTest {
             override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
                 val bowlerDeviceFactory = DeviceFactory(
                     hardwareRegistry,
-                    DefaultResourceIdValidator(),
-                    SimplePacketComsProtocolFactory(
-                        DefaultResourceIdValidator()
-                    )
+                    DefaultResourceIdValidator()
                 )
 
                 val resourceFactory = UnprovisionedDeviceResourceFactory(hardwareRegistry)
@@ -101,8 +97,7 @@ internal class ScriptIntegrationTest {
             override fun runScript(args: ImmutableList<Any?>): Either<String, Any?> {
                 val deviceFactory = DeviceFactory(
                     hardwareRegistry,
-                    DefaultResourceIdValidator(),
-                    SimplePacketComsProtocolFactory(DefaultResourceIdValidator())
+                    DefaultResourceIdValidator()
                 )
 
                 val resourceFactory = UnprovisionedDeviceResourceFactory(hardwareRegistry)

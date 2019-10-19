@@ -35,7 +35,8 @@ import org.octogonapus.ktguava.collections.toImmutableSet
  *
  * @param deviceId The serial port the device is on.
  */
-class BowlerDevice(
+class BowlerDevice
+internal constructor(
     override val deviceId: DeviceId,
     val bowlerRPCProtocol: BowlerRPCProtocol,
     private val resourceIdValidator: ResourceIdValidator
@@ -46,7 +47,8 @@ class BowlerDevice(
     override fun disconnect() = bowlerRPCProtocol.disconnect()
 
     override fun isResourceInRange(resourceId: ResourceId) =
-        bowlerRPCProtocol.isResourceInRange(resourceId)
+        deviceId.deviceType.isResourceInRange(resourceId) &&
+            bowlerRPCProtocol.isResourceInRange(resourceId)
 
     override fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
         resource: T

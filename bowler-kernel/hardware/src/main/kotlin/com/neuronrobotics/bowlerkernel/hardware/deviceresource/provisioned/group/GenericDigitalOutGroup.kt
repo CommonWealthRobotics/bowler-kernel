@@ -20,7 +20,6 @@ import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import org.octogonapus.ktguava.collections.toImmutableList
 
 class GenericDigitalOutGroup
 internal constructor(
@@ -28,6 +27,6 @@ internal constructor(
     override val resourceIds: ImmutableList<ResourceId>
 ) : DigitalOutGroup {
 
-    override fun write(states: ImmutableList<DigitalState>) =
-        device.bowlerRPCProtocol.digitalWrite(resourceIds.zip(states).toImmutableList())
+    override fun write(states: List<DigitalState>) =
+        device.bowlerRPCProtocol.digitalWrite(resourceIds.zip(states))
 }

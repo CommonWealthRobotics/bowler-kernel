@@ -145,7 +145,7 @@ class DefaultLimb(
         result = 31 * result + inertialStateEstimator.hashCode()
         result = 31 * result + desiredTaskSpaceTransform.hashCode()
         result = 31 * result + movingToTaskSpaceTransform.hashCode()
-        result = 31 * result + (moveLimbPool.hashCode() ?: 0)
+        result = 31 * result + moveLimbPool.hashCode()
         return result
     }
 }

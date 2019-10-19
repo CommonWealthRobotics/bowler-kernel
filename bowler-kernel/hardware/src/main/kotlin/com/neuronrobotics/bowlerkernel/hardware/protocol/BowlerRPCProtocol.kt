@@ -17,7 +17,6 @@
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
 import arrow.core.Either
-import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
@@ -120,7 +119,7 @@ interface BowlerRPCProtocol {
      * @param resourceIds The resources in the group.
      * @return The analog values in the same order as [resourceIds].
      */
-    fun analogRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Double>
+    fun analogRead(resourceIds: List<ResourceId>): List<Double>
 
     /**
      * Performs an analog write.
@@ -135,7 +134,7 @@ interface BowlerRPCProtocol {
      *
      * @param resourcesAndValues The resources paired with their values.
      */
-    fun analogWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Short>>)
+    fun analogWrite(resourcesAndValues: List<Pair<ResourceId, Short>>)
 
     /**
      * Performs a debounced button read.
@@ -151,7 +150,7 @@ interface BowlerRPCProtocol {
      * @param resourceIds The resources in the group.
      * @return The whether the buttons are pressed, in the same order as [resourceIds].
      */
-    fun buttonRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Boolean>
+    fun buttonRead(resourceIds: List<ResourceId>): List<Boolean>
 
     /**
      * Performs a digital read.
@@ -167,7 +166,7 @@ interface BowlerRPCProtocol {
      * @param resourceIds The resources in the group.
      * @return The digital values in the same order as [resourceIds].
      */
-    fun digitalRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<DigitalState>
+    fun digitalRead(resourceIds: List<ResourceId>): List<DigitalState>
 
     /**
      * Performs a digital write.
@@ -182,7 +181,7 @@ interface BowlerRPCProtocol {
      *
      * @param resourcesAndValues The resources paired with their values.
      */
-    fun digitalWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, DigitalState>>)
+    fun digitalWrite(resourcesAndValues: List<Pair<ResourceId, DigitalState>>)
 
     /**
      * Performs an encoder read.
@@ -198,7 +197,7 @@ interface BowlerRPCProtocol {
      * @param resourceIds The resources in the group.
      * @return The encoder values in the same order as [resourceIds].
      */
-    fun encoderRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Long>
+    fun encoderRead(resourceIds: List<ResourceId>): List<Long>
 
     /**
      * Performs a tone write.
@@ -217,7 +216,6 @@ interface BowlerRPCProtocol {
      */
     fun toneWrite(resourceId: ResourceId, frequency: Int, duration: Long)
 
-    // TODO: Serial needs to be a read + write only
     /**
      * Performs a serial write.
      *
@@ -234,6 +232,8 @@ interface BowlerRPCProtocol {
      */
     fun serialRead(resourceId: ResourceId): String
 
+    // TODO: Add serialWriteRead
+
     /**
      * Performs a servo write.
      *
@@ -247,7 +247,7 @@ interface BowlerRPCProtocol {
      *
      * @param resourcesAndValues The resources paired with their values.
      */
-    fun servoWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Double>>)
+    fun servoWrite(resourcesAndValues: List<Pair<ResourceId, Double>>)
 
     /**
      * Performs a stepper write.
@@ -263,7 +263,7 @@ interface BowlerRPCProtocol {
      *
      * @param resourcesAndValues The resources paired with their values.
      */
-    fun stepperWrite(resourcesAndValues: ImmutableList<Pair<ResourceId, Pair<Int, Int>>>)
+    fun stepperWrite(resourcesAndValues: List<Pair<ResourceId, Pair<Int, Int>>>)
 
     /**
      * Performs an ultrasonic read.
@@ -279,5 +279,53 @@ interface BowlerRPCProtocol {
      * @param resourceIds The resources in the group.
      * @return The raw distances in the same order as [resourceIds].
      */
-    fun ultrasonicRead(resourceIds: ImmutableList<ResourceId>): ImmutableList<Long>
+    fun ultrasonicRead(resourceIds: List<ResourceId>): List<Long>
+
+    /**
+     * Performs a generic read (returns the entire payload).
+     *
+     * @param resourceId The id of a resource on this device.
+     * @return The entire read payload.
+     */
+    fun genericRead(resourceId: ResourceId): ByteArray
+
+    /**
+     * Performs a generic read (returns the entire payload).
+     *
+     * @param resourceIds The resources in the group.
+     * @return The entire read payload.
+     */
+    fun genericRead(resourceIds: List<ResourceId>): List<ByteArray>
+
+    /**
+     * Performs a generic write (writes the raw payload).
+     *
+     * @param resourceId The id of a resource on this device.
+     * @param payload The payload to send.
+     */
+    fun genericWrite(resourceId: ResourceId, payload: ByteArray)
+
+    /**
+     * Performs a generic write (writes the raw payload).
+     *
+     * @param resourcesAndValues The resources paired with their payloads.
+     */
+    fun genericWrite(resourcesAndValues: List<Pair<ResourceId, ByteArray>>)
+
+    /**
+     * Performs a write and a read in one RPC call (write first, then read).
+     *
+     * @param resourceId The id of a resource on this device.
+     * @param payload The payload to send.
+     * @return The entire read payload.
+     */
+    fun genericWriteRead(resourceId: ResourceId, payload: ByteArray): ByteArray
+
+    /**
+     * Performs a write and a read in one RPC call (write first, then read).
+     *
+     * @param resourcesAndValues The resources paired with their payloads.
+     * @return The entire read payload.
+     */
+    fun genericWriteRead(resourcesAndValues: List<Pair<ResourceId, ByteArray>>): List<ByteArray>
 }

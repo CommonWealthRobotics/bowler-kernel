@@ -141,6 +141,11 @@ internal class SimplePacketComsProtocolTest {
         assertTrue(result.isLeft())
     }
 
+    @Test
+    fun `allowed to disconnect with no connection`() {
+        assertTrue(disconnectProtocol().isRight())
+    }
+
     /**
      * Connects the protocol and asserts it connected properly because no error was returned.
      */

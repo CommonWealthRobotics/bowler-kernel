@@ -16,10 +16,9 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group
 
-import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.DigitalState
 
 interface DigitalInGroup : ProvisionedDeviceResourceGroup {
 
-    fun read(): ImmutableList<DigitalState>
+    fun read(): List<DigitalState>
 }
