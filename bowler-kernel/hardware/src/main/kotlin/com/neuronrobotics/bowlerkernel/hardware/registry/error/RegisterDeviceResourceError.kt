@@ -45,4 +45,10 @@ sealed class RegisterDeviceResourceError : RegisterError {
      */
     data class ResourceOutsideValidRangeError(val resourceId: ResourceId) :
         RegisterDeviceResourceError()
+
+    /**
+     * A generic error.
+     */
+    data class GenericError(val resourceId: ResourceId, val cause: String) :
+        RegisterDeviceResourceError()
 }

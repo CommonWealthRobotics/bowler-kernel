@@ -18,13 +18,15 @@
 
 package com.neuronrobotics.bowlerkernel.hardware
 
+import com.google.common.base.Throwables
+import com.neuronrobotics.bowlerkernel.deviceserver.DefaultDeviceServer
+import com.neuronrobotics.bowlerkernel.deviceserver.UDPTransportLayer
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocol
-import edu.wpi.SimplePacketComs.device.UdpDevice
 import java.net.InetAddress
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -48,25 +50,26 @@ internal class TestWithEsp32 {
         )
 
         val rpc = SimplePacketComsProtocol(
-            comms = object :
-                UdpDevice(
+            server = DefaultDeviceServer(
+                UDPTransportLayer(
                     InetAddress.getByAddress(
                         listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
-                    )
-                ) {
-            },
+                    ),
+                    1866
+                )
+            ),
             resourceIdValidator = DefaultResourceIdValidator()
         )
 
-        rpc.connect().mapLeft {
-            fail { it }
+        rpc.connect().attempt().unsafeRunSync().mapLeft {
+            fail { Throwables.getStackTraceAsString(it) }
         }
 
-        if (!rpc.isResourceInRange(led1)) {
+        if (!rpc.isResourceInRange(led1).unsafeRunSync()) {
             fail { "Not in range" }
         }
 
-        if (!rpc.isResourceInRange(led2)) {
+        if (!rpc.isResourceInRange(led2).unsafeRunSync()) {
             fail { "Not in range" }
         }
 
@@ -107,18 +110,19 @@ internal class TestWithEsp32 {
         }
 
         val rpc = SimplePacketComsProtocol(
-            comms = object :
-                UdpDevice(
+            server = DefaultDeviceServer(
+                UDPTransportLayer(
                     InetAddress.getByAddress(
                         listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
-                    )
-                ) {
-            },
+                    ),
+                    1866
+                )
+            ),
             resourceIdValidator = DefaultResourceIdValidator()
         )
 
-        rpc.connect().mapLeft {
-            fail { it }
+        rpc.connect().attempt().unsafeRunSync().mapLeft {
+            fail { Throwables.getStackTraceAsString(it) }
         }
 
         servos.forEach {
@@ -142,19 +146,20 @@ internal class TestWithEsp32 {
         }
 
         val rpc = SimplePacketComsProtocol(
-            comms = object :
-                UdpDevice(
+            server = DefaultDeviceServer(
+                UDPTransportLayer(
                     InetAddress.getByAddress(
                         listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
-                    )
-                ) {
-            },
+                    ),
+                    1866
+                )
+            ),
             resourceIdValidator = DefaultResourceIdValidator()
         )
 
         servos.forEach {
-            rpc.connect().mapLeft {
-                fail { it }
+            rpc.connect().attempt().unsafeRunSync().mapLeft {
+                fail { Throwables.getStackTraceAsString(it) }
             }
 
             rpc.addWrite(it)
@@ -179,18 +184,19 @@ internal class TestWithEsp32 {
         )
 
         val rpc = SimplePacketComsProtocol(
-            comms = object :
-                UdpDevice(
+            server = DefaultDeviceServer(
+                UDPTransportLayer(
                     InetAddress.getByAddress(
                         listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
-                    )
-                ) {
-            },
+                    ),
+                    1866
+                )
+            ),
             resourceIdValidator = DefaultResourceIdValidator()
         )
 
-        rpc.connect().mapLeft {
-            fail { it }
+        rpc.connect().attempt().unsafeRunSync().mapLeft {
+            fail { Throwables.getStackTraceAsString(it) }
         }
 
         rpc.addWrite(servo)

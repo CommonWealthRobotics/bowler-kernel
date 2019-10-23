@@ -22,6 +22,16 @@ package com.neuronrobotics.bowlerkernel.deviceserver
 interface TransportLayer {
 
     /**
+     * Start a new connection.
+     */
+    fun connect()
+
+    /**
+     * Close the current connection, or do nothing if there is no connection.
+     */
+    fun disconnect()
+
+    /**
      * Reads a packet from the device.
      *
      * @return The data.

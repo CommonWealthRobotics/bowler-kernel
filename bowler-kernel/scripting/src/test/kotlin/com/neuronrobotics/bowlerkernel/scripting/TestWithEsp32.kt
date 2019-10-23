@@ -71,12 +71,13 @@ internal class TestWithEsp32 {
             )
         ).fold({ fail(it.toString()) }, { it })
 
-        device.connect().fold({ fail(it) }, { Unit })
+        device.connect().attempt().unsafeRunSync().fold({ fail(it) }, { Unit })
 
         @Suppress("RemoveExplicitTypeArguments")
-        val ledGroup = device.add(unprovisionedLedGroup).fold(
+        val ledGroup = device.add(unprovisionedLedGroup).attempt().unsafeRunSync().fold(
             {
-                device.disconnect().fold<Nothing>({ fail(it) }, { fail("") })
+                device.disconnect().attempt().unsafeRunSync()
+                    .fold<Nothing>({ fail(it) }, { fail("") })
             },
             { it }
         )
@@ -92,6 +93,6 @@ internal class TestWithEsp32 {
         }
 
         @Suppress("RemoveExplicitTypeArguments")
-        device.disconnect().fold<Nothing>({ fail(it) }, { fail("") })
+        device.disconnect().attempt().unsafeRunSync().fold<Nothing>({ fail(it) }, { fail("") })
     }
 }

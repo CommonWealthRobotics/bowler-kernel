@@ -17,8 +17,8 @@
 package com.neuronrobotics.bowlerkernel.hardware.device
 
 import arrow.core.Either
-import arrow.core.left
-import arrow.core.right
+import arrow.core.Right
+import arrow.effects.IO
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
@@ -94,34 +94,32 @@ internal class BowlerDeviceTest {
     private val unknownId2 = ResourceId(unknownResourceType, DefaultAttachmentPoints.Pin(2))
 
     private val bowlerRPCProtocol = mock<BowlerRPCProtocol> {
-        on { connect() } doReturn Unit.right()
-        on { disconnect() } doReturn Unit.right()
-        on { isResourceInRange(testResourceId1) } doReturn true
+        on { connect() } doReturn IO.just(Unit)
+        on { disconnect() } doReturn IO.just(Unit)
+        on { isResourceInRange(testResourceId1) } doReturn IO.just(true)
 
-        on { addWrite(led1Id) } doReturn Unit.right()
-        on { addRead(led1Id) } doReturn "".left()
-        on { addPollingRead(led1Id) } doReturn "".left()
+        on { addWrite(led1Id) } doReturn IO.just(Unit)
+        on { addRead(led1Id) } doReturn IO.raiseError(UnsupportedOperationException(""))
 
-        on { addWriteGroup(immutableSetOf(led1Id, led2Id)) } doReturn Unit.right()
-        on { addReadGroup(immutableSetOf(led1Id, led2Id)) } doReturn "".left()
-        on { addPollingReadGroup(immutableSetOf(led1Id, led2Id)) } doReturn "".left()
+        on { addWriteGroup(immutableSetOf(led1Id, led2Id)) } doReturn IO.just(Unit)
+        on { addReadGroup(immutableSetOf(led1Id, led2Id)) } doReturn IO.raiseError(
+            UnsupportedOperationException("")
+        )
 
-        on { addWrite(line1Id) } doReturn "".left()
-        on { addRead(line1Id) } doReturn Unit.right()
-        on { addPollingRead(line1Id) } doReturn Unit.right()
+        on { addWrite(line1Id) } doReturn IO.raiseError(UnsupportedOperationException(""))
+        on { addRead(line1Id) } doReturn IO.just(Unit)
 
-        on { addWriteGroup(immutableSetOf(line1Id, line2Id)) } doReturn "".left()
-        on { addReadGroup(immutableSetOf(line1Id, line2Id)) } doReturn Unit.right()
-        on { addPollingReadGroup(immutableSetOf(line1Id, line2Id)) } doReturn Unit.right()
+        on { addWriteGroup(immutableSetOf(line1Id, line2Id)) } doReturn IO.raiseError(
+            UnsupportedOperationException("")
+        )
+        on { addReadGroup(immutableSetOf(line1Id, line2Id)) } doReturn IO.just(Unit)
 
-        on { addWrite(serial1Id) } doReturn Unit.right()
-        on { addRead(serial1Id) } doReturn Unit.right()
-        on { addPollingRead(serial1Id) } doReturn Unit.right()
+        on { addWrite(serial1Id) } doReturn IO.just(Unit)
+        on { addRead(serial1Id) } doReturn IO.just(Unit)
 
         // Unknown resources can't be validated, so we must let them be added
-        on { addWrite(unknownId1) } doReturn Unit.right()
-        on { addRead(unknownId1) } doReturn Unit.right()
-        on { addPollingRead(unknownId1) } doReturn Unit.right()
+        on { addWrite(unknownId1) } doReturn IO.just(Unit)
+        on { addRead(unknownId1) } doReturn IO.just(Unit)
     }
 
     private val device = BowlerDevice(
@@ -144,34 +142,34 @@ internal class BowlerDeviceTest {
 
     @Test
     fun `test connect`() {
-        val result = device.connect()
+        val result = device.connect().attempt().unsafeRunSync()
 
-        assertEquals(Unit.right(), result)
+        assertEquals(Right(Unit), result)
 
         verify(bowlerRPCProtocol).connect()
     }
 
     @Test
     fun `test disconnect`() {
-        val result = device.disconnect()
+        val result = device.disconnect().attempt().unsafeRunSync()
 
-        assertEquals(Unit.right(), result)
+        assertEquals(Right(Unit), result)
 
         verify(bowlerRPCProtocol).disconnect()
     }
 
     @Test
     fun `test isResourceInRange`() {
-        val result = device.isResourceInRange(testResourceId1)
+        val result = device.isResourceInRange(testResourceId1).attempt().unsafeRunSync()
 
-        assertEquals(true, result)
+        assertEquals(Right(true), result)
 
         verify(bowlerRPCProtocol).isResourceInRange(testResourceId1)
     }
 
     @Test
     fun `test adding an led`() {
-        val result = device.add(led1)
+        val result = device.add(led1).attempt().unsafeRunSync()
 
         verify(bowlerRPCProtocol).addWrite(led1Id)
         verify(bowlerRPCProtocol, never()).addRead(led1Id)
@@ -181,7 +179,7 @@ internal class BowlerDeviceTest {
 
     @Test
     fun `test adding a line sensor`() {
-        val result = device.add(line1)
+        val result = device.add(line1).attempt().unsafeRunSync()
 
         verify(bowlerRPCProtocol, never()).addWrite(line1Id)
         verify(bowlerRPCProtocol).addRead(line1Id)
@@ -191,7 +189,7 @@ internal class BowlerDeviceTest {
 
     @Test
     fun `test adding a serial connection`() {
-        val result = device.add(serial1)
+        val result = device.add(serial1).attempt().unsafeRunSync()
 
         verify(bowlerRPCProtocol).addWrite(serial1Id)
         verify(bowlerRPCProtocol).addRead(serial1Id)
@@ -201,7 +199,7 @@ internal class BowlerDeviceTest {
 
     @Test
     fun `test adding an unknown resource`() {
-        val result = device.add(unknownResource1)
+        val result = device.add(unknownResource1).attempt().unsafeRunSync()
 
         verify(bowlerRPCProtocol, never()).addWrite(unknownId1)
         verify(bowlerRPCProtocol, never()).addRead(unknownId1)
@@ -211,7 +209,7 @@ internal class BowlerDeviceTest {
 
     @Test
     fun `test adding an led group`() {
-        val result = device.add(ledGroup)
+        val result = device.add(ledGroup).attempt().unsafeRunSync()
 
         verify(bowlerRPCProtocol).addWriteGroup(immutableSetOf(led1Id, led2Id))
         verify(bowlerRPCProtocol, never()).addReadGroup(immutableSetOf(led1Id, led2Id))
@@ -221,7 +219,7 @@ internal class BowlerDeviceTest {
 
     @Test
     fun `test adding a line sensor group`() {
-        val result = device.add(lineGroup)
+        val result = device.add(lineGroup).attempt().unsafeRunSync()
 
         verify(bowlerRPCProtocol, never()).addWriteGroup(immutableSetOf(line1Id, line2Id))
         verify(bowlerRPCProtocol).addReadGroup(immutableSetOf(line1Id, line2Id))
@@ -231,7 +229,7 @@ internal class BowlerDeviceTest {
 
     @Test
     fun `test adding an unknown resource group`() {
-        val result = device.add(unknownGroup)
+        val result = device.add(unknownGroup).attempt().unsafeRunSync()
 
         verify(bowlerRPCProtocol, never()).addWriteGroup(immutableSetOf(unknownId1, unknownId2))
         verify(bowlerRPCProtocol, never()).addReadGroup(immutableSetOf(unknownId1, unknownId2))
@@ -246,7 +244,7 @@ internal class BowlerDeviceTest {
                 device,
                 immutableListOf(led1Id, led2Id, led1Id)
             )
-        )
+        ).attempt().unsafeRunSync()
 
         assertTrue(result is Either.Left)
 
@@ -258,10 +256,10 @@ internal class BowlerDeviceTest {
     inner class TestFailureToAddResource {
 
         private val failingProtocol = mock<BowlerRPCProtocol> {
-            on { addRead(any()) } doReturn "".left()
-            on { addWrite(any()) } doReturn "".left()
-            on { addReadGroup(any()) } doReturn "".left()
-            on { addWriteGroup(any()) } doReturn "".left()
+            on { addRead(any()) } doReturn IO.raiseError(UnsupportedOperationException(""))
+            on { addWrite(any()) } doReturn IO.raiseError(UnsupportedOperationException(""))
+            on { addReadGroup(any()) } doReturn IO.raiseError(UnsupportedOperationException(""))
+            on { addWriteGroup(any()) } doReturn IO.raiseError(UnsupportedOperationException(""))
         }
 
         private val write1Id = ResourceId(
@@ -302,7 +300,7 @@ internal class BowlerDeviceTest {
 
         @Test
         fun `test failure to add read`() {
-            val result = device.add(read1)
+            val result = device.add(read1).attempt().unsafeRunSync()
 
             verify(failingProtocol).addRead(read1Id)
             verify(failingProtocol, never()).addWrite(read1Id)
@@ -312,7 +310,7 @@ internal class BowlerDeviceTest {
 
         @Test
         fun `test failure to add write`() {
-            val result = device.add(write1)
+            val result = device.add(write1).attempt().unsafeRunSync()
 
             verify(failingProtocol, never()).addRead(write1Id)
             verify(failingProtocol).addWrite(write1Id)
@@ -323,7 +321,7 @@ internal class BowlerDeviceTest {
         @Test
         fun `test failure to add read group`() {
             val ids = readGroup.resourceIds.toImmutableSet()
-            val result = device.add(readGroup)
+            val result = device.add(readGroup).attempt().unsafeRunSync()
 
             verify(failingProtocol).addReadGroup(ids)
             verify(failingProtocol, never()).addWriteGroup(ids)
@@ -334,7 +332,7 @@ internal class BowlerDeviceTest {
         @Test
         fun `test failure to add write group`() {
             val ids = writeGroup.resourceIds.toImmutableSet()
-            val result = device.add(writeGroup)
+            val result = device.add(writeGroup).attempt().unsafeRunSync()
 
             verify(failingProtocol, never()).addReadGroup(ids)
             verify(failingProtocol).addWriteGroup(ids)

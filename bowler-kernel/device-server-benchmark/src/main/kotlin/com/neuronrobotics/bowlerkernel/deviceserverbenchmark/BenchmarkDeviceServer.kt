@@ -18,7 +18,6 @@ package com.neuronrobotics.bowlerkernel.deviceserverbenchmark
 
 import arrow.effects.IO
 import com.neuronrobotics.bowlerkernel.deviceserver.DeviceServer
-import com.neuronrobotics.bowlerkernel.deviceserver.PacketMessage
 import com.neuronrobotics.bowlerkernel.deviceserver.getPayload
 import kotlin.system.measureNanoTime
 import org.apache.commons.math3.stat.descriptive.moment.Mean
@@ -26,29 +25,35 @@ import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation
 import org.apache.commons.math3.stat.descriptive.rank.Median
 
 /**
- * Benchmarks the [deviceServer] using the transport [method]. A `NoopPacket` should be registered
- * on the device on the [packetId].
+ * Benchmarks the [deviceServer] using the transport method the packet was registered with. A
+ * `NoopPacket` should be registered on the device on the [packetId] and on the [deviceServer].
  *
  * @param deviceServer The [DeviceServer] to benchmark.
+ * @param payloadSize The expected length of the payload.
  * @param packetId The id of the packet to communicate with.
- * @param method The transport method to use.
  * @return A string describing the results of the benchmark.
  */
 inline fun benchmarkDeviceServer(
     deviceServer: DeviceServer,
-    packetId: Byte,
-    crossinline method: DeviceServer.(PacketMessage) -> PacketMessage
+    payloadSize: Int,
+    packetId: Byte
 ) = IO {
     // Warm up JVM
     repeat(100) {
         measureNanoTime {
-            deviceServer.method(PacketMessage(packetId, getPayload(it.toByte())))
+            deviceServer.write(
+                packetId,
+                getPayload(payloadSize, byteArrayOf(it.toByte()))
+            ).unsafeRunSync()
         }
     }
 
     val roundTripTimes = (0..1000).map {
         measureNanoTime {
-            deviceServer.method(PacketMessage(packetId, getPayload(it.toByte())))
+            deviceServer.write(
+                packetId,
+                getPayload(payloadSize, byteArrayOf(it.toByte()))
+            ).unsafeRunSync()
         }
     }
 

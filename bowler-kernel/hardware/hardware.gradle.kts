@@ -19,6 +19,7 @@ dependencies {
     )
 
     api(project(":bowler-kernel:util"))
+    api(project(":bowler-kernel:device-server"))
 
     api(arrow("arrow-core-data"))
     api(arrow("arrow-core-extensions"))

@@ -22,6 +22,12 @@ class MockTransportLayer : TransportLayer {
     val reads = ArrayDeque<ByteArray>()
     val writes = ArrayDeque<ByteArray>()
 
+    override fun connect() {
+    }
+
+    override fun disconnect() {
+    }
+
     override fun readBytes(): ByteArray = reads.pop()
 
     override fun writeBytes(data: ByteArray) {

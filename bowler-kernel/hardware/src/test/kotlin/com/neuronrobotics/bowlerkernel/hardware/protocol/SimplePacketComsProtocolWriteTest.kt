@@ -16,6 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
+import com.neuronrobotics.bowlerkernel.deviceserver.getPayload
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
@@ -32,10 +33,10 @@ import org.octogonapus.ktguava.collections.immutableListOf
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class SimplePacketComsProtocolWriteTest {
 
-    private val device = MockDevice()
+    private val server = MockDeviceServer()
 
     private val protocol = SimplePacketComsProtocol(
-        comms = device,
+        server = server,
         resourceIdValidator = DefaultResourceIdValidator()
     )
 
@@ -49,16 +50,17 @@ internal class SimplePacketComsProtocolWriteTest {
         setupWrite()
 
         // Do a write
-        protocolTest(protocol, device) {
+        protocolTest(protocol, server) {
             operation {
-                it.digitalWrite(led, DigitalState.HIGH)
+                val result = it.digitalWrite(led, DigitalState.HIGH).attempt().unsafeRunSync()
+                assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
-                    getPayload(1)
+                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(1))
                 )
             } deviceResponds {
                 immutableListOf(
-                    getPayload()
+                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE)
                 )
             }
         }
@@ -66,11 +68,11 @@ internal class SimplePacketComsProtocolWriteTest {
 
     @Test
     fun `test writing without discovery first`() {
-        protocolTest(protocol, device) {
+        protocolTest(protocol, server) {
             operation {
                 // Test a write with missing members
                 assertThrows<IllegalArgumentException> {
-                    protocol.digitalWrite(led, DigitalState.HIGH)
+                    protocol.digitalWrite(led, DigitalState.HIGH).unsafeRunSync()
                 }
             } pcSends {
                 emptyImmutableList()
@@ -82,17 +84,20 @@ internal class SimplePacketComsProtocolWriteTest {
 
     @Test
     fun `test addWrite failure`() {
-        protocolTest(protocol, device) {
+        protocolTest(protocol, server) {
             operation {
-                val result = it.addWrite(led)
+                val result = it.addWrite(led).attempt().unsafeRunSync()
                 assertTrue(result.isLeft())
             } pcSends {
                 immutableListOf(
-                    getPayload(1, 2, 2, 1, 32)
+                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(1, 2, 2, 1, 32))
                 )
             } deviceResponds {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC)
+                    getPayload(
+                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC)
+                    )
                 )
             }
         }
@@ -100,22 +105,28 @@ internal class SimplePacketComsProtocolWriteTest {
 
     @Test
     fun `test writing servo with pwm pin`() {
-        protocolTest(protocol, device) {
+        protocolTest(protocol, server) {
             operation {
                 val result = it.addWrite(
                     ResourceId(
                         DefaultResourceTypes.Servo,
                         DefaultAttachmentPoints.PwmPin(1, 544, 2400, 16)
                     )
-                )
+                ).attempt().unsafeRunSync()
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
-                    getPayload(1, 2, 6, 4, 1, 2, 32, 9, 96, 16)
+                    getPayload(
+                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(1, 2, 6, 4, 1, 2, 32, 9, 96, 16)
+                    )
                 )
             } deviceResponds {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                    getPayload(
+                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                    )
                 )
             }
         }
@@ -128,44 +139,54 @@ internal class SimplePacketComsProtocolWriteTest {
             DefaultAttachmentPoints.Pin(7)
         )
 
-        protocolTest(protocol, device) {
+        protocolTest(protocol, server) {
             operation {
-                val result = it.addWrite(id)
+                val result = it.addWrite(id).attempt().unsafeRunSync()
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
-                    getPayload(1, 2, 2, 1, 7)
+                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(1, 2, 2, 1, 7))
                 )
             } deviceResponds {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                    getPayload(
+                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                    )
                 )
             }
         }
 
-        protocolTest(protocol, device) {
+        protocolTest(protocol, server) {
             operation {
-                it.genericWrite(id, getPayload(1))
+                val result = it.genericWrite(
+                    id,
+                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(1))
+                ).attempt().unsafeRunSync()
+                assertTrue(result.isRight())
             } pcSends {
-                immutableListOf(getPayload(1))
+                immutableListOf(getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(1)))
             } deviceResponds {
-                immutableListOf(getPayload())
+                immutableListOf(getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf()))
             }
         }
     }
 
     private fun setupWrite() {
-        protocolTest(protocol, device) {
+        protocolTest(protocol, server) {
             operation {
-                val result = it.addWrite(led)
+                val result = it.addWrite(led).attempt().unsafeRunSync()
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
-                    getPayload(1, 2, 2, 1, 32)
+                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(1, 2, 2, 1, 32))
                 )
             } deviceResponds {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                    getPayload(
+                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                    )
                 )
             }
         }

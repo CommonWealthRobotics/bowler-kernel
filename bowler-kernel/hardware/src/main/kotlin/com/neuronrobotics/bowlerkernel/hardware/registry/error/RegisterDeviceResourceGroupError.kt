@@ -48,4 +48,10 @@ sealed class RegisterDeviceResourceGroupError : RegisterError {
      */
     data class ResourceGroupMemberOutsideValidRangeError(val resourceIds: ImmutableList<ResourceId>) :
         RegisterDeviceResourceGroupError()
+
+    /**
+     * A generic error.
+     */
+    data class GenericError(val resourceIds: ImmutableList<ResourceId>, val cause: String) :
+        RegisterDeviceResourceGroupError()
 }

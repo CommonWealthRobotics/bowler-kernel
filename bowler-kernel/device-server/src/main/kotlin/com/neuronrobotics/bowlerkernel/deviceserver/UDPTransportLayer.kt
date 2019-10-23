@@ -30,20 +30,29 @@ import java.net.InetAddress
 class UDPTransportLayer(
     private val address: InetAddress,
     private val port: Int,
-    private val timeout: Int = 50
+    private val timeout: Int = 50,
+    private val packetLength: Int = 64
 ) : TransportLayer {
 
     private val sock = DatagramSocket().apply { soTimeout = timeout }
 
+    override fun connect() {
+        // UDP has no connection state
+    }
+
+    override fun disconnect() {
+        // UDP has no connection state
+    }
+
     override fun readBytes(): ByteArray {
-        val receiveData = ByteArray(64)
-        val receivePacket = DatagramPacket(receiveData, 64)
+        val receiveData = ByteArray(packetLength)
+        val receivePacket = DatagramPacket(receiveData, packetLength)
         sock.receive(receivePacket)
         return receivePacket.data
     }
 
     override fun writeBytes(data: ByteArray) {
-        val packet = DatagramPacket(data, data.size, address, port)
+        val packet = DatagramPacket(data, packetLength, address, port)
         sock.send(packet)
     }
 }

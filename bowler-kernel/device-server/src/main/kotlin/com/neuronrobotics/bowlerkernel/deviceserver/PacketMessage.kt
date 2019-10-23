@@ -29,12 +29,6 @@ data class PacketMessage(
     val payload: ByteArray
 ) {
 
-    init {
-        require(payload.size == 61) {
-            "The payload must have size 61 (was ${payload.size})."
-        }
-    }
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is PacketMessage) return false

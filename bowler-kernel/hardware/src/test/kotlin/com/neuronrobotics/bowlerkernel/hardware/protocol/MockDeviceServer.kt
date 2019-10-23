@@ -14,17 +14,29 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup
+package com.neuronrobotics.bowlerkernel.hardware.protocol
 
 import arrow.effects.IO
+import com.neuronrobotics.bowlerkernel.deviceserver.DeviceServer
+import java.util.ArrayDeque
 
-interface Ultrasonic :
-    ProvisionedDeviceResource {
+internal class MockDeviceServer : DeviceServer {
 
-    /**
-     * Reads the current distance measurement. If no object was found, this returns 0.
-     *
-     * @return The current distance.
-     */
-    fun read(): IO<Long>
+    val reads = ArrayDeque<ByteArray>()
+    val writes = ArrayDeque<Pair<Byte, ByteArray>>()
+
+    override fun connect(): IO<Unit> = IO.just(Unit)
+
+    override fun disconnect(): IO<Unit> = IO.just(Unit)
+
+    override fun addReliable(id: Byte) {
+    }
+
+    override fun addUnreliable(id: Byte, maxRetries: Int) {
+    }
+
+    override fun write(id: Byte, payload: ByteArray) = IO {
+        writes.addLast(id to payload)
+        reads.pop()
+    }
 }

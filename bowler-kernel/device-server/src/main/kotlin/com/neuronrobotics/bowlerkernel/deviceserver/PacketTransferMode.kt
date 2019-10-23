@@ -14,17 +14,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup
+package com.neuronrobotics.bowlerkernel.deviceserver
 
-import arrow.effects.IO
-
-interface Ultrasonic :
-    ProvisionedDeviceResource {
-
-    /**
-     * Reads the current distance measurement. If no object was found, this returns 0.
-     *
-     * @return The current distance.
-     */
-    fun read(): IO<Long>
+enum class PacketTransferMode {
+    Reliable, Unreliable
 }

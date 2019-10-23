@@ -16,7 +16,8 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
-import arrow.core.Either
+import arrow.effects.IO
+import com.neuronrobotics.bowlerkernel.deviceserver.getPayload
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
@@ -34,10 +35,10 @@ import org.octogonapus.ktguava.collections.immutableListOf
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class SimplePacketComsProtocolReadTest {
 
-    private val device = MockDevice()
+    private val server = MockDeviceServer()
 
     private val protocol = SimplePacketComsProtocol(
-        comms = device,
+        server = server,
         resourceIdValidator = DefaultResourceIdValidator()
     )
 
@@ -52,59 +53,32 @@ internal class SimplePacketComsProtocolReadTest {
     }
 
     @Test
-    fun `test adding a polling read`() {
-        device.pollingPayload = getPayload()
-        setupPollingRead(lineSensor)
-        device.pollingLatch.await()
-    }
-
-    @Test
     fun `test reading`() {
         setupRead(lineSensor)
 
-        protocolTest(protocol, device) {
+        protocolTest(protocol, server) {
             operation {
-                val result = it.analogRead(lineSensor)
+                val result = it.analogRead(lineSensor).unsafeRunSync()
                 assertEquals(1.0, result)
             } pcSends {
                 immutableListOf(
-                    getPayload()
+                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE)
                 )
             } deviceResponds {
                 immutableListOf(
-                    getPayload(0, 1)
+                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(0, 1))
                 )
-            }
-        }
-    }
-
-    @Test
-    fun `test reading with polling`() {
-        device.pollingPayload = getPayload(0, 1)
-        setupPollingRead(lineSensor)
-        device.pollingLatch.await()
-
-        protocolTest(protocol, device) {
-            operation {
-                val result = it.analogRead(lineSensor)
-                assertEquals(1.0, result)
-            } pcSends {
-                immutableListOf(
-                    getPayload()
-                )
-            } deviceResponds {
-                immutableListOf()
             }
         }
     }
 
     @Test
     fun `test reading without discovery first`() {
-        protocolTest(protocol, device) {
+        protocolTest(protocol, server) {
             operation {
                 // Test a write with missing members
                 assertThrows<IllegalArgumentException> {
-                    protocol.analogRead(lineSensor)
+                    protocol.analogRead(lineSensor).unsafeRunSync()
                 }
             } pcSends {
                 emptyImmutableList()
@@ -117,17 +91,20 @@ internal class SimplePacketComsProtocolReadTest {
     @Test
     fun `test addRead failure`() {
         // Discover a read group
-        protocolTest(protocol, device) {
+        protocolTest(protocol, server) {
             operation {
-                val result = it.addRead(lineSensor)
+                val result = it.addRead(lineSensor).attempt().unsafeRunSync()
                 assertTrue(result.isLeft())
             } pcSends {
                 immutableListOf(
-                    getPayload(1, 2, 3, 1, 32)
+                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(1, 2, 3, 1, 32))
                 )
             } deviceResponds {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC)
+                    getPayload(
+                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC)
+                    )
                 )
             }
         }
@@ -140,28 +117,31 @@ internal class SimplePacketComsProtocolReadTest {
             DefaultAttachmentPoints.Pin(7)
         )
 
-        protocolTest(protocol, device) {
+        protocolTest(protocol, server) {
             operation {
-                val result = it.addRead(id)
+                val result = it.addRead(id).attempt().unsafeRunSync()
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
-                    getPayload(1, 2, 3, 1, 7)
+                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(1, 2, 3, 1, 7))
                 )
             } deviceResponds {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                    getPayload(
+                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                    )
                 )
             }
         }
 
-        val response = getPayload(1, 2)
-        protocolTest(protocol, device) {
+        val response = getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(1, 2))
+        protocolTest(protocol, server) {
             operation {
-                val result = it.genericRead(id)
+                val result = it.genericRead(id).unsafeRunSync()
                 assertArrayEquals(response, result)
             } pcSends {
-                immutableListOf(getPayload())
+                immutableListOf(getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf()))
             } deviceResponds {
                 immutableListOf(response)
             }
@@ -171,30 +151,33 @@ internal class SimplePacketComsProtocolReadTest {
     private fun setupRead(resourceId: ResourceId) =
         setupReadImpl(resourceId) { addRead(resourceId) }
 
-    private fun setupPollingRead(resourceId: ResourceId) =
-        setupReadImpl(resourceId) { addPollingRead(resourceId) }
-
     private fun setupReadImpl(
         resourceId: ResourceId,
-        operation: SimplePacketComsProtocol.() -> Either<String, Unit>
+        operation: SimplePacketComsProtocol.() -> IO<Unit>
     ) {
-        protocolTest(protocol, device) {
+        protocolTest(protocol, server) {
             operation {
-                val result = it.operation()
+                val result = it.operation().attempt().unsafeRunSync()
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
                     getPayload(
-                        1,
-                        2,
-                        resourceId.resourceType.type,
-                        resourceId.attachmentPoint.type,
-                        *resourceId.attachmentPoint.data
+                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            1,
+                            2,
+                            resourceId.resourceType.type,
+                            resourceId.attachmentPoint.type,
+                            *resourceId.attachmentPoint.data
+                        )
                     )
                 )
             } deviceResponds {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                    getPayload(
+                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                    )
                 )
             }
         }

@@ -16,7 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
-import arrow.core.Either
+import arrow.effects.IO
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
@@ -35,37 +35,21 @@ interface BowlerRPCProtocol {
      *
      * @return An error if there is a connection problem.
      */
-    fun connect(): Either<String, Unit>
+    fun connect(): IO<Unit>
 
     /**
      * Closes the persistent connection to the device. Does nothing if there is no connection open.
      *
      * @return An error if there is a disconnect problem.
      */
-    fun disconnect(): Either<String, Unit>
-
-    /**
-     * Adds a read resource which is constantly polled.
-     *
-     * @return An error if there is a problem.
-     */
-    fun addPollingRead(resourceId: ResourceId): Either<String, Unit>
-
-    /**
-     * Adds a group of read resources which is constantly polled. All resources in the group are
-     * read from at the same time. If any resources are already polling reads, they are moved
-     * into this group instead.
-     *
-     * @return An error if there is a problem.
-     */
-    fun addPollingReadGroup(resourceIds: ImmutableSet<ResourceId>): Either<String, Unit>
+    fun disconnect(): IO<Unit>
 
     /**
      * Adds a read resource.
      *
      * @return An error if there is a problem.
      */
-    fun addRead(resourceId: ResourceId): Either<String, Unit>
+    fun addRead(resourceId: ResourceId): IO<Unit>
 
     /**
      * Adds a group of read resources. All resources in the group are read from at the same time.
@@ -73,14 +57,14 @@ interface BowlerRPCProtocol {
      *
      * @return An error if there is a problem.
      */
-    fun addReadGroup(resourceIds: ImmutableSet<ResourceId>): Either<String, Unit>
+    fun addReadGroup(resourceIds: ImmutableSet<ResourceId>): IO<Unit>
 
     /**
      * Adds a write resource.
      *
      * @return An error if there is a problem.
      */
-    fun addWrite(resourceId: ResourceId): Either<String, Unit>
+    fun addWrite(resourceId: ResourceId): IO<Unit>
 
     /**
      * Adds a group of write resources. All resources in the group are written to at the same
@@ -88,7 +72,7 @@ interface BowlerRPCProtocol {
      *
      * @return An error if there is a problem.
      */
-    fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>): Either<String, Unit>
+    fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>): IO<Unit>
 
     /**
      * Queries whether the [resourceId] is in the valid range of resources for this device.
@@ -96,14 +80,14 @@ interface BowlerRPCProtocol {
      * @param resourceId The id of a resource on this device.
      * @return Whether the resource id is in the valid range of resources for this device.
      */
-    fun isResourceInRange(resourceId: ResourceId): Boolean
+    fun isResourceInRange(resourceId: ResourceId): IO<Boolean>
 
     /**
      * Queries the device's Bowler RPC protocol version.
      *
      * @return The protocol version string.
      */
-    fun readProtocolVersion(): String
+    fun readProtocolVersion(): IO<String>
 
     /**
      * Performs an analog read.
@@ -111,7 +95,7 @@ interface BowlerRPCProtocol {
      * @param resourceId The id of a resource on this device.
      * @return The analog value.
      */
-    fun analogRead(resourceId: ResourceId): Double
+    fun analogRead(resourceId: ResourceId): IO<Double>
 
     /**
      * Performs an analog read.
@@ -119,7 +103,7 @@ interface BowlerRPCProtocol {
      * @param resourceIds The resources in the group.
      * @return The analog values in the same order as [resourceIds].
      */
-    fun analogRead(resourceIds: List<ResourceId>): List<Double>
+    fun analogRead(resourceIds: List<ResourceId>): IO<List<Double>>
 
     /**
      * Performs an analog write.
@@ -127,14 +111,14 @@ interface BowlerRPCProtocol {
      * @param resourceId The id of a resource on this device.
      * @param value The analog value.
      */
-    fun analogWrite(resourceId: ResourceId, value: Short)
+    fun analogWrite(resourceId: ResourceId, value: Short): IO<Unit>
 
     /**
      * Performs an analog write.
      *
      * @param resourcesAndValues The resources paired with their values.
      */
-    fun analogWrite(resourcesAndValues: List<Pair<ResourceId, Short>>)
+    fun analogWrite(resourcesAndValues: List<Pair<ResourceId, Short>>): IO<Unit>
 
     /**
      * Performs a debounced button read.
@@ -142,7 +126,7 @@ interface BowlerRPCProtocol {
      * @param resourceId The id of a resource on this device.
      * @return Whether the button is pressed.
      */
-    fun buttonRead(resourceId: ResourceId): Boolean
+    fun buttonRead(resourceId: ResourceId): IO<Boolean>
 
     /**
      * Performs a debounced button read.
@@ -150,7 +134,7 @@ interface BowlerRPCProtocol {
      * @param resourceIds The resources in the group.
      * @return The whether the buttons are pressed, in the same order as [resourceIds].
      */
-    fun buttonRead(resourceIds: List<ResourceId>): List<Boolean>
+    fun buttonRead(resourceIds: List<ResourceId>): IO<List<Boolean>>
 
     /**
      * Performs a digital read.
@@ -158,7 +142,7 @@ interface BowlerRPCProtocol {
      * @param resourceId The id of a resource on this device.
      * @return The digital value.
      */
-    fun digitalRead(resourceId: ResourceId): DigitalState
+    fun digitalRead(resourceId: ResourceId): IO<DigitalState>
 
     /**
      * Performs a digital read.
@@ -166,7 +150,7 @@ interface BowlerRPCProtocol {
      * @param resourceIds The resources in the group.
      * @return The digital values in the same order as [resourceIds].
      */
-    fun digitalRead(resourceIds: List<ResourceId>): List<DigitalState>
+    fun digitalRead(resourceIds: List<ResourceId>): IO<List<DigitalState>>
 
     /**
      * Performs a digital write.
@@ -174,14 +158,14 @@ interface BowlerRPCProtocol {
      * @param resourceId The id of a resource on this device.
      * @param value The digital value.
      */
-    fun digitalWrite(resourceId: ResourceId, value: DigitalState)
+    fun digitalWrite(resourceId: ResourceId, value: DigitalState): IO<Unit>
 
     /**
      * Performs a digital write for a group.
      *
      * @param resourcesAndValues The resources paired with their values.
      */
-    fun digitalWrite(resourcesAndValues: List<Pair<ResourceId, DigitalState>>)
+    fun digitalWrite(resourcesAndValues: List<Pair<ResourceId, DigitalState>>): IO<Unit>
 
     /**
      * Performs an encoder read.
@@ -189,7 +173,7 @@ interface BowlerRPCProtocol {
      * @param resourceId The id of a resource on this device.
      * @return The encoder value.
      */
-    fun encoderRead(resourceId: ResourceId): Long
+    fun encoderRead(resourceId: ResourceId): IO<Long>
 
     /**
      * Performs an encoder read.
@@ -197,7 +181,7 @@ interface BowlerRPCProtocol {
      * @param resourceIds The resources in the group.
      * @return The encoder values in the same order as [resourceIds].
      */
-    fun encoderRead(resourceIds: List<ResourceId>): List<Long>
+    fun encoderRead(resourceIds: List<ResourceId>): IO<List<Long>>
 
     /**
      * Performs a tone write.
@@ -205,7 +189,7 @@ interface BowlerRPCProtocol {
      * @param resourceId The id of a resource on this device.
      * @param frequency The frequency, in Hz, of the tone.
      */
-    fun toneWrite(resourceId: ResourceId, frequency: Int)
+    fun toneWrite(resourceId: ResourceId, frequency: Int): IO<Unit>
 
     /**
      * Performs a tone write.
@@ -214,7 +198,7 @@ interface BowlerRPCProtocol {
      * @param frequency The frequency, in Hz, of the tone.
      * @param duration The duration of the tone.
      */
-    fun toneWrite(resourceId: ResourceId, frequency: Int, duration: Long)
+    fun toneWrite(resourceId: ResourceId, frequency: Int, duration: Long): IO<Unit>
 
     /**
      * Performs a serial write.
@@ -222,7 +206,7 @@ interface BowlerRPCProtocol {
      * @param resourceId The id of a resource on this device.
      * @param message The serial message.
      */
-    fun serialWrite(resourceId: ResourceId, message: String)
+    fun serialWrite(resourceId: ResourceId, message: String): IO<Unit>
 
     /**
      * Performs a serial read.
@@ -230,7 +214,7 @@ interface BowlerRPCProtocol {
      * @param resourceId The id of a resource on this device.
      * @return The serial data.
      */
-    fun serialRead(resourceId: ResourceId): String
+    fun serialRead(resourceId: ResourceId): IO<String>
 
     // TODO: Add serialWriteRead
 
@@ -240,14 +224,14 @@ interface BowlerRPCProtocol {
      * @param resourceId The id of a resource on this device.
      * @param angle The servo angle (or speed for a continuous rotation servo).
      */
-    fun servoWrite(resourceId: ResourceId, angle: Double)
+    fun servoWrite(resourceId: ResourceId, angle: Double): IO<Unit>
 
     /**
      * Performs a servo write.
      *
      * @param resourcesAndValues The resources paired with their values.
      */
-    fun servoWrite(resourcesAndValues: List<Pair<ResourceId, Double>>)
+    fun servoWrite(resourcesAndValues: List<Pair<ResourceId, Double>>): IO<Unit>
 
     /**
      * Performs a stepper write.
@@ -256,14 +240,14 @@ interface BowlerRPCProtocol {
      * @param steps The number of steps to travel.
      * @param speed The speed to rotate at.
      */
-    fun stepperWrite(resourceId: ResourceId, steps: Int, speed: Int)
+    fun stepperWrite(resourceId: ResourceId, steps: Int, speed: Int): IO<Unit>
 
     /**
      * Performs a stepper write.
      *
      * @param resourcesAndValues The resources paired with their values.
      */
-    fun stepperWrite(resourcesAndValues: List<Pair<ResourceId, Pair<Int, Int>>>)
+    fun stepperWrite(resourcesAndValues: List<Pair<ResourceId, Pair<Int, Int>>>): IO<Unit>
 
     /**
      * Performs an ultrasonic read.
@@ -271,7 +255,7 @@ interface BowlerRPCProtocol {
      * @param resourceId The id of a resource on this device.
      * @return The raw distance.
      */
-    fun ultrasonicRead(resourceId: ResourceId): Long
+    fun ultrasonicRead(resourceId: ResourceId): IO<Long>
 
     /**
      * Performs an ultrasonic read.
@@ -279,7 +263,7 @@ interface BowlerRPCProtocol {
      * @param resourceIds The resources in the group.
      * @return The raw distances in the same order as [resourceIds].
      */
-    fun ultrasonicRead(resourceIds: List<ResourceId>): List<Long>
+    fun ultrasonicRead(resourceIds: List<ResourceId>): IO<List<Long>>
 
     /**
      * Performs a generic read (returns the entire payload).
@@ -287,7 +271,7 @@ interface BowlerRPCProtocol {
      * @param resourceId The id of a resource on this device.
      * @return The entire read payload.
      */
-    fun genericRead(resourceId: ResourceId): ByteArray
+    fun genericRead(resourceId: ResourceId): IO<ByteArray>
 
     /**
      * Performs a generic read (returns the entire payload).
@@ -295,7 +279,7 @@ interface BowlerRPCProtocol {
      * @param resourceIds The resources in the group.
      * @return The entire read payload.
      */
-    fun genericRead(resourceIds: List<ResourceId>): List<ByteArray>
+    fun genericRead(resourceIds: List<ResourceId>): IO<List<ByteArray>>
 
     /**
      * Performs a generic write (writes the raw payload).
@@ -303,14 +287,14 @@ interface BowlerRPCProtocol {
      * @param resourceId The id of a resource on this device.
      * @param payload The payload to send.
      */
-    fun genericWrite(resourceId: ResourceId, payload: ByteArray)
+    fun genericWrite(resourceId: ResourceId, payload: ByteArray): IO<Unit>
 
     /**
      * Performs a generic write (writes the raw payload).
      *
      * @param resourcesAndValues The resources paired with their payloads.
      */
-    fun genericWrite(resourcesAndValues: List<Pair<ResourceId, ByteArray>>)
+    fun genericWrite(resourcesAndValues: List<Pair<ResourceId, ByteArray>>): IO<Unit>
 
     /**
      * Performs a write and a read in one RPC call (write first, then read).
@@ -319,7 +303,7 @@ interface BowlerRPCProtocol {
      * @param payload The payload to send.
      * @return The entire read payload.
      */
-    fun genericWriteRead(resourceId: ResourceId, payload: ByteArray): ByteArray
+    fun genericWriteRead(resourceId: ResourceId, payload: ByteArray): IO<ByteArray>
 
     /**
      * Performs a write and a read in one RPC call (write first, then read).
@@ -327,5 +311,5 @@ interface BowlerRPCProtocol {
      * @param resourcesAndValues The resources paired with their payloads.
      * @return The entire read payload.
      */
-    fun genericWriteRead(resourcesAndValues: List<Pair<ResourceId, ByteArray>>): List<ByteArray>
+    fun genericWriteRead(resourcesAndValues: List<Pair<ResourceId, ByteArray>>): IO<List<ByteArray>>
 }

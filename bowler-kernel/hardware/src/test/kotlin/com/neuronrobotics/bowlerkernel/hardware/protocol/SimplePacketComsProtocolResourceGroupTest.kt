@@ -18,8 +18,9 @@
 
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
-import arrow.core.Either
+import arrow.effects.IO
 import com.google.common.collect.ImmutableSet
+import com.neuronrobotics.bowlerkernel.deviceserver.getPayload
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
@@ -36,11 +37,11 @@ import org.octogonapus.ktguava.collections.immutableSetOf
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class SimplePacketComsProtocolResourceGroupTest {
 
-    private val device = MockDevice()
+    private val server = MockDeviceServer()
     private val validator = DefaultResourceIdValidator()
 
     private val protocol = SimplePacketComsProtocol(
-        comms = device,
+        server = server,
         resourceIdValidator = validator
     )
 
@@ -49,7 +50,7 @@ internal class SimplePacketComsProtocolResourceGroupTest {
     fun `test DefaultResourceTypes send and receive lengths`(resourceType: DefaultResourceTypes) {
         val addMethod: SimplePacketComsProtocol.(
             resourceIds: ImmutableSet<ResourceId>
-        ) -> Either<String, Unit> =
+        ) -> IO<Unit> =
             when {
                 validator.validateIsReadType(resourceType).isRight() ->
                     SimplePacketComsProtocol::addReadGroup
@@ -60,7 +61,7 @@ internal class SimplePacketComsProtocolResourceGroupTest {
                 else -> fail { "Unknown resource type: $resourceType" }
             }
 
-        protocolTest(protocol, device) {
+        protocolTest(protocol, server) {
             operation {
                 val result = it.addMethod(
                     immutableSetOf(
@@ -69,27 +70,36 @@ internal class SimplePacketComsProtocolResourceGroupTest {
                             DefaultAttachmentPoints.Pin(32)
                         )
                     )
-                )
+                ).attempt().unsafeRunSync()
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
-                    getPayload(2, 1, 2, 1),
+                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(2, 1, 2, 1)),
                     getPayload(
-                        3,
-                        1,
-                        0,
-                        resourceType.sendLength,
-                        0,
-                        resourceType.receiveLength,
-                        resourceType.type,
-                        1,
-                        32
+                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            3,
+                            1,
+                            0,
+                            resourceType.sendLength,
+                            0,
+                            resourceType.receiveLength,
+                            resourceType.type,
+                            1,
+                            32
+                        )
                     )
                 )
             } deviceResponds {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED),
-                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                    getPayload(
+                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                    ),
+                    getPayload(
+                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                    )
                 )
             }
         }

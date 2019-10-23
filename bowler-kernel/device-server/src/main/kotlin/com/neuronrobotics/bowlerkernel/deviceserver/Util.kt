@@ -17,17 +17,15 @@
 package com.neuronrobotics.bowlerkernel.deviceserver
 
 /**
- * Creates a payload using the given [bytes] with padding up to the size of the payload.
+ * Creates a payload. The payload starts with the given [bytes] and is padded with zeroes
+ * to a length of [payloadSize].
  *
- * @param bytes The bytes at the start of the payload
- * @param padding Whether to pad the payload up to the correct size.
+ * @param bytes The first bytes in the payload.
+ * @param payloadSize The required length of a payload.
  * @return The payload.
  */
-fun getPayload(vararg bytes: Byte, padding: Boolean = true): ByteArray =
-    if (padding)
-        bytes + (1..61 - bytes.size).map { 0.toByte() }
-    else
-        bytes
+fun getPayload(payloadSize: Int, bytes: ByteArray = byteArrayOf()): ByteArray =
+    bytes + ByteArray(payloadSize - bytes.size)
 
 internal var ByteArray.id
     get() = this[0]

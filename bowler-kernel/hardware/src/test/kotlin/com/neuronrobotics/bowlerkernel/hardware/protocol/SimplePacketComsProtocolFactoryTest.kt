@@ -41,16 +41,16 @@ internal class SimplePacketComsProtocolFactoryTest {
         )
     }
 
-    @Test
-    fun `test making a protocol with an hid device`() {
-        // Just making sure it works
-        factory.create(
-            DeviceId(
-                DefaultDeviceTypes.UnknownDevice,
-                DefaultConnectionMethods.RawHID(0, 0)
-            )
-        )
-    }
+    // @Test
+    // fun `test making a protocol with an hid device`() {
+    //     // Just making sure it works
+    //     factory.create(
+    //         DeviceId(
+    //             DefaultDeviceTypes.UnknownDevice,
+    //             DefaultConnectionMethods.RawHID(0, 0)
+    //         )
+    //     )
+    // }
 
     @Test
     fun `test making a protocol with an unknown connection type`() {

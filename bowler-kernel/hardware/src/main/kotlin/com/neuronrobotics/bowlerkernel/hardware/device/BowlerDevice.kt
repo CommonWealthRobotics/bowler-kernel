@@ -17,9 +17,13 @@
 package com.neuronrobotics.bowlerkernel.hardware.device
 
 import arrow.core.Either
+import arrow.core.extensions.either.monad.flatMap
 import arrow.core.flatMap
-import arrow.core.left
-import arrow.core.right
+import arrow.effects.IO
+import arrow.effects.extensions.io.semigroup.maybeCombine
+import arrow.effects.liftIO
+import arrow.typeclasses.Semigroup
+import com.google.common.base.Throwables
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.ProvisionedDeviceResourceGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.ProvisionedDeviceResource
@@ -47,50 +51,60 @@ internal constructor(
     override fun disconnect() = bowlerRPCProtocol.disconnect()
 
     override fun isResourceInRange(resourceId: ResourceId) =
-        deviceId.deviceType.isResourceInRange(resourceId) &&
+        IO.just(deviceId.deviceType.isResourceInRange(resourceId)).maybeCombine(
+            object : Semigroup<Boolean> {
+                override fun Boolean.combine(b: Boolean) = this && b
+            },
             bowlerRPCProtocol.isResourceInRange(resourceId)
+        )
 
     override fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
         resource: T
-    ): Either<String, R> {
+    ): IO<R> {
         val id = resource.resourceId
 
-        val readError = resourceIdValidator.validateIsReadType(id.resourceType).flatMap {
-            bowlerRPCProtocol.addRead(id).also {
-                when (it) {
-                    is Either.Left -> return it
-                }
+        val readError = resourceIdValidator.validateIsReadType(id.resourceType).liftIO()
+            .errorOnLeft().flatMap {
+                bowlerRPCProtocol.addRead(id).attempt().errorOnLeft()
             }
-        }
 
-        val writeError = resourceIdValidator.validateIsWriteType(id.resourceType).flatMap {
-            bowlerRPCProtocol.addWrite(id).also {
-                when (it) {
-                    is Either.Left -> return it
-                }
+        val writeError = resourceIdValidator.validateIsWriteType(id.resourceType).liftIO()
+            .errorOnLeft().flatMap {
+                bowlerRPCProtocol.addWrite(id).attempt().errorOnLeft()
             }
-        }
 
-        return when {
-            readError is Either.Left && writeError is Either.Left ->
-                """
-                |Could not add resource because it neither a read type nor a write type:
-                |$resource
-                """.trimMargin().left()
+        return IO.defer {
+            val isRead = readError.attempt().unsafeRunSync()
+            val isWrite = writeError.attempt().unsafeRunSync()
 
-            else -> resource.provision().right()
+            when {
+                isRead is Either.Left && isWrite is Either.Left -> IO.raiseError(
+                    UnsupportedOperationException(
+                        """
+                        |Could not add resource because it neither a read type nor a write type:
+                        |$resource
+                        """.trimMargin()
+                    )
+                )
+
+                else -> IO { resource.provision() }
+            }
         }
     }
 
     @SuppressWarnings("ReturnCount")
     override fun <T : UnprovisionedDeviceResourceGroup<R>, R : ProvisionedDeviceResourceGroup> add(
         resourceGroup: T
-    ): Either<String, R> {
+    ): IO<R> {
         if (resourceGroup.resourceIds.distinct() != resourceGroup.resourceIds) {
-            return """
-                |The provided resource ids must be unique:
-                |${resourceGroup.resourceIds}
-            """.trimMargin().left()
+            return IO.raiseError(
+                UnsupportedOperationException(
+                    """
+                    |The provided resource ids must be unique:
+                    |${resourceGroup.resourceIds}
+                    """.trimMargin()
+                )
+            )
         }
 
         val resourceIds = resourceGroup.resourceIds.toImmutableSet()
@@ -101,12 +115,10 @@ internal constructor(
             acc && elem.isRight()
         }
 
-        if (allReadResources) {
-            bowlerRPCProtocol.addReadGroup(resourceIds).also {
-                when (it) {
-                    is Either.Left -> return it
-                }
-            }
+        val addReadGroupResult = if (allReadResources) {
+            bowlerRPCProtocol.addReadGroup(resourceIds).attempt().errorOnLeft()
+        } else {
+            IO.raiseError(UnsupportedOperationException("The resources are not all read type."))
         }
 
         val allWriteResources = resourceIds.map {
@@ -115,24 +127,47 @@ internal constructor(
             acc && elem.isRight()
         }
 
-        if (allWriteResources) {
-            bowlerRPCProtocol.addWriteGroup(resourceIds).also {
-                when (it) {
-                    is Either.Left -> return it
-                }
-            }
+        val addWriteGroupResult = if (allWriteResources) {
+            bowlerRPCProtocol.addWriteGroup(resourceIds).attempt().errorOnLeft()
+        } else {
+            IO.raiseError(UnsupportedOperationException("The resources are not all write type."))
         }
 
-        return if (!allReadResources && !allWriteResources) {
-            """
-            |Could not add resources because they are neither all read types nor all write
-            |types:
-            |${resourceIds.joinToString(separator = "\n")}
-            """.trimMargin().left()
-        } else {
-            resourceGroup.provision().right()
+        return IO.defer {
+            val readResult = addReadGroupResult.attempt().unsafeRunSync()
+            val writeResult = addWriteGroupResult.attempt().unsafeRunSync()
+
+            when {
+                readResult.isLeft() && writeResult.isLeft() -> IO.raiseError(
+                    UnsupportedOperationException(
+                        """
+                        |Could not add resources because they are neither all read types nor all write types:
+                        |${resourceIds.joinToString(separator = "\n")}
+                        """.trimMargin()
+                    )
+                )
+
+                else -> IO {
+                    resourceGroup.provision()
+                }
+            }
         }
     }
 
     override fun toString() = """BowlerDevice(deviceId=$deviceId)"""
+
+    private fun <A, B> IO<Either<A, B>>.errorOnLeft(): IO<B> = flatMap {
+        when (it) {
+            is Either.Left -> IO.raiseError(
+                UnsupportedOperationException(
+                    when (it.a) {
+                        is Throwable -> Throwables.getStackTraceAsString(it.a as Throwable)
+                        else -> it.a.toString()
+                    }
+                )
+            )
+
+            is Either.Right -> IO.just(it.b)
+        }
+    }
 }

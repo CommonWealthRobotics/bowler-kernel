@@ -16,115 +16,20 @@
  */
 package com.neuronrobotics.bowlerkernel.deviceserver
 
-import java.net.SocketTimeoutException
-import java.util.ArrayDeque
+import arrow.effects.IO
 
-class DeviceServer(
-    private val transportLayer: TransportLayer
-) {
+interface DeviceServer {
 
-    private val sendQueue = ArrayDeque<PacketMessage>()
-    private val receiveQueue = ArrayDeque<PacketMessage>()
-    private var state = States.waitFor0
-    private lateinit var lastMessage: PacketMessage
+    fun connect(): IO<Unit>
 
-    /**
-     * Send the packet and wait for a response using reliable transport.
-     *
-     * @param packetMessage The packet to send.
-     * @return The reply packet.
-     */
-    fun sendReceiveReliable(packetMessage: PacketMessage): PacketMessage {
-        sendQueue.addLast(packetMessage)
+    fun disconnect(): IO<Unit>
 
-        while (receiveQueue.isEmpty()) {
-            loop()
-        }
+    // uses reliable transport
+    fun addReliable(id: Byte)
 
-        return receiveQueue.pop()
-    }
+    // uses unreliable transport
+    fun addUnreliable(id: Byte, maxRetries: Int)
 
-    /**
-     * Send the packet and wait for a response using unreliable transport.
-     *
-     * @param packetMessage The packet to send.
-     * @return The reply packet.
-     */
-    fun sendReceiveUnreliable(packetMessage: PacketMessage, maxRetries: Int = 10): PacketMessage {
-        transportLayer.writeBytes(makePacketData(packetMessage, 0, 0))
-        return try {
-            PacketMessage.fromBytes(transportLayer.readBytes())
-        } catch (ex: SocketTimeoutException) {
-            check(maxRetries > 0)
-            sendReceiveUnreliable(packetMessage, maxRetries - 1)
-        }
-    }
-
-    private fun makePacketData(data: PacketMessage, seqNum: Number, ack: Number): ByteArray {
-        val payload = byteArrayOf(data.packetId, seqNum.toByte(), ack.toByte(), *data.payload)
-        check(payload.size == 64)
-        return payload
-    }
-
-    private fun loop() {
-        when (state) {
-            States.waitFor0 -> {
-                if (sendQueue.isNotEmpty()) {
-                    val message = sendQueue.pop()
-                    lastMessage = message
-                    transportLayer.writeBytes(makePacketData(message, 0, 1))
-                    state = States.waitForAck0
-                }
-            }
-
-            States.waitForAck0 -> {
-                try {
-                    val message = transportLayer.readBytes()
-                    if (message.ack == 0.toByte()) {
-                        // This is the ACK we are looking for
-                        receiveQueue.addLast(PacketMessage.fromBytes(message))
-
-                        state = States.waitFor1
-
-                        // Try to send another message right away
-                        if (sendQueue.isNotEmpty()) {
-                            loop()
-                        }
-                    }
-                } catch (ex: SocketTimeoutException) {
-                    // Timeout waiting for ACK0. Send again.
-                    transportLayer.writeBytes(makePacketData(lastMessage, 0, 1))
-                }
-            }
-
-            States.waitFor1 -> {
-                if (sendQueue.isNotEmpty()) {
-                    val message = sendQueue.pop()
-                    lastMessage = message
-                    transportLayer.writeBytes(makePacketData(message, 1, 0))
-                    state = States.waitForAck1
-                }
-            }
-
-            States.waitForAck1 -> {
-                try {
-                    val message = transportLayer.readBytes()
-                    if (message.ack == 1.toByte()) {
-                        // This is the ACK we are looking for
-                        receiveQueue.addLast(PacketMessage.fromBytes(message))
-
-                        state = States.waitFor0
-
-                        // Try to send another message right away
-                        if (sendQueue.isNotEmpty()) {
-                            loop()
-                        }
-                    }
-                } catch (ex: SocketTimeoutException) {
-                    // Timeout waiting for ACK0. Send again.
-                    transportLayer.writeBytes(makePacketData(lastMessage, 1, 0))
-                }
-            }
-        }
-    }
+    // write to the packet and wait for the reply. uses its transport mode
+    fun write(id: Byte, payload: ByteArray): IO<ByteArray>
 }

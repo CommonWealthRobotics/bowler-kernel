@@ -14,17 +14,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup
+package com.neuronrobotics.bowlerkernel.deviceserver
 
-import arrow.effects.IO
+import java.util.ArrayDeque
 
-interface Ultrasonic :
-    ProvisionedDeviceResource {
-
-    /**
-     * Reads the current distance measurement. If no object was found, this returns 0.
-     *
-     * @return The current distance.
-     */
-    fun read(): IO<Long>
+/**
+ * @param sendQueue The queue to store packets to send in.
+ * @param receiveQueue The queue to receive reply packets in.
+ * @param state The initial RDT state.
+ */
+data class ReliableState(
+    val sendQueue: ArrayDeque<PacketMessage> = ArrayDeque(),
+    val receiveQueue: ArrayDeque<PacketMessage> = ArrayDeque(),
+    var state: States = States.WaitFor0
+) {
+    lateinit var lastMessage: PacketMessage
 }

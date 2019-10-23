@@ -18,6 +18,10 @@ package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.no
 
 import arrow.core.Either
 import arrow.core.left
+import arrow.effects.IO
+import arrow.effects.extensions.io.semigroup.maybeCombine
+import arrow.typeclasses.Semigroup
+import com.google.common.base.Throwables
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.AnalogInGroup
@@ -69,32 +73,58 @@ class UnprovisionedDeviceResourceFactory(
     UnprovisionedDigitalOutGroupFactory,
     UnprovisionedServoGroupFactory {
 
+    // TODO: Make all the factories return IO instead of eagerly computing here
     private fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> makeUnprovisionedResource(
         device: BowlerDevice,
         resourceId: ResourceId,
         makeResource: (BowlerDevice, ResourceId) -> T
-    ): Either<RegisterError, T> {
-        return if (device.isResourceInRange(resourceId)) {
-            registry.registerDeviceResource(device, resourceId, makeResource)
-        } else {
-            RegisterDeviceResourceError.ResourceOutsideValidRangeError(resourceId).left()
-        }
-    }
+    ): Either<RegisterError, T> =
+        device.isResourceInRange(resourceId).attempt().unsafeRunSync().fold(
+            {
+                RegisterDeviceResourceError.GenericError(
+                    resourceId,
+                    Throwables.getStackTraceAsString(it)
+                ).left()
+            },
+            {
+                if (it) {
+                    registry.registerDeviceResource(device, resourceId, makeResource)
+                } else {
+                    RegisterDeviceResourceError.ResourceOutsideValidRangeError(resourceId).left()
+                }
+            }
+        )
 
     @SuppressWarnings("MaxLineLength")
     private fun <T : UnprovisionedDeviceResourceGroup<R>, R : ProvisionedDeviceResourceGroup> makeUnprovisionedResourceGroup(
         device: BowlerDevice,
         resourceIds: ImmutableList<ResourceId>,
         makeResourceGroup: (BowlerDevice, ImmutableList<ResourceId>) -> T
-    ): Either<RegisterError, T> {
-        return if (resourceIds.all { device.isResourceInRange(it) }) {
-            registry.registerDeviceResourceGroup(device, resourceIds, makeResourceGroup)
-        } else {
-            RegisterDeviceResourceGroupError.ResourceGroupMemberOutsideValidRangeError(
-                resourceIds
-            ).left()
-        }
-    }
+    ): Either<RegisterError, T> =
+        resourceIds.map { device.isResourceInRange(it) }.fold(IO.just(true)) { acc, elem ->
+            acc.maybeCombine(
+                object : Semigroup<Boolean> {
+                    override fun Boolean.combine(b: Boolean) = this && b
+                },
+                elem
+            )
+        }.attempt().unsafeRunSync().fold(
+            {
+                RegisterDeviceResourceGroupError.GenericError(
+                    resourceIds,
+                    Throwables.getStackTraceAsString(it)
+                ).left()
+            },
+            {
+                if (it) {
+                    registry.registerDeviceResourceGroup(device, resourceIds, makeResourceGroup)
+                } else {
+                    RegisterDeviceResourceGroupError.ResourceGroupMemberOutsideValidRangeError(
+                        resourceIds
+                    ).left()
+                }
+            }
+        )
 
     override fun makeUnprovisionedAnalogIn(
         device: BowlerDevice,

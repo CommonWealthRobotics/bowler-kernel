@@ -18,9 +18,10 @@
 
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
-import arrow.core.Either
+import arrow.effects.IO
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.isEmpty
+import com.neuronrobotics.bowlerkernel.deviceserver.getPayload
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
@@ -41,17 +42,17 @@ import org.octogonapus.ktguava.collections.immutableSetOf
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class SimplePacketComsProtocolTest {
 
-    private val device = MockDevice()
+    private val server = MockDeviceServer()
 
     private val protocol = SimplePacketComsProtocol(
-        comms = device,
+        server = server,
         resourceIdValidator = DefaultResourceIdValidator()
     )
 
     @ParameterizedTest
     @MethodSource("resourceTypesAreValidatedSource")
     fun `test resource types are validated in add operations`(
-        operation: SimplePacketComsProtocol.() -> Either<String, Unit>
+        operation: SimplePacketComsProtocol.() -> IO<Unit>
     ) {
         assertOperationFailedAndNoInteractionsWithDevice { protocol.operation() }
     }
@@ -69,7 +70,7 @@ internal class SimplePacketComsProtocolTest {
     fun `test starting packet id less than zero`() {
         assertThrows<IllegalArgumentException> {
             SimplePacketComsProtocol(
-                comms = device,
+                server = server,
                 startPacketId = -1,
                 resourceIdValidator = DefaultResourceIdValidator()
             )
@@ -80,7 +81,7 @@ internal class SimplePacketComsProtocolTest {
     fun `test starting packet id equal to discovery packet id`() {
         assertThrows<IllegalArgumentException> {
             SimplePacketComsProtocol(
-                comms = device,
+                server = server,
                 startPacketId = SimplePacketComsProtocol.DISCOVERY_PACKET_ID,
                 resourceIdValidator = DefaultResourceIdValidator()
             )
@@ -91,29 +92,43 @@ internal class SimplePacketComsProtocolTest {
     fun `test discard success before disconnect`() {
         connectProtocol()
 
-        device.readsToSend.addLast(getPayload(SimplePacketComsProtocol.STATUS_DISCARD_IN_PROGRESS))
-        device.readsToSend.addLast(getPayload(SimplePacketComsProtocol.STATUS_DISCARD_IN_PROGRESS))
-        device.readsToSend.addLast(getPayload(SimplePacketComsProtocol.STATUS_DISCARD_COMPLETE))
+        server.reads.addLast(
+            getPayload(
+                SimplePacketComsProtocol.PAYLOAD_SIZE,
+                byteArrayOf(SimplePacketComsProtocol.STATUS_DISCARD_IN_PROGRESS)
+            )
+        )
+        server.reads.addLast(
+            getPayload(
+                SimplePacketComsProtocol.PAYLOAD_SIZE,
+                byteArrayOf(SimplePacketComsProtocol.STATUS_DISCARD_IN_PROGRESS)
+            )
+        )
+        server.reads.addLast(
+            getPayload(
+                SimplePacketComsProtocol.PAYLOAD_SIZE,
+                byteArrayOf(SimplePacketComsProtocol.STATUS_DISCARD_COMPLETE)
+            )
+        )
 
-        val result = disconnectProtocol()
+        assertTrue(protocol.disconnect().attempt().unsafeRunSync().isRight())
 
         assertAll(
-            listOf { assertTrue(result.isRight()) } +
-                device.writesReceived.map {
-                    {
-                        val expected = getPayload(4)
-                        assertArrayEquals(
-                            expected,
-                            it,
-                            """
-                            |The sent payload:
-                            |${it.joinToString()}
-                            |should equal the expected payload:
-                            |${expected.joinToString()}
-                            """.trimMargin()
-                        )
-                    }
+            server.writes.map {
+                {
+                    val expected = getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(4))
+                    assertArrayEquals(
+                        expected,
+                        it.second,
+                        """
+                        |The sent payload:
+                        |${it.second.joinToString()}
+                        |should equal the expected payload:
+                        |${expected.joinToString()}
+                        """.trimMargin()
+                    )
                 }
+            }
         )
     }
 
@@ -121,43 +136,53 @@ internal class SimplePacketComsProtocolTest {
     fun `test discard failure before disconnect`() {
         connectProtocol()
 
-        device.readsToSend.addLast(getPayload(SimplePacketComsProtocol.STATUS_DISCARD_IN_PROGRESS))
-        device.readsToSend.addLast(getPayload(SimplePacketComsProtocol.STATUS_DISCARD_IN_PROGRESS))
-        device.readsToSend.addLast(getPayload(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC))
+        server.reads.addLast(
+            getPayload(
+                SimplePacketComsProtocol.PAYLOAD_SIZE,
+                byteArrayOf(SimplePacketComsProtocol.STATUS_DISCARD_IN_PROGRESS)
+            )
+        )
+        server.reads.addLast(
+            getPayload(
+                SimplePacketComsProtocol.PAYLOAD_SIZE,
+                byteArrayOf(SimplePacketComsProtocol.STATUS_DISCARD_IN_PROGRESS)
+            )
+        )
+        server.reads.addLast(
+            getPayload(
+                SimplePacketComsProtocol.PAYLOAD_SIZE,
+                byteArrayOf(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC)
+            )
+        )
 
-        val result = disconnectProtocol()
-
-        assertTrue(result.isLeft())
+        assertTrue(protocol.disconnect().attempt().unsafeRunSync().isLeft())
     }
 
     @Test
     fun `test total discard failure`() {
         connectProtocol()
 
-        device.readsToSend.addLast(getPayload(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC))
+        server.reads.addLast(
+            getPayload(
+                SimplePacketComsProtocol.PAYLOAD_SIZE,
+                byteArrayOf(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC)
+            )
+        )
 
-        val result = disconnectProtocol()
-
-        assertTrue(result.isLeft())
+        assertTrue(protocol.disconnect().attempt().unsafeRunSync().isLeft())
     }
 
     @Test
     fun `allowed to disconnect with no connection`() {
-        assertTrue(disconnectProtocol().isRight())
+        assertTrue(protocol.disconnect().attempt().unsafeRunSync().isRight())
     }
 
     /**
      * Connects the protocol and asserts it connected properly because no error was returned.
      */
     private fun connectProtocol() {
-        val connection = protocol.connect()
-        assertTrue(connection.isRight())
+        assertTrue(protocol.connect().attempt().unsafeRunSync().isRight())
     }
-
-    /**
-     * Disconnects the protocol.
-     */
-    private fun disconnectProtocol() = protocol.disconnect()
 
     /**
      * Connects the protocol, runs the [operation], and asserts that:
@@ -167,11 +192,11 @@ internal class SimplePacketComsProtocolTest {
      * @param operation The operation to perform.
      */
     private fun assertOperationFailedAndNoInteractionsWithDevice(
-        operation: () -> Either<String, Unit>
+        operation: () -> IO<Unit>
     ) {
         connectProtocol()
 
-        val result = operation()
+        val result = operation().attempt().unsafeRunSync()
 
         assertAll(
             { assertTrue(result.isLeft()) },
@@ -183,7 +208,7 @@ internal class SimplePacketComsProtocolTest {
      * Asserts that no interactions have happened with the device (nothing written).
      */
     private fun assertNoInteractionsWithDevice() {
-        assertThat(device.writesReceived, isEmpty)
+        assertThat(server.writes, isEmpty)
     }
 
     companion object {
@@ -209,10 +234,8 @@ internal class SimplePacketComsProtocolTest {
         @Suppress("unused")
         @JvmStatic
         fun resourceTypesAreValidatedSource() =
-            listOf<SimplePacketComsProtocol.() -> Either<String, Unit>>(
+            listOf<SimplePacketComsProtocol.() -> IO<Unit>>(
                 { addRead(getWritable()) },
-                { addPollingRead(getWritable()) },
-                { addPollingReadGroup(immutableSetOf(getWritable(), getWritable())) },
                 { addReadGroup(immutableSetOf(getWritable(), getWritable())) },
                 { addWrite(getReadable()) },
                 { addWriteGroup(immutableSetOf(getReadable(), getReadable())) }

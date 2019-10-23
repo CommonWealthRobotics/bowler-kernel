@@ -16,11 +16,11 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
+import com.neuronrobotics.bowlerkernel.deviceserver.DefaultDeviceServer
+import com.neuronrobotics.bowlerkernel.deviceserver.UDPTransportLayer
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceIdValidator
-import edu.wpi.SimplePacketComs.phy.HIDSimplePacketComs
-import edu.wpi.SimplePacketComs.phy.UDPSimplePacketComs
 import mu.KotlinLogging
 
 /**
@@ -43,37 +43,27 @@ class SimplePacketComsProtocolFactory(
      * @param startPacketId The start packet id.
      * @return The new [SimplePacketComsProtocol].
      */
-    fun create(deviceId: DeviceId, startPacketId: Int): BowlerRPCProtocol {
+    fun create(deviceId: DeviceId, startPacketId: Byte): BowlerRPCProtocol {
         val connectionMethod = deviceId.connectionMethod
 
         return if (connectionMethod is DefaultConnectionMethods) {
             when (connectionMethod) {
                 is DefaultConnectionMethods.InternetAddress ->
                     SimplePacketComsProtocol(
-                        comms = UDPSimplePacketComs(connectionMethod.inetAddress),
+                        server = DefaultDeviceServer(
+                            UDPTransportLayer(
+                                connectionMethod.inetAddress,
+                                1866,
+                                SimplePacketComsProtocol.PACKET_SIZE
+                            )
+                        ),
                         startPacketId = startPacketId,
                         resourceIdValidator = resourceIdValidator
                     )
 
-                is DefaultConnectionMethods.DeviceName -> {
-                    val addresses = UDPSimplePacketComs.getAllAddresses(connectionMethod.name)
-                    LOGGER.info {
-                        "Found addresses matching ${connectionMethod.name}: ${addresses.joinToString()}"
-                    }
+                is DefaultConnectionMethods.DeviceName -> TODO()
 
-                    SimplePacketComsProtocol(
-                        comms = UDPSimplePacketComs(addresses.first()),
-                        startPacketId = startPacketId,
-                        resourceIdValidator = resourceIdValidator
-                    )
-                }
-
-                is DefaultConnectionMethods.RawHID ->
-                    SimplePacketComsProtocol(
-                        comms = HIDSimplePacketComs(connectionMethod.vid, connectionMethod.pid),
-                        startPacketId = startPacketId,
-                        resourceIdValidator = resourceIdValidator
-                    )
+                is DefaultConnectionMethods.RawHID -> TODO()
             }
         } else {
             throw UnsupportedOperationException(

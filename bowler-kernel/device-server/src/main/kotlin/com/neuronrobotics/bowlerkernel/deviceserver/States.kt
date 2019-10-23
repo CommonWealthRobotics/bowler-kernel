@@ -17,5 +17,5 @@
 package com.neuronrobotics.bowlerkernel.deviceserver
 
 enum class States {
-    waitFor0, waitForAck0, waitFor1, waitForAck1
+    WaitFor0, WaitForAck0, WaitFor1, WaitForAck1
 }

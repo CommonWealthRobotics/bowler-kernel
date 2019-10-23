@@ -16,7 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.device
 
-import arrow.core.Either
+import arrow.effects.IO
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.ProvisionedDeviceResourceGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.ProvisionedDeviceResource
@@ -37,7 +37,7 @@ interface Device {
      *
      * @return An error if there is a connection problem.
      */
-    fun connect(): Either<String, Unit>
+    fun connect(): IO<Unit>
 
     /**
      * Closes the persistent connection to the device. Does nothing if there is no connection open.
@@ -45,7 +45,7 @@ interface Device {
      *
      * @return An error if there is a disconnect problem.
      */
-    fun disconnect(): Either<String, Unit>
+    fun disconnect(): IO<Unit>
 
     /**
      * Returns whether the [resourceId] is in the valid range of resources for this device.
@@ -53,23 +53,21 @@ interface Device {
      * @param resourceId The id of a resource on this device.
      * @return Whether the resource id is in the valid range of resources for this device.
      */
-    fun isResourceInRange(resourceId: ResourceId): Boolean
+    fun isResourceInRange(resourceId: ResourceId): IO<Boolean>
 
     /**
      * Adds the [resource] to the device.
      *
-     * @return The provisioned resource, or an error.
+     * @return The provisioned resource.
      */
-    fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
-        resource: T
-    ): Either<String, R>
+    fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(resource: T): IO<R>
 
     /**
      * Adds the [resourceGroup] to the device.
      *
-     * @return The provisioned resource group, or an error.
+     * @return The provisioned resource group.
      */
     fun <T : UnprovisionedDeviceResourceGroup<R>, R : ProvisionedDeviceResourceGroup> add(
         resourceGroup: T
-    ): Either<String, R>
+    ): IO<R>
 }
