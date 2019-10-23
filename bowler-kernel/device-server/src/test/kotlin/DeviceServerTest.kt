@@ -19,7 +19,7 @@ import com.neuronrobotics.bowlerkernel.deviceserver.getPayload
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 
-internal class UdpDeviceServerIntegTest {
+internal class DeviceServerTest {
 
     private val payloadSize = 61
 
