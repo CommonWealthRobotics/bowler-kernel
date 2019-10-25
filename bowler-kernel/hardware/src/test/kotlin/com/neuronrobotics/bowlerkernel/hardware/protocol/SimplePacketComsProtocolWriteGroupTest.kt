@@ -181,7 +181,12 @@ internal class SimplePacketComsProtocolWriteGroupTest {
                 assertTrue(result.isLeft())
             } pcSends {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(2, 1, 2, 2))
+                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(
+                            SimplePacketComsProtocol.OPERATION_GROUP_DISCOVERY_ID,
+                            1,
+                            SimplePacketComsProtocol.DEFAULT_START_PACKET_ID,
+                            2
+                        ))
                 )
             } deviceResponds {
                 immutableListOf(
@@ -202,14 +207,19 @@ internal class SimplePacketComsProtocolWriteGroupTest {
                 assertTrue(result.isLeft())
             } pcSends {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(2, 1, 2, 2)),
+                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(
+                            SimplePacketComsProtocol.OPERATION_GROUP_DISCOVERY_ID,
+                            1,
+                            SimplePacketComsProtocol.DEFAULT_START_PACKET_ID,
+                            2
+                        )),
                     getPayload(
                         SimplePacketComsProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(3, 1, 0, 1, 0, 0, 2, 1, 32)
+                        byteArrayOf(SimplePacketComsProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID, 1, 0, 1, 0, 0, 2, 1, 32)
                     ),
                     getPayload(
                         SimplePacketComsProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(3, 1, 1, 2, 0, 0, 2, 1, 33)
+                        byteArrayOf(SimplePacketComsProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID, 1, 1, 2, 0, 0, 2, 1, 33)
                     )
                 )
             } deviceResponds {
@@ -239,11 +249,16 @@ internal class SimplePacketComsProtocolWriteGroupTest {
                 assertTrue(result.isLeft())
             } pcSends {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(2, 1, 2, 2)),
+                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(
+                            SimplePacketComsProtocol.OPERATION_GROUP_DISCOVERY_ID,
+                            1,
+                            SimplePacketComsProtocol.DEFAULT_START_PACKET_ID,
+                            2
+                        )),
                     // This one failing means that led2 should not be discovered
                     getPayload(
                         SimplePacketComsProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(3, 1, 0, 1, 0, 0, 2, 1, 32)
+                        byteArrayOf(SimplePacketComsProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID, 1, 0, 1, 0, 0, 2, 1, 32)
                     )
                 )
             } deviceResponds {
@@ -279,14 +294,19 @@ internal class SimplePacketComsProtocolWriteGroupTest {
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(2, 1, 2, 2)),
+                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(
+                            SimplePacketComsProtocol.OPERATION_GROUP_DISCOVERY_ID,
+                            1,
+                            SimplePacketComsProtocol.DEFAULT_START_PACKET_ID,
+                            2
+                        )),
                     getPayload(
                         SimplePacketComsProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(3, 1, 0, 1, 0, 0, 2, 1, 7)
+                        byteArrayOf(SimplePacketComsProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID, 1, 0, 1, 0, 0, 2, 1, 7)
                     ),
                     getPayload(
                         SimplePacketComsProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(3, 1, 1, 2, 0, 0, 2, 1, 8)
+                        byteArrayOf(SimplePacketComsProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID, 1, 1, 2, 0, 0, 2, 1, 8)
                     )
                 )
             } deviceResponds {
@@ -347,14 +367,19 @@ internal class SimplePacketComsProtocolWriteGroupTest {
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(2, 1, 2, 2)),
+                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(
+                            SimplePacketComsProtocol.OPERATION_GROUP_DISCOVERY_ID,
+                            1,
+                            SimplePacketComsProtocol.DEFAULT_START_PACKET_ID,
+                            2
+                        )),
                     getPayload(
                         SimplePacketComsProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(3, 1, 0, 1, 0, 0, 2, 1, 7)
+                        byteArrayOf(SimplePacketComsProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID, 1, 0, 1, 0, 0, 2, 1, 7)
                     ),
                     getPayload(
                         SimplePacketComsProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(3, 1, 1, 2, 0, 0, 2, 1, 8)
+                        byteArrayOf(SimplePacketComsProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID, 1, 1, 2, 0, 0, 2, 1, 8)
                     )
                 )
             } deviceResponds {
@@ -407,14 +432,19 @@ internal class SimplePacketComsProtocolWriteGroupTest {
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(2, 1, 2, 2)),
+                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(
+                            SimplePacketComsProtocol.OPERATION_GROUP_DISCOVERY_ID,
+                            1,
+                            SimplePacketComsProtocol.DEFAULT_START_PACKET_ID,
+                            2
+                        )),
                     getPayload(
                         SimplePacketComsProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(3, 1, 0, 1, 0, 0, 2, 1, 32)
+                        byteArrayOf(SimplePacketComsProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID, 1, 0, 1, 0, 0, 2, 1, 32)
                     ),
                     getPayload(
                         SimplePacketComsProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(3, 1, 1, 2, 0, 0, 2, 1, 33)
+                        byteArrayOf(SimplePacketComsProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID, 1, 1, 2, 0, 0, 2, 1, 33)
                     )
                 )
             } deviceResponds {

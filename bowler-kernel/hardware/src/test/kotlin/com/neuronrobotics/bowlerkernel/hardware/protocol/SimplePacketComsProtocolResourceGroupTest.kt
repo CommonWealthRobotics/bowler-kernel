@@ -74,11 +74,19 @@ internal class SimplePacketComsProtocolResourceGroupTest {
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(2, 1, 2, 1)),
                     getPayload(
                         SimplePacketComsProtocol.PAYLOAD_SIZE,
                         byteArrayOf(
-                            3,
+                            SimplePacketComsProtocol.OPERATION_GROUP_DISCOVERY_ID,
+                            1,
+                            SimplePacketComsProtocol.DEFAULT_START_PACKET_ID,
+                            1
+                        )
+                    ),
+                    getPayload(
+                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            SimplePacketComsProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID,
                             1,
                             0,
                             resourceType.sendLength,

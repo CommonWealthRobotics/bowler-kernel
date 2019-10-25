@@ -977,7 +977,7 @@ open class SimplePacketComsProtocol(
         /**
          * The id of the discovery packet.
          */
-        const val DISCOVERY_PACKET_ID: Byte = 1
+        const val DISCOVERY_PACKET_ID: Byte = 2
 
         /**
          * The default starting packet id.

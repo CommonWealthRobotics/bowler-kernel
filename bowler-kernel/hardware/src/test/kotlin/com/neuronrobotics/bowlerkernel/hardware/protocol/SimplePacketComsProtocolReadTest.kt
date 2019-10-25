@@ -97,7 +97,14 @@ internal class SimplePacketComsProtocolReadTest {
                 assertTrue(result.isLeft())
             } pcSends {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(1, 2, 3, 1, 32))
+                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            SimplePacketComsProtocol.OPERATION_DISCOVERY_ID,
+                            SimplePacketComsProtocol.DEFAULT_START_PACKET_ID,
+                            3,
+                            1,
+                            32
+                        ))
                 )
             } deviceResponds {
                 immutableListOf(
@@ -123,7 +130,16 @@ internal class SimplePacketComsProtocolReadTest {
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(1, 2, 3, 1, 7))
+                    getPayload(
+                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            SimplePacketComsProtocol.OPERATION_DISCOVERY_ID,
+                            SimplePacketComsProtocol.DEFAULT_START_PACKET_ID,
+                            3,
+                            1,
+                            7
+                        )
+                    )
                 )
             } deviceResponds {
                 immutableListOf(
@@ -164,8 +180,8 @@ internal class SimplePacketComsProtocolReadTest {
                     getPayload(
                         SimplePacketComsProtocol.PAYLOAD_SIZE,
                         byteArrayOf(
-                            1,
-                            2,
+                            SimplePacketComsProtocol.OPERATION_DISCOVERY_ID,
+                            SimplePacketComsProtocol.DEFAULT_START_PACKET_ID,
                             resourceId.resourceType.type,
                             resourceId.attachmentPoint.type,
                             *resourceId.attachmentPoint.data

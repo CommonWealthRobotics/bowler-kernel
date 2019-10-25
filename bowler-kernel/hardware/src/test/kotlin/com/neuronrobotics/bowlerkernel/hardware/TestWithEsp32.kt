@@ -74,7 +74,9 @@ internal class TestWithEsp32 {
         }
 
         val ledGroup = immutableSetOf(led1, led2)
-        rpc.addWriteGroup(ledGroup)
+        rpc.addWriteGroup(ledGroup).attempt().unsafeRunSync().mapLeft {
+            fail { Throwables.getStackTraceAsString(it) }
+        }
 
         repeat(2) {
             rpc.digitalWrite(
@@ -82,7 +84,9 @@ internal class TestWithEsp32 {
                     led1 to DigitalState.HIGH,
                     led2 to DigitalState.LOW
                 )
-            )
+            ).attempt().unsafeRunSync().mapLeft {
+                fail { Throwables.getStackTraceAsString(it) }
+            }
             Thread.sleep(500)
 
             rpc.digitalWrite(
@@ -90,11 +94,15 @@ internal class TestWithEsp32 {
                     led1 to DigitalState.LOW,
                     led2 to DigitalState.HIGH
                 )
-            )
+            ).attempt().unsafeRunSync().mapLeft {
+                fail { Throwables.getStackTraceAsString(it) }
+            }
             Thread.sleep(500)
         }
 
-        println(rpc.disconnect())
+        println(rpc.disconnect().attempt().unsafeRunSync().mapLeft {
+            Throwables.getStackTraceAsString(it)
+        })
     }
 
     @Test
@@ -126,11 +134,15 @@ internal class TestWithEsp32 {
         }
 
         servos.forEach {
-            rpc.addWrite(it)
+            rpc.addWrite(it).attempt().unsafeRunSync().mapLeft {
+                fail { Throwables.getStackTraceAsString(it) }
+            }
             Thread.sleep(100)
         }
 
-        println(rpc.disconnect())
+        println(rpc.disconnect().attempt().unsafeRunSync().mapLeft {
+            Throwables.getStackTraceAsString(it)
+        })
     }
 
     @Test
@@ -162,9 +174,13 @@ internal class TestWithEsp32 {
                 fail { Throwables.getStackTraceAsString(it) }
             }
 
-            rpc.addWrite(it)
+            rpc.addWrite(it).attempt().unsafeRunSync().mapLeft {
+                fail { Throwables.getStackTraceAsString(it) }
+            }
 
-            println(rpc.disconnect())
+            println(rpc.disconnect().attempt().unsafeRunSync().mapLeft {
+                Throwables.getStackTraceAsString(it)
+            })
 
             Thread.sleep(100)
         }
@@ -199,8 +215,12 @@ internal class TestWithEsp32 {
             fail { Throwables.getStackTraceAsString(it) }
         }
 
-        rpc.addWrite(servo)
+        rpc.addWrite(servo).attempt().unsafeRunSync().mapLeft {
+            fail { Throwables.getStackTraceAsString(it) }
+        }
 
-        println(rpc.disconnect())
+        println(rpc.disconnect().attempt().unsafeRunSync().mapLeft {
+            Throwables.getStackTraceAsString(it)
+        })
     }
 }

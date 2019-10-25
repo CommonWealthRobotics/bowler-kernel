@@ -90,7 +90,16 @@ internal class SimplePacketComsProtocolWriteTest {
                 assertTrue(result.isLeft())
             } pcSends {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(1, 2, 2, 1, 32))
+                    getPayload(
+                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            SimplePacketComsProtocol.OPERATION_DISCOVERY_ID,
+                            SimplePacketComsProtocol.DEFAULT_START_PACKET_ID,
+                            2,
+                            1,
+                            32
+                        )
+                    )
                 )
             } deviceResponds {
                 immutableListOf(
@@ -118,7 +127,18 @@ internal class SimplePacketComsProtocolWriteTest {
                 immutableListOf(
                     getPayload(
                         SimplePacketComsProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(1, 2, 6, 4, 1, 2, 32, 9, 96, 16)
+                        byteArrayOf(
+                            SimplePacketComsProtocol.OPERATION_DISCOVERY_ID,
+                            SimplePacketComsProtocol.DEFAULT_START_PACKET_ID,
+                            6,
+                            4,
+                            1,
+                            2,
+                            32,
+                            9,
+                            96,
+                            16
+                        )
                     )
                 )
             } deviceResponds {
@@ -145,7 +165,16 @@ internal class SimplePacketComsProtocolWriteTest {
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(1, 2, 2, 1, 7))
+                    getPayload(
+                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            SimplePacketComsProtocol.OPERATION_DISCOVERY_ID,
+                            SimplePacketComsProtocol.DEFAULT_START_PACKET_ID,
+                            2,
+                            1,
+                            7
+                        )
+                    )
                 )
             } deviceResponds {
                 immutableListOf(
@@ -179,7 +208,16 @@ internal class SimplePacketComsProtocolWriteTest {
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(1, 2, 2, 1, 32))
+                    getPayload(
+                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            SimplePacketComsProtocol.OPERATION_DISCOVERY_ID,
+                            SimplePacketComsProtocol.DEFAULT_START_PACKET_ID,
+                            2,
+                            1,
+                            32
+                        )
+                    )
                 )
             } deviceResponds {
                 immutableListOf(
