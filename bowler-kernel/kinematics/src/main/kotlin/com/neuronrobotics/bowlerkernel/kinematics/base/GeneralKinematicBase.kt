@@ -18,77 +18,63 @@ package com.neuronrobotics.bowlerkernel.kinematics.base
 
 import Jama.Matrix
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.KinematicBaseId
-import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
 import com.neuronrobotics.bowlerkernel.kinematics.graph.KinematicGraph
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
-import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialState
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
 
 /**
  * A [KinematicBase] which uses all bases and limbs in the graph.
  *
  * @param id The id of this base.
- * @param bodyController The body controller this base uses.
  * @param kinematicGraph The kinematic graph containing the base and any other bases or limbs.
  */
 @Suppress("UnstableApiUsage")
 class GeneralKinematicBase(
     override val id: KinematicBaseId,
-    override val bodyController: BodyController,
     private val kinematicGraph: KinematicGraph
 ) : KinematicBase {
-
-    override fun setDesiredWorldSpaceTransformDelta(
-        worldSpaceTransform: FrameTransformation,
-        motionConstraints: MotionConstraints
-    ) {
-        TODO("not implemented")
-    }
-
-    override fun setCurrentWorldSpaceTransform(worldSpaceTransform: FrameTransformation) {
-        TODO("not implemented")
-    }
-
-    override fun getCurrentWorldSpaceTransformWithDelta(): FrameTransformation {
-        TODO("not implemented")
-    }
 
     override fun setDesiredLimbTipTransform(
         limbId: LimbId,
         worldSpaceTransform: FrameTransformation,
+        currentBodyTransform: FrameTransformation,
         motionConstraints: MotionConstraints
     ) {
         TODO("not implemented")
     }
 
-    override fun getCurrentLimbTipTransform(limbId: LimbId): FrameTransformation {
+    override fun getCurrentLimbTipTransform(
+        limbId: LimbId,
+        currentBodyTransform: FrameTransformation
+    ): FrameTransformation {
         TODO("not implemented")
     }
 
-    override fun getDesiredLimbTipTransform(limbId: LimbId): FrameTransformation {
+    override fun getDesiredLimbTipTransform(
+        limbId: LimbId,
+        currentBodyTransform: FrameTransformation
+    ): FrameTransformation {
         TODO("not implemented")
     }
 
     override fun getWorldSpaceTransformInLimbSpace(
         limbId: LimbId,
-        worldSpaceTransform: FrameTransformation
+        worldSpaceTransform: FrameTransformation,
+        currentBodyTransform: FrameTransformation
     ): FrameTransformation {
         TODO("not implemented")
     }
 
     override fun getLimbSpaceTransformInWorldSpace(
         limbId: LimbId,
-        limbSpaceTransform: FrameTransformation
+        limbSpaceTransform: FrameTransformation,
+        currentBodyTransform: FrameTransformation
     ): FrameTransformation {
         TODO("not implemented")
     }
 
     override fun computeJacobian(limbId: LimbId, linkIndex: Int): Matrix {
-        TODO("not implemented")
-    }
-
-    override fun getInertialState(): InertialState {
         TODO("not implemented")
     }
 }

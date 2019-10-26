@@ -25,14 +25,14 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
  */
 object NoopBodyController : BodyController {
 
+    override var currentWorldSpaceTransform = FrameTransformation.identity
+
     @SuppressWarnings("EmptyFunctionBlock")
     override fun setDesiredWorldSpaceTransformDelta(
         worldSpaceTransform: FrameTransformation,
         motionConstraints: MotionConstraints
     ) {
     }
-
-    override fun getDeltaSinceLastDesiredTransform() = FrameTransformation.identity
 
     override fun getInertialState() = InertialState(0)
 }

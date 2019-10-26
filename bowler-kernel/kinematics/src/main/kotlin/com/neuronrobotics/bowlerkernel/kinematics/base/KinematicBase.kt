@@ -18,11 +18,9 @@ package com.neuronrobotics.bowlerkernel.kinematics.base
 
 import Jama.Matrix
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.KinematicBaseId
-import com.neuronrobotics.bowlerkernel.kinematics.closedloop.BodyController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
-import com.neuronrobotics.bowlerkernel.kinematics.motion.InertialState
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
 
 /**
@@ -38,38 +36,6 @@ interface KinematicBase {
     val id: KinematicBaseId
 
     /**
-     * The controller for the body.
-     */
-    val bodyController: BodyController
-
-    /**
-     * Sets a desired world space transform delta this base should try to move by.
-     *
-     * @param worldSpaceTransform The desired world space transform delta.
-     * @param motionConstraints The constraints on the motion to move from the current world
-     * space transform to the desired [worldSpaceTransform].
-     */
-    fun setDesiredWorldSpaceTransformDelta(
-        worldSpaceTransform: FrameTransformation,
-        motionConstraints: MotionConstraints
-    )
-
-    /**
-     * Sets the current world space transform, not including the
-     * [BodyController.getDeltaSinceLastDesiredTransform]. This can be used for error correction
-     * if the transform can be estimated externally or can be used to set a starting position.
-     *
-     * @param worldSpaceTransform The current world space transform.
-     */
-    fun setCurrentWorldSpaceTransform(worldSpaceTransform: FrameTransformation)
-
-    /**
-     * The current world space transform including the
-     * [BodyController.getDeltaSinceLastDesiredTransform].
-     */
-    fun getCurrentWorldSpaceTransformWithDelta(): FrameTransformation
-
-    /**
      * Sets a desired world space transform the limb tip should try to move to.
      *
      * @param limbId The id of the limb.
@@ -80,6 +46,7 @@ interface KinematicBase {
     fun setDesiredLimbTipTransform(
         limbId: LimbId,
         worldSpaceTransform: FrameTransformation,
+        currentBodyTransform: FrameTransformation,
         motionConstraints: MotionConstraints
     )
 
@@ -89,7 +56,10 @@ interface KinematicBase {
      * @param limbId The id of the limb.
      * @return The current limb tip transform in world space.
      */
-    fun getCurrentLimbTipTransform(limbId: LimbId): FrameTransformation
+    fun getCurrentLimbTipTransform(
+        limbId: LimbId,
+        currentBodyTransform: FrameTransformation
+    ): FrameTransformation
 
     /**
      * Reads the desired tip transform of the limb in world space.
@@ -97,7 +67,10 @@ interface KinematicBase {
      * @param limbId The id of the limb.
      * @return The desired limb tip transform in world space.
      */
-    fun getDesiredLimbTipTransform(limbId: LimbId): FrameTransformation
+    fun getDesiredLimbTipTransform(
+        limbId: LimbId,
+        currentBodyTransform: FrameTransformation
+    ): FrameTransformation
 
     /**
      * Calculates the value of a world space transform in limb space. This is what
@@ -109,7 +82,8 @@ interface KinematicBase {
      */
     fun getWorldSpaceTransformInLimbSpace(
         limbId: LimbId,
-        worldSpaceTransform: FrameTransformation
+        worldSpaceTransform: FrameTransformation,
+        currentBodyTransform: FrameTransformation
     ): FrameTransformation
 
     /**
@@ -123,7 +97,8 @@ interface KinematicBase {
      */
     fun getLimbSpaceTransformInWorldSpace(
         limbId: LimbId,
-        limbSpaceTransform: FrameTransformation
+        limbSpaceTransform: FrameTransformation,
+        currentBodyTransform: FrameTransformation
     ): FrameTransformation
 
     /**
@@ -134,11 +109,4 @@ interface KinematicBase {
      * @return The Jacobian matrix.
      */
     fun computeJacobian(limbId: LimbId, linkIndex: Int): Matrix
-
-    /**
-     * Returns the current [InertialState] for this base.
-     *
-     * @return The current [InertialState].
-     */
-    fun getInertialState(): InertialState
 }

@@ -27,6 +27,11 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
 interface BodyController {
 
     /**
+     * The current world space transform (where the base is right now).
+     */
+    var currentWorldSpaceTransform: FrameTransformation
+
+    /**
      * Sets a desired world space transform delta this base should try to move by.
      *
      * @param worldSpaceTransform The desired world space transform delta.
@@ -37,14 +42,6 @@ interface BodyController {
         worldSpaceTransform: FrameTransformation,
         motionConstraints: MotionConstraints
     )
-
-    /**
-     * Returns the world space transform delta since the last set desired world space transform
-     * delta. This is essentially the inverted error of the controller.
-     *
-     * @return The delta transform.
-     */
-    fun getDeltaSinceLastDesiredTransform(): FrameTransformation
 
     /**
      * Returns the current [InertialState] for this body.

@@ -20,7 +20,6 @@ import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.base.DefaultKinematicBase
 import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBase
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
-import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopBodyController
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopLimbJointsController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.DefaultLimb
 import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
@@ -42,7 +41,6 @@ import org.octogonapus.ktguava.collections.toImmutableSet
 internal fun createMockKinematicBase(limbs: ImmutableList<ImmutableList<DhParam>>): KinematicBase {
     return DefaultKinematicBase(
         SimpleKinematicBaseId(""),
-        NoopBodyController,
         limbs.mapIndexed { index, limb ->
             DefaultLimb(
                 SimpleLimbId(index.toString()),
@@ -64,8 +62,7 @@ internal fun createMockKinematicBase(limbs: ImmutableList<ImmutableList<DhParam>
         }.toImmutableSet(),
         limbs.mapIndexed { index, _ ->
             SimpleLimbId(index.toString()) to FrameTransformation.identity
-        }.toImmutableMap(),
-        FrameTransformation.identity
+        }.toImmutableMap()
     )
 }
 
