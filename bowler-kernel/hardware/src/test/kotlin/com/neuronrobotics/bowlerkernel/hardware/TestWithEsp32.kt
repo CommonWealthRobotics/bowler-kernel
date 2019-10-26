@@ -25,7 +25,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Defaul
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocol
+import com.neuronrobotics.bowlerkernel.hardware.protocol.DefaultBowlerRPCProtocol
 import java.net.InetAddress
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -47,7 +47,7 @@ internal class TestWithEsp32 {
             DefaultAttachmentPoints.Pin(33)
         )
 
-        val rpc = SimplePacketComsProtocol(
+        val rpc = DefaultBowlerRPCProtocol(
             server = DefaultDeviceServer(
                 UDPTransportLayer(
                     InetAddress.getByAddress(
@@ -55,7 +55,7 @@ internal class TestWithEsp32 {
                     ),
                     1866
                 ),
-                SimplePacketComsProtocol.PAYLOAD_SIZE
+                DefaultBowlerRPCProtocol.PAYLOAD_SIZE
             ),
             resourceIdValidator = DefaultResourceIdValidator()
         )
@@ -116,7 +116,7 @@ internal class TestWithEsp32 {
             )
         }
 
-        val rpc = SimplePacketComsProtocol(
+        val rpc = DefaultBowlerRPCProtocol(
             server = DefaultDeviceServer(
                 UDPTransportLayer(
                     InetAddress.getByAddress(
@@ -124,7 +124,7 @@ internal class TestWithEsp32 {
                     ),
                     1866
                 ),
-                SimplePacketComsProtocol.PAYLOAD_SIZE
+                DefaultBowlerRPCProtocol.PAYLOAD_SIZE
             ),
             resourceIdValidator = DefaultResourceIdValidator()
         )
@@ -157,7 +157,7 @@ internal class TestWithEsp32 {
             )
         }
 
-        val rpc = SimplePacketComsProtocol(
+        val rpc = DefaultBowlerRPCProtocol(
             server = DefaultDeviceServer(
                 UDPTransportLayer(
                     InetAddress.getByAddress(
@@ -165,7 +165,7 @@ internal class TestWithEsp32 {
                     ),
                     1866
                 ),
-                SimplePacketComsProtocol.PAYLOAD_SIZE
+                DefaultBowlerRPCProtocol.PAYLOAD_SIZE
             ),
             resourceIdValidator = DefaultResourceIdValidator()
         )
@@ -200,7 +200,7 @@ internal class TestWithEsp32 {
             )
         )
 
-        val rpc = SimplePacketComsProtocol(
+        val rpc = DefaultBowlerRPCProtocol(
             server = DefaultDeviceServer(
                 UDPTransportLayer(
                     InetAddress.getByAddress(
@@ -208,7 +208,7 @@ internal class TestWithEsp32 {
                     ),
                     1866
                 ),
-                SimplePacketComsProtocol.PAYLOAD_SIZE
+                DefaultBowlerRPCProtocol.PAYLOAD_SIZE
             ),
             resourceIdValidator = DefaultResourceIdValidator()
         )

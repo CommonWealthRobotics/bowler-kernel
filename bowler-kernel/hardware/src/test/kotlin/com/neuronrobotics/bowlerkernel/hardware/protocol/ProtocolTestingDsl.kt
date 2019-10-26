@@ -34,11 +34,11 @@ internal annotation class ProtocolTestDsl
  */
 @ProtocolTestDsl
 internal class ProtocolScenario(
-    private val protocol: SimplePacketComsProtocol,
+    private val protocol: DefaultBowlerRPCProtocol,
     private val server: MockDeviceServer
 ) {
 
-    private var operation: ((SimplePacketComsProtocol) -> Unit)? = null
+    private var operation: ((DefaultBowlerRPCProtocol) -> Unit)? = null
     private var sendPayloads: ImmutableList<ByteArray>? = null
     private var receivePayloads: ImmutableList<ByteArray>? = null
 
@@ -49,7 +49,7 @@ internal class ProtocolScenario(
      * @param op The operation.
      * @return This scenario.
      */
-    fun operation(op: (SimplePacketComsProtocol) -> Unit): ProtocolScenario {
+    fun operation(op: (DefaultBowlerRPCProtocol) -> Unit): ProtocolScenario {
         operation = op
         return this
     }
@@ -149,7 +149,7 @@ internal class ProtocolScenario(
  */
 @ProtocolTestDsl
 internal fun protocolTest(
-    protocol: SimplePacketComsProtocol,
+    protocol: DefaultBowlerRPCProtocol,
     server: MockDeviceServer,
     configure: ProtocolScenario.() -> Unit
 ) {

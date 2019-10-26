@@ -40,11 +40,11 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.octogonapus.ktguava.collections.immutableSetOf
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
-internal class SimplePacketComsProtocolTest {
+internal class DefaultBowlerRPCProtocolTest {
 
     private val server = MockDeviceServer()
 
-    private val protocol = SimplePacketComsProtocol(
+    private val protocol = DefaultBowlerRPCProtocol(
         server = server,
         resourceIdValidator = DefaultResourceIdValidator()
     )
@@ -52,7 +52,7 @@ internal class SimplePacketComsProtocolTest {
     @ParameterizedTest
     @MethodSource("resourceTypesAreValidatedSource")
     fun `test resource types are validated in add operations`(
-        operation: SimplePacketComsProtocol.() -> IO<Unit>
+        operation: DefaultBowlerRPCProtocol.() -> IO<Unit>
     ) {
         assertOperationFailedAndNoInteractionsWithDevice { protocol.operation() }
     }
@@ -62,14 +62,14 @@ internal class SimplePacketComsProtocolTest {
     fun `test isGreaterThanUnsignedByte`(data: Pair<Int, Boolean>) {
         assertEquals(
             data.second,
-            SimplePacketComsProtocol.isGreaterThanUnsignedByte(data.first)
+            DefaultBowlerRPCProtocol.isGreaterThanUnsignedByte(data.first)
         )
     }
 
     @Test
     fun `test starting packet id less than zero`() {
         assertThrows<IllegalArgumentException> {
-            SimplePacketComsProtocol(
+            DefaultBowlerRPCProtocol(
                 server = server,
                 startPacketId = -1,
                 resourceIdValidator = DefaultResourceIdValidator()
@@ -80,9 +80,9 @@ internal class SimplePacketComsProtocolTest {
     @Test
     fun `test starting packet id equal to discovery packet id`() {
         assertThrows<IllegalArgumentException> {
-            SimplePacketComsProtocol(
+            DefaultBowlerRPCProtocol(
                 server = server,
-                startPacketId = SimplePacketComsProtocol.DISCOVERY_PACKET_ID,
+                startPacketId = DefaultBowlerRPCProtocol.DISCOVERY_PACKET_ID,
                 resourceIdValidator = DefaultResourceIdValidator()
             )
         }
@@ -94,20 +94,20 @@ internal class SimplePacketComsProtocolTest {
 
         server.reads.addLast(
             getPayload(
-                SimplePacketComsProtocol.PAYLOAD_SIZE,
-                byteArrayOf(SimplePacketComsProtocol.STATUS_DISCARD_IN_PROGRESS)
+                DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                byteArrayOf(DefaultBowlerRPCProtocol.STATUS_DISCARD_IN_PROGRESS)
             )
         )
         server.reads.addLast(
             getPayload(
-                SimplePacketComsProtocol.PAYLOAD_SIZE,
-                byteArrayOf(SimplePacketComsProtocol.STATUS_DISCARD_IN_PROGRESS)
+                DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                byteArrayOf(DefaultBowlerRPCProtocol.STATUS_DISCARD_IN_PROGRESS)
             )
         )
         server.reads.addLast(
             getPayload(
-                SimplePacketComsProtocol.PAYLOAD_SIZE,
-                byteArrayOf(SimplePacketComsProtocol.STATUS_DISCARD_COMPLETE)
+                DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                byteArrayOf(DefaultBowlerRPCProtocol.STATUS_DISCARD_COMPLETE)
             )
         )
 
@@ -116,7 +116,7 @@ internal class SimplePacketComsProtocolTest {
         assertAll(
             server.writes.map {
                 {
-                    val expected = getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(4))
+                    val expected = getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(4))
                     assertArrayEquals(
                         expected,
                         it.second,
@@ -138,20 +138,20 @@ internal class SimplePacketComsProtocolTest {
 
         server.reads.addLast(
             getPayload(
-                SimplePacketComsProtocol.PAYLOAD_SIZE,
-                byteArrayOf(SimplePacketComsProtocol.STATUS_DISCARD_IN_PROGRESS)
+                DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                byteArrayOf(DefaultBowlerRPCProtocol.STATUS_DISCARD_IN_PROGRESS)
             )
         )
         server.reads.addLast(
             getPayload(
-                SimplePacketComsProtocol.PAYLOAD_SIZE,
-                byteArrayOf(SimplePacketComsProtocol.STATUS_DISCARD_IN_PROGRESS)
+                DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                byteArrayOf(DefaultBowlerRPCProtocol.STATUS_DISCARD_IN_PROGRESS)
             )
         )
         server.reads.addLast(
             getPayload(
-                SimplePacketComsProtocol.PAYLOAD_SIZE,
-                byteArrayOf(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC)
+                DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                byteArrayOf(DefaultBowlerRPCProtocol.STATUS_REJECTED_GENERIC)
             )
         )
 
@@ -164,8 +164,8 @@ internal class SimplePacketComsProtocolTest {
 
         server.reads.addLast(
             getPayload(
-                SimplePacketComsProtocol.PAYLOAD_SIZE,
-                byteArrayOf(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC)
+                DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                byteArrayOf(DefaultBowlerRPCProtocol.STATUS_REJECTED_GENERIC)
             )
         )
 
@@ -234,7 +234,7 @@ internal class SimplePacketComsProtocolTest {
         @Suppress("unused")
         @JvmStatic
         fun resourceTypesAreValidatedSource() =
-            listOf<SimplePacketComsProtocol.() -> IO<Unit>>(
+            listOf<DefaultBowlerRPCProtocol.() -> IO<Unit>>(
                 { addRead(getWritable()) },
                 { addReadGroup(immutableSetOf(getWritable(), getWritable())) },
                 { addWrite(getReadable()) },

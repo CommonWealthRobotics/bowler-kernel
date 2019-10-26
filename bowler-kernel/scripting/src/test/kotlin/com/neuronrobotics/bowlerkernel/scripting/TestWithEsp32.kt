@@ -26,7 +26,7 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongr
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedDeviceResourceFactory
-import com.neuronrobotics.bowlerkernel.hardware.protocol.SimplePacketComsProtocolFactory
+import com.neuronrobotics.bowlerkernel.hardware.protocol.DefaultBowlerRPCProtocolFactory
 import com.neuronrobotics.bowlerkernel.hardware.registry.HardwareRegistryTracker
 import java.net.InetAddress
 import org.junit.jupiter.api.Disabled
@@ -58,7 +58,7 @@ internal class TestWithEsp32 {
         )
         val device = deviceFactory.makeBowlerDevice(
             deviceId,
-            SimplePacketComsProtocolFactory(
+            DefaultBowlerRPCProtocolFactory(
                 DefaultResourceIdValidator()
             ).create(deviceId)
         ).fold({ fail(it.toString()) }, { it })

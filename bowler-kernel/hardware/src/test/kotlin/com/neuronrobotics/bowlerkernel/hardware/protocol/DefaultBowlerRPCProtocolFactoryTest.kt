@@ -26,9 +26,9 @@ import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
-internal class SimplePacketComsProtocolFactoryTest {
+internal class DefaultBowlerRPCProtocolFactoryTest {
 
-    private val factory = SimplePacketComsProtocolFactory(mock {})
+    private val factory = DefaultBowlerRPCProtocolFactory(mock {})
 
     @Test
     fun `test making a protocol with a udp device`() {

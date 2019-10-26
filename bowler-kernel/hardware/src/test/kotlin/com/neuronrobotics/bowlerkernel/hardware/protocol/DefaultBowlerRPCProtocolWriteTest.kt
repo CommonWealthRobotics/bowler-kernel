@@ -31,11 +31,11 @@ import org.octogonapus.ktguava.collections.emptyImmutableList
 import org.octogonapus.ktguava.collections.immutableListOf
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
-internal class SimplePacketComsProtocolWriteTest {
+internal class DefaultBowlerRPCProtocolWriteTest {
 
     private val server = MockDeviceServer()
 
-    private val protocol = SimplePacketComsProtocol(
+    private val protocol = DefaultBowlerRPCProtocol(
         server = server,
         resourceIdValidator = DefaultResourceIdValidator()
     )
@@ -56,11 +56,11 @@ internal class SimplePacketComsProtocolWriteTest {
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(1))
+                    getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(1))
                 )
             } deviceResponds {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE)
+                    getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE)
                 )
             }
         }
@@ -91,10 +91,10 @@ internal class SimplePacketComsProtocolWriteTest {
             } pcSends {
                 immutableListOf(
                     getPayload(
-                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(
-                            SimplePacketComsProtocol.OPERATION_DISCOVERY_ID,
-                            SimplePacketComsProtocol.DEFAULT_START_PACKET_ID,
+                            DefaultBowlerRPCProtocol.OPERATION_DISCOVERY_ID,
+                            DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
                             2,
                             1,
                             32
@@ -104,8 +104,8 @@ internal class SimplePacketComsProtocolWriteTest {
             } deviceResponds {
                 immutableListOf(
                     getPayload(
-                        SimplePacketComsProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(SimplePacketComsProtocol.STATUS_REJECTED_GENERIC)
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_REJECTED_GENERIC)
                     )
                 )
             }
@@ -126,10 +126,10 @@ internal class SimplePacketComsProtocolWriteTest {
             } pcSends {
                 immutableListOf(
                     getPayload(
-                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(
-                            SimplePacketComsProtocol.OPERATION_DISCOVERY_ID,
-                            SimplePacketComsProtocol.DEFAULT_START_PACKET_ID,
+                            DefaultBowlerRPCProtocol.OPERATION_DISCOVERY_ID,
+                            DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
                             6,
                             4,
                             1,
@@ -144,8 +144,8 @@ internal class SimplePacketComsProtocolWriteTest {
             } deviceResponds {
                 immutableListOf(
                     getPayload(
-                        SimplePacketComsProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
                     )
                 )
             }
@@ -166,10 +166,10 @@ internal class SimplePacketComsProtocolWriteTest {
             } pcSends {
                 immutableListOf(
                     getPayload(
-                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(
-                            SimplePacketComsProtocol.OPERATION_DISCOVERY_ID,
-                            SimplePacketComsProtocol.DEFAULT_START_PACKET_ID,
+                            DefaultBowlerRPCProtocol.OPERATION_DISCOVERY_ID,
+                            DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
                             2,
                             1,
                             7
@@ -179,8 +179,8 @@ internal class SimplePacketComsProtocolWriteTest {
             } deviceResponds {
                 immutableListOf(
                     getPayload(
-                        SimplePacketComsProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
                     )
                 )
             }
@@ -190,13 +190,13 @@ internal class SimplePacketComsProtocolWriteTest {
             operation {
                 val result = it.genericWrite(
                     id,
-                    getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(1))
+                    getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(1))
                 ).attempt().unsafeRunSync()
                 assertTrue(result.isRight())
             } pcSends {
-                immutableListOf(getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf(1)))
+                immutableListOf(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(1)))
             } deviceResponds {
-                immutableListOf(getPayload(SimplePacketComsProtocol.PAYLOAD_SIZE, byteArrayOf()))
+                immutableListOf(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf()))
             }
         }
     }
@@ -209,10 +209,10 @@ internal class SimplePacketComsProtocolWriteTest {
             } pcSends {
                 immutableListOf(
                     getPayload(
-                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(
-                            SimplePacketComsProtocol.OPERATION_DISCOVERY_ID,
-                            SimplePacketComsProtocol.DEFAULT_START_PACKET_ID,
+                            DefaultBowlerRPCProtocol.OPERATION_DISCOVERY_ID,
+                            DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
                             2,
                             1,
                             32
@@ -222,8 +222,8 @@ internal class SimplePacketComsProtocolWriteTest {
             } deviceResponds {
                 immutableListOf(
                     getPayload(
-                        SimplePacketComsProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
                     )
                 )
             }

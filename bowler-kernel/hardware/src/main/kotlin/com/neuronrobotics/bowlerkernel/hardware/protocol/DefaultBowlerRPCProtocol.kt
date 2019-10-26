@@ -44,7 +44,7 @@ import mu.KotlinLogging
 typealias ParseReceivePayload<T> = (ByteArray, Int, Int) -> T
 
 /**
- * An implementation of [BowlerRPCProtocol] using SimplePacketComs. Uses a continuous range of
+ * An implementation of [BowlerRPCProtocol] using [DeviceServer]. Uses a continuous range of
  * packet ids from [getLowestPacketId] through [getHighestPacketId]. Any numbers outside that
  * range are available for other packets.
  *
@@ -54,7 +54,7 @@ typealias ParseReceivePayload<T> = (ByteArray, Int, Int) -> T
  * @param startPacketId The starting id for the packets this class creates.
  */
 @SuppressWarnings("TooManyFunctions")
-open class SimplePacketComsProtocol(
+open class DefaultBowlerRPCProtocol(
     private val server: DeviceServer,
     private val resourceIdValidator: ResourceIdValidator,
     private val startPacketId: Byte = DEFAULT_START_PACKET_ID

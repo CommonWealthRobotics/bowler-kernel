@@ -24,24 +24,24 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.Resour
 import mu.KotlinLogging
 
 /**
- * A [BowlerRPCProtocolFactory] which makes [SimplePacketComsProtocol]. Supports
+ * A [BowlerRPCProtocolFactory] which makes [DefaultBowlerRPCProtocol]. Supports
  * [DefaultConnectionMethods.InternetAddress] and [DefaultConnectionMethods.RawHID].
  *
- * @param resourceIdValidator The resource id validator to give to the [SimplePacketComsProtocol].
+ * @param resourceIdValidator The resource id validator to give to the [DefaultBowlerRPCProtocol].
  */
-class SimplePacketComsProtocolFactory(
+class DefaultBowlerRPCProtocolFactory(
     private val resourceIdValidator: ResourceIdValidator
 ) : BowlerRPCProtocolFactory {
 
     override fun create(deviceId: DeviceId) =
-        create(deviceId, SimplePacketComsProtocol.DEFAULT_START_PACKET_ID)
+        create(deviceId, DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID)
 
     /**
-     * Creates a new [SimplePacketComsProtocol].
+     * Creates a new [DefaultBowlerRPCProtocol].
      *
      * @param deviceId The device id.
      * @param startPacketId The start packet id.
-     * @return The new [SimplePacketComsProtocol].
+     * @return The new [DefaultBowlerRPCProtocol].
      */
     fun create(deviceId: DeviceId, startPacketId: Byte): BowlerRPCProtocol {
         val connectionMethod = deviceId.connectionMethod
@@ -49,14 +49,14 @@ class SimplePacketComsProtocolFactory(
         return if (connectionMethod is DefaultConnectionMethods) {
             when (connectionMethod) {
                 is DefaultConnectionMethods.InternetAddress ->
-                    SimplePacketComsProtocol(
+                    DefaultBowlerRPCProtocol(
                         server = DefaultDeviceServer(
                             UDPTransportLayer(
                                 connectionMethod.inetAddress,
                                 1866,
-                                SimplePacketComsProtocol.PACKET_SIZE
+                                DefaultBowlerRPCProtocol.PACKET_SIZE
                             ),
-                            SimplePacketComsProtocol.PAYLOAD_SIZE
+                            DefaultBowlerRPCProtocol.PAYLOAD_SIZE
                         ),
                         startPacketId = startPacketId,
                         resourceIdValidator = resourceIdValidator
@@ -69,7 +69,7 @@ class SimplePacketComsProtocolFactory(
         } else {
             throw UnsupportedOperationException(
                 """
-                |Cannot construct a SimplePacketComsProtocol from deviceId:
+                |Cannot construct a DefaultBowlerRPCProtocol from deviceId:
                 |$deviceId
                 """.trimMargin()
             )

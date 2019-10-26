@@ -35,12 +35,12 @@ import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableSetOf
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
-internal class SimplePacketComsProtocolResourceGroupTest {
+internal class DefaultBowlerRPCProtocolResourceGroupTest {
 
     private val server = MockDeviceServer()
     private val validator = DefaultResourceIdValidator()
 
-    private val protocol = SimplePacketComsProtocol(
+    private val protocol = DefaultBowlerRPCProtocol(
         server = server,
         resourceIdValidator = validator
     )
@@ -48,15 +48,15 @@ internal class SimplePacketComsProtocolResourceGroupTest {
     @ParameterizedTest
     @MethodSource("defaultResourceTypesSource")
     fun `test DefaultResourceTypes send and receive lengths`(resourceType: DefaultResourceTypes) {
-        val addMethod: SimplePacketComsProtocol.(
+        val addMethod: DefaultBowlerRPCProtocol.(
             resourceIds: ImmutableSet<ResourceId>
         ) -> IO<Unit> =
             when {
                 validator.validateIsReadType(resourceType).isRight() ->
-                    SimplePacketComsProtocol::addReadGroup
+                    DefaultBowlerRPCProtocol::addReadGroup
 
                 validator.validateIsWriteType(resourceType).isRight() ->
-                    SimplePacketComsProtocol::addWriteGroup
+                    DefaultBowlerRPCProtocol::addWriteGroup
 
                 else -> fail { "Unknown resource type: $resourceType" }
             }
@@ -75,18 +75,18 @@ internal class SimplePacketComsProtocolResourceGroupTest {
             } pcSends {
                 immutableListOf(
                     getPayload(
-                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(
-                            SimplePacketComsProtocol.OPERATION_GROUP_DISCOVERY_ID,
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
                             1,
-                            SimplePacketComsProtocol.DEFAULT_START_PACKET_ID,
+                            DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
                             1
                         )
                     ),
                     getPayload(
-                        SimplePacketComsProtocol.PAYLOAD_SIZE,
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(
-                            SimplePacketComsProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID,
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID,
                             1,
                             0,
                             resourceType.sendLength,
@@ -101,12 +101,12 @@ internal class SimplePacketComsProtocolResourceGroupTest {
             } deviceResponds {
                 immutableListOf(
                     getPayload(
-                        SimplePacketComsProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
                     ),
                     getPayload(
-                        SimplePacketComsProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
                     )
                 )
             }
