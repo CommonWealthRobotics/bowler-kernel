@@ -16,7 +16,9 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group
 
+import arrow.effects.IO
+
 interface AnalogInGroup : ProvisionedDeviceResourceGroup {
 
-    fun read(): List<Double>
+    fun read(): IO<List<Double>>
 }

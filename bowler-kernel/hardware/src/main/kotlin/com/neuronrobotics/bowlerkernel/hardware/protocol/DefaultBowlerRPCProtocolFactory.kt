@@ -16,69 +16,60 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
+import com.neuronrobotics.bowlerkernel.deviceserver.DefaultDeviceServer
+import com.neuronrobotics.bowlerkernel.deviceserver.UDPTransportLayer
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceIdValidator
-import edu.wpi.SimplePacketComs.phy.HIDSimplePacketComs
-import edu.wpi.SimplePacketComs.phy.UDPSimplePacketComs
 import mu.KotlinLogging
 
 /**
- * A [BowlerRPCProtocolFactory] which makes [SimplePacketComsProtocol]. Supports
+ * A [BowlerRPCProtocolFactory] which makes [DefaultBowlerRPCProtocol]. Supports
  * [DefaultConnectionMethods.InternetAddress] and [DefaultConnectionMethods.RawHID].
  *
- * @param resourceIdValidator The resource id validator to give to the [SimplePacketComsProtocol].
+ * @param resourceIdValidator The resource id validator to give to the [DefaultBowlerRPCProtocol].
  */
-class SimplePacketComsProtocolFactory(
+class DefaultBowlerRPCProtocolFactory(
     private val resourceIdValidator: ResourceIdValidator
 ) : BowlerRPCProtocolFactory {
 
     override fun create(deviceId: DeviceId) =
-        create(deviceId, SimplePacketComsProtocol.DEFAULT_START_PACKET_ID)
+        create(deviceId, DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID)
 
     /**
-     * Creates a new [SimplePacketComsProtocol].
+     * Creates a new [DefaultBowlerRPCProtocol].
      *
      * @param deviceId The device id.
      * @param startPacketId The start packet id.
-     * @return The new [SimplePacketComsProtocol].
+     * @return The new [DefaultBowlerRPCProtocol].
      */
-    fun create(deviceId: DeviceId, startPacketId: Int): BowlerRPCProtocol {
+    fun create(deviceId: DeviceId, startPacketId: Byte): BowlerRPCProtocol {
         val connectionMethod = deviceId.connectionMethod
 
         return if (connectionMethod is DefaultConnectionMethods) {
             when (connectionMethod) {
                 is DefaultConnectionMethods.InternetAddress ->
-                    SimplePacketComsProtocol(
-                        comms = UDPSimplePacketComs(connectionMethod.inetAddress),
+                    DefaultBowlerRPCProtocol(
+                        server = DefaultDeviceServer(
+                            UDPTransportLayer(
+                                connectionMethod.inetAddress,
+                                1866,
+                                DefaultBowlerRPCProtocol.PACKET_SIZE
+                            ),
+                            DefaultBowlerRPCProtocol.PAYLOAD_SIZE
+                        ),
                         startPacketId = startPacketId,
                         resourceIdValidator = resourceIdValidator
                     )
 
-                is DefaultConnectionMethods.DeviceName -> {
-                    val addresses = UDPSimplePacketComs.getAllAddresses(connectionMethod.name)
-                    LOGGER.info {
-                        "Found addresses matching ${connectionMethod.name}: ${addresses.joinToString()}"
-                    }
+                is DefaultConnectionMethods.DeviceName -> TODO()
 
-                    SimplePacketComsProtocol(
-                        comms = UDPSimplePacketComs(addresses.first()),
-                        startPacketId = startPacketId,
-                        resourceIdValidator = resourceIdValidator
-                    )
-                }
-
-                is DefaultConnectionMethods.RawHID ->
-                    SimplePacketComsProtocol(
-                        comms = HIDSimplePacketComs(connectionMethod.vid, connectionMethod.pid),
-                        startPacketId = startPacketId,
-                        resourceIdValidator = resourceIdValidator
-                    )
+                is DefaultConnectionMethods.RawHID -> TODO()
             }
         } else {
             throw UnsupportedOperationException(
                 """
-                |Cannot construct a SimplePacketComsProtocol from deviceId:
+                |Cannot construct a DefaultBowlerRPCProtocol from deviceId:
                 |$deviceId
                 """.trimMargin()
             )

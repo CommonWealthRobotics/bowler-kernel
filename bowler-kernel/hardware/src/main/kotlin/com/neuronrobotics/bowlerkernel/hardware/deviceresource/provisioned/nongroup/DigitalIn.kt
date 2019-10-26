@@ -16,8 +16,10 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup
 
+import arrow.effects.IO
+
 interface DigitalIn :
     ProvisionedDeviceResource {
 
-    fun read(): DigitalState
+    fun read(): IO<DigitalState>
 }

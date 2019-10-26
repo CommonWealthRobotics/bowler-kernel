@@ -9,9 +9,6 @@ dependencies {
         name = "github-api",
         version = property("github-api.version") as String
     )
-    api(group = "com.neuronrobotics", name = "SimplePacketComsJava", version = "0.9.2")
-    api(group = "com.neuronrobotics", name = "SimplePacketComsJava-HID", version = "0.9.3")
-    api("org.hid4java:hid4java:0.5.0")
     api(
         group = "org.octogonapus",
         name = "kt-guava-core",
@@ -19,6 +16,7 @@ dependencies {
     )
 
     api(project(":bowler-kernel:util"))
+    api(project(":bowler-kernel:device-server"))
 
     api(arrow("arrow-core-data"))
     api(arrow("arrow-core-extensions"))

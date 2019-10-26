@@ -18,6 +18,7 @@ package com.neuronrobotics.bowlerkernel.scripting
 
 import arrow.core.Either
 import arrow.core.extensions.either.monad.binding
+import com.google.common.base.Throwables
 import com.google.common.collect.ImmutableList
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.isEmpty
@@ -96,7 +97,8 @@ internal class HardwareScriptIntegrationTest {
                     mockBowlerRPCProtocol()
                 ).mapLeft { it.toString() }
 
-                device.connect().bind()
+                device.connect().attempt().unsafeRunSync()
+                    .mapLeft { Throwables.getStackTraceAsString(it) }.bind()
 
                 val (ledGroup) = digitalOutGroupFactory.makeUnprovisionedDigitalOutGroup(
                     device,
@@ -106,7 +108,8 @@ internal class HardwareScriptIntegrationTest {
                     )
                 ).mapLeft { it.toString() }
 
-                device.add(ledGroup).bind()
+                device.add(ledGroup).attempt().unsafeRunSync()
+                    .mapLeft { Throwables.getStackTraceAsString(it) }.bind()
 
                 val (servo1) = servoFactory.makeUnprovisionedServo(
                     device,
@@ -114,9 +117,11 @@ internal class HardwareScriptIntegrationTest {
                     ServoLimits(100, 0, 50, 1)
                 ).mapLeft { it.toString() }
 
-                device.add(servo1).bind()
+                device.add(servo1).attempt().unsafeRunSync()
+                    .mapLeft { Throwables.getStackTraceAsString(it) }.bind()
 
-                device.disconnect().bind()
+                device.disconnect().attempt().unsafeRunSync()
+                    .mapLeft { Throwables.getStackTraceAsString(it) }.bind()
                 null
             }
         }

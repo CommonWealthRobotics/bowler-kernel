@@ -30,15 +30,15 @@ internal annotation class ProtocolTestDsl
  * A protocol test scenario. Represents a series of interactions with a device.
  *
  * @param protocol The protocol instance to test.
- * @param device The mock device to test against.
+ * @param server The mock device server to test against.
  */
 @ProtocolTestDsl
 internal class ProtocolScenario(
-    private val protocol: SimplePacketComsProtocol,
-    private val device: MockDevice
+    private val protocol: DefaultBowlerRPCProtocol,
+    private val server: MockDeviceServer
 ) {
 
-    private var operation: ((SimplePacketComsProtocol) -> Unit)? = null
+    private var operation: ((DefaultBowlerRPCProtocol) -> Unit)? = null
     private var sendPayloads: ImmutableList<ByteArray>? = null
     private var receivePayloads: ImmutableList<ByteArray>? = null
 
@@ -49,7 +49,7 @@ internal class ProtocolScenario(
      * @param op The operation.
      * @return This scenario.
      */
-    fun operation(op: (SimplePacketComsProtocol) -> Unit): ProtocolScenario {
+    fun operation(op: (DefaultBowlerRPCProtocol) -> Unit): ProtocolScenario {
         operation = op
         return this
     }
@@ -81,29 +81,29 @@ internal class ProtocolScenario(
      */
     @SuppressWarnings("LongMethod")
     fun runTest() {
-        val connection = protocol.connect()
+        val connection = protocol.connect().attempt().unsafeRunSync()
         assertTrue(connection.isRight())
 
         assertThat(
             "There should be no reads to start.",
-            device.readsToSend,
+            server.reads,
             isEmpty
         )
 
         assertThat(
             "There should be no writes to start.",
-            device.writesReceived,
+            server.writes,
             isEmpty
         )
 
-        receivePayloads!!.reverse().forEach {
-            device.readsToSend.push(it)
+        receivePayloads!!.forEach {
+            server.reads.addLast(it)
         }
 
         operation!!(protocol)
 
         sendPayloads!!.map {
-            if (device.writesReceived.isEmpty()) {
+            if (server.writes.isEmpty()) {
                 fail {
                     """
                     |Expected a sent payload:
@@ -112,13 +112,13 @@ internal class ProtocolScenario(
                     """.trimMargin()
                 }
             } else {
-                val write = device.writesReceived.removeFirst()
+                val write = server.writes.pop()
                 assertArrayEquals(
                     it,
-                    write,
+                    write.second,
                     """
                     |The sent payload:
-                    |${write.joinToString()}
+                    |${write.second.joinToString()}
                     |should equal the expected payload:
                     |${it.joinToString()}
                     """.trimMargin()
@@ -128,13 +128,13 @@ internal class ProtocolScenario(
 
         assertThat(
             "No more reads should be present.",
-            device.readsToSend,
+            server.reads,
             isEmpty
         )
 
         assertThat(
             "No more writes should be present.",
-            device.writesReceived,
+            server.writes,
             isEmpty
         )
     }
@@ -149,11 +149,11 @@ internal class ProtocolScenario(
  */
 @ProtocolTestDsl
 internal fun protocolTest(
-    protocol: SimplePacketComsProtocol,
-    device: MockDevice,
+    protocol: DefaultBowlerRPCProtocol,
+    server: MockDeviceServer,
     configure: ProtocolScenario.() -> Unit
 ) {
-    val scenario = ProtocolScenario(protocol, device)
+    val scenario = ProtocolScenario(protocol, server)
     scenario.configure()
     scenario.runTest()
 }

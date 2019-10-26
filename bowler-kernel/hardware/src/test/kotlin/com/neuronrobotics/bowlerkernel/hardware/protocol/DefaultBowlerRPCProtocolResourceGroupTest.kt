@@ -18,8 +18,9 @@
 
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
-import arrow.core.Either
+import arrow.effects.IO
 import com.google.common.collect.ImmutableSet
+import com.neuronrobotics.bowlerkernel.deviceserver.getPayload
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
@@ -34,33 +35,33 @@ import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableSetOf
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
-internal class SimplePacketComsProtocolResourceGroupTest {
+internal class DefaultBowlerRPCProtocolResourceGroupTest {
 
-    private val device = MockDevice()
+    private val server = MockDeviceServer()
     private val validator = DefaultResourceIdValidator()
 
-    private val protocol = SimplePacketComsProtocol(
-        comms = device,
+    private val protocol = DefaultBowlerRPCProtocol(
+        server = server,
         resourceIdValidator = validator
     )
 
     @ParameterizedTest
     @MethodSource("defaultResourceTypesSource")
     fun `test DefaultResourceTypes send and receive lengths`(resourceType: DefaultResourceTypes) {
-        val addMethod: SimplePacketComsProtocol.(
+        val addMethod: DefaultBowlerRPCProtocol.(
             resourceIds: ImmutableSet<ResourceId>
-        ) -> Either<String, Unit> =
+        ) -> IO<Unit> =
             when {
                 validator.validateIsReadType(resourceType).isRight() ->
-                    SimplePacketComsProtocol::addReadGroup
+                    DefaultBowlerRPCProtocol::addReadGroup
 
                 validator.validateIsWriteType(resourceType).isRight() ->
-                    SimplePacketComsProtocol::addWriteGroup
+                    DefaultBowlerRPCProtocol::addWriteGroup
 
                 else -> fail { "Unknown resource type: $resourceType" }
             }
 
-        protocolTest(protocol, device) {
+        protocolTest(protocol, server) {
             operation {
                 val result = it.addMethod(
                     immutableSetOf(
@@ -69,27 +70,44 @@ internal class SimplePacketComsProtocolResourceGroupTest {
                             DefaultAttachmentPoints.Pin(32)
                         )
                     )
-                )
+                ).attempt().unsafeRunSync()
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
-                    getPayload(2, 1, 2, 1),
                     getPayload(
-                        3,
-                        1,
-                        0,
-                        resourceType.sendLength,
-                        0,
-                        resourceType.receiveLength,
-                        resourceType.type,
-                        1,
-                        32
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
+                            1,
+                            DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
+                            1
+                        )
+                    ),
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID,
+                            1,
+                            0,
+                            resourceType.sendLength,
+                            0,
+                            resourceType.receiveLength,
+                            resourceType.type,
+                            1,
+                            32
+                        )
                     )
                 )
             } deviceResponds {
                 immutableListOf(
-                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED),
-                    getPayload(SimplePacketComsProtocol.STATUS_ACCEPTED)
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
+                    ),
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
+                    )
                 )
             }
         }

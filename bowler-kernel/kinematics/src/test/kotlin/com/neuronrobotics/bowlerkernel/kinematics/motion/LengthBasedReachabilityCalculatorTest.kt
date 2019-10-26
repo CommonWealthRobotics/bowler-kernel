@@ -39,7 +39,7 @@ internal class LengthBasedReachabilityCalculatorTest {
                 LinkType.Rotary,
                 DhParam(0, 0, 15, 0),
                 NoopInertialStateEstimator
-            ) as Link
+            )
         )
 
         // This is technically unreachable because the limb is one 15-unit-long link, but this
@@ -62,7 +62,7 @@ internal class LengthBasedReachabilityCalculatorTest {
                 LinkType.Rotary,
                 DhParam(0, 0, 10, 0),
                 NoopInertialStateEstimator
-            ) as Link
+            )
         )
 
         val target = FrameTransformation.fromTranslation(10, 0, 0)
@@ -83,7 +83,7 @@ internal class LengthBasedReachabilityCalculatorTest {
                 LinkType.Rotary,
                 DhParam(0, 0, 10, 0),
                 NoopInertialStateEstimator
-            ) as Link
+            )
         )
 
         val target = FrameTransformation.fromTranslation(15, 0, 0)

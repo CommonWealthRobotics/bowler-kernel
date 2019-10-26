@@ -68,16 +68,16 @@ internal class ScriptIntegrationTest {
                     }
                 }
 
-                device.connect()
+                device.connect().unsafeRunSync()
 
                 val unprovisionedDigitalOut = resourceFactory.makeUnprovisionedDigitalOut(
                     device,
                     DefaultAttachmentPoints.Pin(7)
                 ).fold({ fail { "" } }, { it })
 
-                device.add(unprovisionedDigitalOut)
+                device.add(unprovisionedDigitalOut).unsafeRunSync()
 
-                device.disconnect()
+                device.disconnect().unsafeRunSync()
 
                 return Either.right(null)
             }
@@ -109,7 +109,7 @@ internal class ScriptIntegrationTest {
                     ),
                     mockBowlerRPCProtocol()
                 ).map {
-                    it.connect()
+                    it.connect().unsafeRunSync()
 
                     val led1 = resourceFactory.makeUnprovisionedDigitalOut(
                         it,
@@ -122,8 +122,8 @@ internal class ScriptIntegrationTest {
                         }
                     )
 
-                    it.add(led1)
-                    it.disconnect()
+                    it.add(led1).unsafeRunSync()
+                    it.disconnect().unsafeRunSync()
                 }
                 return Either.right(worked)
             }
