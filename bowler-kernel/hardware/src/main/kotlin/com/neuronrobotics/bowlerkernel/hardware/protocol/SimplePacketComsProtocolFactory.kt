@@ -55,7 +55,8 @@ class SimplePacketComsProtocolFactory(
                                 connectionMethod.inetAddress,
                                 1866,
                                 SimplePacketComsProtocol.PACKET_SIZE
-                            )
+                            ),
+                            SimplePacketComsProtocol.PAYLOAD_SIZE
                         ),
                         startPacketId = startPacketId,
                         resourceIdValidator = resourceIdValidator

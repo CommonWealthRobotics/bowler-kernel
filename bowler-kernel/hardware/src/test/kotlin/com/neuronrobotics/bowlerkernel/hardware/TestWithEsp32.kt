@@ -56,7 +56,8 @@ internal class TestWithEsp32 {
                         listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
                     ),
                     1866
-                )
+                ),
+                SimplePacketComsProtocol.PAYLOAD_SIZE
             ),
             resourceIdValidator = DefaultResourceIdValidator()
         )
@@ -124,7 +125,8 @@ internal class TestWithEsp32 {
                         listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
                     ),
                     1866
-                )
+                ),
+                SimplePacketComsProtocol.PAYLOAD_SIZE
             ),
             resourceIdValidator = DefaultResourceIdValidator()
         )
@@ -164,7 +166,8 @@ internal class TestWithEsp32 {
                         listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
                     ),
                     1866
-                )
+                ),
+                SimplePacketComsProtocol.PAYLOAD_SIZE
             ),
             resourceIdValidator = DefaultResourceIdValidator()
         )
@@ -206,7 +209,8 @@ internal class TestWithEsp32 {
                         listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
                     ),
                     1866
-                )
+                ),
+                SimplePacketComsProtocol.PAYLOAD_SIZE
             ),
             resourceIdValidator = DefaultResourceIdValidator()
         )

@@ -19,18 +19,25 @@ import java.util.ArrayDeque
 
 class MockTransportLayer : TransportLayer {
 
+    private var connected = false
     val reads = ArrayDeque<ByteArray>()
     val writes = ArrayDeque<ByteArray>()
 
     override fun connect() {
+        connected = true
     }
 
     override fun disconnect() {
+        connected = false
     }
 
-    override fun readBytes(): ByteArray = reads.pop()
+    override fun readBytes(): ByteArray {
+        check(connected)
+        return reads.pop()
+    }
 
     override fun writeBytes(data: ByteArray) {
+        check(connected)
         writes.addLast(data)
     }
 }

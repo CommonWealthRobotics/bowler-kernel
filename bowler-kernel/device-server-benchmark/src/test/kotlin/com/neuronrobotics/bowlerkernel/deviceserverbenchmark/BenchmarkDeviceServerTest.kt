@@ -33,7 +33,8 @@ internal class BenchmarkDeviceServerTest {
                     listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
                 ),
                 1866
-            )
+            ),
+            61
         )
 
         server.addReliable(2)
@@ -51,7 +52,8 @@ internal class BenchmarkDeviceServerTest {
                     listOf(192, 168, 4, 1).map { it.toByte() }.toByteArray()
                 ),
                 1866
-            )
+            ),
+            61
         )
 
         server.addUnreliable(2, 10)

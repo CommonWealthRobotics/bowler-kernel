@@ -32,4 +32,15 @@ interface DeviceServer {
 
     // write to the packet and wait for the reply. uses its transport mode
     fun write(id: Byte, payload: ByteArray): IO<ByteArray>
+
+    companion object {
+
+        const val SERVER_MANAGEMENT_PACKET_ID: Byte = 1
+
+        const val OPERATION_DISCONNECT_ID: Byte = 1
+        const val OPERATION_ADD_ENSURED_PACKETS: Byte = 2
+
+        const val STATUS_ACCEPTED: Byte = 1
+        const val STATUS_REJECTED_GENERIC: Byte = 2
+    }
 }

@@ -20,7 +20,8 @@ import arrow.effects.IO
 import java.net.SocketTimeoutException
 
 class DefaultDeviceServer(
-    private val transportLayer: TransportLayer
+    private val transportLayer: TransportLayer,
+    private val payloadSize: Int
 ) : DeviceServer {
 
     private val packets = mutableMapOf<Byte, PacketTransferMode>()
@@ -29,14 +30,47 @@ class DefaultDeviceServer(
 
     override fun connect(): IO<Unit> = IO {
         transportLayer.connect()
+        addReliable(DeviceServer.SERVER_MANAGEMENT_PACKET_ID)
+    }.flatMap {
+        write(
+            DeviceServer.SERVER_MANAGEMENT_PACKET_ID,
+            getPayload(payloadSize, byteArrayOf(DeviceServer.OPERATION_ADD_ENSURED_PACKETS))
+        ).flatMap {
+            if (it[0] != DeviceServer.STATUS_ACCEPTED) {
+                IO.raiseError(
+                    IllegalStateException(
+                        "The device failed to add the ensured packets: ${it.joinToString()}"
+                    )
+                )
+            } else {
+                IO.just(Unit)
+            }
+        }
     }
 
-    override fun disconnect(): IO<Unit> = IO {
-        transportLayer.disconnect()
+    override fun disconnect(): IO<Unit> = IO.defer {
+        // Tell the server to discard all packet handlers and disconnect so the connection state
+        // is correctly reset for RDT
+        write(
+            DeviceServer.SERVER_MANAGEMENT_PACKET_ID,
+            getPayload(payloadSize, byteArrayOf(DeviceServer.OPERATION_DISCONNECT_ID))
+        ).flatMap {
+            if (it[0] == DeviceServer.STATUS_ACCEPTED) {
+                IO {
+                    transportLayer.disconnect()
 
-        // Clear the state for all the reliable transport packets
-        reliableState.forEach { (packetId, _) ->
-            reliableState[packetId] = ReliableState()
+                    // Clear the state for all the RDT packets
+                    reliableState.forEach { (packetId, _) ->
+                        reliableState[packetId] = ReliableState()
+                    }
+                }
+            } else {
+                IO.raiseError(
+                    IllegalStateException(
+                        "The device failed to accept disconnection: ${it.joinToString()}"
+                    )
+                )
+            }
         }
     }
 
