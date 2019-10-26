@@ -18,19 +18,43 @@ package com.neuronrobotics.bowlerkernel.deviceserver
 
 import arrow.effects.IO
 
+/**
+ * A server that communicates with the device using reliable and unreliable transport.
+ */
 interface DeviceServer {
 
+    /**
+     * Open a connection with the device.
+     */
     fun connect(): IO<Unit>
 
+    /**
+     * Close the current connection with the device.
+     */
     fun disconnect(): IO<Unit>
 
-    // uses reliable transport
+    /**
+     * Add a packet that uses reliable transport.
+     *
+     * @param id The packet id.
+     */
     fun addReliable(id: Byte)
 
-    // uses unreliable transport
+    /**
+     * Add a packet that uses unreliable transport.
+     *
+     * @param id The packet id.
+     * @param maxRetries The maximum number of retries if the device never replied.
+     */
     fun addUnreliable(id: Byte, maxRetries: Int)
 
-    // write to the packet and wait for the reply. uses its transport mode
+    /**
+     * Write data to the packet using its transport mode.
+     *
+     * @param id The packet id.
+     * @param payload The data to send to the packet.
+     * @return The data from the response.
+     */
     fun write(id: Byte, payload: ByteArray): IO<ByteArray>
 
     companion object {
