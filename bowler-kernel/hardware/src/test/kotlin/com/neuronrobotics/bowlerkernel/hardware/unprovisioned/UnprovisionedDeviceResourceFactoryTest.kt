@@ -19,6 +19,7 @@
 package com.neuronrobotics.bowlerkernel.hardware.unprovisioned
 
 import arrow.core.Either
+import arrow.effects.IO
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.hasSize
@@ -58,7 +59,7 @@ internal class UnprovisionedDeviceResourceFactoryTest {
                         resourceId
                     )
                 )
-            } doReturn false
+            } doReturn IO.just(false)
         }
 
         registry.registerDevice(
@@ -190,7 +191,7 @@ internal class UnprovisionedDeviceResourceFactoryTest {
         val device = mock<BowlerDevice> {
             on {
                 isResourceInRange(resourceId)
-            } doReturn true
+            } doReturn IO.just(true)
 
             on {
                 deviceId
@@ -224,7 +225,7 @@ internal class UnprovisionedDeviceResourceFactoryTest {
         val device = mock<BowlerDevice> {
             on {
                 isResourceInRange(resourceId)
-            } doReturn false
+            } doReturn IO.just(false)
 
             on {
                 deviceId

@@ -16,6 +16,8 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup
 
+import arrow.effects.IO
+
 interface Encoder :
     ProvisionedDeviceResource {
 
@@ -24,5 +26,5 @@ interface Encoder :
      *
      * @return The encoder's position.
      */
-    fun read(): Long
+    fun read(): IO<Long>
 }

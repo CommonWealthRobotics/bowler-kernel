@@ -174,9 +174,9 @@ class BaseHardwareRegistry : HardwareRegistry {
             else -> {
                 LOGGER.debug { "Unregistering device $device" }
 
-                device.disconnect().fold(
+                device.disconnect().attempt().unsafeRunSync().fold(
                     {
-                        Option.just(UnregisterDeviceError.DisconnectError(it))
+                        Option.just(UnregisterDeviceError.DisconnectError(it.localizedMessage))
                     },
                     {
                         internalRegisteredDeviceIds.remove(device.deviceId)

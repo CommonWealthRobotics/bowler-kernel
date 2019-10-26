@@ -16,7 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.scripting
 
-import arrow.core.right
+import arrow.effects.IO
 import com.neuronrobotics.bowlerkernel.hardware.protocol.BowlerRPCProtocol
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturn
@@ -25,8 +25,12 @@ import com.nhaarman.mockitokotlin2.mock
 // This can't be internal because it is needed in a script
 fun mockBowlerRPCProtocol(): BowlerRPCProtocol {
     return mock {
-        on { connect() } doReturn Unit.right()
-        on { disconnect() } doReturn Unit.right()
-        on { isResourceInRange(any()) } doReturn true
+        on { connect() } doReturn IO.just(Unit)
+        on { disconnect() } doReturn IO.just(Unit)
+        on { isResourceInRange(any()) } doReturn IO.just(true)
+        on { addRead(any()) } doReturn IO.just(Unit)
+        on { addReadGroup(any()) } doReturn IO.just(Unit)
+        on { addWrite(any()) } doReturn IO.just(Unit)
+        on { addWriteGroup(any()) } doReturn IO.just(Unit)
     }
 }

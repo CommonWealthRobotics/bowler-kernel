@@ -16,10 +16,12 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup
 
+import arrow.effects.IO
+
 interface SerialConnection :
     ProvisionedDeviceResource {
 
-    fun write(data: String)
+    fun write(data: String): IO<Unit>
 
-    fun read(): String
+    fun read(): IO<String>
 }

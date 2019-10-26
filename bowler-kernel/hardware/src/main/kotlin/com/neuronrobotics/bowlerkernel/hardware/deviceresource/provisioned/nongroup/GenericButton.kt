@@ -25,5 +25,5 @@ internal constructor(
     override val resourceId: ResourceId
 ) : Button {
 
-    override fun isPressed(): Boolean = device.bowlerRPCProtocol.buttonRead(resourceId)
+    override fun isPressed() = device.bowlerRPCProtocol.buttonRead(resourceId)
 }

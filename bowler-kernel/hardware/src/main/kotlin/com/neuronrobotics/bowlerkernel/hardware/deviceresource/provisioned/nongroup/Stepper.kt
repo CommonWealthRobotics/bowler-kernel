@@ -16,6 +16,8 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup
 
+import arrow.effects.IO
+
 interface Stepper :
     ProvisionedDeviceResource {
 
@@ -25,5 +27,5 @@ interface Stepper :
      * @param steps The number of steps to turn.
      * @param speed The speed to turn at.
      */
-    fun step(steps: Int, speed: Int)
+    fun step(steps: Int, speed: Int): IO<Unit>
 }
