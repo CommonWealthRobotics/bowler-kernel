@@ -87,12 +87,6 @@ open class SimplePacketComsProtocol(
             "The starting packet id ($startPacketId) cannot be equal to the discovery packet id " +
                 "($DISCOVERY_PACKET_ID)."
         }
-
-        server.addReliable(DISCOVERY_PACKET_ID)
-    }
-
-    private fun validateConnection() {
-        check(isConnected) { "The RPC is not connected." }
     }
 
     /**
@@ -108,8 +102,6 @@ open class SimplePacketComsProtocol(
         operation: Byte,
         payload: ByteArray
     ): IO<ByteArray> {
-        validateConnection()
-
         val payloadWithHeader = getPayload(PAYLOAD_SIZE, byteArrayOf(operation) + payload)
 
         LOGGER.debug {
@@ -691,12 +683,13 @@ open class SimplePacketComsProtocol(
     }
 
     override fun connect() = server.connect().map {
+        server.addReliable(DISCOVERY_PACKET_ID)
         isConnected = true
     }
 
     override fun disconnect(): IO<Unit> {
         if (!isConnected) {
-            return IO.just(Unit)
+            return server.disconnect().map { isConnected = false }
         }
 
         return IO.tailRecM(sendDiscardDiscoveryPacket()) { a ->

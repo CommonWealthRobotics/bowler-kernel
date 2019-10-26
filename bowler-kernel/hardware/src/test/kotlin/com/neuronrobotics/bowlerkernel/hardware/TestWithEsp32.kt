@@ -21,7 +21,6 @@ package com.neuronrobotics.bowlerkernel.hardware
 import com.google.common.base.Throwables
 import com.neuronrobotics.bowlerkernel.deviceserver.DefaultDeviceServer
 import com.neuronrobotics.bowlerkernel.deviceserver.UDPTransportLayer
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.DigitalState
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
@@ -31,7 +30,6 @@ import java.net.InetAddress
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
-import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableSetOf
 
 internal class TestWithEsp32 {
@@ -79,27 +77,27 @@ internal class TestWithEsp32 {
             fail { Throwables.getStackTraceAsString(it) }
         }
 
-        repeat(2) {
-            rpc.digitalWrite(
-                immutableListOf(
-                    led1 to DigitalState.HIGH,
-                    led2 to DigitalState.LOW
-                )
-            ).attempt().unsafeRunSync().mapLeft {
-                fail { Throwables.getStackTraceAsString(it) }
-            }
-            Thread.sleep(500)
-
-            rpc.digitalWrite(
-                immutableListOf(
-                    led1 to DigitalState.LOW,
-                    led2 to DigitalState.HIGH
-                )
-            ).attempt().unsafeRunSync().mapLeft {
-                fail { Throwables.getStackTraceAsString(it) }
-            }
-            Thread.sleep(500)
-        }
+        // repeat(2) {
+        //     rpc.digitalWrite(
+        //         immutableListOf(
+        //             led1 to DigitalState.HIGH,
+        //             led2 to DigitalState.LOW
+        //         )
+        //     ).attempt().unsafeRunSync().mapLeft {
+        //         fail { Throwables.getStackTraceAsString(it) }
+        //     }
+        //     Thread.sleep(500)
+        //
+        //     rpc.digitalWrite(
+        //         immutableListOf(
+        //             led1 to DigitalState.LOW,
+        //             led2 to DigitalState.HIGH
+        //         )
+        //     ).attempt().unsafeRunSync().mapLeft {
+        //         fail { Throwables.getStackTraceAsString(it) }
+        //     }
+        //     Thread.sleep(500)
+        // }
 
         println(rpc.disconnect().attempt().unsafeRunSync().mapLeft {
             Throwables.getStackTraceAsString(it)

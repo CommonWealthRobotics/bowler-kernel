@@ -275,6 +275,8 @@ internal class DefaultDeviceServerTest {
             transportLayer.writes.pop()
         )
 
+        server.addReliable(2)
+
         // Should be the same as the first one because the connection was reset
         transportLayer.reads.addLast(byteArrayOf(2, 0, 0, *getPayload(payloadSize)))
         server.sendReceiveReliable(2, getPayload(payloadSize))

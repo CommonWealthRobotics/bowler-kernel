@@ -28,9 +28,15 @@ class DefaultDeviceServer(
     private val reliableState = mutableMapOf<Byte, ReliableState>()
     private val unreliableState = mutableMapOf<Byte, UnreliableState>()
 
+    private fun ensureServerManagementPacket() {
+        if (!packets.containsKey(DeviceServer.SERVER_MANAGEMENT_PACKET_ID)) {
+            addReliable(DeviceServer.SERVER_MANAGEMENT_PACKET_ID)
+        }
+    }
+
     override fun connect(): IO<Unit> = IO {
         transportLayer.connect()
-        addReliable(DeviceServer.SERVER_MANAGEMENT_PACKET_ID)
+        ensureServerManagementPacket()
     }.flatMap {
         write(
             DeviceServer.SERVER_MANAGEMENT_PACKET_ID,
@@ -49,6 +55,8 @@ class DefaultDeviceServer(
     }
 
     override fun disconnect(): IO<Unit> = IO.defer {
+        ensureServerManagementPacket()
+
         // Tell the server to discard all packet handlers and disconnect so the connection state
         // is correctly reset for RDT
         write(
@@ -58,11 +66,10 @@ class DefaultDeviceServer(
             if (it[0] == DeviceServer.STATUS_ACCEPTED) {
                 IO {
                     transportLayer.disconnect()
-
-                    // Clear the state for all the RDT packets
-                    reliableState.forEach { (packetId, _) ->
-                        reliableState[packetId] = ReliableState()
-                    }
+                    packets.clear()
+                    reliableState.clear()
+                    unreliableState.clear()
+                    ensureServerManagementPacket()
                 }
             } else {
                 IO.raiseError(
