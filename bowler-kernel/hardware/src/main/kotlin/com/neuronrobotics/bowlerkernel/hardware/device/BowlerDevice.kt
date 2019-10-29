@@ -63,32 +63,49 @@ internal constructor(
     ): IO<R> {
         val id = resource.resourceId
 
-        val readError = resourceIdValidator.validateIsReadType(id.resourceType).liftIO()
-            .errorOnLeft().flatMap {
-                bowlerRPCProtocol.addRead(id).attempt().errorOnLeft()
-            }
-
-        val writeError = resourceIdValidator.validateIsWriteType(id.resourceType).liftIO()
-            .errorOnLeft().flatMap {
-                bowlerRPCProtocol.addWrite(id).attempt().errorOnLeft()
-            }
-
-        return IO.defer {
-            val isRead = readError.attempt().unsafeRunSync()
-            val isWrite = writeError.attempt().unsafeRunSync()
-
-            when {
-                isRead is Either.Left && isWrite is Either.Left -> IO.raiseError(
-                    UnsupportedOperationException(
-                        """
-                        |Could not add resource because it neither a read type nor a write type:
-                        |$resource
-                        """.trimMargin()
-                    )
-                )
-
-                else -> IO { resource.provision() }
-            }
+        return resourceIdValidator.validateIsReadType(id.resourceType).liftIO().flatMap {
+            it.fold(
+                {
+                    // Not a read
+                    resourceIdValidator.validateIsWriteType(id.resourceType).liftIO().flatMap {
+                        it.fold(
+                            {
+                                // Not a read, not a write
+                                IO.raiseError<R>(
+                                    UnsupportedOperationException(
+                                        """
+                                        |Could not add resource because it neither a read type nor a write type:
+                                        |$resource
+                                        """.trimMargin()
+                                    )
+                                )
+                            },
+                            {
+                                // Not a read, is a write
+                                bowlerRPCProtocol.addWrite(id).attempt().errorOnLeft()
+                                    .map { resource.provision() }
+                            }
+                        )
+                    }
+                },
+                {
+                    // Is a read
+                    resourceIdValidator.validateIsWriteType(id.resourceType).liftIO().flatMap {
+                        it.fold(
+                            {
+                                // Is a read, not a write
+                                bowlerRPCProtocol.addRead(id).attempt().errorOnLeft()
+                                    .map { resource.provision() }
+                            },
+                            {
+                                // Is a read, is a write
+                                bowlerRPCProtocol.addWriteRead(id).attempt().errorOnLeft()
+                                    .map { resource.provision() }
+                            }
+                        )
+                    }
+                }
+            )
         }
     }
 
@@ -115,30 +132,24 @@ internal constructor(
             acc && elem.isRight()
         }
 
-        val addReadGroupResult = if (allReadResources) {
-            bowlerRPCProtocol.addReadGroup(resourceIds).attempt().errorOnLeft()
-        } else {
-            IO.raiseError(UnsupportedOperationException("The resources are not all read type."))
-        }
-
         val allWriteResources = resourceIds.map {
             resourceIdValidator.validateIsWriteType(it.resourceType)
         }.fold(true) { acc, elem ->
             acc && elem.isRight()
         }
 
-        val addWriteGroupResult = if (allWriteResources) {
-            bowlerRPCProtocol.addWriteGroup(resourceIds).attempt().errorOnLeft()
-        } else {
-            IO.raiseError(UnsupportedOperationException("The resources are not all write type."))
-        }
-
         return IO.defer {
-            val readResult = addReadGroupResult.attempt().unsafeRunSync()
-            val writeResult = addWriteGroupResult.attempt().unsafeRunSync()
-
-            when {
-                readResult.isLeft() && writeResult.isLeft() -> IO.raiseError(
+            if (allReadResources && allWriteResources) {
+                bowlerRPCProtocol.addWriteReadGroup(resourceIds).attempt().errorOnLeft()
+                    .map { resourceGroup.provision() }
+            } else if (allReadResources) {
+                bowlerRPCProtocol.addReadGroup(resourceIds).attempt().errorOnLeft()
+                    .map { resourceGroup.provision() }
+            } else if (allWriteResources) {
+                bowlerRPCProtocol.addWriteGroup(resourceIds).attempt().errorOnLeft()
+                    .map { resourceGroup.provision() }
+            } else {
+                IO.raiseError(
                     UnsupportedOperationException(
                         """
                         |Could not add resources because they are neither all read types nor all write types:
@@ -146,10 +157,6 @@ internal constructor(
                         """.trimMargin()
                     )
                 )
-
-                else -> IO {
-                    resourceGroup.provision()
-                }
             }
         }
     }

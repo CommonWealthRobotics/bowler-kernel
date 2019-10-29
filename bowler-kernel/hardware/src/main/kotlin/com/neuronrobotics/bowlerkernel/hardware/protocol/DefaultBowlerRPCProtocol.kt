@@ -758,6 +758,52 @@ open class DefaultBowlerRPCProtocol(
             }
         }
 
+    override fun addWriteRead(resourceId: ResourceId): IO<Unit> =
+        resourceIdValidator.validateIsWriteType(resourceId.resourceType).liftIO().flatMap {
+            it.fold(
+                { IO.raiseError<Unit>(UnsupportedOperationException(it)) },
+                {
+                    resourceIdValidator.validateIsReadType(resourceId.resourceType).liftIO()
+                        .flatMap {
+                            it.fold(
+                                { IO.raiseError<Unit>(UnsupportedOperationException(it)) },
+                                { addResource(resourceId) }
+                            )
+                        }
+                }
+            )
+        }
+
+    override fun addWriteReadGroup(resourceIds: ImmutableSet<ResourceId>) =
+        validateResources(resourceIds, ResourceIdValidator::validateIsWriteType).liftIO().flatMap {
+            if (it.isNotEmpty()) {
+                IO.raiseError(
+                    UnsupportedOperationException(
+                        """
+                        |Found invalid resources when trying to add a write+read group:
+                        |${it.joinToString("\n")}
+                        """.trimMargin()
+                    )
+                )
+            } else {
+                validateResources(resourceIds, ResourceIdValidator::validateIsReadType).liftIO()
+                    .flatMap {
+                        if (it.isNotEmpty()) {
+                            IO.raiseError(
+                                UnsupportedOperationException(
+                                    """
+                                    |Found invalid resources when trying to add a write+read group:
+                                    |${it.joinToString("\n")}
+                                    """.trimMargin()
+                                )
+                            )
+                        } else {
+                            addGroup(resourceIds)
+                        }
+                    }
+            }
+        }
+
     /**
      * Validates that all the resources are of a specific type.
      *

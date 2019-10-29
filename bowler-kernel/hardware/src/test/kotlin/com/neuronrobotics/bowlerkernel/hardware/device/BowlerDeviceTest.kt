@@ -18,16 +18,19 @@ package com.neuronrobotics.bowlerkernel.hardware.device
 
 import arrow.core.Either
 import arrow.core.Right
+import arrow.core.right
 import arrow.effects.IO
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultConnectionMethods
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DefaultDeviceTypes
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.ProvisionedDeviceResourceGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceType
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedAnalogInGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDeviceResourceGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDigitalInGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDigitalOutGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup.UnprovisionedAnalogIn
@@ -48,6 +51,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.octogonapus.ktguava.collections.immutableListOf
 import org.octogonapus.ktguava.collections.immutableSetOf
+import org.octogonapus.ktguava.collections.toImmutableList
 import org.octogonapus.ktguava.collections.toImmutableSet
 
 @SuppressWarnings("TooManyFunctions")
@@ -100,6 +104,7 @@ internal class BowlerDeviceTest {
 
         on { addWrite(led1Id) } doReturn IO.just(Unit)
         on { addRead(led1Id) } doReturn IO.raiseError(UnsupportedOperationException(""))
+        on { addWriteRead(led1Id) } doReturn IO.raiseError(UnsupportedOperationException(""))
 
         on { addWriteGroup(immutableSetOf(led1Id, led2Id)) } doReturn IO.just(Unit)
         on { addReadGroup(immutableSetOf(led1Id, led2Id)) } doReturn IO.raiseError(
@@ -108,18 +113,24 @@ internal class BowlerDeviceTest {
 
         on { addWrite(line1Id) } doReturn IO.raiseError(UnsupportedOperationException(""))
         on { addRead(line1Id) } doReturn IO.just(Unit)
+        on { addWriteRead(line1Id) } doReturn IO.raiseError(UnsupportedOperationException(""))
 
         on { addWriteGroup(immutableSetOf(line1Id, line2Id)) } doReturn IO.raiseError(
             UnsupportedOperationException("")
         )
         on { addReadGroup(immutableSetOf(line1Id, line2Id)) } doReturn IO.just(Unit)
+        on { addWriteReadGroup(immutableSetOf(line1Id, line2Id)) } doReturn IO.raiseError(
+            UnsupportedOperationException("")
+        )
 
         on { addWrite(serial1Id) } doReturn IO.just(Unit)
         on { addRead(serial1Id) } doReturn IO.just(Unit)
+        on { addWriteRead(serial1Id) } doReturn IO.just(Unit)
 
         // Unknown resources can't be validated, so we must let them be added
         on { addWrite(unknownId1) } doReturn IO.just(Unit)
         on { addRead(unknownId1) } doReturn IO.just(Unit)
+        on { addWriteRead(unknownId1) } doReturn IO.just(Unit)
     }
 
     private val device = BowlerDevice(
@@ -137,6 +148,7 @@ internal class BowlerDeviceTest {
     private val lineGroup = UnprovisionedAnalogInGroup(device, immutableListOf(line1Id, line2Id))
     private val serial1 = UnprovisionedSerialConnection(device, serial1Id)
     private val unknownResource1 = UnprovisionedAnalogIn(device, unknownId1)
+    private val unknownResource2 = UnprovisionedAnalogIn(device, unknownId2)
     private val unknownGroup =
         UnprovisionedAnalogInGroup(device, immutableListOf(unknownId1, unknownId2))
 
@@ -191,8 +203,9 @@ internal class BowlerDeviceTest {
     fun `test adding a serial connection`() {
         val result = device.add(serial1).attempt().unsafeRunSync()
 
-        verify(bowlerRPCProtocol).addWrite(serial1Id)
-        verify(bowlerRPCProtocol).addRead(serial1Id)
+        verify(bowlerRPCProtocol).addWriteRead(serial1Id)
+        verify(bowlerRPCProtocol, never()).addWrite(serial1Id)
+        verify(bowlerRPCProtocol, never()).addRead(serial1Id)
 
         assertTrue(result.isRight())
     }
@@ -250,6 +263,50 @@ internal class BowlerDeviceTest {
 
         verify(bowlerRPCProtocol, never()).addRead(any())
         verify(bowlerRPCProtocol, never()).addReadGroup(any())
+    }
+
+    @Test
+    fun `test adding writeRead group`() {
+        val resourceType = mock<ResourceType> {
+            on { type } doReturn 1
+            on { sendLength } doReturn 1
+            on { receiveLength } doReturn 1
+        }
+
+        val resourceIds = immutableSetOf(ResourceId(resourceType, DefaultAttachmentPoints.None))
+        val mockProvisionedGroup = mock<ProvisionedDeviceResourceGroup> {
+            on { this.resourceIds } doReturn resourceIds.toImmutableList()
+        }
+        val resources = mock<UnprovisionedDeviceResourceGroup<ProvisionedDeviceResourceGroup>> {
+            on { provision() } doReturn mockProvisionedGroup
+            on { this.resourceIds } doReturn resourceIds.toImmutableList()
+        }
+
+        val rpc = mock<BowlerRPCProtocol> {
+            on { addReadGroup(resourceIds) } doReturn IO.just(Unit)
+            on { addWriteGroup(resourceIds) } doReturn IO.just(Unit)
+            on { addWriteReadGroup(resourceIds) } doReturn IO.just(Unit)
+        }
+
+        val device = BowlerDevice(
+            DeviceId(
+                DefaultDeviceTypes.UnknownDevice,
+                DefaultConnectionMethods.RawHID(0, 0)
+            ),
+            rpc,
+            mock {
+                on { validateIsReadType(resourceType) } doReturn Unit.right()
+                on { validateIsWriteType(resourceType) } doReturn Unit.right()
+            }
+        )
+
+        val result = device.add(resources).attempt().unsafeRunSync()
+
+        verify(rpc).addWriteReadGroup(resourceIds)
+        verify(rpc, never()).addWriteGroup(resourceIds)
+        verify(rpc, never()).addReadGroup(resourceIds)
+
+        assertTrue(result.isRight())
     }
 
     @Nested

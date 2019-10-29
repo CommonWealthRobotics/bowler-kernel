@@ -53,7 +53,6 @@ interface BowlerRPCProtocol {
 
     /**
      * Adds a group of read resources. All resources in the group are read from at the same time.
-     * If any resources are already reads, they are moved into this group instead.
      *
      * @return An error if there is a problem.
      */
@@ -68,11 +67,26 @@ interface BowlerRPCProtocol {
 
     /**
      * Adds a group of write resources. All resources in the group are written to at the same
-     * time. If any resources are already writes, they are moved into this group instead.
+     * time.
      *
      * @return An error if there is a problem.
      */
     fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>): IO<Unit>
+
+    /**
+     * Adds a write+read resource.
+     *
+     * @return An error if there is a problem.
+     */
+    fun addWriteRead(resourceId: ResourceId): IO<Unit>
+
+    /**
+     * Adds a group of write+read resources. All resources in the group are writen to and read from
+     * at the same time.
+     *
+     * @return An error if there is a problem.
+     */
+    fun addWriteReadGroup(resourceIds: ImmutableSet<ResourceId>): IO<Unit>
 
     /**
      * Queries whether the [resourceId] is in the valid range of resources for this device.
