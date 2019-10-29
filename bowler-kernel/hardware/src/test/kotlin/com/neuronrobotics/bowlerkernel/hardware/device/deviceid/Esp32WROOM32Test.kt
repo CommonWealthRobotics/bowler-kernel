@@ -28,7 +28,7 @@ internal class Esp32WROOM32Test {
         deviceTypeTest(DefaultDeviceTypes.Esp32wroom32) {
             digitalOut(2, 4..5, 12..19, 21..23, 25..27, 32..33)
             digitalIn(4, 14, 16..19, 21..23, 25..27, 32..36, 39)
-            analogOut(4, 5, 12..19, 21..23, 25..27, 32..33)
+            analogOut(2, 4, 5, 12..19, 21..23, 25..27, 32..33)
             analogIn(4, 14, 16..19, 21..23, 25..27, 32..36, 39)
             serial(1 to 3)
         }

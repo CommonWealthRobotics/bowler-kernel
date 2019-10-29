@@ -164,7 +164,7 @@ internal class DeviceTypeScenario(
 
     private fun assertUltrasonic() {
         // Can have an ultrasonic on one pin if it can be digital in AND out
-        digitalInPins.union(digitalOutPins).forEach {
+        digitalInPins.intersect(digitalOutPins).forEach {
             assertAllowed(DefaultResourceTypes.Ultrasonic, it)
         }
 

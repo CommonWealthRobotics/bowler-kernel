@@ -27,6 +27,7 @@ import com.google.common.base.Throwables
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.ProvisionedDeviceResourceGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.ProvisionedDeviceResource
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceIdValidator
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDeviceResourceGroup
@@ -51,12 +52,18 @@ internal constructor(
     override fun disconnect() = bowlerRPCProtocol.disconnect()
 
     override fun isResourceInRange(resourceId: ResourceId) =
-        IO.just(deviceId.deviceType.isResourceInRange(resourceId)).maybeCombine(
-            object : Semigroup<Boolean> {
-                override fun Boolean.combine(b: Boolean) = this && b
-            },
+        if (resourceId.resourceType is DefaultResourceTypes) {
+            // Only check with the device if its a known resource type because other resource types
+            // can be weird. Just let the RPC validate those.
+            IO.just(deviceId.deviceType.isResourceInRange(resourceId)).maybeCombine(
+                object : Semigroup<Boolean> {
+                    override fun Boolean.combine(b: Boolean) = this && b
+                },
+                bowlerRPCProtocol.isResourceInRange(resourceId)
+            )
+        } else {
             bowlerRPCProtocol.isResourceInRange(resourceId)
-        )
+        }
 
     override fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
         resource: T

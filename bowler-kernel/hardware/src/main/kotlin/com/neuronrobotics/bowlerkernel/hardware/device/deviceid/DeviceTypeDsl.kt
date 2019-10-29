@@ -43,7 +43,8 @@ class DeviceTypeImplementation {
         DefaultResourceTypes.Servo,
         DefaultResourceTypes.Encoder,
         DefaultResourceTypes.Button,
-        DefaultResourceTypes.PiezoelectricSpeaker
+        DefaultResourceTypes.PiezoelectricSpeaker,
+        DefaultResourceTypes.Ultrasonic // Only if the pin can be digital out AND in
     )
 
     private val multiPinResources = listOf(
@@ -56,8 +57,13 @@ class DeviceTypeImplementation {
     fun isResourceInRange(resourceId: ResourceId): Boolean {
         return when (val p = resourceId.attachmentPoint) {
             is DefaultAttachmentPoints.Pin -> checkPin(resourceId.resourceType, p)
+
+            is DefaultAttachmentPoints.PwmPin ->
+                checkPin(resourceId.resourceType, DefaultAttachmentPoints.Pin(p.pinNumber))
+
             is DefaultAttachmentPoints.PinGroup -> checkPinGroup(resourceId.resourceType, p)
-            else -> true // Assume the user is correct
+
+            else -> false
         }
     }
 
@@ -84,7 +90,7 @@ class DeviceTypeImplementation {
             else -> throw IllegalStateException("The implementation is missing a resource.")
         }
 
-        else -> true // Assume the user is correct
+        else -> false
     }
 
     private fun checkPinGroup(
@@ -119,7 +125,7 @@ class DeviceTypeImplementation {
             }
         }
 
-        else -> true // Assume the user is correct
+        else -> false
     }
 
     private fun stepperTwoPins(pinGroup: DefaultAttachmentPoints.PinGroup): Boolean =
