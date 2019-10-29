@@ -20,7 +20,6 @@ package com.neuronrobotics.bowlerkernel.kinematics.limb
 
 import com.neuronrobotics.bowlerkernel.kinematics.MockLimbJointsController
 import com.neuronrobotics.bowlerkernel.kinematics.createMotionConstraints
-import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
@@ -61,7 +60,7 @@ internal class DefaultLimbIntegrationTest {
         val controller = MockLimbJointsController(1)
 
         val limb = DefaultLimb(
-            SimpleLimbId(""),
+            LimbId(""),
             links,
             object : ForwardKinematicsSolver {
                 override fun solveChain(

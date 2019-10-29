@@ -19,7 +19,7 @@ package com.neuronrobotics.bowlerkernel.cad.core
 import com.google.common.collect.ImmutableSet
 import com.google.common.collect.ImmutableSetMultimap
 import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBase
-import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.LimbId
+import com.neuronrobotics.bowlerkernel.kinematics.limb.LimbId
 import eu.mihosoft.vrl.v3d.CSG
 
 /**

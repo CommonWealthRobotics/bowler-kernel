@@ -17,7 +17,6 @@
 package com.neuronrobotics.bowlerkernel.kinematics.limb
 
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopLimbJointsController
-import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
 import com.neuronrobotics.bowlerkernel.kinematics.motion.BasicMotionConstraints
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.LengthBasedReachabilityCalculator
@@ -40,7 +39,7 @@ internal class DefaultLimbTest {
     @Test
     fun `test setDesiredTaskSpaceTransform always finishes moving`() {
         val limb = DefaultLimb(
-            SimpleLimbId("A"),
+            LimbId("A"),
             emptyImmutableList(),
             NoopForwardKinematicsSolver,
             NoopInverseKinematicsSolver,

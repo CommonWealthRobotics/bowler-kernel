@@ -22,7 +22,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBase
 import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopLimbJointsController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.DefaultLimb
-import com.neuronrobotics.bowlerkernel.kinematics.limb.limbid.SimpleLimbId
+import com.neuronrobotics.bowlerkernel.kinematics.limb.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.LinkType
@@ -43,7 +43,7 @@ internal fun createMockKinematicBase(limbs: ImmutableList<ImmutableList<DhParam>
         SimpleKinematicBaseId(""),
         limbs.mapIndexed { index, limb ->
             DefaultLimb(
-                SimpleLimbId(index.toString()),
+                LimbId(index.toString()),
                 limb.map { linkParam ->
                     Link(
                         LinkType.Rotary,
@@ -61,7 +61,7 @@ internal fun createMockKinematicBase(limbs: ImmutableList<ImmutableList<DhParam>
             )
         }.toImmutableSet(),
         limbs.mapIndexed { index, _ ->
-            SimpleLimbId(index.toString()) to FrameTransformation.identity
+            LimbId(index.toString()) to FrameTransformation.identity
         }.toImmutableMap()
     )
 }

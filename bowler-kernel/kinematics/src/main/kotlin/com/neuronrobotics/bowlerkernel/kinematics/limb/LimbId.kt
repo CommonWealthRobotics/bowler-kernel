@@ -14,10 +14,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics.limb.limbid
+package com.neuronrobotics.bowlerkernel.kinematics.limb
 
-data class SimpleLimbId(
+/**
+ * The id of a [Limb].
+ */
+data class LimbId(
     val id: String
-) : LimbId {
-    override fun toString() = id
-}
+)
