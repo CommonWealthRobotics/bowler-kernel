@@ -45,5 +45,8 @@ interface LimbJointsController {
      */
     fun setTargetAngles(angles: List<Double>, motionConstraints: MotionConstraints)
 
+    /**
+     * @return The current servo angles.
+     */
     fun getCurrentAngles(): List<Double>
 }
