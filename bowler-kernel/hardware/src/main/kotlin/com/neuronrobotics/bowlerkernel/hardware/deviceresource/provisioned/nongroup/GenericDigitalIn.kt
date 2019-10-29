@@ -25,5 +25,5 @@ internal constructor(
     override val resourceId: ResourceId
 ) : DigitalIn {
 
-    override fun read() = device.bowlerRPCProtocol.digitalRead(resourceId)
+    override fun read() = device.bowlerRPCProtocol.digitalRead(resourceId).unsafeRunSync()
 }

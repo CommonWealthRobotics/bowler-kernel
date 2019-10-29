@@ -29,11 +29,13 @@ import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.DigitalOutGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.ProvisionedDeviceResourceGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group.ServoGroup
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.GenericResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.ProvisionedDeviceResource
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.Servo
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultResourceTypes
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceType
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedAnalogInGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedAnalogInGroupFactory
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDeviceResourceGroup
@@ -63,6 +65,7 @@ class UnprovisionedDeviceResourceFactory(
     UnprovisionedDigitalInFactory,
     UnprovisionedDigitalOutFactory,
     UnprovisionedEncoderFactory,
+    UnprovisionedGenericResourceFactory,
     UnprovisionedPiezoelectricSpeakerFactory,
     UnprovisionedSerialConnectionFactory,
     UnprovisionedServoFactory,
@@ -190,6 +193,18 @@ class UnprovisionedDeviceResourceFactory(
             ResourceId(DefaultResourceTypes.Encoder, attachmentPoint)
         ) { registeredDevice, resourceId ->
             UnprovisionedEncoder(registeredDevice, resourceId)
+        }
+
+    override fun makeUnprovisionedGenericResource(
+        device: BowlerDevice,
+        resourceType: ResourceType,
+        attachmentPoint: AttachmentPoint
+    ): Either<RegisterError, UnprovisionedDeviceResource<GenericResource>> =
+        makeUnprovisionedResource(
+            device,
+            ResourceId(resourceType, attachmentPoint)
+        ) { registeredDevice, resourceId ->
+            UnprovisionedGenericResource(registeredDevice, resourceId)
         }
 
     override fun makeUnprovisionedPiezoelectricSpeaker(

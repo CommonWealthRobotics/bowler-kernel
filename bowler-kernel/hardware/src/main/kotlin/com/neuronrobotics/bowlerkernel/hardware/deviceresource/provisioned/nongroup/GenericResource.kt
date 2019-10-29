@@ -16,7 +16,19 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup
 
-interface AnalogIn : ProvisionedDeviceResource {
+import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
-    fun read(): Double
+data class GenericResource(
+    override val device: BowlerDevice,
+    override val resourceId: ResourceId
+) : ProvisionedDeviceResource {
+
+    fun read(): ByteArray = device.bowlerRPCProtocol.genericRead(resourceId).unsafeRunSync()
+
+    fun write(payload: ByteArray): Unit =
+        device.bowlerRPCProtocol.genericWrite(resourceId, payload).unsafeRunSync()
+
+    fun writeRead(payload: ByteArray): ByteArray =
+        device.bowlerRPCProtocol.genericWriteRead(resourceId, payload).unsafeRunSync()
 }

@@ -16,8 +16,6 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup
 
-import arrow.effects.IO
-
 interface Button :
     ProvisionedDeviceResource {
 
@@ -26,5 +24,5 @@ interface Button :
      *
      * @return Whether the button is being pressed.
      */
-    fun isPressed(): IO<Boolean>
+    fun isPressed(): Boolean
 }

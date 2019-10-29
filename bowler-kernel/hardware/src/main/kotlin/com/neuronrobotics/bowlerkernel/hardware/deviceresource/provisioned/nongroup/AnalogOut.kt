@@ -16,9 +16,7 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup
 
-import arrow.effects.IO
-
 interface AnalogOut : ProvisionedDeviceResource {
 
-    fun write(state: Double): IO<Unit>
+    fun write(state: Double)
 }

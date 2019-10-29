@@ -26,5 +26,5 @@ internal constructor(
     override val resourceIds: ImmutableList<ResourceId>
 ) : DigitalInGroup {
 
-    override fun read() = device.bowlerRPCProtocol.digitalRead(resourceIds)
+    override fun read() = device.bowlerRPCProtocol.digitalRead(resourceIds).unsafeRunSync()
 }

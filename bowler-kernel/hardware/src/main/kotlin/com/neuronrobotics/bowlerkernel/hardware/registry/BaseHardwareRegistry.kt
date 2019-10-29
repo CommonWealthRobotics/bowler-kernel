@@ -25,6 +25,7 @@ import com.google.common.collect.MultimapBuilder
 import com.google.common.collect.SetMultimap
 import com.neuronrobotics.bowlerkernel.hardware.device.Device
 import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.DeviceResourceGroup
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.group.UnprovisionedDeviceResourceGroup
@@ -106,6 +107,10 @@ class BaseHardwareRegistry : HardwareRegistry {
             } ->
                 RegisterDeviceResourceError.ResourceOnSameAttachmentPointError(resourceId).left()
 
+            resourceId.attachmentPoint is DefaultAttachmentPoints.PinGroup &&
+                pinGroupContainsPinsAlreadyUsed(resourceId.attachmentPoint) ->
+                RegisterDeviceResourceError.ResourceOnSameAttachmentPointError(resourceId).left()
+
             else -> {
                 LOGGER.debug { "Registering resource $resourceId on device $device" }
 
@@ -143,6 +148,18 @@ class BaseHardwareRegistry : HardwareRegistry {
             } -> RegisterDeviceResourceGroupError.ResourceOnSameAttachmentPointError(
                 resourceIds
             ).left()
+
+            resourceIds.any {
+                it.attachmentPoint is DefaultAttachmentPoints.PinGroup &&
+                    pinGroupContainsPinsAlreadyUsed(it.attachmentPoint)
+            } -> RegisterDeviceResourceGroupError.ResourceOnSameAttachmentPointError(
+                resourceIds
+            ).left()
+
+            resourcesContainSamePins(resourceIds) ->
+                RegisterDeviceResourceGroupError.ResourceOnSameAttachmentPointError(
+                    resourceIds
+                ).left()
 
             else -> {
                 LOGGER.debug {
@@ -254,6 +271,43 @@ class BaseHardwareRegistry : HardwareRegistry {
                 Option.empty()
             }
         }
+    }
+
+    private fun pinGroupContainsPinsAlreadyUsed(attachmentPoint: DefaultAttachmentPoints.PinGroup) =
+        internalRegisteredDeviceResourceIds.values().any { registeredResourceId ->
+            when {
+                registeredResourceId.attachmentPoint is DefaultAttachmentPoints.Pin ||
+                    registeredResourceId.attachmentPoint is DefaultAttachmentPoints.PwmPin ->
+                    registeredResourceId.attachmentPoint.data[0] in attachmentPoint.pinNumbers
+
+                registeredResourceId.attachmentPoint is DefaultAttachmentPoints.PinGroup ->
+                    registeredResourceId.attachmentPoint.pinNumbers.any {
+                        it in attachmentPoint.pinNumbers
+                    }
+
+                else -> false
+            }
+        }
+
+    private fun resourcesContainSamePins(resourceIds: ImmutableList<ResourceId>): Boolean {
+        resourceIds.forEachIndexed { outerIndex, outerResource ->
+            if (outerResource.attachmentPoint is DefaultAttachmentPoints.PinGroup) {
+                resourceIds.forEachIndexed { innerIndex, innerResource ->
+                    if (
+                        innerIndex != outerIndex &&
+                        (outerResource.attachmentPoint == innerResource.attachmentPoint ||
+                            innerResource.attachmentPoint is DefaultAttachmentPoints.PinGroup &&
+                            innerResource.attachmentPoint.pinNumbers.any {
+                                it in outerResource.attachmentPoint.pinNumbers
+                            })
+                    ) {
+                        return true
+                    }
+                }
+            }
+        }
+
+        return false
     }
 
     companion object {

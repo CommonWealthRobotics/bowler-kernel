@@ -26,5 +26,5 @@ internal constructor(
     override val resourceIds: ImmutableList<ResourceId>
 ) : AnalogInGroup {
 
-    override fun read() = device.bowlerRPCProtocol.analogRead(resourceIds)
+    override fun read() = device.bowlerRPCProtocol.analogRead(resourceIds).unsafeRunSync()
 }

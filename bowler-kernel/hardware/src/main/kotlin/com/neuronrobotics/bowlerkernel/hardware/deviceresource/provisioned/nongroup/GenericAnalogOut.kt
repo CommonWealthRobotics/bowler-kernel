@@ -26,5 +26,5 @@ internal constructor(
 ) : AnalogOut {
 
     override fun write(state: Double) =
-        device.bowlerRPCProtocol.analogWrite(resourceId, state.toShort())
+        device.bowlerRPCProtocol.analogWrite(resourceId, state.toShort()).unsafeRunSync()
 }

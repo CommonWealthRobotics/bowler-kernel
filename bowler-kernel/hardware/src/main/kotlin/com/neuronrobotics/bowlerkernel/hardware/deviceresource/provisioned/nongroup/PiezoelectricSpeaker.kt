@@ -16,8 +16,6 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup
 
-import arrow.effects.IO
-
 interface PiezoelectricSpeaker :
     ProvisionedDeviceResource {
 
@@ -26,7 +24,7 @@ interface PiezoelectricSpeaker :
      *
      * @param frequency The frequency of the tone in Hz.
      */
-    fun playTone(frequency: Long): IO<Unit>
+    fun playTone(frequency: Long)
 
     /**
      * Plays a tone of [frequency] Hz for [duration] ms.
@@ -34,5 +32,5 @@ interface PiezoelectricSpeaker :
      * @param frequency The frequency of the tone in Hz.
      * @param duration The duration of the tone in ms.
      */
-    fun playTone(frequency: Long, duration: Long): IO<Unit>
+    fun playTone(frequency: Long, duration: Long)
 }

@@ -26,5 +26,5 @@ internal constructor(
 ) : Stepper {
 
     override fun step(steps: Int, speed: Int) =
-        device.bowlerRPCProtocol.stepperWrite(resourceId, steps, speed)
+        device.bowlerRPCProtocol.stepperWrite(resourceId, steps, speed).unsafeRunSync()
 }

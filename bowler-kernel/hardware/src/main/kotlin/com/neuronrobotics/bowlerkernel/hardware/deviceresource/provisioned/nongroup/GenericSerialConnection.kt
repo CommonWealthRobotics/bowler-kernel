@@ -25,7 +25,8 @@ internal constructor(
     override val resourceId: ResourceId
 ) : SerialConnection {
 
-    override fun write(data: String) = device.bowlerRPCProtocol.serialWrite(resourceId, data)
+    override fun write(data: String) =
+        device.bowlerRPCProtocol.serialWrite(resourceId, data).unsafeRunSync()
 
-    override fun read() = device.bowlerRPCProtocol.serialRead(resourceId)
+    override fun read() = device.bowlerRPCProtocol.serialRead(resourceId).unsafeRunSync()
 }

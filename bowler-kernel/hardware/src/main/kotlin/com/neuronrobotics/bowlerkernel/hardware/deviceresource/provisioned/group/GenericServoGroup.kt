@@ -31,7 +31,7 @@ internal constructor(
     private var lastWrite = resourceIds.map { 0.0 }
 
     override fun write(angles: List<Double>) {
-        device.bowlerRPCProtocol.servoWrite(resourceIds.zip(angles))
+        device.bowlerRPCProtocol.servoWrite(resourceIds.zip(angles)).unsafeRunSync()
         lastWrite = angles
     }
 

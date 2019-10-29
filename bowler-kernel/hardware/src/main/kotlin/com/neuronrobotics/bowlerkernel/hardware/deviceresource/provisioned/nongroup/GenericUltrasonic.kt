@@ -25,5 +25,5 @@ internal constructor(
     override val resourceId: ResourceId
 ) : Ultrasonic {
 
-    override fun read() = device.bowlerRPCProtocol.ultrasonicRead(resourceId)
+    override fun read() = device.bowlerRPCProtocol.ultrasonicRead(resourceId).unsafeRunSync()
 }

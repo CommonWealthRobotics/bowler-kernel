@@ -28,5 +28,5 @@ internal constructor(
 ) : DigitalOutGroup {
 
     override fun write(states: List<DigitalState>) =
-        device.bowlerRPCProtocol.digitalWrite(resourceIds.zip(states))
+        device.bowlerRPCProtocol.digitalWrite(resourceIds.zip(states)).unsafeRunSync()
 }

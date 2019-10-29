@@ -26,5 +26,5 @@ internal constructor(
 ) : DigitalOut {
 
     override fun write(state: DigitalState) =
-        device.bowlerRPCProtocol.digitalWrite(resourceId, state)
+        device.bowlerRPCProtocol.digitalWrite(resourceId, state).unsafeRunSync()
 }

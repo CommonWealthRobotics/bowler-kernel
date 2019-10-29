@@ -30,7 +30,7 @@ internal constructor(
     private var lastWrite = 0.0
 
     override fun write(angle: Double) {
-        device.bowlerRPCProtocol.servoWrite(resourceId, angle)
+        device.bowlerRPCProtocol.servoWrite(resourceId, angle).unsafeRunSync()
         lastWrite = angle
     }
 

@@ -14,11 +14,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group
+package com.neuronrobotics.bowlerkernel.hardware.deviceresource.unprovisioned.nongroup
 
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.DigitalState
+import com.neuronrobotics.bowlerkernel.hardware.device.BowlerDevice
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.GenericResource
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
-interface DigitalInGroup : ProvisionedDeviceResourceGroup {
+data class UnprovisionedGenericResource(
+    override val device: BowlerDevice,
+    override val resourceId: ResourceId
+) : UnprovisionedDeviceResource<GenericResource> {
 
-    fun read(): List<DigitalState>
+    override fun provision(): GenericResource = GenericResource(device, resourceId)
 }

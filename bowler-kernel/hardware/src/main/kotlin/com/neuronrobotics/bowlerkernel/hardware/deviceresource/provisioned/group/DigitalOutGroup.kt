@@ -16,10 +16,9 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.group
 
-import arrow.effects.IO
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup.DigitalState
 
 interface DigitalOutGroup : ProvisionedDeviceResourceGroup {
 
-    fun write(states: List<DigitalState>): IO<Unit>
+    fun write(states: List<DigitalState>)
 }

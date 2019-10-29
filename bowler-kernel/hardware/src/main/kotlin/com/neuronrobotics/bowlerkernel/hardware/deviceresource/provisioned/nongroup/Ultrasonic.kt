@@ -16,8 +16,6 @@
  */
 package com.neuronrobotics.bowlerkernel.hardware.deviceresource.provisioned.nongroup
 
-import arrow.effects.IO
-
 interface Ultrasonic :
     ProvisionedDeviceResource {
 
@@ -26,5 +24,5 @@ interface Ultrasonic :
      *
      * @return The current distance.
      */
-    fun read(): IO<Long>
+    fun read(): Long
 }

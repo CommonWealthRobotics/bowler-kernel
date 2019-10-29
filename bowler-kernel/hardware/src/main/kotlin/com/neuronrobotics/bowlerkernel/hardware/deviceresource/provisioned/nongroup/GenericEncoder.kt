@@ -25,5 +25,5 @@ internal constructor(
     override val resourceId: ResourceId
 ) : Encoder {
 
-    override fun read() = device.bowlerRPCProtocol.encoderRead(resourceId)
+    override fun read() = device.bowlerRPCProtocol.encoderRead(resourceId).unsafeRunSync()
 }

@@ -26,8 +26,8 @@ internal constructor(
 ) : PiezoelectricSpeaker {
 
     override fun playTone(frequency: Long) =
-        device.bowlerRPCProtocol.toneWrite(resourceId, frequency.toInt())
+        device.bowlerRPCProtocol.toneWrite(resourceId, frequency.toInt()).unsafeRunSync()
 
     override fun playTone(frequency: Long, duration: Long) =
-        device.bowlerRPCProtocol.toneWrite(resourceId, frequency.toInt(), duration)
+        device.bowlerRPCProtocol.toneWrite(resourceId, frequency.toInt(), duration).unsafeRunSync()
 }

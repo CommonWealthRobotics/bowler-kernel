@@ -25,5 +25,5 @@ internal constructor(
     override val resourceId: ResourceId
 ) : AnalogIn {
 
-    override fun read() = device.bowlerRPCProtocol.analogRead(resourceId)
+    override fun read() = device.bowlerRPCProtocol.analogRead(resourceId).unsafeRunSync()
 }
