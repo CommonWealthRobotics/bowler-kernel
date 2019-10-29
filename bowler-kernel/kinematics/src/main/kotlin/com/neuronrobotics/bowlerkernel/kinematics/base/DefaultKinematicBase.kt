@@ -21,7 +21,6 @@ package com.neuronrobotics.bowlerkernel.kinematics.base
 import Jama.Matrix
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.ImmutableSet
-import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.KinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import com.neuronrobotics.bowlerkernel.kinematics.limb.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation

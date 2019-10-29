@@ -23,7 +23,7 @@ import com.google.common.graph.ImmutableNetwork
 import com.google.common.graph.MutableNetwork
 import com.google.common.graph.NetworkBuilder
 import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBase
-import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.KinematicBaseId
+import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 

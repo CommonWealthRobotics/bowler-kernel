@@ -19,6 +19,4 @@ package com.neuronrobotics.bowlerkernel.kinematics.limb
 /**
  * The id of a [Limb].
  */
-data class LimbId(
-    val id: String
-)
+data class LimbId(val id: String)

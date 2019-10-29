@@ -19,7 +19,6 @@
 package com.neuronrobotics.bowlerkernel.kinematics.base
 
 import com.neuronrobotics.bowlerkernel.kinematics.MockLimbJointsController
-import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.DefaultLimb
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import com.neuronrobotics.bowlerkernel.kinematics.limb.LimbId
@@ -61,7 +60,7 @@ internal class DefaultKinematicBaseTest {
     )
 
     private fun makeBase(limbRootTransform: FrameTransformation) = DefaultKinematicBase(
-        SimpleKinematicBaseId("base"),
+        KinematicBaseId("base"),
         immutableSetOf(limb),
         immutableMapOf(limb.id to limbRootTransform)
     )
@@ -121,7 +120,7 @@ internal class DefaultKinematicBaseTest {
 
         val limbBaseFT = randomFrameTransformation()
         val base = DefaultKinematicBase(
-            SimpleKinematicBaseId("base"),
+            KinematicBaseId("base"),
             immutableSetOf(limb),
             immutableMapOf(limb.id to limbBaseFT)
         )
@@ -148,7 +147,7 @@ internal class DefaultKinematicBaseTest {
 
         val limbBaseFT = randomFrameTransformation()
         val base = DefaultKinematicBase(
-            SimpleKinematicBaseId("base"),
+            KinematicBaseId("base"),
             immutableSetOf(limb),
             immutableMapOf(limb.id to limbBaseFT)
         )
@@ -178,7 +177,7 @@ internal class DefaultKinematicBaseTest {
 
         val limbBaseFT = randomFrameTransformation()
         val base = DefaultKinematicBase(
-            SimpleKinematicBaseId("base"),
+            KinematicBaseId("base"),
             immutableSetOf(limb),
             immutableMapOf(limb.id to limbBaseFT)
         )

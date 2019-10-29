@@ -14,10 +14,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.kinematics.base.baseid
+package com.neuronrobotics.bowlerkernel.kinematics.base
 
-data class SimpleKinematicBaseId(
-    val id: String
-) : KinematicBaseId {
-    override fun toString() = id
-}
+/**
+ * The id of a [KinematicBase].
+ */
+data class KinematicBaseId(val id: String)

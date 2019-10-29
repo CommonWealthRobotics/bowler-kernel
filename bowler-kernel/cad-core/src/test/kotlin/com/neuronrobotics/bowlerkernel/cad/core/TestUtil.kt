@@ -19,7 +19,7 @@ package com.neuronrobotics.bowlerkernel.cad.core
 import com.google.common.collect.ImmutableList
 import com.neuronrobotics.bowlerkernel.kinematics.base.DefaultKinematicBase
 import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBase
-import com.neuronrobotics.bowlerkernel.kinematics.base.baseid.SimpleKinematicBaseId
+import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.closedloop.NoopLimbJointsController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.DefaultLimb
 import com.neuronrobotics.bowlerkernel.kinematics.limb.LimbId
@@ -40,7 +40,7 @@ import org.octogonapus.ktguava.collections.toImmutableSet
 
 internal fun createMockKinematicBase(limbs: ImmutableList<ImmutableList<DhParam>>): KinematicBase {
     return DefaultKinematicBase(
-        SimpleKinematicBaseId(""),
+        KinematicBaseId(""),
         limbs.mapIndexed { index, limb ->
             DefaultLimb(
                 LimbId(index.toString()),
