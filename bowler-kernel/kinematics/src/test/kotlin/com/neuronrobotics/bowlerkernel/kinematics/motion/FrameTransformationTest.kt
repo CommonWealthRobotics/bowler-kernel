@@ -28,6 +28,7 @@ import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -498,5 +499,13 @@ internal class FrameTransformationTest {
         })
 
         assertTrue(expected.approxEquals(actual, tolerance))
+    }
+
+    @Test
+    fun `test fromRotation with quaternion`() {
+        val expected = FrameTransformation.fromRotation(-60, 30, 80)
+        val rot = Rotation(expected.rotation.array, equalityTolerance)
+        val actual = FrameTransformation.fromRotation(rot.q0, rot.q1, rot.q2, rot.q3)
+        assertTrue(expected.approxEquals(actual, equalityTolerance))
     }
 }
