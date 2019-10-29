@@ -39,7 +39,7 @@ interface Limb {
     /**
      * The unique (per-[KinematicBase]) id of this limb.
      */
-    val id: LimbId
+    val id: String
 
     /**
      * The links that form this limb.

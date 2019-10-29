@@ -20,7 +20,6 @@ import com.google.common.collect.ImmutableSet
 import com.google.common.collect.ImmutableSetMultimap
 import com.neuronrobotics.bowlerkernel.kinematics.base.DefaultKinematicBase
 import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBase
-import com.neuronrobotics.bowlerkernel.kinematics.limb.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.DhParam
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.Link
 import com.neuronrobotics.bowlerkernel.kinematics.limb.link.toFrameTransformation
@@ -64,7 +63,7 @@ class DefaultCadGenerator(
         Cube(bodyThickness, bodyThickness, bodyThickness).toCSG()
 
     @SuppressWarnings("ComplexMethod", "SwallowedException")
-    override fun generateLimbs(base: KinematicBase): ImmutableSetMultimap<LimbId, ImmutableSet<CSG>> {
+    override fun generateLimbs(base: KinematicBase): ImmutableSetMultimap<String, ImmutableSet<CSG>> {
         // TODO: Support GeneralKinematicBase
         require(base is DefaultKinematicBase) {
             "Only supports `DefaultKinematicBase`."

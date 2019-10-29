@@ -18,7 +18,6 @@ package com.neuronrobotics.bowlerkernel.kinematics.base
 
 import Jama.Matrix
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
-import com.neuronrobotics.bowlerkernel.kinematics.limb.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
 
@@ -32,7 +31,7 @@ interface KinematicBase {
     /**
      * The unique id of this base.
      */
-    val id: KinematicBaseId
+    val id: String
 
     /**
      * Sets a desired world space transform the limb tip should try to move to.
@@ -43,7 +42,7 @@ interface KinematicBase {
      * space transform to the desired [worldSpaceTransform].
      */
     fun setDesiredLimbTipTransform(
-        limbId: LimbId,
+        limbId: String,
         worldSpaceTransform: FrameTransformation,
         currentBodyTransform: FrameTransformation,
         motionConstraints: MotionConstraints
@@ -56,7 +55,7 @@ interface KinematicBase {
      * @return The current limb tip transform in world space.
      */
     fun getCurrentLimbTipTransform(
-        limbId: LimbId,
+        limbId: String,
         currentBodyTransform: FrameTransformation
     ): FrameTransformation
 
@@ -67,7 +66,7 @@ interface KinematicBase {
      * @return The desired limb tip transform in world space.
      */
     fun getDesiredLimbTipTransform(
-        limbId: LimbId,
+        limbId: String,
         currentBodyTransform: FrameTransformation
     ): FrameTransformation
 
@@ -80,7 +79,7 @@ interface KinematicBase {
      * @return The [worldSpaceTransform] in limb space.
      */
     fun getWorldSpaceTransformInLimbSpace(
-        limbId: LimbId,
+        limbId: String,
         worldSpaceTransform: FrameTransformation,
         currentBodyTransform: FrameTransformation
     ): FrameTransformation
@@ -95,7 +94,7 @@ interface KinematicBase {
      * @return The [limbSpaceTransform] in world space.
      */
     fun getLimbSpaceTransformInWorldSpace(
-        limbId: LimbId,
+        limbId: String,
         limbSpaceTransform: FrameTransformation,
         currentBodyTransform: FrameTransformation
     ): FrameTransformation
@@ -107,5 +106,5 @@ interface KinematicBase {
      * @param linkIndex The index of the link in [Limb.links].
      * @return The Jacobian matrix.
      */
-    fun computeJacobian(limbId: LimbId, linkIndex: Int): Matrix
+    fun computeJacobian(limbId: String, linkIndex: Int): Matrix
 }

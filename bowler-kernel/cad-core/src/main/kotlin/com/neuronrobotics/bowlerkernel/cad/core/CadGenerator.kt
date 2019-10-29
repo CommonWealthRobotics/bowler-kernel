@@ -19,7 +19,6 @@ package com.neuronrobotics.bowlerkernel.cad.core
 import com.google.common.collect.ImmutableSet
 import com.google.common.collect.ImmutableSetMultimap
 import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBase
-import com.neuronrobotics.bowlerkernel.kinematics.limb.LimbId
 import eu.mihosoft.vrl.v3d.CSG
 
 /**
@@ -41,5 +40,5 @@ interface CadGenerator {
      * @param base The [KinematicBase].
      * @return The CSGs for the limbs.
      */
-    fun generateLimbs(base: KinematicBase): ImmutableSetMultimap<LimbId, ImmutableSet<CSG>>
+    fun generateLimbs(base: KinematicBase): ImmutableSetMultimap<String, ImmutableSet<CSG>>
 }

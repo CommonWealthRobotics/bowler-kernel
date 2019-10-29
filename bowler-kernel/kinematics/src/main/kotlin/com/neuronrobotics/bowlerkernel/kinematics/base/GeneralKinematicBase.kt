@@ -18,7 +18,6 @@ package com.neuronrobotics.bowlerkernel.kinematics.base
 
 import Jama.Matrix
 import com.neuronrobotics.bowlerkernel.kinematics.graph.KinematicGraph
-import com.neuronrobotics.bowlerkernel.kinematics.limb.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
 
@@ -30,12 +29,12 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
  */
 @Suppress("UnstableApiUsage")
 class GeneralKinematicBase(
-    override val id: KinematicBaseId,
+    override val id: String,
     private val kinematicGraph: KinematicGraph
 ) : KinematicBase {
 
     override fun setDesiredLimbTipTransform(
-        limbId: LimbId,
+        limbId: String,
         worldSpaceTransform: FrameTransformation,
         currentBodyTransform: FrameTransformation,
         motionConstraints: MotionConstraints
@@ -44,21 +43,21 @@ class GeneralKinematicBase(
     }
 
     override fun getCurrentLimbTipTransform(
-        limbId: LimbId,
+        limbId: String,
         currentBodyTransform: FrameTransformation
     ): FrameTransformation {
         TODO("not implemented")
     }
 
     override fun getDesiredLimbTipTransform(
-        limbId: LimbId,
+        limbId: String,
         currentBodyTransform: FrameTransformation
     ): FrameTransformation {
         TODO("not implemented")
     }
 
     override fun getWorldSpaceTransformInLimbSpace(
-        limbId: LimbId,
+        limbId: String,
         worldSpaceTransform: FrameTransformation,
         currentBodyTransform: FrameTransformation
     ): FrameTransformation {
@@ -66,14 +65,14 @@ class GeneralKinematicBase(
     }
 
     override fun getLimbSpaceTransformInWorldSpace(
-        limbId: LimbId,
+        limbId: String,
         limbSpaceTransform: FrameTransformation,
         currentBodyTransform: FrameTransformation
     ): FrameTransformation {
         TODO("not implemented")
     }
 
-    override fun computeJacobian(limbId: LimbId, linkIndex: Int): Matrix {
+    override fun computeJacobian(limbId: String, linkIndex: Int): Matrix {
         TODO("not implemented")
     }
 }

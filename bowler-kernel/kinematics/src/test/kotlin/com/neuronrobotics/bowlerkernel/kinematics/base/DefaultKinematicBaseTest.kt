@@ -21,7 +21,6 @@ package com.neuronrobotics.bowlerkernel.kinematics.base
 import com.neuronrobotics.bowlerkernel.kinematics.MockLimbJointsController
 import com.neuronrobotics.bowlerkernel.kinematics.limb.DefaultLimb
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
-import com.neuronrobotics.bowlerkernel.kinematics.limb.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.motion.BasicMotionConstraints
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.LengthBasedReachabilityCalculator
@@ -48,7 +47,7 @@ internal class DefaultKinematicBaseTest {
     private val tolerance = 1e-10
 
     private val limb = DefaultLimb(
-        LimbId("limb"),
+        "limb",
         seaArmLinks,
         NoopForwardKinematicsSolver,
         NoopInverseKinematicsSolver,
@@ -60,7 +59,7 @@ internal class DefaultKinematicBaseTest {
     )
 
     private fun makeBase(limbRootTransform: FrameTransformation) = DefaultKinematicBase(
-        KinematicBaseId("base"),
+        "base",
         immutableSetOf(limb),
         immutableMapOf(limb.id to limbRootTransform)
     )
@@ -114,13 +113,13 @@ internal class DefaultKinematicBaseTest {
     fun `test get current limb tip transform`() {
         val limbTipFT = randomFrameTransformation()
         val limb = mock<Limb> {
-            on { id } doReturn LimbId("limb")
+            on { id } doReturn "limb"
             on { getCurrentTaskSpaceTransform() } doReturn limbTipFT
         }
 
         val limbBaseFT = randomFrameTransformation()
         val base = DefaultKinematicBase(
-            KinematicBaseId("base"),
+            "base",
             immutableSetOf(limb),
             immutableMapOf(limb.id to limbBaseFT)
         )
@@ -142,12 +141,12 @@ internal class DefaultKinematicBaseTest {
     @Test
     fun `get world space transform in limb space`() {
         val limb = mock<Limb> {
-            on { id } doReturn LimbId("limb")
+            on { id } doReturn "limb"
         }
 
         val limbBaseFT = randomFrameTransformation()
         val base = DefaultKinematicBase(
-            KinematicBaseId("base"),
+            "base",
             immutableSetOf(limb),
             immutableMapOf(limb.id to limbBaseFT)
         )
@@ -172,12 +171,12 @@ internal class DefaultKinematicBaseTest {
     @Test
     fun `get limb space transform in world space`() {
         val limb = mock<Limb> {
-            on { id } doReturn LimbId("limb")
+            on { id } doReturn "limb"
         }
 
         val limbBaseFT = randomFrameTransformation()
         val base = DefaultKinematicBase(
-            KinematicBaseId("base"),
+            "base",
             immutableSetOf(limb),
             immutableMapOf(limb.id to limbBaseFT)
         )

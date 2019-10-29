@@ -31,7 +31,7 @@ import java.util.concurrent.Executors
 import org.octogonapus.ktguava.collections.toImmutableList
 
 class DefaultLimb(
-    override val id: LimbId,
+    override val id: String,
     override val links: ImmutableList<Link>,
     override val forwardKinematicsSolver: ForwardKinematicsSolver,
     override val inverseKinematicsSolver: InverseKinematicsSolver,

@@ -39,7 +39,7 @@ internal class DefaultLimbTest {
     @Test
     fun `test setDesiredTaskSpaceTransform always finishes moving`() {
         val limb = DefaultLimb(
-            LimbId("A"),
+            "A",
             emptyImmutableList(),
             NoopForwardKinematicsSolver,
             NoopInverseKinematicsSolver,

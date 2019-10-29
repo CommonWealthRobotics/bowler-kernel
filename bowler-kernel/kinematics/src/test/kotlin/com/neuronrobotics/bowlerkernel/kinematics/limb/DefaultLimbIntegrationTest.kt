@@ -60,7 +60,7 @@ internal class DefaultLimbIntegrationTest {
         val controller = MockLimbJointsController(1)
 
         val limb = DefaultLimb(
-            LimbId(""),
+            "",
             links,
             object : ForwardKinematicsSolver {
                 override fun solveChain(

@@ -22,7 +22,6 @@ import Jama.Matrix
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
-import com.neuronrobotics.bowlerkernel.kinematics.limb.LimbId
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
 
@@ -35,13 +34,13 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.MotionConstraints
  */
 @SuppressWarnings("TooManyFunctions")
 class DefaultKinematicBase(
-    override val id: KinematicBaseId,
+    override val id: String,
     val limbs: ImmutableSet<Limb>,
-    val limbBaseTransforms: ImmutableMap<LimbId, FrameTransformation>
+    val limbBaseTransforms: ImmutableMap<String, FrameTransformation>
 ) : KinematicBase {
 
     override fun setDesiredLimbTipTransform(
-        limbId: LimbId,
+        limbId: String,
         worldSpaceTransform: FrameTransformation,
         currentBodyTransform: FrameTransformation,
         motionConstraints: MotionConstraints
@@ -54,7 +53,7 @@ class DefaultKinematicBase(
     }
 
     override fun getCurrentLimbTipTransform(
-        limbId: LimbId,
+        limbId: String,
         currentBodyTransform: FrameTransformation
     ): FrameTransformation {
         val limb = limbs.first { it.id == limbId }
@@ -66,7 +65,7 @@ class DefaultKinematicBase(
     }
 
     override fun getDesiredLimbTipTransform(
-        limbId: LimbId,
+        limbId: String,
         currentBodyTransform: FrameTransformation
     ): FrameTransformation {
         val limb = limbs.first { it.id == limbId }
@@ -78,7 +77,7 @@ class DefaultKinematicBase(
     }
 
     override fun getWorldSpaceTransformInLimbSpace(
-        limbId: LimbId,
+        limbId: String,
         worldSpaceTransform: FrameTransformation,
         currentBodyTransform: FrameTransformation
     ) = worldSpaceTransform *
@@ -86,14 +85,14 @@ class DefaultKinematicBase(
         (limbBaseTransforms[limbId] ?: error("")).inverse
 
     override fun getLimbSpaceTransformInWorldSpace(
-        limbId: LimbId,
+        limbId: String,
         limbSpaceTransform: FrameTransformation,
         currentBodyTransform: FrameTransformation
     ) = limbSpaceTransform *
         (limbBaseTransforms[limbId] ?: error("")) *
         currentBodyTransform
 
-    override fun computeJacobian(limbId: LimbId, linkIndex: Int): Matrix {
+    override fun computeJacobian(limbId: String, linkIndex: Int): Matrix {
         TODO("not implemented")
     }
 }

@@ -23,7 +23,6 @@ import com.google.common.graph.ImmutableNetwork
 import com.google.common.graph.MutableNetwork
 import com.google.common.graph.NetworkBuilder
 import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBase
-import com.neuronrobotics.bowlerkernel.kinematics.base.KinematicBaseId
 import com.neuronrobotics.bowlerkernel.kinematics.limb.Limb
 import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
 
@@ -32,7 +31,7 @@ import com.neuronrobotics.bowlerkernel.kinematics.motion.FrameTransformation
  *
  * @param id The [KinematicBase.id].
  */
-data class BaseNode(val id: KinematicBaseId)
+data class BaseNode(val id: String)
 
 typealias KinematicGraph = ImmutableNetwork<Either<BaseNode, Limb>, FrameTransformation>
 typealias MutableKinematicGraph = MutableNetwork<Either<BaseNode, Limb>, FrameTransformation>
