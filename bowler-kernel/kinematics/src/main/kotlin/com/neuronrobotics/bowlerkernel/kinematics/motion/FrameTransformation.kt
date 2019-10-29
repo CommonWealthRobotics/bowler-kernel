@@ -279,6 +279,34 @@ private constructor(private val mat: Matrix) {
         )
 
         /**
+         * Constructs a frame transformation from a rotation specified by the components of a
+         * quaternion.
+         *
+         * @param w The scalar part of the quaternion.
+         * @param x The first coordinate of the vector part of the quaternion.
+         * @param y The second coordinate of the vector part of the quaternion.
+         * @param z The third coordinate of the vector part of the quaternion.
+         * @param needsNormalization If `true`, the coordinates are considered not to be normalized,
+         * a normalization preprocessing step is performed before using them.
+         * @return The rotation matrix.
+         */
+        fun fromRotation(
+            w: Number,
+            x: Number,
+            y: Number,
+            z: Number,
+            needsNormalization: Boolean = true
+        ) = fromRotation(
+            Rotation(
+                w.toDouble(),
+                x.toDouble(),
+                y.toDouble(),
+                z.toDouble(),
+                needsNormalization
+            ).matrix
+        )
+
+        /**
          * Constructs a frame transformation from a rotation.
          *
          * @param rotation A 3x3 rotation matrix.
