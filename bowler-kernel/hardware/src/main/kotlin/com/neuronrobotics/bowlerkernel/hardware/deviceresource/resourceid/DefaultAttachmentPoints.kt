@@ -77,17 +77,19 @@ sealed class DefaultAttachmentPoints(
      * @param minUsLow The minimum microseconds LOW.
      * @param maxUsHigh The maximum microseconds HIGH.
      * @param timerWidth The timer width in bits.
+     * @param periodHertz The PWM period in Hertz.
      */
     data class PwmPin(
         val pinNumber: Byte,
         val minUsLow: Short,
         val maxUsHigh: Short,
-        val timerWidth: Byte
-    ) :
-        DefaultAttachmentPoints(
-            4,
-            byteArrayOf(pinNumber) + minUsLow.asByteArray() + maxUsHigh.asByteArray() + timerWidth
-        )
+        val timerWidth: Byte,
+        val periodHertz: Int
+    ) : DefaultAttachmentPoints(
+        4,
+        byteArrayOf(pinNumber) + minUsLow.asByteArray() + maxUsHigh.asByteArray() +
+            byteArrayOf(timerWidth) + periodHertz.asByteArray()
+    )
 
     /**
      * No attachment point data.
@@ -109,3 +111,6 @@ sealed class DefaultAttachmentPoints(
 
 private fun Short.asByteArray(): ByteArray =
     ByteBuffer.allocate(Short.SIZE_BYTES).putShort(this).array()
+
+private fun Int.asByteArray(): ByteArray =
+    ByteBuffer.allocate(Int.SIZE_BYTES).putInt(this).array()

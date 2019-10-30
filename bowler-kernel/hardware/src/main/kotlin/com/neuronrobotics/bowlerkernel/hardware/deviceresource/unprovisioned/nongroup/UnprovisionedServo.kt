@@ -31,6 +31,6 @@ internal constructor(
     override fun provision() =
         GenericServo(device, resourceId, limits).also {
             // Write the zero position first so it doesn't start at some weird position
-            it.write(limits.zero * limits.scale)
+            it.write(limits.zero)
         }
 }

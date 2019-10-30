@@ -119,7 +119,7 @@ internal class DefaultBowlerRPCProtocolWriteTest {
                 val result = it.addWrite(
                     ResourceId(
                         DefaultResourceTypes.Servo,
-                        DefaultAttachmentPoints.PwmPin(1, 544, 2400, 16)
+                        DefaultAttachmentPoints.PwmPin(1, 544, 2400, 16, 330)
                     )
                 ).attempt().unsafeRunSync()
                 assertTrue(result.isRight())
@@ -137,7 +137,11 @@ internal class DefaultBowlerRPCProtocolWriteTest {
                             32,
                             9,
                             96,
-                            16
+                            16,
+                            0,
+                            0,
+                            1,
+                            74
                         )
                     )
                 )

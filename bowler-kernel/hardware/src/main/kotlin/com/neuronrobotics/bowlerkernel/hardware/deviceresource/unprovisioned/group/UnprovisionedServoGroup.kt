@@ -29,5 +29,7 @@ internal constructor(
     val limits: ImmutableList<ServoLimits>
 ) : UnprovisionedDeviceResourceGroup<GenericServoGroup> {
 
-    override fun provision() = GenericServoGroup(device, resourceIds, limits)
+    override fun provision() = GenericServoGroup(device, resourceIds, limits).also {
+        it.write(limits.map { it.zero })
+    }
 }

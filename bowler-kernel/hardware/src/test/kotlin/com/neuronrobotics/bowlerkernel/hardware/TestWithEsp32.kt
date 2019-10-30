@@ -196,7 +196,8 @@ internal class TestWithEsp32 {
                 pinNumber = 2,
                 minUsLow = 400,
                 maxUsHigh = 2400,
-                timerWidth = 18
+                timerWidth = 18,
+                periodHertz = 330
             )
         )
 
