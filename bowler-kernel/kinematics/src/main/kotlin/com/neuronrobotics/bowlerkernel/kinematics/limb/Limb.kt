@@ -82,6 +82,11 @@ interface Limb {
     val inertialStateEstimator: InertialStateEstimator
 
     /**
+     * The home [FrameTransformation] (where all joints are at zero degrees).
+     */
+    val home: FrameTransformation
+
+    /**
      * Sets a desired task space transform this limb should try to move to.
      *
      * @param taskSpaceTransform The desired task space transform.

@@ -42,11 +42,13 @@ class DefaultLimb(
     override val inertialStateEstimator: InertialStateEstimator
 ) : Limb {
 
-    // Start the desired task space transform at the home position
-    private var desiredTaskSpaceTransform = forwardKinematicsSolver.solveChain(
+    override val home = forwardKinematicsSolver.solveChain(
         links,
         links.map { 0.0 }.toImmutableList()
     )
+
+    // Start the desired task space transform at the home position
+    private var desiredTaskSpaceTransform = home
 
     private var movingToTaskSpaceTransform = false
     private val moveLimbPool = Executors.newSingleThreadExecutor()
