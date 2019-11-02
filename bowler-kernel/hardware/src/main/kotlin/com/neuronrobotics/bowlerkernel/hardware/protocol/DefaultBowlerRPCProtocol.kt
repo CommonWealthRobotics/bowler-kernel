@@ -63,6 +63,7 @@ open class DefaultBowlerRPCProtocol(
     private var highestPacketId = AtomicInteger(startPacketId.toInt())
     private var highestGroupId = AtomicInteger(1)
 
+    private val allResourceIds = mutableSetOf<ResourceId>()
     private val groupedResourceToGroupId = mutableMapOf<ResourceId, Int>()
     private val groupIdToMembers = mutableMapOf<Int, MutableSet<ResourceId>>()
 
@@ -223,6 +224,16 @@ open class DefaultBowlerRPCProtocol(
             """.trimMargin()
         }
 
+        // Check that all resourceIds are new
+        resourceIds.filter { it in allResourceIds }.let {
+            if (it.isNotEmpty()) {
+                val message =
+                    "Tried to add ResourceIds that were already added:\n${it.joinToString("\n")}"
+                LOGGER.warn { message }
+                return IO.raiseError(UnsupportedOperationException(message))
+            }
+        }
+
         val groupId = getNextGroupId()
         val packetId = getNextPacketId()
         val count = resourceIds.size
@@ -297,6 +308,7 @@ open class DefaultBowlerRPCProtocol(
                                 }.add(resourceId)
                                 groupMemberToSendRange[resourceId] = sendStart to sendEnd
                                 groupMemberToReceiveRange[resourceId] = receiveStart to receiveEnd
+                                allResourceIds.add(resourceId)
 
                                 currentSendIndex = (currentSendIndex + sendLength).toByte()
                                 currentReceiveIndex = (currentReceiveIndex + receiveLength).toByte()
@@ -322,7 +334,7 @@ open class DefaultBowlerRPCProtocol(
     }
 
     /**
-     * Adds a non-polling resource by sending a discovery packet.
+     * Adds a resource by sending a discovery packet.
      *
      * @param resourceId The resource id.
      */
@@ -334,6 +346,12 @@ open class DefaultBowlerRPCProtocol(
             |Adding resource:
             |resourceId: $resourceId
             """.trimMargin()
+        }
+
+        if (resourceId in allResourceIds) {
+            val message = "Tried to add a ResourceId that was already added:\n$resourceId"
+            LOGGER.warn { message }
+            return IO.raiseError(UnsupportedOperationException(message))
         }
 
         val packetId = getNextPacketId()
@@ -349,6 +367,7 @@ open class DefaultBowlerRPCProtocol(
             if (it[0] == STATUS_ACCEPTED) {
                 // Discovery packet was accepted
                 nonGroupedResourceIdToPacketId[resourceId] = packetId
+                allResourceIds.add(resourceId)
 
                 IO {
                     // TODO: Expose maxRetries

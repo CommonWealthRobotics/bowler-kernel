@@ -164,6 +164,22 @@ internal class DefaultBowlerRPCProtocolReadTest {
         }
     }
 
+    @Test
+    fun `add resource more than once`() {
+        setupRead(lineSensor)
+
+        protocolTest(protocol, server) {
+            operation {
+                val result = it.addRead(lineSensor).attempt().unsafeRunSync()
+                assertTrue(result.isLeft())
+            } pcSends {
+                immutableListOf()
+            } deviceResponds {
+                immutableListOf()
+            }
+        }
+    }
+
     private fun setupRead(resourceId: ResourceId) =
         setupReadImpl(resourceId) { addRead(resourceId) }
 

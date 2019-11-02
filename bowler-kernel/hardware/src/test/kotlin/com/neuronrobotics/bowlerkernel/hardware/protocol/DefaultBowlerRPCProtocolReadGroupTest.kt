@@ -484,6 +484,23 @@ internal class DefaultBowlerRPCProtocolReadGroupTest {
         }
     }
 
+    @Test
+    fun `add a read group twice`() {
+        setupReadGroup()
+
+        protocolTest(protocol, server) {
+            operation {
+                val result = it.addReadGroup(immutableSetOf(lineSensor1, lineSensor2)).attempt()
+                    .unsafeRunSync()
+                assertTrue(result.isLeft())
+            } pcSends {
+                immutableListOf()
+            } deviceResponds {
+                immutableListOf()
+            }
+        }
+    }
+
     private fun setupReadGroup() =
         setupReadGroupImpl { addReadGroup(immutableSetOf(lineSensor1, lineSensor2)) }
 
