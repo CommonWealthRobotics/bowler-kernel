@@ -205,6 +205,22 @@ internal class DefaultBowlerRPCProtocolWriteTest {
         }
     }
 
+    @Test
+    fun `add a write twice`() {
+        setupWrite()
+
+        protocolTest(protocol, server) {
+            operation {
+                val result = it.addWrite(led).attempt().unsafeRunSync()
+                assertTrue(result.isLeft())
+            } pcSends {
+                immutableListOf()
+            } deviceResponds {
+                immutableListOf()
+            }
+        }
+    }
+
     private fun setupWrite() {
         protocolTest(protocol, server) {
             operation {
