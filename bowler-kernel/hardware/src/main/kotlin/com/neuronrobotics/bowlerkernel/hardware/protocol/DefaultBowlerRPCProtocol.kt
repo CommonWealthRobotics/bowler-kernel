@@ -20,7 +20,9 @@ package com.neuronrobotics.bowlerkernel.hardware.protocol
 
 import arrow.core.Either
 import arrow.effects.IO
+import arrow.effects.IOOf
 import arrow.effects.extensions.io.monad.binding
+import arrow.effects.extensions.io.monad.flatten
 import arrow.effects.liftIO
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.deviceserver.DeviceServer
@@ -102,7 +104,7 @@ open class DefaultBowlerRPCProtocol(
     private fun sendGeneralDiscoveryPacket(
         operation: Byte,
         payload: ByteArray
-    ): IO<ByteArray> {
+    ): IO<ByteArray> = IO {
         val payloadWithHeader = getPayload(PAYLOAD_SIZE, byteArrayOf(operation) + payload)
 
         LOGGER.debug {
@@ -112,7 +114,7 @@ open class DefaultBowlerRPCProtocol(
             """.trimMargin()
         }
 
-        return server.write(DISCOVERY_PACKET_ID, payloadWithHeader).map {
+        server.write(DISCOVERY_PACKET_ID, payloadWithHeader).map {
             LOGGER.debug {
                 """
                 |Discovery response:
@@ -122,7 +124,7 @@ open class DefaultBowlerRPCProtocol(
 
             it
         }
-    }
+    }.flatten()
 
     /**
      * Sends a discovery packet.
@@ -215,7 +217,7 @@ open class DefaultBowlerRPCProtocol(
      */
     private fun addGroup(
         resourceIds: ImmutableSet<ResourceId>
-    ): IO<Unit> {
+    ): IO<Unit> = IO {
         LOGGER.debug {
             """
             |Adding group:
@@ -225,27 +227,24 @@ open class DefaultBowlerRPCProtocol(
         }
 
         // Check that all resourceIds are new
-        resourceIds.filter { it in allResourceIds }.let {
-            if (it.isNotEmpty()) {
-                val message =
-                    "Tried to add ResourceIds that were already added:\n${it.joinToString("\n")}"
-                LOGGER.warn { message }
-                return IO.raiseError(UnsupportedOperationException(message))
-            }
-        }
+        val alreadyAddedResources = resourceIds.filter { it in allResourceIds }
+        if (alreadyAddedResources.isNotEmpty()) {
+            val message = """Tried to add ResourceIds that were already added:
+                |${alreadyAddedResources.joinToString("\n")}""".trimMargin()
+            LOGGER.warn { message }
+            IO.raiseError(UnsupportedOperationException(message))
+        } else {
+            val groupId = getNextGroupId()
+            val packetId = getNextPacketId()
+            val count = resourceIds.size
 
-        val groupId = getNextGroupId()
-        val packetId = getNextPacketId()
-        val count = resourceIds.size
+            val groupStatus = sendGroupDiscoveryPacket(
+                groupId.toByte(),
+                packetId.toByte(),
+                count.toByte()
+            )
 
-        val groupStatus = sendGroupDiscoveryPacket(
-            groupId.toByte(),
-            packetId.toByte(),
-            count.toByte()
-        )
-
-        return groupStatus.flatMap {
-            if (it[0] == STATUS_ACCEPTED) {
+            groupStatus.ifAccepted {
                 groupIdToPacketId[groupId] = packetId
                 groupIdToCount[groupId] = count
 
@@ -263,10 +262,10 @@ open class DefaultBowlerRPCProtocol(
                             IO.raiseError<Unit>(
                                 IllegalStateException(
                                     """
-                                    |Cannot handle payload indices greater than a byte.
-                                    |Send index: $currentSendIndex
-                                    |Receive index: $currentReceiveIndex
-                                    """.trimMargin()
+                                |Cannot handle payload indices greater than a byte.
+                                |Send index: $currentSendIndex
+                                |Receive index: $currentReceiveIndex
+                                """.trimMargin()
                                 )
                             ).bind()
                         }
@@ -277,11 +276,11 @@ open class DefaultBowlerRPCProtocol(
                             IO.raiseError<Unit>(
                                 IllegalStateException(
                                     """
-                                    |Cannot handle payload indices greater than the payload size.
-                                    |Payload size: $PAYLOAD_SIZE
-                                    |Send index: $currentSendIndex
-                                    |Receive index: $currentReceiveIndex
-                                    """.trimMargin()
+                                |Cannot handle payload indices greater than the payload size.
+                                |Payload size: $PAYLOAD_SIZE
+                                |Send index: $currentSendIndex
+                                |Receive index: $currentReceiveIndex
+                                """.trimMargin()
                                 )
                             ).bind()
                         }
@@ -300,23 +299,19 @@ open class DefaultBowlerRPCProtocol(
                             resourceId.resourceType.type,
                             resourceId.attachmentPoint.type,
                             resourceId.attachmentPoint.data
-                        ).flatMap {
-                            if (it[0] == STATUS_ACCEPTED) {
-                                groupedResourceToGroupId[resourceId] = groupId
-                                groupIdToMembers.getOrPut(groupId) {
-                                    mutableSetOf()
-                                }.add(resourceId)
-                                groupMemberToSendRange[resourceId] = sendStart to sendEnd
-                                groupMemberToReceiveRange[resourceId] = receiveStart to receiveEnd
-                                allResourceIds.add(resourceId)
+                        ).ifAccepted {
+                            groupedResourceToGroupId[resourceId] = groupId
+                            groupIdToMembers.getOrPut(groupId) {
+                                mutableSetOf()
+                            }.add(resourceId)
+                            groupMemberToSendRange[resourceId] = sendStart to sendEnd
+                            groupMemberToReceiveRange[resourceId] = receiveStart to receiveEnd
+                            allResourceIds.add(resourceId)
 
-                                currentSendIndex = (currentSendIndex + sendLength).toByte()
-                                currentReceiveIndex = (currentReceiveIndex + receiveLength).toByte()
+                            currentSendIndex = (currentSendIndex + sendLength).toByte()
+                            currentReceiveIndex = (currentReceiveIndex + receiveLength).toByte()
 
-                                IO.just(Unit)
-                            } else {
-                                IO.raiseError(UnsupportedOperationException(it.joinToString()))
-                            }
+                            IO.just(Unit)
                         }.bind()
                     }
                 }
@@ -327,11 +322,9 @@ open class DefaultBowlerRPCProtocol(
                         server.addUnreliable(packetId.toByte(), 10)
                     }
                 }
-            } else {
-                IO.raiseError(UnsupportedOperationException(it.joinToString()))
             }
         }
-    }
+    }.flatten()
 
     /**
      * Adds a resource by sending a discovery packet.
@@ -340,7 +333,7 @@ open class DefaultBowlerRPCProtocol(
      */
     private fun addResource(
         resourceId: ResourceId
-    ): IO<Unit> {
+    ): IO<Unit> = IO {
         LOGGER.debug {
             """
             |Adding resource:
@@ -351,33 +344,29 @@ open class DefaultBowlerRPCProtocol(
         if (resourceId in allResourceIds) {
             val message = "Tried to add a ResourceId that was already added:\n$resourceId"
             LOGGER.warn { message }
-            return IO.raiseError(UnsupportedOperationException(message))
-        }
+            IO.raiseError(UnsupportedOperationException(message))
+        } else {
+            val packetId = getNextPacketId()
 
-        val packetId = getNextPacketId()
+            val status = sendDiscoveryPacket(
+                packetId.toByte(),
+                resourceId.resourceType.type,
+                resourceId.attachmentPoint.type,
+                resourceId.attachmentPoint.data
+            )
 
-        val status = sendDiscoveryPacket(
-            packetId.toByte(),
-            resourceId.resourceType.type,
-            resourceId.attachmentPoint.type,
-            resourceId.attachmentPoint.data
-        )
-
-        return status.flatMap {
-            if (it[0] == STATUS_ACCEPTED) {
-                // Discovery packet was accepted
-                nonGroupedResourceIdToPacketId[resourceId] = packetId
-                allResourceIds.add(resourceId)
-
+            status.ifAccepted {
                 IO {
+                    // Discovery packet was accepted
+                    nonGroupedResourceIdToPacketId[resourceId] = packetId
+                    allResourceIds.add(resourceId)
+
                     // TODO: Expose maxRetries
                     server.addUnreliable(packetId.toByte(), 10)
                 }
-            } else {
-                IO.raiseError(UnsupportedOperationException(it.joinToString()))
             }
         }
-    }
+    }.flatten()
 
     /**
      * Computes the next packet id and validates that it can be sent to the device.
@@ -415,8 +404,8 @@ open class DefaultBowlerRPCProtocol(
      */
     private fun <T> validateGroupSendResources(
         resourcesAndValues: List<Pair<ResourceId, T>>
-    ): IO<Int> {
-        return getValidatedGroupId(resourcesAndValues.first().first).flatMap { groupId ->
+    ): IO<Int> = IO {
+        getValidatedGroupId(resourcesAndValues.first().first).flatMap { groupId ->
             if (resourcesAndValues.size != groupIdToCount[groupId]) {
                 return@flatMap IO.raiseError<Int>(
                     UnsupportedOperationException("Mismatched group size.")
@@ -438,7 +427,7 @@ open class DefaultBowlerRPCProtocol(
 
             IO.just(groupId)
         }
-    }
+    }.flatten()
 
     /**
      * Validates that all resources are part of the same group, there are the correct number of
@@ -448,8 +437,8 @@ open class DefaultBowlerRPCProtocol(
      * @param resourceIds The group members.
      * @return The group id.
      */
-    private fun validateGroupReceiveResources(resourceIds: List<ResourceId>): IO<Int> {
-        return getValidatedGroupId(resourceIds.first()).flatMap { groupId ->
+    private fun validateGroupReceiveResources(resourceIds: List<ResourceId>): IO<Int> = IO {
+        getValidatedGroupId(resourceIds.first()).flatMap { groupId ->
             if (resourceIds.size != groupIdToCount[groupId]) {
                 return@flatMap IO.raiseError<Int>(
                     UnsupportedOperationException("Mismatched group size.")
@@ -470,7 +459,7 @@ open class DefaultBowlerRPCProtocol(
 
             IO.just(groupId)
         }
-    }
+    }.flatten()
 
     /**
      * Maps the [resourceId] to its group id with validation.
@@ -548,9 +537,10 @@ open class DefaultBowlerRPCProtocol(
     protected fun <T> handleRead(
         resourceId: ResourceId,
         parseReceivePayload: ParseReceivePayload<T>
-    ): IO<T> {
-        val packetId = getValidatedPacketId(resourceId)
-        return server.write(packetId.toByte(), ByteArray(PAYLOAD_SIZE) { 0 }).map {
+    ): IO<T> = IO {
+        getValidatedPacketId(resourceId)
+    }.flatMap { packetId ->
+        server.write(packetId.toByte(), ByteArray(PAYLOAD_SIZE) { 0 }).map {
             parseReceivePayload(it, 0, it.size)
         }
     }
@@ -570,16 +560,14 @@ open class DefaultBowlerRPCProtocol(
     protected fun <T> handleGroupRead(
         resourceIds: List<ResourceId>,
         parseReceivePayload: ParseReceivePayload<T>
-    ): IO<List<T>> {
-        return validateGroupReceiveResources(resourceIds).flatMap { groupId ->
-            val packetId = groupIdToPacketId[groupId]!!
-            server.write(packetId.toByte(), ByteArray(PAYLOAD_SIZE) { 0 }).map {
-                parseGroupReceivePayload(
-                    resourceIds,
-                    it,
-                    parseReceivePayload
-                )
-            }
+    ): IO<List<T>> = validateGroupReceiveResources(resourceIds).flatMap { groupId ->
+        val packetId = groupIdToPacketId[groupId]!!
+        server.write(packetId.toByte(), ByteArray(PAYLOAD_SIZE) { 0 }).map {
+            parseGroupReceivePayload(
+                resourceIds,
+                it,
+                parseReceivePayload
+            )
         }
     }
 
@@ -597,9 +585,10 @@ open class DefaultBowlerRPCProtocol(
         resourceId: ResourceId,
         value: S,
         makeSendPayload: (S) -> ByteArray
-    ): IO<Unit> {
-        val packetId = getValidatedPacketId(resourceId)
-        return server.write(packetId.toByte(), getPayload(PAYLOAD_SIZE, makeSendPayload(value)))
+    ): IO<Unit> = IO {
+        getValidatedPacketId(resourceId)
+    }.flatMap { packetId ->
+        server.write(packetId.toByte(), getPayload(PAYLOAD_SIZE, makeSendPayload(value)))
             .map { Unit }
     }
 
@@ -620,9 +609,10 @@ open class DefaultBowlerRPCProtocol(
         value: S,
         makeSendPayload: (S) -> ByteArray,
         parseReceivePayload: ParseReceivePayload<R>
-    ): IO<R> {
-        val packetId = getValidatedPacketId(resourceId)
-        return server.write(packetId.toByte(), getPayload(PAYLOAD_SIZE, makeSendPayload(value)))
+    ): IO<R> = IO {
+        getValidatedPacketId(resourceId)
+    }.flatMap { packetId ->
+        server.write(packetId.toByte(), getPayload(PAYLOAD_SIZE, makeSendPayload(value)))
             .map {
                 parseReceivePayload(it, 0, it.size)
             }
@@ -634,14 +624,13 @@ open class DefaultBowlerRPCProtocol(
      * @param resourceId The resource id.
      * @return The packet id.
      */
-    private fun getValidatedPacketId(resourceId: ResourceId): Int {
-        return nonGroupedResourceIdToPacketId[resourceId] ?: throw IllegalArgumentException(
+    private fun getValidatedPacketId(resourceId: ResourceId) =
+        nonGroupedResourceIdToPacketId[resourceId] ?: throw IllegalArgumentException(
             """
             |The resource id was not discovered:
             |$resourceId
             """.trimMargin()
         )
-    }
 
     /**
      * Performs a full RPC group write call:
@@ -657,14 +646,12 @@ open class DefaultBowlerRPCProtocol(
     protected fun <T> handleGroupWrite(
         resourcesAndValues: List<Pair<ResourceId, T>>,
         makeSendPayload: (T) -> ByteArray
-    ): IO<Unit> {
-        return validateGroupSendResources(resourcesAndValues).flatMap { groupId ->
-            val packetId = groupIdToPacketId[groupId]!!
-            server.write(
-                packetId.toByte(),
-                getPayload(PAYLOAD_SIZE, makeGroupSendPayload(resourcesAndValues, makeSendPayload))
-            ).map { Unit }
-        }
+    ): IO<Unit> = validateGroupSendResources(resourcesAndValues).flatMap { groupId ->
+        val packetId = groupIdToPacketId[groupId]!!
+        server.write(
+            packetId.toByte(),
+            getPayload(PAYLOAD_SIZE, makeGroupSendPayload(resourcesAndValues, makeSendPayload))
+        ).map { Unit }
     }
 
     /**
@@ -685,21 +672,35 @@ open class DefaultBowlerRPCProtocol(
         resourcesAndValues: List<Pair<ResourceId, T>>,
         makeSendPayload: (T) -> ByteArray,
         parseReceivePayload: ParseReceivePayload<R>
-    ): IO<List<R>> {
-        return validateGroupSendResources(resourcesAndValues).flatMap { groupId ->
-            val packetId = groupIdToPacketId[groupId]!!
-            server.write(
-                packetId.toByte(),
-                getPayload(PAYLOAD_SIZE, makeGroupSendPayload(resourcesAndValues, makeSendPayload))
-            ).map {
-                parseGroupReceivePayload(
-                    resourcesAndValues.map { it.first },
-                    it,
-                    parseReceivePayload
+    ): IO<List<R>> = validateGroupSendResources(resourcesAndValues).flatMap { groupId ->
+        val packetId = groupIdToPacketId[groupId]!!
+        server.write(
+            packetId.toByte(),
+            getPayload(PAYLOAD_SIZE, makeGroupSendPayload(resourcesAndValues, makeSendPayload))
+        ).map {
+            parseGroupReceivePayload(
+                resourcesAndValues.map { it.first },
+                it,
+                parseReceivePayload
+            )
+        }
+    }
+
+    /**
+     * Flatmaps over [this] with [f] if the payload was accepted. Errors otherwise.
+     */
+    protected fun <A> IO<ByteArray>.ifAccepted(f: (ByteArray) -> IOOf<A>): IO<A> =
+        flatMap {
+            if (it[0] == STATUS_ACCEPTED) {
+                f(it)
+            } else {
+                IO.raiseError(
+                    UnsupportedOperationException(
+                        "${strerror(it[0])}\n${it.joinToString()}"
+                    )
                 )
             }
         }
-    }
 
     override fun connect() = server.connect().map {
         server.addReliable(DISCOVERY_PACKET_ID)
@@ -1017,6 +1018,22 @@ open class DefaultBowlerRPCProtocol(
             this::makeGenericWritePayload,
             this::parseGenericReadPayload
         )
+
+    override fun strerror(error: Byte) = when (error) {
+        STATUS_ACCEPTED -> "Payload accepted."
+        STATUS_REJECTED_GENERIC -> "Generic payload rejection."
+        STATUS_REJECTED_UNKNOWN_RESOURCE -> "Unknown resource."
+        STATUS_REJECTED_UNKNOWN_ATTACHMENT -> "Unknown attachment."
+        STATUS_REJECTED_INVALID_ATTACHMENT -> "Invalid attachment."
+        STATUS_REJECTED_INVALID_ATTACHMENT_DATA -> "Invalid attachment data."
+        STATUS_REJECTED_INVALID_GROUP_ID -> "Invalid group id."
+        STATUS_REJECTED_GROUP_FULL -> "Group full."
+        STATUS_REJECTED_UNKNOWN_OPERATION -> "Unknown operation."
+        STATUS_DISCARD_IN_PROGRESS -> "Discard in progress."
+        STATUS_DISCARD_COMPLETE -> "Discard complete."
+        STATUS_REJECTED_INVALID_PACKET_ID -> "Invalid packet id."
+        else -> "Unknown error."
+    }
 
     /**
      * The lowest packet id.

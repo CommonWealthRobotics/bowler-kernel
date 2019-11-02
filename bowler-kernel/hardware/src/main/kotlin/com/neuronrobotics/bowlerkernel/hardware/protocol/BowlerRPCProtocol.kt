@@ -326,4 +326,12 @@ interface BowlerRPCProtocol {
      * @return The entire read payload.
      */
     fun genericWriteRead(resourcesAndValues: List<Pair<ResourceId, ByteArray>>): IO<List<ByteArray>>
+
+    /**
+     * Looks up the string representation of the [error] code.
+     *
+     * @param error The error code.
+     * @return The string equivalent.
+     */
+    fun strerror(error: Byte): String
 }
