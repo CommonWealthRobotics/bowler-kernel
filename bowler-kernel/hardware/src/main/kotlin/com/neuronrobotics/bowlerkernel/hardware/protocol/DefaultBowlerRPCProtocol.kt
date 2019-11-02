@@ -227,101 +227,100 @@ open class DefaultBowlerRPCProtocol(
         }
 
         // Check that all resourceIds are new
-        resourceIds.filter { it in allResourceIds }.let {
-            if (it.isNotEmpty()) {
-                val message =
-                    "Tried to add ResourceIds that were already added:\n${it.joinToString("\n")}"
-                LOGGER.warn { message }
-                return IO.raiseError(UnsupportedOperationException(message))
-            }
-        }
+        val alreadyAddedResources = resourceIds.filter { it in allResourceIds }
+        if (alreadyAddedResources.isNotEmpty()) {
+            val message = """Tried to add ResourceIds that were already added:
+                |${alreadyAddedResources.joinToString("\n")}""".trimMargin()
+            LOGGER.warn { message }
+            IO.raiseError(UnsupportedOperationException(message))
+        } else {
+            val groupId = getNextGroupId()
+            val packetId = getNextPacketId()
+            val count = resourceIds.size
 
-        val groupId = getNextGroupId()
-        val packetId = getNextPacketId()
-        val count = resourceIds.size
+            val groupStatus = sendGroupDiscoveryPacket(
+                groupId.toByte(),
+                packetId.toByte(),
+                count.toByte()
+            )
 
-        val groupStatus = sendGroupDiscoveryPacket(
-            groupId.toByte(),
-            packetId.toByte(),
-            count.toByte()
-        )
+            groupStatus.ifAccepted {
+                groupIdToPacketId[groupId] = packetId
+                groupIdToCount[groupId] = count
 
-        groupStatus.ifAccepted {
-            groupIdToPacketId[groupId] = packetId
-            groupIdToCount[groupId] = count
+                var currentSendIndex = 0.toByte()
+                var currentReceiveIndex = 0.toByte()
 
-            var currentSendIndex = 0.toByte()
-            var currentReceiveIndex = 0.toByte()
+                val allResources = binding {
+                    resourceIds.forEach { resourceId ->
+                        val sendLength = resourceId.resourceType.sendLength
+                        val receiveLength = resourceId.resourceType.receiveLength
 
-            val allResources = binding {
-                resourceIds.forEach { resourceId ->
-                    val sendLength = resourceId.resourceType.sendLength
-                    val receiveLength = resourceId.resourceType.receiveLength
-
-                    if (isGreaterThanUnsignedByte(currentSendIndex + sendLength) ||
-                        isGreaterThanUnsignedByte(currentReceiveIndex + receiveLength)
-                    ) {
-                        IO.raiseError<Unit>(
-                            IllegalStateException(
-                                """
+                        if (isGreaterThanUnsignedByte(currentSendIndex + sendLength) ||
+                            isGreaterThanUnsignedByte(currentReceiveIndex + receiveLength)
+                        ) {
+                            IO.raiseError<Unit>(
+                                IllegalStateException(
+                                    """
                                 |Cannot handle payload indices greater than a byte.
                                 |Send index: $currentSendIndex
                                 |Receive index: $currentReceiveIndex
                                 """.trimMargin()
-                            )
-                        ).bind()
-                    }
+                                )
+                            ).bind()
+                        }
 
-                    if (currentSendIndex + sendLength > PAYLOAD_SIZE ||
-                        currentReceiveIndex + receiveLength > PAYLOAD_SIZE
-                    ) {
-                        IO.raiseError<Unit>(
-                            IllegalStateException(
-                                """
+                        if (currentSendIndex + sendLength > PAYLOAD_SIZE ||
+                            currentReceiveIndex + receiveLength > PAYLOAD_SIZE
+                        ) {
+                            IO.raiseError<Unit>(
+                                IllegalStateException(
+                                    """
                                 |Cannot handle payload indices greater than the payload size.
                                 |Payload size: $PAYLOAD_SIZE
                                 |Send index: $currentSendIndex
                                 |Receive index: $currentReceiveIndex
                                 """.trimMargin()
-                            )
-                        ).bind()
+                                )
+                            ).bind()
+                        }
+
+                        val sendStart = currentSendIndex
+                        val sendEnd = (currentSendIndex + sendLength).toByte()
+                        val receiveStart = currentReceiveIndex
+                        val receiveEnd = (currentReceiveIndex + receiveLength).toByte()
+
+                        sendGroupMemberDiscoveryPacket(
+                            groupId.toByte(),
+                            sendStart,
+                            sendEnd,
+                            receiveStart,
+                            receiveEnd,
+                            resourceId.resourceType.type,
+                            resourceId.attachmentPoint.type,
+                            resourceId.attachmentPoint.data
+                        ).ifAccepted {
+                            groupedResourceToGroupId[resourceId] = groupId
+                            groupIdToMembers.getOrPut(groupId) {
+                                mutableSetOf()
+                            }.add(resourceId)
+                            groupMemberToSendRange[resourceId] = sendStart to sendEnd
+                            groupMemberToReceiveRange[resourceId] = receiveStart to receiveEnd
+                            allResourceIds.add(resourceId)
+
+                            currentSendIndex = (currentSendIndex + sendLength).toByte()
+                            currentReceiveIndex = (currentReceiveIndex + receiveLength).toByte()
+
+                            IO.just(Unit)
+                        }.bind()
                     }
-
-                    val sendStart = currentSendIndex
-                    val sendEnd = (currentSendIndex + sendLength).toByte()
-                    val receiveStart = currentReceiveIndex
-                    val receiveEnd = (currentReceiveIndex + receiveLength).toByte()
-
-                    sendGroupMemberDiscoveryPacket(
-                        groupId.toByte(),
-                        sendStart,
-                        sendEnd,
-                        receiveStart,
-                        receiveEnd,
-                        resourceId.resourceType.type,
-                        resourceId.attachmentPoint.type,
-                        resourceId.attachmentPoint.data
-                    ).ifAccepted {
-                        groupedResourceToGroupId[resourceId] = groupId
-                        groupIdToMembers.getOrPut(groupId) {
-                            mutableSetOf()
-                        }.add(resourceId)
-                        groupMemberToSendRange[resourceId] = sendStart to sendEnd
-                        groupMemberToReceiveRange[resourceId] = receiveStart to receiveEnd
-                                allResourceIds.add(resourceId)
-
-                        currentSendIndex = (currentSendIndex + sendLength).toByte()
-                        currentReceiveIndex = (currentReceiveIndex + receiveLength).toByte()
-
-                        IO.just(Unit)
-                    }.bind()
                 }
-            }
 
-            allResources.flatMap {
-                IO {
-                    // TODO: Expose maxRetries
-                    server.addUnreliable(packetId.toByte(), 10)
+                allResources.flatMap {
+                    IO {
+                        // TODO: Expose maxRetries
+                        server.addUnreliable(packetId.toByte(), 10)
+                    }
                 }
             }
         }
@@ -345,26 +344,26 @@ open class DefaultBowlerRPCProtocol(
         if (resourceId in allResourceIds) {
             val message = "Tried to add a ResourceId that was already added:\n$resourceId"
             LOGGER.warn { message }
-            return IO.raiseError(UnsupportedOperationException(message))
-        }
+            IO.raiseError(UnsupportedOperationException(message))
+        } else {
+            val packetId = getNextPacketId()
 
-        val packetId = getNextPacketId()
+            val status = sendDiscoveryPacket(
+                packetId.toByte(),
+                resourceId.resourceType.type,
+                resourceId.attachmentPoint.type,
+                resourceId.attachmentPoint.data
+            )
 
-        val status = sendDiscoveryPacket(
-            packetId.toByte(),
-            resourceId.resourceType.type,
-            resourceId.attachmentPoint.type,
-            resourceId.attachmentPoint.data
-        )
+            status.ifAccepted {
+                IO {
+                    // Discovery packet was accepted
+                    nonGroupedResourceIdToPacketId[resourceId] = packetId
+                    allResourceIds.add(resourceId)
 
-        status.ifAccepted {
-            IO {
-                // Discovery packet was accepted
-                nonGroupedResourceIdToPacketId[resourceId] = packetId
-                allResourceIds.add(resourceId)
-
-                // TODO: Expose maxRetries
-                server.addUnreliable(packetId.toByte(), 10)
+                    // TODO: Expose maxRetries
+                    server.addUnreliable(packetId.toByte(), 10)
+                }
             }
         }
     }.flatten()
