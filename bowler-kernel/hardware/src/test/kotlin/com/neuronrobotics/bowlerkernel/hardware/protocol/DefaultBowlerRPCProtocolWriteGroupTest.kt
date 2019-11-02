@@ -181,12 +181,14 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
                 assertTrue(result.isLeft())
             } pcSends {
                 immutableListOf(
-                    getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(
                             DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
                             1,
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
                             2
-                        ))
+                        )
+                    )
                 )
             } deviceResponds {
                 immutableListOf(
@@ -207,19 +209,41 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
                 assertTrue(result.isLeft())
             } pcSends {
                 immutableListOf(
-                    getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(
                             DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
                             1,
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
                             2
-                        )),
-                    getPayload(
-                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID, 1, 0, 1, 0, 0, 2, 1, 32)
+                        )
                     ),
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID, 1, 1, 2, 0, 0, 2, 1, 33)
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID,
+                            1,
+                            0,
+                            1,
+                            0,
+                            0,
+                            2,
+                            1,
+                            32
+                        )
+                    ),
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID,
+                            1,
+                            1,
+                            2,
+                            0,
+                            0,
+                            2,
+                            1,
+                            33
+                        )
                     )
                 )
             } deviceResponds {
@@ -249,16 +273,28 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
                 assertTrue(result.isLeft())
             } pcSends {
                 immutableListOf(
-                    getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(
                             DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
                             1,
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
                             2
-                        )),
+                        )
+                    ),
                     // This one failing means that led2 should not be discovered
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID, 1, 0, 1, 0, 0, 2, 1, 32)
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID,
+                            1,
+                            0,
+                            1,
+                            0,
+                            0,
+                            2,
+                            1,
+                            32
+                        )
                     )
                 )
             } deviceResponds {
@@ -294,19 +330,41 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
-                    getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(
                             DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
                             1,
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
                             2
-                        )),
-                    getPayload(
-                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID, 1, 0, 1, 0, 0, 2, 1, 7)
+                        )
                     ),
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID, 1, 1, 2, 0, 0, 2, 1, 8)
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID,
+                            1,
+                            0,
+                            1,
+                            0,
+                            0,
+                            2,
+                            1,
+                            7
+                        )
+                    ),
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID,
+                            1,
+                            1,
+                            2,
+                            0,
+                            0,
+                            2,
+                            1,
+                            8
+                        )
                     )
                 )
             } deviceResponds {
@@ -367,19 +425,41 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
-                    getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(
                             DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
                             1,
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
                             2
-                        )),
-                    getPayload(
-                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID, 1, 0, 1, 0, 0, 2, 1, 7)
+                        )
                     ),
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID, 1, 1, 2, 0, 0, 2, 1, 8)
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID,
+                            1,
+                            0,
+                            1,
+                            0,
+                            0,
+                            2,
+                            1,
+                            7
+                        )
+                    ),
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID,
+                            1,
+                            1,
+                            2,
+                            0,
+                            0,
+                            2,
+                            1,
+                            8
+                        )
                     )
                 )
             } deviceResponds {
@@ -425,6 +505,22 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
         }
     }
 
+    @Test
+    fun `add a write group twice`() {
+        setupWriteGroup()
+
+        protocolTest(protocol, server) {
+            operation {
+                val result = it.addWriteGroup(immutableSetOf(led1, led2)).attempt().unsafeRunSync()
+                assertTrue(result.isLeft())
+            } pcSends {
+                immutableListOf()
+            } deviceResponds {
+                immutableListOf()
+            }
+        }
+    }
+
     private fun setupWriteGroup() {
         protocolTest(protocol, server) {
             operation {
@@ -432,19 +528,41 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
                 assertTrue(result.isRight())
             } pcSends {
                 immutableListOf(
-                    getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(
                             DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
                             1,
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
                             2
-                        )),
-                    getPayload(
-                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID, 1, 0, 1, 0, 0, 2, 1, 32)
+                        )
                     ),
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID, 1, 1, 2, 0, 0, 2, 1, 33)
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID,
+                            1,
+                            0,
+                            1,
+                            0,
+                            0,
+                            2,
+                            1,
+                            32
+                        )
+                    ),
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID,
+                            1,
+                            1,
+                            2,
+                            0,
+                            0,
+                            2,
+                            1,
+                            33
+                        )
                     )
                 )
             } deviceResponds {
