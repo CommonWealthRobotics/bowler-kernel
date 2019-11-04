@@ -68,8 +68,6 @@ The goals of this project are as follows, in order of importance:
 This protocol makes the following assumptions about the network implementation it runs on top of:
 \begin{itemize}
     \item Data corruption is handled. Corrupt packets can be corrected or dropped.
-
-    \item No packet can be duplicated in the network.
 \end{itemize}
 
 \subsection{Configuration Process}
@@ -173,6 +171,8 @@ protocol with 60 bytes.
         \begin{leftwordgroup}{\texttt{ResourceId}}
             \bitbox{8}{Resource}
             \bitbox{8}{Attachment} \\
+            \bitbox{8}{Reliable}
+            \bitbox[lr]{8}{} \\
             \wordbox[lr]{1}{Attachment Data} \\
             \skippedwords \\
             \wordbox[lrb]{1}{}
@@ -200,6 +200,12 @@ protocol with 60 bytes.
     \begin{itemize}
         \item The Attachment field is the type of the attachment point. It is the
         \texttt{ResourceId.attachmentPoint.type}.
+    \end{itemize}
+
+    \item Reliable: 1 byte
+    \begin{itemize}
+        \item The Reliable field states whether the packet uses reliable transport. It is one of the
+        codes in Table~\ref{tab:transport-codes}.
     \end{itemize}
 
     \item Attachment Data: 1+ bytes
@@ -247,6 +253,8 @@ protocol with 60 bytes.
         \bitbox{8}{Group ID} \\
         \bitbox{8}{Packet ID}
         \bitbox{8}{Count} \\
+        \bitbox{8}{Reliable}
+        \bitbox[lr]{8}{} \\
         \wordbox[lr]{1}{Reserved} \\
         \skippedwords \\
         \wordbox[lrb]{1}{}
@@ -274,6 +282,12 @@ protocol with 60 bytes.
     \begin{itemize}
         \item The Count field is the number of \glspl{resource} that will be added to the
         \gls{group}.
+    \end{itemize}
+
+    \item Reliable: 1 byte
+    \begin{itemize}
+        \item The Reliable field states whether the packet uses reliable transport. It is one of the
+        codes in Table~\ref{tab:transport-codes}.
     \end{itemize}
 \end{itemize}
 
@@ -459,102 +473,6 @@ process is complete.
         documented in Table~\ref{tab:status-codes}.
     \end{itemize}
 \end{itemize}
-
-\FloatBarrier{}
-\clearpage
-\subsection{Discovery Process}
-\subsubsection{Discovery}
-
-\begin{figure}[h]
-    \centering
-    \begin{sequencediagram}
-        \newthread{pc}{PC}
-        \newinst[3]{device}{Device}
-
-        \begin{call}{pc}{Send discovery}{device}{Status 1}
-        \end{call}
-    \end{sequencediagram}
-    \caption{Successful discovery.}
-    \label{fig:successful-discovery}
-\end{figure}
-
-\begin{figure}[h]
-    \centering
-    \begin{sequencediagram}
-        \newthread{pc}{PC}
-        \newinst[3]{device}{Device}
-
-        \begin{call}{pc}{Send discovery}{device}{Status 2}
-        \end{call}
-    \end{sequencediagram}
-    \caption{Unsuccessful discovery.}
-    \label{fig:unsuccessful-discovery}
-\end{figure}
-
-\FloatBarrier{}
-\clearpage
-\subsubsection{Group Discovery}
-
-\begin{figure}[h]
-    \centering
-    \begin{sequencediagram}
-        \newthread{pc}{PC}
-        \newinst[4]{device}{Device}
-
-        \begin{call}{pc}{Send group discovery}{device}{Status 1}
-        \end{call}
-
-        \begin{call}{pc}{Send group member discovery}{device}{Status 1}
-        \end{call}
-
-        \begin{call}{pc}{Send group member discovery}{device}{Status 1}
-        \end{call}
-    \end{sequencediagram}
-    \caption{Successful group discovery.}
-    \label{fig:successful-group-discovery}
-\end{figure}
-
-\begin{figure}[h]
-    \centering
-    \begin{sequencediagram}
-        \newthread{pc}{PC}
-        \newinst[4]{device}{Device}
-
-        \begin{call}{pc}{Send group discovery}{device}{Status 2}
-        \end{call}
-
-        \begin{call}{pc}{Send group member discovery}{device}{Status 7}
-        \end{call}
-    \end{sequencediagram}
-    \caption{Unsuccessful group discovery.}
-    \label{fig:unsuccessful-group-discovery}
-\end{figure}
-
-\FloatBarrier{}
-\clearpage
-\subsubsection{Discard Discovery}
-
-\begin{figure}[h]
-    \centering
-    \begin{sequencediagram}
-        \newthread{pc}{PC}
-        \newinst[4]{device}{Device}
-
-        \begin{call}{pc}{Send discard discovery}{device}{Status 10}
-        \end{call}
-
-        \begin{call}{pc}{Send discard discovery}{device}{Status 10}
-        \end{call}
-
-        \begin{call}{pc}{Send discard discovery}{device}{Status 11}
-        \end{call}
-
-        \begin{call}{pc}{Send discard discovery}{device}{Status 11}
-        \end{call}
-    \end{sequencediagram}
-    \caption{Discard discovery.}
-    \label{fig:discard-discovery}
-\end{figure}
 
 \FloatBarrier{}
 \clearpage
@@ -746,6 +664,18 @@ Figure~\ref{fig:group-member-discovery-send-packet}.
     \end{tabular}
     \caption{Status codes.}
     \label{tab:status-codes}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{r|l}
+        Code & Meaning \\
+        \hline
+        1 & Reliable transport \\
+        2 & Unreliable transport
+    \end{tabular}
+    \caption{Transport codes.}
+    \label{tab:transport-codes}
 \end{table}
 
 \FloatBarrier{}
