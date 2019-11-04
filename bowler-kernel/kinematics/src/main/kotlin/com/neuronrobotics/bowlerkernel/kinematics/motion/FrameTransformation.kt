@@ -22,6 +22,9 @@ import Jama.Matrix
 import com.beust.klaxon.Converter
 import com.beust.klaxon.JsonValue
 import com.google.common.math.DoubleMath
+import com.mitchtalmadge.asciidata.table.ASCIITable
+import com.mitchtalmadge.asciidata.table.formats.ASCIITableFormat
+import com.mitchtalmadge.asciidata.table.formats.UTF8TableFormat
 import java.lang.Math.toDegrees
 import java.lang.Math.toRadians
 import java.util.Arrays
@@ -207,7 +210,25 @@ private constructor(private val mat: Matrix) {
         return true
     }
 
-    override fun toString() = mat.array.joinToString("\n") { it.joinToString() }
+    override fun toString(): String {
+        val format = UTF8TableFormat()
+        var table = ASCIITable.fromData(
+            arrayOf("", "", "", ""),
+            mat.array.map { it.map { it.toString() }.toTypedArray() }.toTypedArray()
+        ).withTableFormat(format).toString().lines().toMutableList()
+
+        table = table.subList(2, table.size)
+
+        table[0] = table[0].replace(
+            format.getCross(true, false),
+            format.topEdgeBorderDivider
+        ).toCharArray().also {
+            it[0] = format.topLeftCorner
+            it[it.size - 1] = format.topRightCorner
+        }.joinToString("")
+
+        return table.joinToString("\n")
+    }
 
     companion object : Converter {
 

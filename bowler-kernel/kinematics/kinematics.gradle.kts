@@ -36,6 +36,12 @@ dependencies {
         version = property("klaxon.version") as String
     )
 
+    implementation(
+        group = "com.mitchtalmadge",
+        name = "ascii-data",
+        version = property("ascii-data.version") as String
+    )
+
     testImplementation(
         group = "com.natpryce",
         name = "hamkrest",
