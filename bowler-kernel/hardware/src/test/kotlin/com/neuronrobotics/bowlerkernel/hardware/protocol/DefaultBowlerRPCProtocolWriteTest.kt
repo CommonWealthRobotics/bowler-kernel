@@ -97,6 +97,7 @@ internal class DefaultBowlerRPCProtocolWriteTest {
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
                             2,
                             1,
+                            DefaultBowlerRPCProtocol.UNRELIABLE_TRANSPORT,
                             32
                         )
                     )
@@ -132,6 +133,7 @@ internal class DefaultBowlerRPCProtocolWriteTest {
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
                             6,
                             4,
+                            DefaultBowlerRPCProtocol.UNRELIABLE_TRANSPORT,
                             1,
                             2,
                             32,
@@ -176,6 +178,7 @@ internal class DefaultBowlerRPCProtocolWriteTest {
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
                             2,
                             1,
+                            DefaultBowlerRPCProtocol.UNRELIABLE_TRANSPORT,
                             7
                         )
                     )
@@ -235,6 +238,7 @@ internal class DefaultBowlerRPCProtocolWriteTest {
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
                             2,
                             1,
+                            DefaultBowlerRPCProtocol.UNRELIABLE_TRANSPORT,
                             32
                         )
                     )

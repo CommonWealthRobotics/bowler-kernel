@@ -28,9 +28,9 @@ fun mockBowlerRPCProtocol(): BowlerRPCProtocol {
         on { connect() } doReturn IO.just(Unit)
         on { disconnect() } doReturn IO.just(Unit)
         on { isResourceInRange(any()) } doReturn IO.just(true)
-        on { addRead(any()) } doReturn IO.just(Unit)
-        on { addReadGroup(any()) } doReturn IO.just(Unit)
-        on { addWrite(any()) } doReturn IO.just(Unit)
-        on { addWriteGroup(any()) } doReturn IO.just(Unit)
+        on { addRead(any(), any()) } doReturn IO.just(Unit)
+        on { addReadGroup(any(), any()) } doReturn IO.just(Unit)
+        on { addWrite(any(), any()) } doReturn IO.just(Unit)
+        on { addWriteGroup(any(), any()) } doReturn IO.just(Unit)
     }
 }

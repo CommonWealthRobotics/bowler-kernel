@@ -19,6 +19,7 @@
 package com.neuronrobotics.bowlerkernel.hardware.protocol
 
 import arrow.effects.IO
+import arrow.syntax.function.partially3
 import com.google.common.collect.ImmutableSet
 import com.neuronrobotics.bowlerkernel.deviceserver.getPayload
 import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.DefaultAttachmentPoints
@@ -53,10 +54,10 @@ internal class DefaultBowlerRPCProtocolResourceGroupTest {
         ) -> IO<Unit> =
             when {
                 validator.validateIsReadType(resourceType).isRight() ->
-                    DefaultBowlerRPCProtocol::addReadGroup
+                    DefaultBowlerRPCProtocol::addReadGroup.partially3(false)
 
                 validator.validateIsWriteType(resourceType).isRight() ->
-                    DefaultBowlerRPCProtocol::addWriteGroup
+                    DefaultBowlerRPCProtocol::addWriteGroup.partially3(false)
 
                 else -> fail { "Unknown resource type: $resourceType" }
             }
@@ -80,7 +81,8 @@ internal class DefaultBowlerRPCProtocolResourceGroupTest {
                             DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
                             1,
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
-                            1
+                            1,
+                            DefaultBowlerRPCProtocol.UNRELIABLE_TRANSPORT
                         )
                     ),
                     getPayload(

@@ -186,7 +186,8 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
                             DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
                             1,
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
-                            2
+                            2,
+                            DefaultBowlerRPCProtocol.UNRELIABLE_TRANSPORT
                         )
                     )
                 )
@@ -214,7 +215,8 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
                             DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
                             1,
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
-                            2
+                            2,
+                            DefaultBowlerRPCProtocol.UNRELIABLE_TRANSPORT
                         )
                     ),
                     getPayload(
@@ -278,7 +280,8 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
                             DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
                             1,
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
-                            2
+                            2,
+                            DefaultBowlerRPCProtocol.UNRELIABLE_TRANSPORT
                         )
                     ),
                     // This one failing means that led2 should not be discovered
@@ -335,7 +338,8 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
                             DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
                             1,
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
-                            2
+                            2,
+                            DefaultBowlerRPCProtocol.UNRELIABLE_TRANSPORT
                         )
                     ),
                     getPayload(
@@ -430,7 +434,8 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
                             DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
                             1,
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
-                            2
+                            2,
+                            DefaultBowlerRPCProtocol.UNRELIABLE_TRANSPORT
                         )
                     ),
                     getPayload(
@@ -521,6 +526,72 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
         }
     }
 
+    @Test
+    fun `add a write group with reliable transport`() {
+        protocolTest(protocol, server) {
+            operation {
+                val result =
+                    it.addWriteGroup(immutableSetOf(led1, led2), true).attempt().unsafeRunSync()
+                assertTrue(result.isRight())
+            } pcSends {
+                immutableListOf(
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
+                            1,
+                            DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
+                            2,
+                            DefaultBowlerRPCProtocol.RELIABLE_TRANSPORT
+                        )
+                    ),
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID,
+                            1,
+                            0,
+                            1,
+                            0,
+                            0,
+                            2,
+                            1,
+                            32
+                        )
+                    ),
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID,
+                            1,
+                            1,
+                            2,
+                            0,
+                            0,
+                            2,
+                            1,
+                            33
+                        )
+                    )
+                )
+            } deviceResponds {
+                immutableListOf(
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
+                    ),
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
+                    ),
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
+                    )
+                )
+            }
+        }
+    }
+
     private fun setupWriteGroup() {
         protocolTest(protocol, server) {
             operation {
@@ -533,7 +604,8 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
                             DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
                             1,
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
-                            2
+                            2,
+                            DefaultBowlerRPCProtocol.UNRELIABLE_TRANSPORT
                         )
                     ),
                     getPayload(

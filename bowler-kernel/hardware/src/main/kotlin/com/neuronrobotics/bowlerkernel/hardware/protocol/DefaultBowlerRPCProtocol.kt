@@ -134,6 +134,7 @@ open class DefaultBowlerRPCProtocol(
      * @param packetId The new ID for the packet being discovered.
      * @param resource The type of the resource.
      * @param attachment The type of the attachment point.
+     * @param isReliable Whether this packet uses reliable transport.
      * @param attachmentData Any data needed to fully describe the attachment.
      * @return The reply payload.
      */
@@ -141,10 +142,11 @@ open class DefaultBowlerRPCProtocol(
         packetId: Byte,
         resource: Byte,
         attachment: Byte,
+        isReliable: Byte,
         attachmentData: ByteArray
     ) = sendGeneralDiscoveryPacket(
         OPERATION_DISCOVERY_ID,
-        byteArrayOf(packetId, resource, attachment) + attachmentData
+        byteArrayOf(packetId, resource, attachment, isReliable) + attachmentData
     )
 
     /**
@@ -155,15 +157,17 @@ open class DefaultBowlerRPCProtocol(
      * @param groupId The ID for the group being made.
      * @param packetId The ID for the packet the group will use.
      * @param count The number of resources that will be added to the group.
+     * @param isReliable Whether this packet uses reliable transport.
      * @return The reply payload.
      */
     private fun sendGroupDiscoveryPacket(
         groupId: Byte,
         packetId: Byte,
-        count: Byte
+        count: Byte,
+        isReliable: Byte
     ) = sendGeneralDiscoveryPacket(
         OPERATION_GROUP_DISCOVERY_ID,
-        byteArrayOf(groupId, packetId, count)
+        byteArrayOf(groupId, packetId, count, isReliable)
     )
 
     /**
@@ -216,7 +220,8 @@ open class DefaultBowlerRPCProtocol(
      * @param resourceIds The group members.
      */
     private fun addGroup(
-        resourceIds: ImmutableSet<ResourceId>
+        resourceIds: ImmutableSet<ResourceId>,
+        isReliable: Boolean
     ): IO<Unit> = IO {
         LOGGER.debug {
             """
@@ -241,7 +246,8 @@ open class DefaultBowlerRPCProtocol(
             val groupStatus = sendGroupDiscoveryPacket(
                 groupId.toByte(),
                 packetId.toByte(),
-                count.toByte()
+                count.toByte(),
+                if (isReliable) RELIABLE_TRANSPORT else UNRELIABLE_TRANSPORT
             )
 
             groupStatus.ifAccepted {
@@ -332,7 +338,8 @@ open class DefaultBowlerRPCProtocol(
      * @param resourceId The resource id.
      */
     private fun addResource(
-        resourceId: ResourceId
+        resourceId: ResourceId,
+        isReliable: Boolean
     ): IO<Unit> = IO {
         LOGGER.debug {
             """
@@ -352,6 +359,7 @@ open class DefaultBowlerRPCProtocol(
                 packetId.toByte(),
                 resourceId.resourceType.type,
                 resourceId.attachmentPoint.type,
+                if (isReliable) RELIABLE_TRANSPORT else UNRELIABLE_TRANSPORT,
                 resourceId.attachmentPoint.data
             )
 
@@ -730,15 +738,15 @@ open class DefaultBowlerRPCProtocol(
         }
     }
 
-    override fun addRead(resourceId: ResourceId) =
+    override fun addRead(resourceId: ResourceId, isReliable: Boolean) =
         resourceIdValidator.validateIsReadType(resourceId.resourceType).liftIO().flatMap {
             it.fold(
                 { IO.raiseError<Unit>(UnsupportedOperationException(it)) },
-                { addResource(resourceId) }
+                { addResource(resourceId, isReliable) }
             )
         }
 
-    override fun addReadGroup(resourceIds: ImmutableSet<ResourceId>) =
+    override fun addReadGroup(resourceIds: ImmutableSet<ResourceId>, isReliable: Boolean) =
         validateResources(resourceIds, ResourceIdValidator::validateIsReadType).liftIO().flatMap {
             if (it.isNotEmpty()) {
                 IO.raiseError(
@@ -750,19 +758,19 @@ open class DefaultBowlerRPCProtocol(
                     )
                 )
             } else {
-                addGroup(resourceIds)
+                addGroup(resourceIds, isReliable)
             }
         }
 
-    override fun addWrite(resourceId: ResourceId) =
+    override fun addWrite(resourceId: ResourceId, isReliable: Boolean) =
         resourceIdValidator.validateIsWriteType(resourceId.resourceType).liftIO().flatMap {
             it.fold(
                 { IO.raiseError<Unit>(UnsupportedOperationException(it)) },
-                { addResource(resourceId) }
+                { addResource(resourceId, isReliable) }
             )
         }
 
-    override fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>) =
+    override fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>, isReliable: Boolean) =
         validateResources(resourceIds, ResourceIdValidator::validateIsWriteType).liftIO().flatMap {
             if (it.isNotEmpty()) {
                 IO.raiseError(
@@ -774,11 +782,11 @@ open class DefaultBowlerRPCProtocol(
                     )
                 )
             } else {
-                addGroup(resourceIds)
+                addGroup(resourceIds, isReliable)
             }
         }
 
-    override fun addWriteRead(resourceId: ResourceId): IO<Unit> =
+    override fun addWriteRead(resourceId: ResourceId, isReliable: Boolean): IO<Unit> =
         resourceIdValidator.validateIsWriteType(resourceId.resourceType).liftIO().flatMap {
             it.fold(
                 { IO.raiseError<Unit>(UnsupportedOperationException(it)) },
@@ -787,14 +795,14 @@ open class DefaultBowlerRPCProtocol(
                         .flatMap {
                             it.fold(
                                 { IO.raiseError<Unit>(UnsupportedOperationException(it)) },
-                                { addResource(resourceId) }
+                                { addResource(resourceId, isReliable) }
                             )
                         }
                 }
             )
         }
 
-    override fun addWriteReadGroup(resourceIds: ImmutableSet<ResourceId>) =
+    override fun addWriteReadGroup(resourceIds: ImmutableSet<ResourceId>, isReliable: Boolean) =
         validateResources(resourceIds, ResourceIdValidator::validateIsWriteType).liftIO().flatMap {
             if (it.isNotEmpty()) {
                 IO.raiseError(
@@ -818,7 +826,7 @@ open class DefaultBowlerRPCProtocol(
                                 )
                             )
                         } else {
-                            addGroup(resourceIds)
+                            addGroup(resourceIds, isReliable)
                         }
                     }
             }
@@ -834,12 +842,10 @@ open class DefaultBowlerRPCProtocol(
     private fun validateResources(
         resourceIds: ImmutableSet<ResourceId>,
         validator: ResourceIdValidator.(ResourceType) -> Either<String, Unit>
-    ): List<Either<String, Unit>> {
-        return resourceIds.map {
-            resourceIdValidator.validator(it.resourceType)
-        }.filter {
-            it.isLeft()
-        }
+    ): List<Either<String, Unit>> = resourceIds.map {
+        resourceIdValidator.validator(it.resourceType)
+    }.filter {
+        it.isLeft()
     }
 
     override fun isResourceInRange(resourceId: ResourceId): IO<Boolean> = IO.just(true)
@@ -1068,6 +1074,12 @@ open class DefaultBowlerRPCProtocol(
          * The size of a packet in bytes.
          */
         const val PACKET_SIZE = PAYLOAD_SIZE + 3
+
+        /**
+         * Transport mode flags.
+         */
+        const val RELIABLE_TRANSPORT: Byte = 1
+        const val UNRELIABLE_TRANSPORT: Byte = 2
 
         /**
          * The operation ID's.

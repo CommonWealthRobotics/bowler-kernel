@@ -178,7 +178,8 @@ internal class DefaultBowlerRPCProtocolReadGroupTest {
                             DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
                             1,
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
-                            2
+                            2,
+                            DefaultBowlerRPCProtocol.UNRELIABLE_TRANSPORT
                         )
                     )
                 )
@@ -207,7 +208,8 @@ internal class DefaultBowlerRPCProtocolReadGroupTest {
                             DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
                             1,
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
-                            2
+                            2,
+                            DefaultBowlerRPCProtocol.UNRELIABLE_TRANSPORT
                         )
                     ),
                     getPayload(
@@ -252,7 +254,8 @@ internal class DefaultBowlerRPCProtocolReadGroupTest {
                             DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
                             1,
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
-                            2
+                            2,
+                            DefaultBowlerRPCProtocol.UNRELIABLE_TRANSPORT
                         )
                     ),
                     // This one failing means that lineSensor2 should not be discovered
@@ -330,7 +333,8 @@ internal class DefaultBowlerRPCProtocolReadGroupTest {
                             DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
                             1,
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
-                            numGroupMembers
+                            numGroupMembers,
+                            DefaultBowlerRPCProtocol.UNRELIABLE_TRANSPORT
                         )
                     )
                 ) + sendPayloads
@@ -361,7 +365,8 @@ internal class DefaultBowlerRPCProtocolReadGroupTest {
                                 DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
                                 groupId,
                                 packetId,
-                                1
+                                1,
+                                DefaultBowlerRPCProtocol.UNRELIABLE_TRANSPORT
                             )
                         ),
                         getPayload(
@@ -436,7 +441,8 @@ internal class DefaultBowlerRPCProtocolReadGroupTest {
                             DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
                             1,
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
-                            2
+                            2,
+                            DefaultBowlerRPCProtocol.UNRELIABLE_TRANSPORT
                         )
                     ),
                     getPayload(
@@ -516,7 +522,8 @@ internal class DefaultBowlerRPCProtocolReadGroupTest {
                             DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
                             1,
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
-                            2
+                            2,
+                            DefaultBowlerRPCProtocol.UNRELIABLE_TRANSPORT
                         )
                     ),
                     getPayload(

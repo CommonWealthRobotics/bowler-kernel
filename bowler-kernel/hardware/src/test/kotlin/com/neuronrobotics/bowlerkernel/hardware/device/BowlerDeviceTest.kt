@@ -261,8 +261,8 @@ internal class BowlerDeviceTest {
 
         assertTrue(result is Either.Left)
 
-        verify(bowlerRPCProtocol, never()).addRead(any())
-        verify(bowlerRPCProtocol, never()).addReadGroup(any())
+        verify(bowlerRPCProtocol, never()).addRead(any(), any())
+        verify(bowlerRPCProtocol, never()).addReadGroup(any(), any())
     }
 
     @Test
@@ -313,10 +313,19 @@ internal class BowlerDeviceTest {
     inner class TestFailureToAddResource {
 
         private val failingProtocol = mock<BowlerRPCProtocol> {
-            on { addRead(any()) } doReturn IO.raiseError(UnsupportedOperationException(""))
-            on { addWrite(any()) } doReturn IO.raiseError(UnsupportedOperationException(""))
-            on { addReadGroup(any()) } doReturn IO.raiseError(UnsupportedOperationException(""))
-            on { addWriteGroup(any()) } doReturn IO.raiseError(UnsupportedOperationException(""))
+            on { addRead(any(), any()) } doReturn IO.raiseError(UnsupportedOperationException(""))
+            on { addWrite(any(), any()) } doReturn IO.raiseError(UnsupportedOperationException(""))
+            on {
+                addReadGroup(
+                    any(),
+                    any()
+                )
+            } doReturn IO.raiseError(UnsupportedOperationException(""))
+            on { addWriteGroup(any(), any()) } doReturn IO.raiseError(
+                UnsupportedOperationException(
+                    ""
+                )
+            )
         }
 
         private val write1Id = ResourceId(

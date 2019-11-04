@@ -58,16 +58,24 @@ interface Device {
     /**
      * Adds the [resource] to the device.
      *
+     * @param resource The unprovisioned resource.
+     * @param isReliable Whether the resource should use reliable transport.
      * @return The provisioned resource.
      */
-    fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(resource: T): IO<R>
+    fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
+        resource: T,
+        isReliable: Boolean = false
+    ): IO<R>
 
     /**
      * Adds the [resourceGroup] to the device.
      *
+     * @param resourceGroup The unprovisioned resource group.
+     * @param isReliable Whether the resource group should use reliable transport.
      * @return The provisioned resource group.
      */
     fun <T : UnprovisionedDeviceResourceGroup<R>, R : ProvisionedDeviceResourceGroup> add(
-        resourceGroup: T
+        resourceGroup: T,
+        isReliable: Boolean = false
     ): IO<R>
 }

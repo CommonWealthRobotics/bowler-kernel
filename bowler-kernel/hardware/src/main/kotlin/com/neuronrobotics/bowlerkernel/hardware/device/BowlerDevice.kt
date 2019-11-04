@@ -66,7 +66,8 @@ internal constructor(
         }
 
     override fun <T : UnprovisionedDeviceResource<R>, R : ProvisionedDeviceResource> add(
-        resource: T
+        resource: T,
+        isReliable: Boolean
     ): IO<R> {
         val id = resource.resourceId
 
@@ -89,7 +90,7 @@ internal constructor(
                             },
                             {
                                 // Not a read, is a write
-                                bowlerRPCProtocol.addWrite(id).attempt().errorOnLeft()
+                                bowlerRPCProtocol.addWrite(id, isReliable).attempt().errorOnLeft()
                                     .map { resource.provision() }
                             }
                         )
@@ -101,12 +102,12 @@ internal constructor(
                         it.fold(
                             {
                                 // Is a read, not a write
-                                bowlerRPCProtocol.addRead(id).attempt().errorOnLeft()
+                                bowlerRPCProtocol.addRead(id, isReliable).attempt().errorOnLeft()
                                     .map { resource.provision() }
                             },
                             {
                                 // Is a read, is a write
-                                bowlerRPCProtocol.addWriteRead(id).attempt().errorOnLeft()
+                                bowlerRPCProtocol.addWriteRead(id, isReliable).attempt().errorOnLeft()
                                     .map { resource.provision() }
                             }
                         )
@@ -118,7 +119,8 @@ internal constructor(
 
     @SuppressWarnings("ReturnCount")
     override fun <T : UnprovisionedDeviceResourceGroup<R>, R : ProvisionedDeviceResourceGroup> add(
-        resourceGroup: T
+        resourceGroup: T,
+        isReliable: Boolean
     ): IO<R> {
         if (resourceGroup.resourceIds.distinct() != resourceGroup.resourceIds) {
             return IO.raiseError(
@@ -147,13 +149,13 @@ internal constructor(
 
         return IO.defer {
             if (allReadResources && allWriteResources) {
-                bowlerRPCProtocol.addWriteReadGroup(resourceIds).attempt().errorOnLeft()
+                bowlerRPCProtocol.addWriteReadGroup(resourceIds, isReliable).attempt().errorOnLeft()
                     .map { resourceGroup.provision() }
             } else if (allReadResources) {
-                bowlerRPCProtocol.addReadGroup(resourceIds).attempt().errorOnLeft()
+                bowlerRPCProtocol.addReadGroup(resourceIds, isReliable).attempt().errorOnLeft()
                     .map { resourceGroup.provision() }
             } else if (allWriteResources) {
-                bowlerRPCProtocol.addWriteGroup(resourceIds).attempt().errorOnLeft()
+                bowlerRPCProtocol.addWriteGroup(resourceIds, isReliable).attempt().errorOnLeft()
                     .map { resourceGroup.provision() }
             } else {
                 IO.raiseError(

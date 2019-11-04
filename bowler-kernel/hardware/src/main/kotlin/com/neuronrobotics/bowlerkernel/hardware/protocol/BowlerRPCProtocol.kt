@@ -47,46 +47,61 @@ interface BowlerRPCProtocol {
     /**
      * Adds a read resource.
      *
+     * @param resourceId The resource id.
+     * @param isReliable Whether this resource uses reliable transport
      * @return An error if there is a problem.
      */
-    fun addRead(resourceId: ResourceId): IO<Unit>
+    fun addRead(resourceId: ResourceId, isReliable: Boolean = false): IO<Unit>
 
     /**
      * Adds a group of read resources. All resources in the group are read from at the same time.
      *
+     * @param resourceIds The resource ids in the group.
+     * @param isReliable Whether this resource uses reliable transport.
      * @return An error if there is a problem.
      */
-    fun addReadGroup(resourceIds: ImmutableSet<ResourceId>): IO<Unit>
+    fun addReadGroup(resourceIds: ImmutableSet<ResourceId>, isReliable: Boolean = false): IO<Unit>
 
     /**
      * Adds a write resource.
      *
+     * @param resourceId The resource id.
+     * @param isReliable Whether this resource uses reliable transport
      * @return An error if there is a problem.
      */
-    fun addWrite(resourceId: ResourceId): IO<Unit>
+    fun addWrite(resourceId: ResourceId, isReliable: Boolean = false): IO<Unit>
 
     /**
      * Adds a group of write resources. All resources in the group are written to at the same
      * time.
      *
+     * @param resourceIds The resource ids in the group.
+     * @param isReliable Whether this resource uses reliable transport
      * @return An error if there is a problem.
      */
-    fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>): IO<Unit>
+    fun addWriteGroup(resourceIds: ImmutableSet<ResourceId>, isReliable: Boolean = false): IO<Unit>
 
     /**
      * Adds a write+read resource.
      *
+     * @param resourceId The resource id.
+     * @param isReliable Whether this resource uses reliable transport
      * @return An error if there is a problem.
      */
-    fun addWriteRead(resourceId: ResourceId): IO<Unit>
+    fun addWriteRead(resourceId: ResourceId, isReliable: Boolean = false): IO<Unit>
 
     /**
      * Adds a group of write+read resources. All resources in the group are writen to and read from
      * at the same time.
      *
+     * @param resourceIds The resource ids in the group.
+     * @param isReliable Whether this resource uses reliable transport
      * @return An error if there is a problem.
      */
-    fun addWriteReadGroup(resourceIds: ImmutableSet<ResourceId>): IO<Unit>
+    fun addWriteReadGroup(
+        resourceIds: ImmutableSet<ResourceId>,
+        isReliable: Boolean = false
+    ): IO<Unit>
 
     /**
      * Queries whether the [resourceId] is in the valid range of resources for this device.

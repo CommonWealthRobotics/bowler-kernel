@@ -97,14 +97,17 @@ internal class DefaultBowlerRPCProtocolReadTest {
                 assertTrue(result.isLeft())
             } pcSends {
                 immutableListOf(
-                    getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(
                             DefaultBowlerRPCProtocol.OPERATION_DISCOVERY_ID,
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
                             3,
                             1,
+                            DefaultBowlerRPCProtocol.UNRELIABLE_TRANSPORT,
                             32
-                        ))
+                        )
+                    )
                 )
             } deviceResponds {
                 immutableListOf(
@@ -137,6 +140,7 @@ internal class DefaultBowlerRPCProtocolReadTest {
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
                             3,
                             1,
+                            DefaultBowlerRPCProtocol.UNRELIABLE_TRANSPORT,
                             7
                         )
                     )
@@ -180,6 +184,37 @@ internal class DefaultBowlerRPCProtocolReadTest {
         }
     }
 
+    @Test
+    fun `add a read with reliable transport`() {
+        protocolTest(protocol, server) {
+            operation {
+                val result = it.addRead(lineSensor, true).attempt().unsafeRunSync()
+                assertTrue(result.isRight())
+            } pcSends {
+                immutableListOf(
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_DISCOVERY_ID,
+                            DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
+                            lineSensor.resourceType.type,
+                            lineSensor.attachmentPoint.type,
+                            DefaultBowlerRPCProtocol.RELIABLE_TRANSPORT,
+                            *lineSensor.attachmentPoint.data
+                        )
+                    )
+                )
+            } deviceResponds {
+                immutableListOf(
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
+                    )
+                )
+            }
+        }
+    }
+
     private fun setupRead(resourceId: ResourceId) =
         setupReadImpl(resourceId) { addRead(resourceId) }
 
@@ -200,6 +235,7 @@ internal class DefaultBowlerRPCProtocolReadTest {
                             DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
                             resourceId.resourceType.type,
                             resourceId.attachmentPoint.type,
+                            DefaultBowlerRPCProtocol.UNRELIABLE_TRANSPORT,
                             *resourceId.attachmentPoint.data
                         )
                     )
