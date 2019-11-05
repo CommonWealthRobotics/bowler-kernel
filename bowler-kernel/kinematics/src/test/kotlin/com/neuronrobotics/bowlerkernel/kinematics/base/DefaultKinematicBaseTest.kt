@@ -196,4 +196,36 @@ internal class DefaultKinematicBaseTest {
             """.trimMargin()
         )
     }
+
+    @Test
+    fun `world space to limb space and back again`() {
+        val limb = mock<Limb> {
+            on { id } doReturn "limb"
+        }
+
+        val limbBaseFT = randomFrameTransformation()
+        val base = DefaultKinematicBase(
+            "base",
+            immutableSetOf(limb),
+            immutableMapOf(limb.id to limbBaseFT)
+        )
+
+        val bodyFT = randomFrameTransformation()
+        val before = randomFrameTransformation()
+        val after = base.getLimbSpaceTransformInWorldSpace(
+            limb.id,
+            base.getWorldSpaceTransformInLimbSpace(limb.id, before, bodyFT),
+            bodyFT
+        )
+
+        assertTrue(
+            after.approxEquals(before, tolerance),
+            """
+            |Before:
+            |$before
+            |After:
+            |$after
+            """.trimMargin()
+        )
+    }
 }

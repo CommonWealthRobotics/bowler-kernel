@@ -23,7 +23,6 @@ import com.beust.klaxon.Converter
 import com.beust.klaxon.JsonValue
 import com.google.common.math.DoubleMath
 import com.mitchtalmadge.asciidata.table.ASCIITable
-import com.mitchtalmadge.asciidata.table.formats.ASCIITableFormat
 import com.mitchtalmadge.asciidata.table.formats.UTF8TableFormat
 import java.lang.Math.toDegrees
 import java.lang.Math.toRadians
