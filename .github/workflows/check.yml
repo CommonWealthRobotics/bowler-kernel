@@ -32,3 +32,4 @@ jobs:
         run: ./gradlew --stop
       - name: Upload Coverage
         run: bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
+        shell: bash
