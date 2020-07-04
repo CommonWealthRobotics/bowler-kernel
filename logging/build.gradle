@@ -1,0 +1,6 @@
+description = "Logging dependencies."
+
+dependencies {
+    api group: "org.slf4j", name: "slf4j-log4j12", version: Versions.slf4j_log4j12
+    runtimeOnly group: "log4j", name: "apache-log4j-extras", version: Versions.apacheLog4jExtras
+}
