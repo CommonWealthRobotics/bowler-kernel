@@ -94,3 +94,7 @@ The kernel runs a gRPC server that supports the following operations.
 ### Responsiveness
 
 - The kernel's runtime must not pause for longer than 15 milliseconds when running under ZGC. Runtimes that must run with another garbage collector, like G1, do not have this requirement.
+
+### Usability
+
+- Changing the device resources (e.g., changing the type of a servo, moving a sensor or actuator to a different pin) must not require recompiling and/or reflashing code to the microcontroller.
