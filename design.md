@@ -50,9 +50,16 @@ The kernel runs a gRPC server that supports the following operations.
   - List available plugins
   - Add a plugin
     - Adding a plugin with an ID that conflicts with an ID of an already-added plugin throws an error.
-    - TODO: What should the schema for adding a plugin be? The most natural method is by specifying the path to the Jar file, but we don't want to use file paths. We could support specifying a Git File URI. What else? I don't want to allow specifying content because that would involve sending potentially lots of megabytes over the RPC call.
+    - ! RFC: What should the schema for adding a plugin be? The most natural method is by specifying the path to the Jar file, but we don't want to use file paths. We could support specifying a Git File URI. What else? I don't want to allow specifying content because that would involve sending potentially lots of megabytes over the RPC call.
   - Remove a plugin by its ID.
 - Each plugin has a unique ID and a Jar file.
+- The kernel must be able to download simulator plugins.
+  - We can ship the default simulator plugin with the IntelliJ plugin, but there must be a way to download any of them because of the [usability requirement](#usability).
+
+#### UI Interaction
+
+- ! RFC: The kernel must be able to notify the UI of multiple tasks happening in parallel. For example, running a script could cause some repos to get cloned and a toolchain to get downloaded in parallel. As a user, I want to see both of these operations as tasks in IntelliJ happening in parallel. As a general rule, a script can start multiple tasks.
+- ! RFC: The kernel needs a way to ask the UI for confirmation with a custom confirmation message. For example, if the kernel needs to flash the device with a new program, by default it should ask the user for confirmation. There also needs to be some local environment configuration option that bypasses this so that the confirmation results is either always allowed or denied (for headless operation). For example, you may want to always allow the kernel to flash the device during development or during some competitions (as a user, I would rather have a delayed start to my match rather than having the robot not work at all; it depends on the competition). As another example, you may want to always stop the kernel from flashing the device if you have released a product and you expect all the products to work the same for all your users and would rather handle these issues with your own support system.
 
 ### Headless Execution
 
@@ -78,8 +85,29 @@ The kernel runs a gRPC server that supports the following operations.
 ### Hardware
 
 - A robot can be loaded from its config file and either a connection method (if connecting to the hardware) or simulator plugin (if connecting to a simulator).
+  - ! RFC: Schema of a robot config file.
+    - Device resources in the robot config file need a flag that says whether they are allowed to fail discovery or not. By default, this is false, meaning that all device resources need to complete discovery without errors or else the entire discovery process fails. If it is true, and that device resources fails discovery, then the discovery process does not fail. This could be useful for competition robots where the user would rather the robot work with partial functionality rather than not work at all.
 - All hardware access must go through a robot (i.e., no direct access to hardware).
   - Scripts would not work in a simulator if they could directly access the hardware.
+- We should use most of the hardware layer from the previous version of the kernel.
+
+#### RPC
+
+- We should use the Bowler RPC protocol from the previous version of the kernel.
+  - Need to add support for asking the device its capabilities so that the kernel can figure out if it needs to upload a new program.
+
+#### Dependency Management
+
+- The kernel must be able to download the toolchain for the device specified in the robot config file. This is because of the [usability requirement](#usability).
+
+#### uC Code
+
+- The Bowler RPC protocol can handle dynamic definition of device resources, but including support for every possible device resource is not possible because uC's have limited space. Therefore, the kernel must be able to generate, compile, and flash C++ programs to the device.
+- The kernel must be able to determine if it needs to upload a new program to the device. It will do this by asking the device for its capabilities, which will include the supported device resources (see [RPC](#rpc)). If a device resource in the robot config file being loaded is not in the supported capabilities, then the kernel must generate, compile, and flash a new program to the device.
+
+### CAD
+
+- Use the existing JCSG API for now.
 
 ## Non-Functional Requirements
 
