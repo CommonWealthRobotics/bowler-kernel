@@ -86,6 +86,10 @@ The kernel runs a gRPC server that supports the following operations.
 
 - A robot can be loaded from its config file and either a connection method (if connecting to the hardware) or simulator plugin (if connecting to a simulator).
   - ! RFC: Schema of a robot config file.
+    - Kinematics
+    - Device
+    - Device resources
+    - Scripts for body control & cad, limb control & cad, joint control
     - Device resources in the robot config file need a flag that says whether they are allowed to fail discovery or not. By default, this is false, meaning that all device resources need to complete discovery without errors or else the entire discovery process fails. If it is true, and that device resources fails discovery, then the discovery process does not fail. This could be useful for competition robots where the user would rather the robot work with partial functionality rather than not work at all.
 - All hardware access must go through a robot (i.e., no direct access to hardware).
   - Scripts would not work in a simulator if they could directly access the hardware.
