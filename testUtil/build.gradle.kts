@@ -7,7 +7,6 @@ dependencies {
 
     api(group = "io.kotest", name = "kotest-runner-junit5-jvm", version = Versions.kotest)
     api(group = "io.kotest", name = "kotest-assertions-core-jvm", version = Versions.kotest)
-    api(group = "io.kotest", name = "kotest-assertions-jvm", version = Versions.kotest)
     api(group = "io.kotest", name = "kotest-property-jvm", version = Versions.kotest)
 
     api(group = "io.mockk", name = "mockk", version = Versions.mockk)

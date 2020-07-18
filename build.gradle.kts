@@ -14,8 +14,8 @@ plugins {
 }
 
 val kotlinProjects = listOf(
-        project(":testUtil"),
-        project(":util")
+    project(":testUtil"),
+    project(":util")
 )
 
 allprojects {
@@ -111,10 +111,10 @@ subprojects {
 
             testLogging {
                 events(
-                        TestLogEvent.FAILED,
-                        TestLogEvent.PASSED,
-                        TestLogEvent.SKIPPED,
-                        TestLogEvent.STARTED
+                    TestLogEvent.FAILED,
+                    TestLogEvent.PASSED,
+                    TestLogEvent.SKIPPED,
+                    TestLogEvent.STARTED
                 )
                 displayGranularity = 0
                 showExceptions = true
@@ -204,9 +204,11 @@ val jacocoRootReport by tasks.creating(JacocoReport::class) {
     additionalSourceDirs.setFrom(allSrcDirs)
     sourceDirectories.setFrom(allSrcDirs)
     classDirectories.setFrom(includedProjects.map { it.sourceSets.main.get().output })
-    executionData.setFrom(includedProjects.filter {
-        File("${it.buildDir}/jacoco/test.exec").exists()
-    }.flatMap { it.tasks.withType(JacocoReport::class).map { it.executionData } })
+    executionData.setFrom(
+        includedProjects.filter {
+            File("${it.buildDir}/jacoco/test.exec").exists()
+        }.flatMap { it.tasks.withType(JacocoReport::class).map { it.executionData } }
+    )
 
     reports {
         html.isEnabled = true
