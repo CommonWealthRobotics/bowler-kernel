@@ -19,6 +19,7 @@ The kernel runs a gRPC server that supports the following operations.
   - If credentials are required to resolve a dependency, the kernel must try to load them from the local environment first. If that fails, the kernel must ask the IDE for authentication. The authentication received from the IDE must not be stored on disk. If no IDE is available, dependency resolution fails and an exception is thrown at the call site.
 - A script may be given arguments via a list of objects when it is invoked.
 - A script may return an object when it returns.
+- ! RFC: How are these objects serialized?
 
 #### GitFS
 
@@ -50,7 +51,7 @@ The kernel runs a gRPC server that supports the following operations.
   - List available plugins
   - Add a plugin
     - Adding a plugin with an ID that conflicts with an ID of an already-added plugin throws an error.
-    - ! RFC: What should the schema for adding a plugin be? The most natural method is by specifying the path to the Jar file, but we don't want to use file paths. We could support specifying a Git File URI. What else? I don't want to allow specifying content because that would involve sending potentially lots of megabytes over the RPC call.
+    - ! RFC: What should the schema for adding a plugin be? The most natural method is by specifying the path to the Jar file, but we don't want to use file paths. We could support specifying a Git File URI. What else? I don't want to allow specifying content because that would involve sending potentially lots of megabytes over the RPC call. We could have a registry of simulator plugins similar to how we will have a registry of toolchains.
   - Remove a plugin by its ID.
 - Each plugin has a unique ID and a Jar file.
 - The kernel must be able to download simulator plugins.
@@ -61,13 +62,17 @@ The kernel runs a gRPC server that supports the following operations.
 - ! RFC: The kernel must be able to notify the UI of multiple tasks happening in parallel. For example, running a script could cause some repos to get cloned and a toolchain to get downloaded in parallel. As a user, I want to see both of these operations as tasks in IntelliJ happening in parallel. As a general rule, a script can start multiple tasks.
 - ! RFC: The kernel needs a way to ask the UI for confirmation with a custom confirmation message. For example, if the kernel needs to flash the device with a new program, by default it should ask the user for confirmation. There also needs to be some local environment configuration option that bypasses this so that the confirmation results is either always allowed or denied (for headless operation). For example, you may want to always allow the kernel to flash the device during development or during some competitions (as a user, I would rather have a delayed start to my match rather than having the robot not work at all; it depends on the competition). As another example, you may want to always stop the kernel from flashing the device if you have released a product and you expect all the products to work the same for all your users and would rather handle these issues with your own support system.
 
+#### Timeout
+
+If no script is running and no gRPC interaction has occurred for some time period, then the kernel should exit.
+
 ### Headless Execution
 
 - The kernel must not include any references to JavaFX so that it can run in a headless environment.
 
 ### Data Logging
 
-- Every connected device resource must be automatically available as a data source.
+- Every connected device resource must be automatically available as a data source. The resources should be loaded from the robot config file.
   - Sensors return their sensor value (e.g., potentiometer -> voltage, encoder -> ticks, IMU -> values of axes).
   - Actuators return their control signal (e.g., servo -> angle, solenoid -> digital state, motor -> voltage). These are the values the user's program commands, not the measured value (which would be a sensor).
 - A script may add its own data sources via *variables*.
@@ -103,6 +108,7 @@ The kernel runs a gRPC server that supports the following operations.
 #### Dependency Management
 
 - The kernel must be able to download the toolchain for the device specified in the robot config file. This is because of the [usability requirement](#usability).
+  - The location the toolchain is downloaded from must be stored separately from the source code so that we can update it independently of the kernel. This must also include the version range of the kernel that the toolchain is compatible with. This should be implemented as a GitHub repo containing a registry of toolchains.
 
 #### uC Code
 
