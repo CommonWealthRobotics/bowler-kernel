@@ -9,6 +9,7 @@ The kernel runs a gRPC server that supports the following operations.
 #### Running Scripts
 
 - Operations:
+  - File extention convention
   - Run a script from its contents.
   - Run a script from a Git File URI.
 - Dependency resolution:
