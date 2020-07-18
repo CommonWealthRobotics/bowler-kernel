@@ -16,7 +16,7 @@ The kernel runs a gRPC server that supports the following operations.
   - Scripts may depend on Bowler libraries specified by a Git File URI.
     - By default, resolution uses GitFS to pull the script.
     - If the URI resolves to a Bowler library that has been dev'd, then the dev'd version must be used instead of the version from the remote.
-  - If credentials are required to resolve a dependency, the kernel must try to load them from the local environment first. If that fails, the kernel must ask the IDE for authentication. The authentication received from the IDE must not be stored on disk. If no IDE is available, dependency resolution fails and an exception is thrown at the call site.
+  - If credentials are required to resolve a dependency, the kernel must try to load them from the local environment first. If that fails, the kernel must ask the client for authentication. The authentication received from the client must not be stored on disk. If no client is available, dependency resolution fails and an exception is thrown at the call site.
 - A script may be given arguments via a list of objects when it is invoked.
 - A script may return an object when it returns.
 - ! RFC: How are these objects serialized?
@@ -41,8 +41,8 @@ The kernel runs a gRPC server that supports the following operations.
   - Load a robot from its config file.
     - May specify the contents of the config file.
     - May specify a Git File URI.
-    - Must specify whether to connect to hardware or a simulator.
-      - In the hardware case, a connection method must be specified.
+    - Must specify whether to connect to hardware or a simulator via a connection method.
+      - In the hardware case, a device connection method must be specified.
       - In the simulator case, a simulator plugin must be specified.
 
 #### Simulator Plugins
@@ -64,7 +64,7 @@ The kernel runs a gRPC server that supports the following operations.
 
 #### Timeout
 
-If no script is running and no gRPC interaction has occurred for some time period, then the kernel should exit.
+The client must periodically call a keepalive function in the kernel. If the kernel has not received a keepalive call for some time period, then the kernel must interrupt any running scripts, disconnect any connected hardware, and exit. If the kernel is running headlessly without a client, then no keepalives are required to keep the kernel alive.
 
 ### Headless Execution
 
@@ -83,6 +83,7 @@ If no script is running and no gRPC interaction has occurred for some time perio
   - Strings.
   - Frame transforms.
   - Images (e.g., frames from a camera feed).
+  - Aggregate data types: collections, maps.
   - Arbitrary bytes.
 - Data that has been logged must be able to be saved and exported to other formats (e.g., CSV) if the data type supports it (e.g., when exporting to a CSV you can export numerical data but not images).
 - The amount of data to buffer must be configurable via the settings.
