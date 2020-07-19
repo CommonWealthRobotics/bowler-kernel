@@ -19,11 +19,7 @@ The kernel runs a gRPC server that supports the following operations.
 
 #### Hardware Operations
 
-- Load a robot from its config file from a file specifier.
-  - Must specify whether to connect to hardware or a simulator via a connection method.
-    - In the hardware case, a device connection method must be specified.
-    - In the simulator case, a simulator plugin must be specified.
-  - If the connection method did not work, an error is sent back to the client.
+- Load a robot from its config file (given as a file specifier) and a connection method.
 
 #### Plugin Operations
 
