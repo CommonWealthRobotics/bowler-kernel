@@ -23,7 +23,9 @@ The kernel runs a gRPC server that supports the following operations.
 
 #### Plugin Operations
 
-- List plugins with a matching group, name, and version. The group and name fields may be matched using a regex. The version field may be matched using a version range.
+- List plugins with a matching group, name, and version.
+  - The group and name fields may be matched using a regex.
+  - The version field may be matched using a version range.
 - Download a plugin given its triple.
 - Clear the plugin cache.
 
