@@ -16,6 +16,7 @@ The kernel runs a gRPC server that supports the following operations.
 - List files in a repo.
 - Read the contents of a file in a repo.
 - Clear the cache.
+- ! RFC: Do we need any other operations in here? I am not convinced that scripts need to be able to push. I think having a local persistent cache should be enough.
 
 #### Hardware Operations
 
@@ -55,12 +56,14 @@ The client must periodically call a keepalive function in the kernel. If the ker
 
 ### Script Dependency Management
 
-- Script dependency resolution:
-  - Scripts may import from other scripts in the project. These dependencies are resolved to the relevant files in the project.
-  - Scripts may depend on Bowler libraries specified by a Git Repo URI.
-    - By default, resolution uses GitFS to pull in the scripts.
-    - If the URI resolves to a Bowler library that has been dev'd, then the dev'd version must be used instead of the version from the remote. The kernel must then ask the client to provide the files in the dev'd dependency.
-  - If credentials are required to resolve a dependency, the kernel must try to load them from the local environment first. If that fails, the kernel must ask the client for authentication. The authentication received from the client must not be stored on disk or in memory for longer than strictly necessary (the kernel is allowed to frequently ask for credentials). If no client is available, dependency resolution fails.
+- Scripts may import from other scripts in the project. These dependencies are resolved to the relevant files in the project.
+- Scripts may depend on Bowler libraries specified by a Git Repo URI.
+  - By default, resolution uses GitFS to pull in the scripts.
+  - If the URI resolves to a Bowler library that has been dev'd, then the dev'd version must be used instead of the version from the remote. The kernel must then ask the client to provide the files in the dev'd dependency.
+  - When a script is run, a list of dev'd libraries are passed along with the script.
+    - These devs are used in resolution for the scope of the script. The scope of a script is defined by its execution tree. The script that was started defines the root of the tree; any scripts it executes (using the API available inside the kernel, not the gRPC API) are descendents of the root.
+    - Scripts that are started using the gRPC API in parallel are different roots; therefore, their devs are not shared.
+- If credentials are required to resolve a dependency, the kernel must try to load them from the local environment first. If that fails, the kernel must ask the client for authentication. The authentication received from the client must not be stored on disk or in memory for longer than strictly necessary (the kernel is allowed to frequently ask for credentials). If no client is available, dependency resolution fails.
 
 ### GitFS
 
@@ -72,6 +75,7 @@ The client must periodically call a keepalive function in the kernel. If the ker
 
 - There is a file runner interface which specifies:
   - A method to run a script in a repo that accepts a list of objects and returns an object.
+    - The kernel must internally have a method to run a script with a list of devs to implement the gRPC API call to run scripts.
   - A method to load a robot from a robot config file specified as a file specifier and a connection method.
     - A connection method can be a device connection method (e.g. UDP or HID) or a simulator.
 - A script is given a string containing a JSON object. The schema of this object is:
