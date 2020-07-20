@@ -41,7 +41,7 @@ The kernel runs a gRPC server that supports the following operations.
   - The kernel can ask the IDE for confirmation. Confirmation schema:
     - Description
     - Confirmation response: Allowed/Denied
-  - A progress of `NaN` is an "unsure of progress" progress bar (I forget what this is called).
+  - A progress of `NaN` must show an indeterminate progress bar. Otherwise, progress is a percentage stored as an integer in the range `[0, 100]`.
 
 #### Timeout
 
