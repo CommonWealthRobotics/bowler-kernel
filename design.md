@@ -23,8 +23,9 @@ The kernel runs a gRPC server that supports the following operations.
 
 #### Plugin Operations
 
-- List available plugins
-- Remove a plugin from the cache
+- List plugins with a matching group, name, and version. The group and name fields may be matched using a regex. The version field may be matched using a version range.
+- Download a plugin given its triple.
+- Clear the plugin cache.
 
 #### UI Interaction
 
@@ -41,7 +42,7 @@ The kernel runs a gRPC server that supports the following operations.
   - The kernel can ask the IDE for confirmation. Confirmation schema:
     - Description
     - Confirmation response: Allowed/Denied
-  - A progress of `NaN` must show an indeterminate progress bar. Otherwise, progress is a percentage stored as an integer in the range `[0, 100]`.
+  - A progress of `NaN` must show an indeterminate progress bar. Otherwise, progress is a percentage stored as a floating point number in the range `[0, 100]`.
 
 #### Timeout
 
@@ -78,14 +79,17 @@ The client must periodically call a keepalive function in the kernel. If the ker
 ### Plugin Manager
 
 - There is a plugin manager interface which specifies:
-  - A method for loading a plugin given its triple. This should download the plugin if it's not already downloaded. This should check that the version of the plugin in the cache is compatible with the version in the triple.
-  - A method for downloading a plugin given its triple
-  - A method for listing the plugins with a given group.
-  - A method for updating a plugin given its triple.
-- Plugins are universally specified by a group, name, and version triple which directly corresponds to the Maven group, name, and version
-  - A version range can be specified to use the latest version in the range
+  - A method for loading a plugin given its triple.
+  - A method for downloading a plugin given its triple.
+    - When downloading a newer version of an already-downloaded plugin, the older version is first evicted from the cache to maintain the invariant that there can only be one version of a plugin installed.
+  - A method for listing plugins with a matching group, name, and version.
+    - The group and name fields may be matched using a regex.
+    - The version field may be matched using a version range.
+- There can only be one version of a plugin installed.
+- Plugins are uniquely specified by a group, name, and version triple which directly corresponds to the Maven group, name, and version.
+  - A version range can be specified to use the latest version in the range.
 - Published plugin artifacts must follow this naming scheme:
-  - The artifact name must start with `bowler-plugin-`
+  - The artifact name must start with `bowler-plugin-`.
   - Any plugin type-specific naming prefix must follow next (e.g., device plugins may have a `device-` prefix, so the plugin name must have the prefix `bowler-plugin-device-`).
 
 ### Hardware
