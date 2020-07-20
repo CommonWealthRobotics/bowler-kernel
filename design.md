@@ -109,6 +109,7 @@ The client must periodically call a keepalive function in the kernel. If the ker
     - An IMU may be attached to the body, to any limb, or to any link.
     - A servo may be attached to the body, to any limb, or to any link.
     - A potentiometer may be attached to the body, to any limb, or to any link.
+    - ! RFC: I'm not sure this is a good solution. Right now, we are missing a method of storing the root offset transform. For example, an IMU has a transform from the root of the member it attaches to to its frame. A servo on the joint doesn't need this, though. Maybe we could store it for the z-offset of the servo, if it doesn't line up exactly with the origin of the joint. You could also mount a servo on a link that has nothing to do with the joint, but maybe we don't need to support those weird use cases.
 - 1 script for each of body control, body cad
 - 1 script per limb for limb control, limb cad
 - 1 script per joint for joint control
