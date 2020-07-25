@@ -6,6 +6,15 @@
 
 The kernel runs a gRPC server that supports the following operations.
 
+#### Installation and Updating Operations
+
+- Add a systemd service that starts the kernel on boot.
+- Enable/disable that service.
+- Transfer the kernel Jar and return the file path.
+  - This call will be used when the kernel is remote. If the kernel is on the same machine as the client, then the client will handle putting the new Jar into some file and getting the file path.
+- Update the kernel using a file path.
+  - This call will be used whether the kernel is on the same machine as the client or whether it is remote.
+
 #### Script Operations
 
 - Run a script from a file specifier and a list of dev'd libraries
@@ -16,7 +25,6 @@ The kernel runs a gRPC server that supports the following operations.
 - List files in a repo.
 - Read the contents of a file in a repo.
 - Clear the cache.
-- ! RFC: Do we need any other operations in here? I am not convinced that scripts need to be able to push. I think having a local persistent cache should be enough.
 
 #### Hardware Operations
 
@@ -54,6 +62,11 @@ The client must periodically call a keepalive function in the kernel. If the ker
 - When started headlessly, the kernel is configured to not have a timeout.
 - When started with a head, the kernel is configured to have a timeout.
 
+#### Display Operations
+
+- Set the display server address.
+  - The kernel will push data to the display server using its gRPC API.
+
 ### Script Dependency Management
 
 - Scripts may import from other scripts in the project. These dependencies are resolved to the relevant files in the project.
@@ -78,9 +91,9 @@ The client must periodically call a keepalive function in the kernel. If the ker
     - The kernel must internally have a method to run a script with a list of devs to implement the gRPC API call to run scripts.
   - A method to load a robot from a robot config file specified as a file specifier and a connection method.
     - A connection method can be a device connection method (e.g. UDP or HID) or a simulator.
-- A script is given a string containing a JSON object. The schema of this object is:
+- When a script is run it is given a string containing a JSON object. The schema of this object is:
   - A dictionary of script environment variables. This is not to be confused with the operating system's environment variables or the JVM's environment variables.
-- Scripts have persistent storage. Scripts can modify files "on disk" and these changes need to make their way to the user's machine. ! RFC: When is this needed? I can't think of a use case.
+- Scripts have persistent storage. There is an interface method in the kernel's API that gives you a `Path` that the script can perform any file io inside. The changes inside this directory will be sync'd to a directory inside the project when the script is finished running. This directory is shared between all scripts.
 
 ### Plugin Manager
 
@@ -193,8 +206,6 @@ The client must periodically call a keepalive function in the kernel. If the ker
   - Images (e.g., frames from a camera feed).
   - Aggregate data types: collections, maps.
   - Arbitrary bytes.
-- Data that has been logged must be able to be saved and exported to other formats (e.g., CSV) if the data type supports it (e.g., when exporting to a CSV you can export numerical data but not images).
-- The amount of data to buffer must be configurable via the settings.
 
 ### CAD
 
@@ -204,25 +215,30 @@ The client must periodically call a keepalive function in the kernel. If the ker
 
 #### Published Artifacts
 
-! RFC: Refine this
-
-- A shadow Jar that is cross-platform for desktop-class Windows, macOS, and Linux.
-- A shadow Jar for each embedded computer we support.
-- An image for each embedded computer we support.
-- deb and rpm packages that install the auto-updater for the kernel.
+- Embedded systems we support:
+  - Raspi
+  - Jetson nano
+- Shadow Jars of the kernel and the display that are cross-platform for desktop-class Windows, macOS, and Linux.
+- A shadow Jar of the kernel for each embedded computer we support.
+- An image containing the installed kernel and JVM for each embedded computer we support.
+  - It should come with a systemd service added but disabled.
+- Custom build of IntelliJ with:
+  - Our plugin installed.
+  - IntelliJ's name changed to our name.
+  - IntelliJ's logo changed to our logo.
+  - IntelliJ's splash image changed to our splash image.
 
 #### Updating
-
-! RFC: Refine this
 
 - We want to use an auto-updater because there is no cross-platform auto-updating unless we write it ourselves.
   - The IntelliJ plugin should not auto-update. We should use the plugin marketplace for that.
   - The kernel and the display can auto-update. If the IntelliJ plugin is installed, the auto-updater shouldn't install a version of the kernel that is incompatible with the plugin. The auto-updater also shouldn't install a version of the display that is incompatible with the kernel.
   - If the kernel is on another machine than the IntelliJ plugin, we need the ability to remotely update the kernel.
+  - Constraint: An embedded kernel may not have internet access (local network only)
 
-#### Installing on Embedded Systems
+### Miscellaneous
 
-- If the user doesn't or can't use one of our images for their embedded system, they should be able to run a script that configures the kernel to start as a systemd service or whatever is relevant to their operating system. ! RFC: Refine this
+- ! RFC: I want to look into whether we can run the kernel inside a Docker container and still have it performantly interface with hardware and with the display. This would be great for security. If we do this, we would also offer an option to run the kernel outside of a Docker container.
 
 ## Non-Functional Requirements
 
