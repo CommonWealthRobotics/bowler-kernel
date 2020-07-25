@@ -238,7 +238,11 @@ The client must periodically call a keepalive function in the kernel. If the ker
 
 ### Miscellaneous
 
-- ! RFC: I want to look into whether we can run the kernel inside a Docker container and still have it performantly interface with hardware and with the display. This would be great for security. If we do this, we would also offer an option to run the kernel outside of a Docker container.
+- ! RFC: I want to look into whether we can run the kernel inside a Docker container and still have it performantly interface with hardware and with the display. This would be great for security.
+  - We would also offer an option to run the kernel outside of a Docker container.
+  - We would produce a Linux container that had the kernel and a JVM installed.
+  - We could map USB ports using the `--device` flag
+  - We could expose TCP ports for gRPC
 
 ## Non-Functional Requirements
 
