@@ -88,11 +88,11 @@ The client must periodically call a keepalive function in the kernel. If the ker
 
 - There is a file runner interface which specifies:
   - A method to run a script in a repo that accepts a list of objects and returns an object.
-    - The kernel must internally have a method to run a script with a list of devs to implement the gRPC API call to run scripts.
+    - When a script is run, it is also given an instance of a `ScriptEnvironment` data structure which contains:
+      - A dictionary of script environment variables. This is not to be confused with the operating system's environment variables or the JVM's environment variables.
+    - This is the method that is exposed to user's scripts. The kernel must internally have a method to run a script with a list of dev'd libraries to implement the gRPC API call to run scripts.
   - A method to load a robot from a robot config file specified as a file specifier and a connection method.
     - A connection method can be a device connection method (e.g. UDP or HID) or a simulator.
-- When a script is run it is given a string containing a JSON object. The schema of this object is:
-  - A dictionary of script environment variables. This is not to be confused with the operating system's environment variables or the JVM's environment variables.
 - Scripts have persistent storage. There is an interface method in the kernel's API that gives you a `Path` that the script can perform any file io inside. The changes inside this directory will be sync'd to a directory inside the project when the script is finished running. This directory is shared between all scripts.
 
 ### Plugin Manager
@@ -221,7 +221,7 @@ The client must periodically call a keepalive function in the kernel. If the ker
 - Shadow Jars of the kernel and the display that are cross-platform for desktop-class Windows, macOS, and Linux.
 - A shadow Jar of the kernel for each embedded computer we support.
 - An image containing the installed kernel and JVM for each embedded computer we support.
-  - It should come with a systemd service added but disabled.
+  - It should come with a systemd service to start the kernel on boot added and enabled.
 - Custom build of IntelliJ with:
   - Our plugin installed.
   - IntelliJ's name changed to our name.
