@@ -38,7 +38,7 @@ The kernel runs a gRPC server that supports the following operations.
 - Download a plugin given its triple.
 - Clear the plugin cache.
 
-#### UI Interaction
+#### Client Interaction
 
 - The client and kernel share a bidirectional stream.
   - The kernel can create tasks. Task schema:
@@ -54,6 +54,7 @@ The kernel runs a gRPC server that supports the following operations.
     - Description
     - Confirmation response: Allowed/Denied
   - A progress of `NaN` must show an indeterminate progress bar. Otherwise, progress is a percentage stored as a floating point number in the range `[0, 100]`.
+  - The kernel can ask the IDE for credentials. The IDE may respond with credentials or may deny the request.
 
 #### Timeout
 
@@ -67,6 +68,10 @@ The client must periodically call a keepalive function in the kernel. If the ker
 - Set the display server address.
   - The kernel will push data to the display server using its gRPC API.
 
+#### Debugging Operations
+
+- Determine what the JDWB port is.
+
 ### Script Dependency Management
 
 - Scripts may import from other scripts in the project. These dependencies are resolved to the relevant files in the project.
@@ -76,7 +81,7 @@ The client must periodically call a keepalive function in the kernel. If the ker
   - When a script is run, a list of dev'd libraries are passed along with the script.
     - These devs are used in resolution for the scope of the script. The scope of a script is defined by its execution tree. The script that was started defines the root of the tree; any scripts it executes (using the API available inside the kernel, not the gRPC API) are descendents of the root.
     - Scripts that are started using the gRPC API in parallel are different roots; therefore, their devs are not shared.
-- If credentials are required to resolve a dependency, the kernel must try to load them from the local environment first. If that fails, the kernel must ask the client for authentication. The authentication received from the client must not be stored on disk or in memory for longer than strictly necessary (the kernel is allowed to frequently ask for credentials). If no client is available, dependency resolution fails.
+- If credentials are required to resolve a dependency, the kernel must try to load them from the local environment first. If that fails, the kernel must ask the client for authentication using the credentials gRPC API. The authentication received from the client must not be stored on disk or in memory for longer than strictly necessary (the kernel is allowed to frequently ask for credentials). If no client is available, dependency resolution fails.
 
 ### GitFS
 
