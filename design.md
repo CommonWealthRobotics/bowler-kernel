@@ -2,6 +2,10 @@
 
 ## Functional Requirements
 
+### Startup Sequence
+
+When the kernel starts, it is given a name via a cmdline argument. It uses UDP to ask for other kernels on the local network to respond with their names. If any kernel has the same name as this kernel, then this kernel will add a suffix to its name to make it unique (the kernel must then re-verify its name is unique and try a new suffix if it is not unique; there must be a limit of 10 attempts to prevent abuse). The kernel then starts a name server and a gRPC server.
+
 ### gRPC Server
 
 The kernel runs a gRPC server that supports the following operations.
@@ -54,7 +58,7 @@ The kernel runs a gRPC server that supports the following operations.
     - Description
     - Confirmation response: Allowed/Denied
   - A progress of `NaN` must show an indeterminate progress bar. Otherwise, progress is a percentage stored as a floating point number in the range `[0, 100]`.
-  - The kernel can ask the IDE for credentials. The IDE may respond with credentials or may deny the request (we should use the protobuf error model here).
+  - The kernel can ask the IDE for credentials. The IDE may respond with credentials or may deny the request.
 
 #### Timeout
 
