@@ -71,7 +71,7 @@ The client must periodically call a keepalive function in the kernel. If the ker
 
 - Server streaming RPC.
 - Argument provided by client indicates which series to respond to
-  - ! RFC: how do we identify the series?
+  - Series identified by a name (String)
 - Streamed messages provided by server contain updates.
   - A disjoint union type (i.e. `oneOf`) is used to support different types of data.
   - ! RFC: what data types do we support?
