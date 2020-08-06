@@ -14,13 +14,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.commonwealthrobotics.bowlerkernel.util;
+package com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-public final class Util {
-
-  /** The directory Bowler keeps all its data in. */
-  public static final Path cacheDir = Paths.get(System.getProperty("user.home"), ".bowler");
-}
+/**
+ * The id of a resource attached (physically) to a device.
+ *
+ * @param resourceType The type of this resource.
+ * @param attachmentPoint Where this resource is attached.
+ */
+data class ResourceId(
+    val resourceType: ResourceType,
+    val attachmentPoint: AttachmentPoint
+)
