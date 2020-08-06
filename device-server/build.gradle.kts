@@ -6,6 +6,7 @@ dependencies {
     api(group = "io.arrow-kt", name = "arrow-fx", version = Versions.arrow)
 
     implementation(project(":logging"))
+    implementation(project(":proto"))
 
     testImplementation(project(":testUtil"))
 }

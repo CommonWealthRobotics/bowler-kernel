@@ -143,6 +143,8 @@ subprojects {
             trimTrailingWhitespace()
             endWithNewline()
             licenseHeaderFile(rootProject.rootDir.toPath().resolve("config").resolve("spotless").resolve("license.txt"))
+            // Generated proto sources
+            targetExclude(project(":proto").buildDir.walkTopDown().toList())
         }
     }
 }
