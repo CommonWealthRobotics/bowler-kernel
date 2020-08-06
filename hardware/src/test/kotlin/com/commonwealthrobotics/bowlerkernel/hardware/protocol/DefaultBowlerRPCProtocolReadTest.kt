@@ -35,7 +35,7 @@ internal class DefaultBowlerRPCProtocolReadTest {
 
     private val server = MockDeviceServer()
     private val protocol = DefaultBowlerRPCProtocol(server)
-    private val lineSensor = ResourceId(analogOut, AttachmentPoint.Pin(32))
+    private val lineSensor = ResourceId(analogIn, AttachmentPoint.Pin(32))
 
     @Test
     fun `test adding a read`() {
@@ -112,7 +112,7 @@ internal class DefaultBowlerRPCProtocolReadTest {
     @Test
     fun `test generic read`() {
         val id = ResourceId(
-            digitalIn,
+            analogIn,
             AttachmentPoint.Pin(7)
         )
 
