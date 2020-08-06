@@ -60,7 +60,7 @@ internal class DefaultBowlerRPCProtocolWriteTest {
         protocolTest(protocol, server) {
             operation {
                 // Test a write with missing members
-                assertThrows<IllegalArgumentException> {
+                assertThrows<UnsupportedOperationException> {
                     protocol.writeAndRead(led, byteArrayOf(1)).unsafeRunSync()
                 }
             } pcSends {

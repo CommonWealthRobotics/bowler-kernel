@@ -17,6 +17,25 @@
 package com.commonwealthrobotics.bowlerkernel.hardware.protocol
 
 import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceType
+import io.kotest.matchers.collections.shouldContainExactly
+
+private data class EqualsByteArray(val byteArray: ByteArray) {
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as EqualsByteArray
+
+        if (!byteArray.contentEquals(other.byteArray)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return byteArray.contentHashCode()
+    }
+}
 
 val digitalIn = ResourceType(1, 0, 1)
 val digitalOut = ResourceType(2, 1, 0)
@@ -24,3 +43,6 @@ val analogIn = ResourceType(3, 0, 2)
 val analogOut = ResourceType(4, 2, 0)
 val serial = ResourceType(5, 60, 60)
 val servo = ResourceType(6, 2, 0)
+
+fun Collection<ByteArray>?.shouldContainPayloads(vararg expected: ByteArray) =
+    this?.map { EqualsByteArray(it) } shouldContainExactly expected.map { EqualsByteArray(it) }

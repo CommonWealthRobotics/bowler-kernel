@@ -20,13 +20,14 @@ import arrow.fx.IO
 import com.commonwealthrobotics.bowlerkernel.deviceserver.getPayload
 import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
 import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import io.kotest.assertions.throwables.shouldThrow
 import org.junit.jupiter.api.Assertions.assertArrayEquals
-import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.octogonapus.ktguava.collections.emptyImmutableList
 import org.octogonapus.ktguava.collections.plus
+import java.lang.UnsupportedOperationException
 import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
@@ -34,8 +35,8 @@ internal class DefaultBowlerRPCProtocolReadGroupTest {
 
     private val server = MockDeviceServer()
     private val protocol = DefaultBowlerRPCProtocol(server)
-    private val lineSensor1 = ResourceId(digitalIn, AttachmentPoint.Pin(32))
-    private val lineSensor2 = ResourceId(digitalIn, AttachmentPoint.Pin(33))
+    private val lineSensor1 = ResourceId(analogIn, AttachmentPoint.Pin(32))
+    private val lineSensor2 = ResourceId(analogIn, AttachmentPoint.Pin(33))
 
     @Test
     fun `test adding a read group`() {
@@ -49,9 +50,8 @@ internal class DefaultBowlerRPCProtocolReadGroupTest {
         // Do a read
         protocolTest(protocol, server) {
             operation {
-                val result =
-                    it.read(listOf(lineSensor1, lineSensor2)).unsafeRunSync()
-                assertIterableEquals(listOf(1.0, 2.0), result)
+                val result = it.read(listOf(lineSensor1, lineSensor2)).unsafeRunSync()
+                result.shouldContainPayloads(byteArrayOf(0, 1), byteArrayOf(0, 2))
             } pcSends {
                 listOf(
                     getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE)
@@ -71,11 +71,10 @@ internal class DefaultBowlerRPCProtocolReadGroupTest {
         // Do a read supplying the resource id's in the opposite order
         protocolTest(protocol, server) {
             operation {
-                val result =
-                    it.read(listOf(lineSensor2, lineSensor1)).unsafeRunSync()
+                val result = it.read(listOf(lineSensor2, lineSensor1)).unsafeRunSync()
 
                 // Should get the results back in the order the resource id's were given
-                assertIterableEquals(listOf(2.0, 1.0), result)
+                result.shouldContainPayloads(byteArrayOf(0, 2), byteArrayOf(0, 1))
             } pcSends {
                 listOf(
                     getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE)
@@ -94,9 +93,9 @@ internal class DefaultBowlerRPCProtocolReadGroupTest {
         protocolTest(protocol, server) {
             operation {
                 // Test a write with too few members
-                val result =
-                    protocol.read(listOf(lineSensor1, lineSensor2)).attempt()
-                        .unsafeRunSync()
+                val result = protocol.read(listOf(lineSensor1, lineSensor2))
+                    .attempt()
+                    .unsafeRunSync()
                 assertTrue(result.isLeft())
             } pcSends {
                 emptyImmutableList()
@@ -263,7 +262,7 @@ internal class DefaultBowlerRPCProtocolReadGroupTest {
         val numGroupMembers = (DefaultBowlerRPCProtocol.PAYLOAD_SIZE + 1).toByte()
         val groupMembers = (1..numGroupMembers).map {
             ResourceId(
-                digitalOut,
+                digitalIn,
                 AttachmentPoint.Pin(it.toByte())
             )
         }
@@ -334,7 +333,7 @@ internal class DefaultBowlerRPCProtocolReadGroupTest {
                 operation {
                     val result = it.addGroup(
                         listOf(
-                            ResourceId(digitalIn, AttachmentPoint.Pin(pinNumber))
+                            ResourceId(analogIn, AttachmentPoint.Pin(pinNumber))
                         )
                     ).attempt().unsafeRunSync()
                     assertTrue(result.isRight())
@@ -387,9 +386,11 @@ internal class DefaultBowlerRPCProtocolReadGroupTest {
         // Next one is too big
         protocolTest(protocol, server) {
             operation {
-                val result = it.addGroup(listOf(ResourceId(digitalIn, AttachmentPoint.Pin(0)))).attempt()
-                    .unsafeRunSync()
-                assertTrue(result.isLeft())
+                shouldThrow<UnsupportedOperationException> {
+                    it.addGroup(listOf(ResourceId(analogIn, AttachmentPoint.Pin(0))))
+                        .attempt()
+                        .unsafeRunSync()
+                }
             } pcSends {
                 listOf()
             } deviceResponds {
@@ -401,12 +402,12 @@ internal class DefaultBowlerRPCProtocolReadGroupTest {
     @Test
     fun `test generic read group`() {
         val id1 = ResourceId(
-            digitalIn,
+            analogIn,
             AttachmentPoint.Pin(7)
         )
 
         val id2 = ResourceId(
-            digitalIn,
+            analogIn,
             AttachmentPoint.Pin(8)
         )
 

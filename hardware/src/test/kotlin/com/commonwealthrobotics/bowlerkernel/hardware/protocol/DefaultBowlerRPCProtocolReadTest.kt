@@ -20,14 +20,12 @@ import arrow.fx.IO
 import com.commonwealthrobotics.bowlerkernel.deviceserver.getPayload
 import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
 import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Assertions.assertArrayEquals
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
-import org.octogonapus.ktguava.collections.emptyImmutableList
-import org.octogonapus.ktguava.collections.immutableListOf
 import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
@@ -49,13 +47,13 @@ internal class DefaultBowlerRPCProtocolReadTest {
         protocolTest(protocol, server) {
             operation {
                 val result = it.read(lineSensor).unsafeRunSync()
-                assertEquals(1.0, result)
+                result.shouldBe(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(0, 1)))
             } pcSends {
-                immutableListOf(
+                listOf(
                     getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE)
                 )
             } deviceResponds {
-                immutableListOf(
+                listOf(
                     getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(0, 1))
                 )
             }
@@ -67,44 +65,13 @@ internal class DefaultBowlerRPCProtocolReadTest {
         protocolTest(protocol, server) {
             operation {
                 // Test a write with missing members
-                assertThrows<IllegalArgumentException> {
+                assertThrows<UnsupportedOperationException> {
                     protocol.read(lineSensor).unsafeRunSync()
                 }
             } pcSends {
-                emptyImmutableList()
+                emptyList()
             } deviceResponds {
-                emptyImmutableList()
-            }
-        }
-    }
-
-    @Test
-    fun `test addRead failure`() {
-        // Discover a read group
-        protocolTest(protocol, server) {
-            operation {
-                val result = it.read(lineSensor).attempt().unsafeRunSync()
-                assertTrue(result.isLeft())
-            } pcSends {
-                immutableListOf(
-                    getPayload(
-                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(
-                            DefaultBowlerRPCProtocol.OPERATION_DISCOVERY_ID,
-                            DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
-                            3,
-                            1,
-                            32
-                        )
-                    )
-                )
-            } deviceResponds {
-                immutableListOf(
-                    getPayload(
-                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_REJECTED_GENERIC)
-                    )
-                )
+                emptyList()
             }
         }
     }
@@ -121,7 +88,7 @@ internal class DefaultBowlerRPCProtocolReadTest {
                 val result = it.add(id).attempt().unsafeRunSync()
                 assertTrue(result.isRight())
             } pcSends {
-                immutableListOf(
+                listOf(
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(
@@ -134,7 +101,7 @@ internal class DefaultBowlerRPCProtocolReadTest {
                     )
                 )
             } deviceResponds {
-                immutableListOf(
+                listOf(
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
@@ -149,9 +116,9 @@ internal class DefaultBowlerRPCProtocolReadTest {
                 val result = it.read(id).unsafeRunSync()
                 assertArrayEquals(response, result)
             } pcSends {
-                immutableListOf(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf()))
+                listOf(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf()))
             } deviceResponds {
-                immutableListOf(response)
+                listOf(response)
             }
         }
     }
@@ -167,7 +134,7 @@ internal class DefaultBowlerRPCProtocolReadTest {
                 val result = it.operation().attempt().unsafeRunSync()
                 assertTrue(result.isRight())
             } pcSends {
-                immutableListOf(
+                listOf(
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(
@@ -180,7 +147,7 @@ internal class DefaultBowlerRPCProtocolReadTest {
                     )
                 )
             } deviceResponds {
-                immutableListOf(
+                listOf(
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
