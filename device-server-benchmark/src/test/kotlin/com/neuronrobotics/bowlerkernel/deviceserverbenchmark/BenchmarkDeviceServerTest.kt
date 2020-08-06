@@ -14,10 +14,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.deviceserverbenchmark
+package com.commonwealthrobotics.bowlerkernel.deviceserverbenchmark
 
-import com.neuronrobotics.bowlerkernel.deviceserver.DefaultDeviceServer
-import com.neuronrobotics.bowlerkernel.deviceserver.UDPTransportLayer
+import com.commonwealthrobotics.bowlerkernel.deviceserver.DefaultDeviceServer
+import com.commonwealthrobotics.bowlerkernel.deviceserver.UDPTransportLayer
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.net.InetAddress

@@ -14,9 +14,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.protocol
+package com.commonwealthrobotics.bowlerkernel.hardware.protocol
 
-import com.neuronrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
+import com.commonwealthrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 
 /**
  * A factory which creates [BowlerRPCProtocol].

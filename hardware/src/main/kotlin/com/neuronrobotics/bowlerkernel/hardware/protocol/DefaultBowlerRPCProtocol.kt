@@ -14,15 +14,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.protocol
+package com.commonwealthrobotics.bowlerkernel.hardware.protocol
 
 import arrow.core.Either
 import arrow.fx.IO
 import arrow.fx.extensions.fx
-import com.neuronrobotics.bowlerkernel.deviceserver.DeviceServer
-import com.neuronrobotics.bowlerkernel.deviceserver.getPayload
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceType
+import com.commonwealthrobotics.bowlerkernel.deviceserver.DeviceServer
+import com.commonwealthrobotics.bowlerkernel.deviceserver.getPayload
+import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceType
 import mu.KotlinLogging
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.pow

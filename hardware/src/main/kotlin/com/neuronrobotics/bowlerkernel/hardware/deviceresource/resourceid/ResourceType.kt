@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid
+package com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid
 
 /**
  * The type of a resource.

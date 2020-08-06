@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.deviceserver
+package com.commonwealthrobotics.bowlerkernel.deviceserver
 
 /**
  * Creates a payload. The payload starts with the given [bytes] and is padded with zeroes

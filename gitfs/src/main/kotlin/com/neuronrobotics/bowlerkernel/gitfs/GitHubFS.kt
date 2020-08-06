@@ -16,7 +16,7 @@
  */
 @file:Suppress("ThrowableNotThrown")
 
-package com.neuronrobotics.bowlerkernel.gitfs
+package com.commonwealthrobotics.bowlerkernel.gitfs
 
 import arrow.core.Eval
 import arrow.core.None

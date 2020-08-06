@@ -14,10 +14,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.protocol
+package com.commonwealthrobotics.bowlerkernel.hardware.protocol
 
 import arrow.fx.IO
-import com.neuronrobotics.bowlerkernel.deviceserver.DeviceServer
+import com.commonwealthrobotics.bowlerkernel.deviceserver.DeviceServer
 import java.util.ArrayDeque
 
 internal class MockDeviceServer : DeviceServer {

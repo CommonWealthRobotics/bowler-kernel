@@ -14,11 +14,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.protocol
+package com.commonwealthrobotics.bowlerkernel.hardware.protocol
 
-import com.neuronrobotics.bowlerkernel.deviceserver.getPayload
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import com.commonwealthrobotics.bowlerkernel.deviceserver.getPayload
+import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
+import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.params.ParameterizedTest

@@ -16,7 +16,6 @@
  */
 package com.commonwealthrobotics.bowlerkernel.deviceserver
 
-import com.neuronrobotics.bowlerkernel.deviceserver.TransportLayer
 import java.util.ArrayDeque
 
 class MockTransportLayer : TransportLayer {

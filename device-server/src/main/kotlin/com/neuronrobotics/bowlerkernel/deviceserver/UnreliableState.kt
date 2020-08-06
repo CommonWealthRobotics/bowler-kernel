@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.deviceserver
+package com.commonwealthrobotics.bowlerkernel.deviceserver
 
 /**
  * @param maxRetries The maximum number of times to try reading for a packet's reply.

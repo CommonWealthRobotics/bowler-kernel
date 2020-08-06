@@ -14,11 +14,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.deviceserverbenchmark
+package com.commonwealthrobotics.bowlerkernel.deviceserverbenchmark
 
 import arrow.fx.IO
-import com.neuronrobotics.bowlerkernel.deviceserver.DeviceServer
-import com.neuronrobotics.bowlerkernel.deviceserver.getPayload
+import com.commonwealthrobotics.bowlerkernel.deviceserver.DeviceServer
+import com.commonwealthrobotics.bowlerkernel.deviceserver.getPayload
 import org.apache.commons.math3.stat.descriptive.moment.Mean
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation
 import org.apache.commons.math3.stat.descriptive.rank.Median
@@ -33,7 +33,7 @@ import kotlin.system.measureNanoTime
  * @param packetId The id of the packet to communicate with.
  * @return A string describing the results of the benchmark.
  */
-inline fun benchmarkDeviceServer(
+fun benchmarkDeviceServer(
     deviceServer: DeviceServer,
     payloadSize: Int,
     packetId: Byte

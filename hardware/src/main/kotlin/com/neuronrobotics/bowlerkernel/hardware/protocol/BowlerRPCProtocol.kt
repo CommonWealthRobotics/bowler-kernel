@@ -14,11 +14,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.protocol
+package com.commonwealthrobotics.bowlerkernel.hardware.protocol
 
 import arrow.fx.IO
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceType
+import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceType
 
 /**
  * An RPC protocol that all Bowler devices implement. Read/write calls have a 5ms RTT guarantee with

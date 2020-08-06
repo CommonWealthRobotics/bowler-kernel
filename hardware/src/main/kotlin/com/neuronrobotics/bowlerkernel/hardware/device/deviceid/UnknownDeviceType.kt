@@ -14,9 +14,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.neuronrobotics.bowlerkernel.hardware.device.deviceid
+package com.commonwealthrobotics.bowlerkernel.hardware.device.deviceid
 
-import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
 object UnknownDeviceType : DeviceType {
 
