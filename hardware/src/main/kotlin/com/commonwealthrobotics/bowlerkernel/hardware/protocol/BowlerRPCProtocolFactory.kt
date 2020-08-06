@@ -16,29 +16,18 @@
  */
 package com.commonwealthrobotics.bowlerkernel.hardware.protocol
 
-import arrow.fx.IO
-import com.commonwealthrobotics.bowlerkernel.deviceserver.DeviceServer
-import java.util.ArrayDeque
+import com.commonwealthrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 
-internal class MockDeviceServer : DeviceServer {
+/**
+ * A factory which creates [BowlerRPCProtocol].
+ */
+interface BowlerRPCProtocolFactory {
 
-    val reads = ArrayDeque<ByteArray>()
-    val writes = ArrayDeque<Pair<Byte, ByteArray>>()
-
-    override fun connect(): IO<Unit> = IO.just(Unit)
-
-    override fun disconnect(): IO<Unit> = IO.just(Unit)
-
-    @SuppressWarnings("EmptyFunctionBlock")
-    override fun addReliable(id: Byte) {
-    }
-
-    @SuppressWarnings("EmptyFunctionBlock")
-    override fun addUnreliable(id: Byte, maxRetries: Int) {
-    }
-
-    override fun write(id: Byte, payload: ByteArray) = IO {
-        writes.addLast(id to payload)
-        reads.pop()
-    }
+    /**
+     * Creates a new [BowlerRPCProtocol].
+     *
+     * @param deviceId The device id.
+     * @return The new [BowlerRPCProtocol].
+     */
+    fun create(deviceId: DeviceId): BowlerRPCProtocol
 }
