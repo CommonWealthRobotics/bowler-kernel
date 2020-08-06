@@ -4,6 +4,10 @@ plugins {
 
 rootProject.name = "bowler-kernel"
 
+include(":device-server")
+include(":device-server-benchmark")
+include(":gitfs")
+include(":hardware")
 include(":logging")
 include(":testUtil")
 include(":util")

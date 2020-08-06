@@ -14,13 +14,25 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.commonwealthrobotics.bowlerkernel.util;
+package com.neuronrobotics.bowlerkernel.hardware.device.deviceid
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import com.neuronrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
-public final class Util {
+/**
+ * The type of a device.
+ */
+interface DeviceType {
 
-  /** The directory Bowler keeps all its data in. */
-  public static final Path cacheDir = Paths.get(System.getProperty("user.home"), ".bowler");
+    /**
+     * A simple name for the model of this device, i.e. `Arduino Zero`, `Raspberry Pi 3 B+`, etc.
+     */
+    val name: String
+
+    /**
+     * Returns whether the [resourceId] is in the valid range of resources for this device.
+     *
+     * @param resourceId The id of a resource on this device.
+     * @return Whether the resource id is in the valid range of resources for this device.
+     */
+    fun isResourceInRange(resourceId: ResourceId): Boolean
 }

@@ -14,6 +14,10 @@ plugins {
 }
 
 val kotlinProjects = listOf(
+    project(":device-server"),
+    project(":device-server-benchmark"),
+    project(":gitfs"),
+    project(":hardware"),
     project(":testUtil"),
     project(":util")
 )
@@ -29,11 +33,7 @@ allprojects {
 
     repositories {
         mavenCentral()
-        jcenter {
-            content {
-                includeGroup("org.jetbrains.kotlinx")
-            }
-        }
+        jcenter()
     }
 
     // Configures the Jacoco tool version to be the same for all projects that have it applied.
@@ -152,6 +152,13 @@ configure(kotlinProjects) {
         plugin("kotlin")
         plugin("org.jlleitschuh.gradle.ktlint")
         plugin("io.gitlab.arturbosch.detekt")
+        plugin("kotlin-kapt")
+    }
+
+    repositories {
+        maven {
+            setUrl("https://dl.bintray.com/arrow-kt/arrow-kt/")
+        }
     }
 
     dependencies {
