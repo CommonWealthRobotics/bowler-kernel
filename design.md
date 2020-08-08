@@ -67,7 +67,6 @@ The client must periodically call a keepalive function in the kernel. If the ker
   - Series identified by a name (String)
 - Streamed messages provided by server contain updates.
   - A disjoint union type (i.e. `oneOf`) is used to support different types of data.
-  - ! RFC: what data types do we support?
 
 #### Debugging Operations
 
@@ -171,9 +170,11 @@ The client must periodically call a keepalive function in the kernel. If the ker
   - The send length (Byte)
   - The receive length (Byte)
   - Based on [ResourceType](https://github.com/CommonWealthRobotics/bowler-kernel/blob/b696f17b842ccd3ff00ed2e4afb56615de7f858d/bowler-kernel/hardware/src/main/kotlin/com/neuronrobotics/bowlerkernel/hardware/deviceresource/resourceid/ResourceType.kt) and [DefaultResourceTypes](https://github.com/CommonWealthRobotics/bowler-kernel/blob/b696f17b842ccd3ff00ed2e4afb56615de7f858d/bowler-kernel/hardware/src/main/kotlin/com/neuronrobotics/bowlerkernel/hardware/deviceresource/resourceid/DefaultResourceTypes.kt)
-- A toolchain plugin implements the Toolchain interface which specifies:
-  - A method for compiling a program and flashing it to a connected device that has arguments for the program (String) and the device (USB port).
-  - The toolchain plugin is responsible for downloading/caching/updating its toolchain artifacts. It is expected that toolchain plugin authors release toolchain plugin versions in lockstep with toolchain versions.
+- A toolchain plugin:
+  - Implements the Toolchain interface which specifies:
+    - A method for compiling a program and flashing it to a connected device that has arguments for the program (String) and the device (USB port).
+    - The toolchain plugin is responsible for downloading/caching/updating its toolchain artifacts. It is expected that toolchain plugin authors release toolchain plugin versions in lockstep with toolchain versions.
+  - It is expected that toolchains use the platformio CLI for dependency management. This will be installed on the client machine.
 
 #### Loading a Robot
 
@@ -250,7 +251,7 @@ The client must periodically call a keepalive function in the kernel. If the ker
 
 ### Miscellaneous
 
-- ! RFC: I want to look into whether we can run the kernel inside a Docker container and still have it performantly interface with hardware and with the display. This would be great for security.
+- The kernel may be run inside a Docker container for improved security.
   - We would also offer an option to run the kernel outside of a Docker container.
   - We would produce a Linux container that had the kernel and a JVM installed.
   - We could map USB ports using the `--device` flag.
