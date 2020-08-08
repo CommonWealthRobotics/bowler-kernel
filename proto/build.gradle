@@ -22,16 +22,18 @@ sourceSets {
 }
 
 protobuf {
-    protobuf.protoc {
+    protoc {
         artifact = "com.google.protobuf:protoc:${Versions.protobufJava}"
     }
-    protobuf.plugins {
+    plugins {
         grpc {
             artifact = "io.grpc:protoc-gen-grpc-java:${Versions.grpcAll}"
         }
     }
-    protobuf.generateProtoTasks {
+    generateProtoTasks {
         all().each { task ->
+            // Disable caching because of https://github.com/google/protobuf-gradle-plugin/issues/180
+            task.outputs.upToDateWhen { false }
             task.plugins {
                 grpc { }
             }
