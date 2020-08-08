@@ -1,0 +1,3 @@
+[submodule "proto/bowler-proto"]
+	path = proto/bowler-proto
+	url = git@github.com:CommonWealthRobotics/bowler-proto.git

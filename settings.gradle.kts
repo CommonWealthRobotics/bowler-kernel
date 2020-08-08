@@ -9,6 +9,7 @@ include(":device-server-benchmark")
 include(":gitfs")
 include(":hardware")
 include(":logging")
+include(":proto")
 include(":testUtil")
 include(":util")
 
