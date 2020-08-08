@@ -217,6 +217,7 @@ The client must periodically call a keepalive function in the kernel. If the ker
   - Images (e.g., frames from a camera feed).
   - Aggregate data types: collections, maps.
   - Arbitrary bytes.
+  - State vector.
 
 ### CAD
 
