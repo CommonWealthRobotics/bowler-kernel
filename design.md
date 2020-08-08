@@ -23,13 +23,6 @@ The kernel runs a gRPC server that supports the following operations.
 
 - Run a script from a file specifier and a list of dev'd libraries
 
-#### GitFS Operations
-
-- Clone or pull a repo.
-- List files in a repo.
-- Read the contents of a file in a repo.
-- Clear the cache.
-
 #### Hardware Operations
 
 - Load a robot from its config file (given as a file specifier) and a connection method.
@@ -96,6 +89,11 @@ The client must periodically call a keepalive function in the kernel. If the ker
 - Each repo is uniquely identified by a Git Repo URI.
 - Each file in a repo is uniquely identified by a Git File URI.
 - Each Git URI includes a remote.
+- Operations
+  - Clone or pull a repo.
+  - List files in a repo.
+  - Read the contents of a file in a repo.
+  - Clear the cache.
 
 ### File Runner
 
