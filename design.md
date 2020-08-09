@@ -52,6 +52,9 @@ The kernel runs a gRPC server that supports the following operations.
     - Confirmation response: Allowed/Denied
   - A progress of `NaN` must show an indeterminate progress bar. Otherwise, progress is a percentage stored as a floating point number in the range `[0, 100]`.
   - The kernel can ask the IDE for credentials. The IDE may respond with credentials or may deny the request.
+  - The kernel can ask the IDE for a 2FA code. The IDE may respond with the code or may deny the request.
+  - The kernel can send an archive of the script output to the IDE.
+  - The IDE can send a patch to apply new local changes.
 
 #### Timeout
 
