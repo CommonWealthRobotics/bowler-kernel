@@ -403,7 +403,7 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
     }
 
     @Test
-    fun `test generic write group where the written payload is too large`() {
+    fun `the payload must be the correct size for each group member`() {
         val id1 = ResourceId(
             digitalOut,
             AttachmentPoint.Pin(7)
@@ -480,23 +480,130 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
             operation {
                 val result = it.writeAndRead(
                     listOf(
-                        // Both of these should be one element but are purposefully too long
-                        id1 to byteArrayOf(1, 3),
+                        // Both of these should be one element but are purposefully the wrong size
+                        id1 to byteArrayOf(),
                         id2 to byteArrayOf(2, 4)
                     )
                 ).attempt().unsafeRunSync()
+                assertTrue(result.isLeft())
+            } pcSends {
+                // A correct implementation will throw when encountering payloads that are too big
+                // for the resources they correspond to. The previous implementation truncated the
+                // payloads (e.g. `[1, 3, 2, 4]` became `[1, 2]`).
+                listOf()
+            } deviceResponds {
+                listOf()
+            }
+        }
+    }
+
+    @Test
+    fun `writing to two resources in separate groups in one rpc call is not allowed`() {
+        // Add led1 to group 1
+        protocolTest(protocol, server) {
+            operation {
+                val result = it.addGroup(listOf(led1)).attempt().unsafeRunSync()
                 assertTrue(result.isRight())
             } pcSends {
-                // A correct implementation will cut off the extra from the payloads and only send
-                // `[1, 2]` instead of `[1, 3, 2, 4]`
                 listOf(
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(1, 2)
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
+                            1,
+                            DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
+                            1
+                        )
+                    ),
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID,
+                            1,
+                            0,
+                            1,
+                            0,
+                            0,
+                            2,
+                            1,
+                            32
+                        )
                     )
                 )
             } deviceResponds {
-                listOf(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf()))
+                listOf(
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
+                    ),
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
+                    )
+                )
+            }
+        }
+
+        // Add led2 to group 2
+        protocolTest(protocol, server) {
+            operation {
+                val result = it.addGroup(listOf(led2)).attempt().unsafeRunSync()
+                assertTrue(result.isRight())
+            } pcSends {
+                listOf(
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
+                            2,
+                            DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID.inc(),
+                            1
+                        )
+                    ),
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID,
+                            2,
+                            0,
+                            1,
+                            0,
+                            0,
+                            2,
+                            1,
+                            33
+                        )
+                    )
+                )
+            } deviceResponds {
+                listOf(
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
+                    ),
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
+                    )
+                )
+            }
+        }
+
+        // Make a group write with led1 and led2
+        protocolTest(protocol, server) {
+            operation {
+                val result = it.writeAndRead(
+                    listOf(
+                        led1 to byteArrayOf(1),
+                        led2 to byteArrayOf(1)
+                    )
+                ).attempt().unsafeRunSync()
+                // This should fail because led1 and led2 are in separate groups
+                assertTrue(result.isLeft())
+            } pcSends {
+                listOf()
+            } deviceResponds {
+                listOf()
             }
         }
     }

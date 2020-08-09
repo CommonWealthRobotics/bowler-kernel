@@ -19,12 +19,13 @@ package com.commonwealthrobotics.bowlerkernel.hardware.protocol
 import com.commonwealthrobotics.bowlerkernel.deviceserver.getPayload
 import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
 import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import io.kotest.assertions.arrow.either.shouldBeRight
+import io.kotest.assertions.throwables.shouldThrow
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
 import org.octogonapus.ktguava.collections.emptyImmutableList
-import org.octogonapus.ktguava.collections.immutableListOf
 import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
@@ -36,7 +37,8 @@ internal class DefaultBowlerRPCProtocolWriteTest {
 
     @Test
     fun `test writing`() {
-        setupWrite()
+        // Setup the resource
+        setupLed()
 
         // Do a write
         protocolTest(protocol, server) {
@@ -44,13 +46,60 @@ internal class DefaultBowlerRPCProtocolWriteTest {
                 val result = it.writeAndRead(led, byteArrayOf(1)).attempt().unsafeRunSync()
                 assertTrue(result.isRight())
             } pcSends {
-                immutableListOf(
+                listOf(
                     getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(1))
                 )
             } deviceResponds {
-                immutableListOf(
+                listOf(
                     getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE)
                 )
+            }
+        }
+    }
+
+    @Test
+    fun `test adding a resource with nonzero send and recv lengths`() {
+        val resource = ResourceId(servoWithFeedback, AttachmentPoint.Pin(42))
+
+        // Setup the resource
+        protocolTest(protocol, server) {
+            operation {
+                val result = it.add(resource).attempt().unsafeRunSync()
+                assertTrue(result.isRight())
+            } pcSends {
+                listOf(
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_DISCOVERY_ID,
+                            DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
+                            7,
+                            1,
+                            42
+                        )
+                    )
+                )
+            } deviceResponds {
+                listOf(
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
+                    )
+                )
+            }
+        }
+
+        // Write to it
+        protocolTest(protocol, server) {
+            operation {
+                val result = it.writeAndRead(resource, byteArrayOf(1, 2)).attempt().unsafeRunSync()
+                result.shouldBeRight {
+                    it.payloadEquals(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(8, 9, 10, 11)))
+                }
+            } pcSends {
+                listOf(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(1, 2)))
+            } deviceResponds {
+                listOf(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(8, 9, 10, 11)))
             }
         }
     }
@@ -78,7 +127,7 @@ internal class DefaultBowlerRPCProtocolWriteTest {
                 val result = it.add(led).attempt().unsafeRunSync()
                 assertTrue(result.isLeft())
             } pcSends {
-                immutableListOf(
+                listOf(
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(
@@ -91,7 +140,7 @@ internal class DefaultBowlerRPCProtocolWriteTest {
                     )
                 )
             } deviceResponds {
-                immutableListOf(
+                listOf(
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(DefaultBowlerRPCProtocol.STATUS_REJECTED_GENERIC)
@@ -113,7 +162,7 @@ internal class DefaultBowlerRPCProtocolWriteTest {
                 ).attempt().unsafeRunSync()
                 assertTrue(result.isRight())
             } pcSends {
-                immutableListOf(
+                listOf(
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(
@@ -131,7 +180,7 @@ internal class DefaultBowlerRPCProtocolWriteTest {
                     )
                 )
             } deviceResponds {
-                immutableListOf(
+                listOf(
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
@@ -142,61 +191,31 @@ internal class DefaultBowlerRPCProtocolWriteTest {
     }
 
     @Test
-    fun `test generic write`() {
-        val id = ResourceId(
-            digitalOut,
-            AttachmentPoint.Pin(7)
-        )
+    fun `writing with a payload that is too big for the resource type is an error`() {
+        // Setup the resource
+        setupLed()
 
+        // Do a write with a payload that's bigger than the led's payload size
         protocolTest(protocol, server) {
             operation {
-                val result = it.add(id).attempt().unsafeRunSync()
-                assertTrue(result.isRight())
+                shouldThrow<IllegalArgumentException> {
+                    it.writeAndRead(led, byteArrayOf(1, 2, 3, 4, 5, 6, 7)).attempt().unsafeRunSync()
+                }
             } pcSends {
-                immutableListOf(
-                    getPayload(
-                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(
-                            DefaultBowlerRPCProtocol.OPERATION_DISCOVERY_ID,
-                            DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
-                            2,
-                            1,
-                            7
-                        )
-                    )
-                )
+                listOf()
             } deviceResponds {
-                immutableListOf(
-                    getPayload(
-                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
-                    )
-                )
-            }
-        }
-
-        protocolTest(protocol, server) {
-            operation {
-                val result = it.writeAndRead(
-                    id,
-                    getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(1))
-                ).attempt().unsafeRunSync()
-                assertTrue(result.isRight())
-            } pcSends {
-                immutableListOf(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(1)))
-            } deviceResponds {
-                immutableListOf(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf()))
+                listOf()
             }
         }
     }
 
-    private fun setupWrite() {
+    private fun setupLed() {
         protocolTest(protocol, server) {
             operation {
                 val result = it.add(led).attempt().unsafeRunSync()
                 assertTrue(result.isRight())
             } pcSends {
-                immutableListOf(
+                listOf(
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(
@@ -209,7 +228,7 @@ internal class DefaultBowlerRPCProtocolWriteTest {
                     )
                 )
             } deviceResponds {
-                immutableListOf(
+                listOf(
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)

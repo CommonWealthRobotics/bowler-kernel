@@ -483,7 +483,16 @@ open class DefaultBowlerRPCProtocol(
             }
         ).fold(byteArrayOf()) { acc, (a, value) ->
             val sendRange = groupMemberToSendRange[a]!!
-            acc + makeResourcePayload(value).sliceArray(0 until sendRange.second - sendRange.first)
+
+            val resourcePayload = makeResourcePayload(value)
+            if (resourcePayload.size != sendRange.second - sendRange.first) {
+                throw IllegalArgumentException(
+                    "The resource payload (${resourcePayload.joinToString()}) " +
+                        "was incorrectly sized for the resource $a"
+                )
+            }
+
+            acc + resourcePayload
         }
     }
 
@@ -579,7 +588,17 @@ open class DefaultBowlerRPCProtocol(
         parseReceivePayload: ParseReceivePayload<R>
     ): IO<R> {
         val packetId = getValidatedPacketId(resourceId)
-        return server.write(packetId.toByte(), getPayload(PAYLOAD_SIZE, makeSendPayload(value)))
+
+        val payload = makeSendPayload(value)
+        if (payload.size != resourceId.resourceType.sendLength.toInt()) {
+            // TODO: Add a test for this
+            throw IllegalArgumentException(
+                "The resource payload (${payload.joinToString()}) is " +
+                    "incorrectly sized for the resource $resourceId"
+            )
+        }
+
+        return server.write(packetId.toByte(), getPayload(PAYLOAD_SIZE, payload))
             .map {
                 parseReceivePayload(it, 0, it.size)
             }
