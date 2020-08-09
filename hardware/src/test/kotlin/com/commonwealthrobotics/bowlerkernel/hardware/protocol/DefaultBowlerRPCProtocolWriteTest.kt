@@ -19,9 +19,8 @@ package com.commonwealthrobotics.bowlerkernel.hardware.protocol
 import com.commonwealthrobotics.bowlerkernel.deviceserver.getPayload
 import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
 import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import io.kotest.assertions.arrow.either.shouldBeRight
 import io.kotest.assertions.throwables.shouldThrow
-import org.junit.jupiter.api.Assertions.assertTrue
+import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
@@ -43,8 +42,8 @@ internal class DefaultBowlerRPCProtocolWriteTest {
         // Do a write
         protocolTest(protocol, server) {
             operation {
-                val result = it.writeAndRead(led, byteArrayOf(1)).attempt().unsafeRunSync()
-                assertTrue(result.isRight())
+                val result = it.writeAndRead(led, byteArrayOf(1))
+                result.shouldBe(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE))
             } pcSends {
                 listOf(
                     getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(1))
@@ -64,8 +63,7 @@ internal class DefaultBowlerRPCProtocolWriteTest {
         // Setup the resource
         protocolTest(protocol, server) {
             operation {
-                val result = it.add(resource).attempt().unsafeRunSync()
-                assertTrue(result.isRight())
+                it.add(resource)
             } pcSends {
                 listOf(
                     getPayload(
@@ -92,10 +90,9 @@ internal class DefaultBowlerRPCProtocolWriteTest {
         // Write to it
         protocolTest(protocol, server) {
             operation {
-                val result = it.writeAndRead(resource, byteArrayOf(1, 2)).attempt().unsafeRunSync()
-                result.shouldBeRight {
-                    it.payloadEquals(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(8, 9, 10, 11)))
-                }
+                it.writeAndRead(resource, byteArrayOf(1, 2)).shouldBe(
+                    getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(8, 9, 10, 11))
+                )
             } pcSends {
                 listOf(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(1, 2)))
             } deviceResponds {
@@ -110,7 +107,7 @@ internal class DefaultBowlerRPCProtocolWriteTest {
             operation {
                 // Test a write with missing members
                 assertThrows<UnsupportedOperationException> {
-                    protocol.writeAndRead(led, byteArrayOf(1)).unsafeRunSync()
+                    protocol.writeAndRead(led, byteArrayOf(1))
                 }
             } pcSends {
                 emptyImmutableList()
@@ -124,8 +121,7 @@ internal class DefaultBowlerRPCProtocolWriteTest {
     fun `test addWrite failure`() {
         protocolTest(protocol, server) {
             operation {
-                val result = it.add(led).attempt().unsafeRunSync()
-                assertTrue(result.isLeft())
+                shouldThrow<IllegalStateException> { it.add(led) }
             } pcSends {
                 listOf(
                     getPayload(
@@ -154,13 +150,12 @@ internal class DefaultBowlerRPCProtocolWriteTest {
     fun `test writing servo with pwm pin`() {
         protocolTest(protocol, server) {
             operation {
-                val result = it.add(
+                it.add(
                     ResourceId(
                         servo,
                         AttachmentPoint.PwmPin(1, 544, 2400, 16)
                     )
-                ).attempt().unsafeRunSync()
-                assertTrue(result.isRight())
+                )
             } pcSends {
                 listOf(
                     getPayload(
@@ -199,7 +194,7 @@ internal class DefaultBowlerRPCProtocolWriteTest {
         protocolTest(protocol, server) {
             operation {
                 shouldThrow<IllegalArgumentException> {
-                    it.writeAndRead(led, byteArrayOf(1, 2, 3, 4, 5, 6, 7)).attempt().unsafeRunSync()
+                    it.writeAndRead(led, byteArrayOf(1, 2, 3, 4, 5, 6, 7))
                 }
             } pcSends {
                 listOf()
@@ -212,8 +207,7 @@ internal class DefaultBowlerRPCProtocolWriteTest {
     private fun setupLed() {
         protocolTest(protocol, server) {
             operation {
-                val result = it.add(led).attempt().unsafeRunSync()
-                assertTrue(result.isRight())
+                it.add(led)
             } pcSends {
                 listOf(
                     getPayload(

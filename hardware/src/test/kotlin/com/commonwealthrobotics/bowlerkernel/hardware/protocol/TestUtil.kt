@@ -48,5 +48,5 @@ val servoWithFeedback = ResourceType(7, 2, 4)
 fun Collection<ByteArray>?.shouldContainPayloads(vararg expected: ByteArray) =
     this?.map { EqualsByteArray(it) } shouldContainExactly expected.map { EqualsByteArray(it) }
 
-fun ByteArray.payloadEquals(expected: ByteArray) =
+fun ByteArray.shouldBe(expected: ByteArray) =
     EqualsByteArray(this) == EqualsByteArray(expected)

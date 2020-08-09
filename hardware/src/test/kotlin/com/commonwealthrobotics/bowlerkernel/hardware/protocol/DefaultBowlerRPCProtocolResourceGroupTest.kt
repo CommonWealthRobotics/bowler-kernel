@@ -19,7 +19,6 @@ package com.commonwealthrobotics.bowlerkernel.hardware.protocol
 import com.commonwealthrobotics.bowlerkernel.deviceserver.getPayload
 import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
 import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -36,8 +35,7 @@ internal class DefaultBowlerRPCProtocolResourceGroupTest {
     fun `test DefaultResourceTypes send and receive lengths`(resourceType: ResourceId) {
         protocolTest(protocol, server) {
             operation {
-                val result = it.addGroup(listOf(resourceType)).attempt().unsafeRunSync()
-                assertTrue(result.isRight())
+                it.addGroup(listOf(resourceType))
             } pcSends {
                 listOf(
                     getPayload(

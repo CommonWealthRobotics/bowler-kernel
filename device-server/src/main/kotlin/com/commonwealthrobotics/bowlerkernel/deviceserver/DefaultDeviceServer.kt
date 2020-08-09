@@ -16,7 +16,6 @@
  */
 package com.commonwealthrobotics.bowlerkernel.deviceserver
 
-import arrow.fx.IO
 import java.net.SocketTimeoutException
 
 class DefaultDeviceServer(
@@ -34,50 +33,38 @@ class DefaultDeviceServer(
         }
     }
 
-    override fun connect(): IO<Unit> = IO {
+    override fun connect() {
         transportLayer.connect()
         ensureServerManagementPacket()
-    }.flatMap {
-        write(
+
+        val response = write(
             DeviceServer.SERVER_MANAGEMENT_PACKET_ID,
             getPayload(payloadSize, byteArrayOf(DeviceServer.OPERATION_ADD_ENSURED_PACKETS))
-        ).flatMap {
-            if (it[0] != DeviceServer.STATUS_ACCEPTED) {
-                IO.raiseError(
-                    IllegalStateException(
-                        "The device failed to add the ensured packets: ${it.joinToString()}"
-                    )
-                )
-            } else {
-                IO.just(Unit)
-            }
+        )
+
+        if (response[0] != DeviceServer.STATUS_ACCEPTED) {
+            throw IllegalStateException("The device failed to add the ensured packets: ${response.joinToString()}")
         }
     }
 
-    override fun disconnect(): IO<Unit> = IO.defer {
+    override fun disconnect() {
         ensureServerManagementPacket()
 
         // Tell the server to discard all packet handlers and disconnect so the connection state
         // is correctly reset for RDT
-        write(
+        val response = write(
             DeviceServer.SERVER_MANAGEMENT_PACKET_ID,
             getPayload(payloadSize, byteArrayOf(DeviceServer.OPERATION_DISCONNECT_ID))
-        ).flatMap {
-            if (it[0] == DeviceServer.STATUS_ACCEPTED) {
-                IO {
-                    transportLayer.disconnect()
-                    packets.clear()
-                    reliableState.clear()
-                    unreliableState.clear()
-                    ensureServerManagementPacket()
-                }
-            } else {
-                IO.raiseError(
-                    IllegalStateException(
-                        "The device failed to accept disconnection: ${it.joinToString()}"
-                    )
-                )
-            }
+        )
+
+        if (response[0] == DeviceServer.STATUS_ACCEPTED) {
+            transportLayer.disconnect()
+            packets.clear()
+            reliableState.clear()
+            unreliableState.clear()
+            ensureServerManagementPacket()
+        } else {
+            throw IllegalStateException("The device failed to accept disconnection: ${response.joinToString()}")
         }
     }
 
@@ -91,18 +78,12 @@ class DefaultDeviceServer(
         unreliableState[id] = UnreliableState(maxRetries)
     }
 
-    override fun write(id: Byte, payload: ByteArray): IO<ByteArray> = when (packets[id]) {
-        PacketTransferMode.Reliable -> IO {
-            sendReceiveReliable(id, payload)
-        }
+    override fun write(id: Byte, payload: ByteArray): ByteArray = when (packets[id]) {
+        PacketTransferMode.Reliable -> sendReceiveReliable(id, payload)
 
-        PacketTransferMode.Unreliable -> IO {
-            sendReceiveUnreliable(id, payload, unreliableState[id]!!.maxRetries)
-        }
+        PacketTransferMode.Unreliable -> sendReceiveUnreliable(id, payload, unreliableState[id]!!.maxRetries)
 
-        null -> IO.raiseError(
-            IllegalArgumentException("Cannot write to unregistered packet with id $id.")
-        )
+        null -> throw IllegalArgumentException("Cannot write to unregistered packet with id $id.")
     }
 
     /**

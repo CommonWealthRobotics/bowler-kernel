@@ -16,8 +16,8 @@
  */
 package com.commonwealthrobotics.bowlerkernel.hardware.protocol
 
-import arrow.fx.IO
 import com.commonwealthrobotics.bowlerkernel.deviceserver.DeviceServer
+import com.commonwealthrobotics.bowlerkernel.deviceserver.getPayload
 import java.util.ArrayDeque
 
 internal class MockDeviceServer : DeviceServer {
@@ -25,9 +25,13 @@ internal class MockDeviceServer : DeviceServer {
     val reads = ArrayDeque<ByteArray>()
     val writes = ArrayDeque<Pair<Byte, ByteArray>>()
 
-    override fun connect(): IO<Unit> = IO.just(Unit)
+    @SuppressWarnings("EmptyFunctionBlock")
+    override fun connect() {
+    }
 
-    override fun disconnect(): IO<Unit> = IO.just(Unit)
+    @SuppressWarnings("EmptyFunctionBlock")
+    override fun disconnect() {
+    }
 
     @SuppressWarnings("EmptyFunctionBlock")
     override fun addReliable(id: Byte) {
@@ -37,8 +41,13 @@ internal class MockDeviceServer : DeviceServer {
     override fun addUnreliable(id: Byte, maxRetries: Int) {
     }
 
-    override fun write(id: Byte, payload: ByteArray) = IO {
+    override fun write(id: Byte, payload: ByteArray): ByteArray {
         writes.addLast(id to payload)
-        reads.pop()
+        // The real device will report zeros if there is no packet
+        return if (reads.isEmpty()) {
+            getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE)
+        } else {
+            reads.pop()
+        }
     }
 }

@@ -18,7 +18,6 @@ package com.commonwealthrobotics.bowlerkernel.hardware.protocol
 
 import io.kotest.matchers.collections.shouldBeEmpty
 import org.junit.jupiter.api.Assertions.assertArrayEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.fail
 
 @DslMarker
@@ -79,8 +78,7 @@ internal class ProtocolScenario(
      */
     @SuppressWarnings("LongMethod")
     fun runTest() {
-        val connection = protocol.connect().attempt().unsafeRunSync()
-        assertTrue(connection.isRight())
+        protocol.connect()
 
         // There should be no reads or writes to start
         server.reads.shouldBeEmpty()

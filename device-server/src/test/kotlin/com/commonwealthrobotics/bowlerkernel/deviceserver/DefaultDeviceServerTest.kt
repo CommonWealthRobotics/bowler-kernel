@@ -16,10 +16,13 @@
  */
 package com.commonwealthrobotics.bowlerkernel.deviceserver
 
+import io.kotest.assertions.throwables.shouldThrow
 import org.junit.jupiter.api.Assertions.assertArrayEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
+import java.util.concurrent.TimeUnit
 
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class DefaultDeviceServerTest {
 
     private val payloadSize = 61
@@ -37,7 +40,7 @@ internal class DefaultDeviceServerTest {
                 *getPayload(payloadSize, byteArrayOf(DeviceServer.STATUS_ACCEPTED))
             )
         )
-        server.connect().unsafeRunSync()
+        server.connect()
         assertArrayEquals(
             byteArrayOf(
                 DeviceServer.SERVER_MANAGEMENT_PACKET_ID,
@@ -71,7 +74,7 @@ internal class DefaultDeviceServerTest {
                 *getPayload(payloadSize, byteArrayOf(DeviceServer.STATUS_ACCEPTED))
             )
         )
-        server.connect().unsafeRunSync()
+        server.connect()
         assertArrayEquals(
             byteArrayOf(
                 DeviceServer.SERVER_MANAGEMENT_PACKET_ID,
@@ -106,7 +109,7 @@ internal class DefaultDeviceServerTest {
                 *getPayload(payloadSize, byteArrayOf(DeviceServer.STATUS_ACCEPTED))
             )
         )
-        server.connect().unsafeRunSync()
+        server.connect()
         assertArrayEquals(
             byteArrayOf(
                 DeviceServer.SERVER_MANAGEMENT_PACKET_ID,
@@ -140,7 +143,7 @@ internal class DefaultDeviceServerTest {
                 *getPayload(payloadSize, byteArrayOf(DeviceServer.STATUS_ACCEPTED))
             )
         )
-        server.connect().unsafeRunSync()
+        server.connect()
         assertArrayEquals(
             byteArrayOf(
                 DeviceServer.SERVER_MANAGEMENT_PACKET_ID,
@@ -175,7 +178,7 @@ internal class DefaultDeviceServerTest {
                 *getPayload(payloadSize, byteArrayOf(DeviceServer.STATUS_ACCEPTED))
             )
         )
-        server.connect().unsafeRunSync()
+        server.connect()
         assertArrayEquals(
             byteArrayOf(
                 DeviceServer.SERVER_MANAGEMENT_PACKET_ID,
@@ -216,7 +219,7 @@ internal class DefaultDeviceServerTest {
                 *getPayload(payloadSize, byteArrayOf(DeviceServer.STATUS_ACCEPTED))
             )
         )
-        server.connect().unsafeRunSync()
+        server.connect()
         assertArrayEquals(
             byteArrayOf(
                 DeviceServer.SERVER_MANAGEMENT_PACKET_ID,
@@ -244,7 +247,7 @@ internal class DefaultDeviceServerTest {
                 *getPayload(payloadSize, byteArrayOf(DeviceServer.STATUS_ACCEPTED))
             )
         )
-        server.disconnect().unsafeRunSync()
+        server.disconnect()
         assertArrayEquals(
             byteArrayOf(
                 DeviceServer.SERVER_MANAGEMENT_PACKET_ID,
@@ -263,7 +266,7 @@ internal class DefaultDeviceServerTest {
                 *getPayload(payloadSize, byteArrayOf(DeviceServer.STATUS_ACCEPTED))
             )
         )
-        server.connect().unsafeRunSync()
+        server.connect()
         assertArrayEquals(
             byteArrayOf(
                 DeviceServer.SERVER_MANAGEMENT_PACKET_ID,
@@ -298,7 +301,7 @@ internal class DefaultDeviceServerTest {
                 *getPayload(payloadSize, byteArrayOf(DeviceServer.STATUS_ACCEPTED))
             )
         )
-        server.connect().unsafeRunSync()
+        server.connect()
         assertArrayEquals(
             byteArrayOf(
                 DeviceServer.SERVER_MANAGEMENT_PACKET_ID,
@@ -313,12 +316,13 @@ internal class DefaultDeviceServerTest {
             byteArrayOf(
                 DeviceServer.SERVER_MANAGEMENT_PACKET_ID,
                 0,
-                0,
+                1,
                 *getPayload(payloadSize, byteArrayOf(DeviceServer.STATUS_REJECTED_GENERIC))
             )
         )
-        val result = server.disconnect().attempt().unsafeRunSync()
-        assertTrue(result.isLeft())
+        shouldThrow<IllegalStateException> {
+            server.disconnect()
+        }
     }
 
     @Test
@@ -334,8 +338,10 @@ internal class DefaultDeviceServerTest {
                 *getPayload(payloadSize, byteArrayOf(DeviceServer.STATUS_REJECTED_GENERIC))
             )
         )
-        val result = server.connect().attempt().unsafeRunSync()
-        assertTrue(result.isLeft())
+        shouldThrow<IllegalStateException> {
+            server.connect()
+        }
+
         assertArrayEquals(
             byteArrayOf(
                 DeviceServer.SERVER_MANAGEMENT_PACKET_ID,

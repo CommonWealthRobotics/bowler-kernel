@@ -16,8 +16,6 @@
  */
 package com.commonwealthrobotics.bowlerkernel.deviceserver
 
-import arrow.fx.IO
-
 /**
  * A server that communicates with the device using reliable and unreliable transport.
  */
@@ -26,12 +24,12 @@ interface DeviceServer {
     /**
      * Open a connection with the device.
      */
-    fun connect(): IO<Unit>
+    fun connect()
 
     /**
      * Close the current connection with the device.
      */
-    fun disconnect(): IO<Unit>
+    fun disconnect()
 
     /**
      * Add a packet that uses reliable transport.
@@ -55,7 +53,7 @@ interface DeviceServer {
      * @param payload The data to send to the packet.
      * @return The data from the response.
      */
-    fun write(id: Byte, payload: ByteArray): IO<ByteArray>
+    fun write(id: Byte, payload: ByteArray): ByteArray
 
     companion object {
 

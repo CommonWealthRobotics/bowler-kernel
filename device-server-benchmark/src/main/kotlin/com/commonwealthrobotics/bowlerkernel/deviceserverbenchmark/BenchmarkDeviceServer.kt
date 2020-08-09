@@ -44,7 +44,7 @@ fun benchmarkDeviceServer(
             deviceServer.write(
                 packetId,
                 getPayload(payloadSize, byteArrayOf(it.toByte()))
-            ).unsafeRunSync()
+            )
         }
     }
 
@@ -53,7 +53,7 @@ fun benchmarkDeviceServer(
             deviceServer.write(
                 packetId,
                 getPayload(payloadSize, byteArrayOf(it.toByte()))
-            ).unsafeRunSync()
+            )
         }
     }
 
