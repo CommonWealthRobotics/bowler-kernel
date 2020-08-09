@@ -16,12 +16,11 @@
  */
 package com.commonwealthrobotics.bowlerkernel.hardware.protocol
 
-import arrow.fx.IO
 import com.commonwealthrobotics.bowlerkernel.deviceserver.getPayload
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldBeEmpty
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertAll
@@ -88,7 +87,7 @@ internal class DefaultBowlerRPCProtocolTest {
             )
         )
 
-        assertTrue(protocol.disconnect().attempt().unsafeRunSync().isRight())
+        protocol.disconnect()
 
         assertAll(
             server.writes.map {
@@ -132,7 +131,9 @@ internal class DefaultBowlerRPCProtocolTest {
             )
         )
 
-        assertTrue(protocol.disconnect().attempt().unsafeRunSync().isLeft())
+        shouldThrow<IllegalStateException> {
+            protocol.disconnect()
+        }
     }
 
     @Test
@@ -146,39 +147,21 @@ internal class DefaultBowlerRPCProtocolTest {
             )
         )
 
-        assertTrue(protocol.disconnect().attempt().unsafeRunSync().isLeft())
+        shouldThrow<IllegalStateException> {
+            protocol.disconnect()
+        }
     }
 
     @Test
     fun `allowed to disconnect with no connection`() {
-        assertTrue(protocol.disconnect().attempt().unsafeRunSync().isRight())
+        protocol.disconnect()
     }
 
     /**
      * Connects the protocol and asserts it connected properly because no error was returned.
      */
     private fun connectProtocol() {
-        assertTrue(protocol.connect().attempt().unsafeRunSync().isRight())
-    }
-
-    /**
-     * Connects the protocol, runs the [operation], and asserts that:
-     * 1. The operation failed because an error was returned
-     * 2. No interactions happened with the device (nothing was written or read)
-     *
-     * @param operation The operation to perform.
-     */
-    private fun assertOperationFailedAndNoInteractionsWithDevice(
-        operation: () -> IO<Unit>
-    ) {
-        connectProtocol()
-
-        val result = operation().attempt().unsafeRunSync()
-
-        assertAll(
-            { assertTrue(result.isLeft()) },
-            { assertNoInteractionsWithDevice() }
-        )
+        protocol.connect()
     }
 
     /**

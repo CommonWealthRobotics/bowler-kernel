@@ -19,12 +19,12 @@ package com.commonwealthrobotics.bowlerkernel.hardware.protocol
 import com.commonwealthrobotics.bowlerkernel.deviceserver.getPayload
 import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
 import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import org.junit.jupiter.api.Assertions.assertTrue
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
 import org.octogonapus.ktguava.collections.emptyImmutableList
-import org.octogonapus.ktguava.collections.immutableListOf
 import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
@@ -36,21 +36,67 @@ internal class DefaultBowlerRPCProtocolWriteTest {
 
     @Test
     fun `test writing`() {
-        setupWrite()
+        // Setup the resource
+        setupLed()
 
         // Do a write
         protocolTest(protocol, server) {
             operation {
-                val result = it.writeAndRead(led, byteArrayOf(1)).attempt().unsafeRunSync()
-                assertTrue(result.isRight())
+                val result = it.writeAndRead(led, byteArrayOf(1))
+                result.shouldBe(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE))
             } pcSends {
-                immutableListOf(
+                listOf(
                     getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(1))
                 )
             } deviceResponds {
-                immutableListOf(
+                listOf(
                     getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE)
                 )
+            }
+        }
+    }
+
+    @Test
+    fun `test adding a resource with nonzero send and recv lengths`() {
+        val resource = ResourceId(servoWithFeedback, AttachmentPoint.Pin(42))
+
+        // Setup the resource
+        protocolTest(protocol, server) {
+            operation {
+                it.add(resource)
+            } pcSends {
+                listOf(
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_DISCOVERY_ID,
+                            DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
+                            7,
+                            1,
+                            42
+                        )
+                    )
+                )
+            } deviceResponds {
+                listOf(
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
+                    )
+                )
+            }
+        }
+
+        // Write to it
+        protocolTest(protocol, server) {
+            operation {
+                it.writeAndRead(resource, byteArrayOf(1, 2)).shouldBe(
+                    getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(8, 9, 10, 11))
+                )
+            } pcSends {
+                listOf(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(1, 2)))
+            } deviceResponds {
+                listOf(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(8, 9, 10, 11)))
             }
         }
     }
@@ -61,7 +107,7 @@ internal class DefaultBowlerRPCProtocolWriteTest {
             operation {
                 // Test a write with missing members
                 assertThrows<UnsupportedOperationException> {
-                    protocol.writeAndRead(led, byteArrayOf(1)).unsafeRunSync()
+                    protocol.writeAndRead(led, byteArrayOf(1))
                 }
             } pcSends {
                 emptyImmutableList()
@@ -75,10 +121,9 @@ internal class DefaultBowlerRPCProtocolWriteTest {
     fun `test addWrite failure`() {
         protocolTest(protocol, server) {
             operation {
-                val result = it.add(led).attempt().unsafeRunSync()
-                assertTrue(result.isLeft())
+                shouldThrow<IllegalStateException> { it.add(led) }
             } pcSends {
-                immutableListOf(
+                listOf(
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(
@@ -91,7 +136,7 @@ internal class DefaultBowlerRPCProtocolWriteTest {
                     )
                 )
             } deviceResponds {
-                immutableListOf(
+                listOf(
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(DefaultBowlerRPCProtocol.STATUS_REJECTED_GENERIC)
@@ -105,15 +150,14 @@ internal class DefaultBowlerRPCProtocolWriteTest {
     fun `test writing servo with pwm pin`() {
         protocolTest(protocol, server) {
             operation {
-                val result = it.add(
+                it.add(
                     ResourceId(
                         servo,
                         AttachmentPoint.PwmPin(1, 544, 2400, 16)
                     )
-                ).attempt().unsafeRunSync()
-                assertTrue(result.isRight())
+                )
             } pcSends {
-                immutableListOf(
+                listOf(
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(
@@ -131,7 +175,7 @@ internal class DefaultBowlerRPCProtocolWriteTest {
                     )
                 )
             } deviceResponds {
-                immutableListOf(
+                listOf(
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
@@ -142,61 +186,30 @@ internal class DefaultBowlerRPCProtocolWriteTest {
     }
 
     @Test
-    fun `test generic write`() {
-        val id = ResourceId(
-            digitalOut,
-            AttachmentPoint.Pin(7)
-        )
+    fun `writing with a payload that is too big for the resource type is an error`() {
+        // Setup the resource
+        setupLed()
 
+        // Do a write with a payload that's bigger than the led's payload size
         protocolTest(protocol, server) {
             operation {
-                val result = it.add(id).attempt().unsafeRunSync()
-                assertTrue(result.isRight())
+                shouldThrow<IllegalArgumentException> {
+                    it.writeAndRead(led, byteArrayOf(1, 2, 3, 4, 5, 6, 7))
+                }
             } pcSends {
-                immutableListOf(
-                    getPayload(
-                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(
-                            DefaultBowlerRPCProtocol.OPERATION_DISCOVERY_ID,
-                            DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
-                            2,
-                            1,
-                            7
-                        )
-                    )
-                )
+                listOf()
             } deviceResponds {
-                immutableListOf(
-                    getPayload(
-                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
-                    )
-                )
-            }
-        }
-
-        protocolTest(protocol, server) {
-            operation {
-                val result = it.writeAndRead(
-                    id,
-                    getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(1))
-                ).attempt().unsafeRunSync()
-                assertTrue(result.isRight())
-            } pcSends {
-                immutableListOf(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(1)))
-            } deviceResponds {
-                immutableListOf(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf()))
+                listOf()
             }
         }
     }
 
-    private fun setupWrite() {
+    private fun setupLed() {
         protocolTest(protocol, server) {
             operation {
-                val result = it.add(led).attempt().unsafeRunSync()
-                assertTrue(result.isRight())
+                it.add(led)
             } pcSends {
-                immutableListOf(
+                listOf(
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(
@@ -209,7 +222,7 @@ internal class DefaultBowlerRPCProtocolWriteTest {
                     )
                 )
             } deviceResponds {
-                immutableListOf(
+                listOf(
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
