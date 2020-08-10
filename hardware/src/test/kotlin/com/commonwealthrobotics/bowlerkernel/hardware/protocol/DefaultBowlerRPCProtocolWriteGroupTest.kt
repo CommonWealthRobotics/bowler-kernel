@@ -21,7 +21,7 @@ package com.commonwealthrobotics.bowlerkernel.hardware.protocol
 import com.commonwealthrobotics.bowlerkernel.deviceserver.getPayload
 import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
 import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
-import org.junit.jupiter.api.Assertions.assertTrue
+import io.kotest.assertions.throwables.shouldThrow
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.octogonapus.ktguava.collections.emptyImmutableList
@@ -55,13 +55,12 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
         // Do a write
         protocolTest(protocol, server) {
             operation {
-                val result = it.writeAndRead(
+                it.writeAndRead(
                     listOf(
                         led1 to byteArrayOf(1),
                         led2 to byteArrayOf(0)
                     )
-                ).attempt().unsafeRunSync()
-                assertTrue(result.isRight())
+                ).shouldContainPayloads(byteArrayOf(), byteArrayOf())
             } pcSends {
                 listOf(
                     getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(1, 0))
@@ -81,13 +80,12 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
         // Do a write supplying the resource id's in the opposite order
         protocolTest(protocol, server) {
             operation {
-                val result = it.writeAndRead(
+                it.writeAndRead(
                     listOf(
                         led2 to byteArrayOf(0),
                         led1 to byteArrayOf(1)
                     )
-                ).attempt().unsafeRunSync()
-                assertTrue(result.isRight())
+                ).shouldContainPayloads(byteArrayOf(), byteArrayOf())
             } pcSends {
                 listOf(
                     getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(1, 0))
@@ -102,17 +100,18 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
     }
 
     @Test
-    fun `test reading from a read group without discovery first`() {
+    fun `reading from a read group without discovery first is an error`() {
         protocolTest(protocol, server) {
             operation {
                 // Test a write with missing members
-                val result = protocol.writeAndRead(
-                    listOf(
-                        led1 to byteArrayOf(1),
-                        led2 to byteArrayOf(0)
+                shouldThrow<IllegalArgumentException> {
+                    protocol.writeAndRead(
+                        listOf(
+                            led1 to byteArrayOf(1),
+                            led2 to byteArrayOf(0)
+                        )
                     )
-                ).attempt().unsafeRunSync()
-                assertTrue(result.isLeft())
+                }
             } pcSends {
                 emptyImmutableList()
             } deviceResponds {
@@ -122,18 +121,19 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
     }
 
     @Test
-    fun `test reading from a read group with too few members`() {
+    fun `reading from a read group with too few members is an error`() {
         setupWriteGroup()
 
         protocolTest(protocol, server) {
             operation {
                 // Test a write with too few members
-                val result = protocol.writeAndRead(
-                    listOf(
-                        led1 to byteArrayOf(1)
+                shouldThrow<IllegalArgumentException> {
+                    protocol.writeAndRead(
+                        listOf(
+                            led1 to byteArrayOf(1)
+                        )
                     )
-                ).attempt().unsafeRunSync()
-                assertTrue(result.isLeft())
+                }
             } pcSends {
                 emptyImmutableList()
             } deviceResponds {
@@ -143,19 +143,21 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
     }
 
     @Test
-    fun `test reading from a read group without all members`() {
+    fun `reading from a read group without all members is an error`() {
         setupWriteGroup()
 
         protocolTest(protocol, server) {
             operation {
-                // Test a write with missing members
-                val result = protocol.writeAndRead(
-                    listOf(
-                        led1 to byteArrayOf(1),
-                        led1 to byteArrayOf(0)
+                // Test a write with missing members. Supply led1 twice to have the correct number of members while
+                // missing led2.
+                shouldThrow<IllegalArgumentException> {
+                    protocol.writeAndRead(
+                        listOf(
+                            led1 to byteArrayOf(1),
+                            led1 to byteArrayOf(0)
+                        )
                     )
-                ).attempt().unsafeRunSync()
-                assertTrue(result.isLeft())
+                }
             } pcSends {
                 emptyImmutableList()
             } deviceResponds {
@@ -168,8 +170,9 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
     fun `test addGroup failure`() {
         protocolTest(protocol, server) {
             operation {
-                val result = it.addGroup(listOf(led1, led2)).attempt().unsafeRunSync()
-                assertTrue(result.isLeft())
+                shouldThrow<IllegalStateException> {
+                    it.addGroup(listOf(led1, led2))
+                }
             } pcSends {
                 listOf(
                     getPayload(
@@ -183,6 +186,7 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
                     )
                 )
             } deviceResponds {
+                // Have the device response with rejected to test that the group discovery should fail
                 listOf(
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
@@ -194,11 +198,12 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
     }
 
     @Test
-    fun `test addGroup last group member failure`() {
+    fun `adding a resource to a full group is an error`() {
         protocolTest(protocol, server) {
             operation {
-                val result = it.addGroup(listOf(led1, led2)).attempt().unsafeRunSync()
-                assertTrue(result.isLeft())
+                shouldThrow<IllegalStateException> {
+                    it.addGroup(listOf(led1, led2))
+                }
             } pcSends {
                 listOf(
                     getPayload(
@@ -249,6 +254,7 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
                     ),
+                    // Have the device response with rejected to test that the group discovery should fail
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(DefaultBowlerRPCProtocol.STATUS_REJECTED_GROUP_FULL)
@@ -262,8 +268,9 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
     fun `test addGroup two group member failure`() {
         protocolTest(protocol, server) {
             operation {
-                val result = it.addGroup(listOf(led1, led2)).attempt().unsafeRunSync()
-                assertTrue(result.isLeft())
+                shouldThrow<IllegalStateException> {
+                    it.addGroup(listOf(led1, led2))
+                }
             } pcSends {
                 listOf(
                     getPayload(
@@ -297,6 +304,7 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
                     ),
+                    // Have the device response with rejected to test that the group discovery should fail
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
                         byteArrayOf(DefaultBowlerRPCProtocol.STATUS_REJECTED_GENERIC)
@@ -320,8 +328,7 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
 
         protocolTest(protocol, server) {
             operation {
-                val result = it.addGroup(listOf(id1, id2)).attempt().unsafeRunSync()
-                assertTrue(result.isRight())
+                it.addGroup(listOf(id1, id2))
             } pcSends {
                 listOf(
                     getPayload(
@@ -382,13 +389,12 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
 
         protocolTest(protocol, server) {
             operation {
-                val result = it.writeAndRead(
+                it.writeAndRead(
                     listOf(
                         id1 to byteArrayOf(1),
                         id2 to byteArrayOf(2)
                     )
-                ).attempt().unsafeRunSync()
-                assertTrue(result.isRight())
+                ).shouldContainPayloads(byteArrayOf(), byteArrayOf())
             } pcSends {
                 listOf(
                     getPayload(
@@ -403,7 +409,7 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
     }
 
     @Test
-    fun `test generic write group where the written payload is too large`() {
+    fun `the payload must be the correct size for each group member`() {
         val id1 = ResourceId(
             digitalOut,
             AttachmentPoint.Pin(7)
@@ -416,8 +422,7 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
 
         protocolTest(protocol, server) {
             operation {
-                val result = it.addGroup(listOf(id1, id2)).attempt().unsafeRunSync()
-                assertTrue(result.isRight())
+                it.addGroup(listOf(id1, id2))
             } pcSends {
                 listOf(
                     getPayload(
@@ -478,25 +483,132 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
 
         protocolTest(protocol, server) {
             operation {
-                val result = it.writeAndRead(
-                    listOf(
-                        // Both of these should be one element but are purposefully too long
-                        id1 to byteArrayOf(1, 3),
-                        id2 to byteArrayOf(2, 4)
+                // Both of these should be one element but are purposefully the wrong size
+                shouldThrow<IllegalArgumentException> {
+                    it.writeAndRead(
+                        listOf(
+                            id1 to byteArrayOf(),
+                            id2 to byteArrayOf(2, 4)
+                        )
                     )
-                ).attempt().unsafeRunSync()
-                assertTrue(result.isRight())
+                }
             } pcSends {
-                // A correct implementation will cut off the extra from the payloads and only send
-                // `[1, 2]` instead of `[1, 3, 2, 4]`
+                // A correct implementation will throw when encountering payloads that are too big
+                // for the resources they correspond to. The previous implementation truncated the
+                // payloads (e.g. `[1, 3, 2, 4]` became `[1, 2]`).
+                listOf()
+            } deviceResponds {
+                listOf()
+            }
+        }
+    }
+
+    @Test
+    fun `writing to two resources in separate groups in one rpc call is not allowed`() {
+        // Add led1 to group 1
+        protocolTest(protocol, server) {
+            operation {
+                it.addGroup(listOf(led1))
+            } pcSends {
                 listOf(
                     getPayload(
                         DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
-                        byteArrayOf(1, 2)
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
+                            1,
+                            DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID,
+                            1
+                        )
+                    ),
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID,
+                            1,
+                            0,
+                            1,
+                            0,
+                            0,
+                            2,
+                            1,
+                            32
+                        )
                     )
                 )
             } deviceResponds {
-                listOf(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf()))
+                listOf(
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
+                    ),
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
+                    )
+                )
+            }
+        }
+
+        // Add led2 to group 2
+        protocolTest(protocol, server) {
+            operation {
+                it.addGroup(listOf(led2))
+            } pcSends {
+                listOf(
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_DISCOVERY_ID,
+                            2,
+                            DefaultBowlerRPCProtocol.DEFAULT_START_PACKET_ID.inc(),
+                            1
+                        )
+                    ),
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(
+                            DefaultBowlerRPCProtocol.OPERATION_GROUP_MEMBER_DISCOVERY_ID,
+                            2,
+                            0,
+                            1,
+                            0,
+                            0,
+                            2,
+                            1,
+                            33
+                        )
+                    )
+                )
+            } deviceResponds {
+                listOf(
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
+                    ),
+                    getPayload(
+                        DefaultBowlerRPCProtocol.PAYLOAD_SIZE,
+                        byteArrayOf(DefaultBowlerRPCProtocol.STATUS_ACCEPTED)
+                    )
+                )
+            }
+        }
+
+        // Make a group write with led1 and led2
+        protocolTest(protocol, server) {
+            operation {
+                // This should fail because led1 and led2 are in separate groups
+                shouldThrow<IllegalArgumentException> {
+                    it.writeAndRead(
+                        listOf(
+                            led1 to byteArrayOf(1),
+                            led2 to byteArrayOf(1)
+                        )
+                    )
+                }
+            } pcSends {
+                listOf()
+            } deviceResponds {
+                listOf()
             }
         }
     }
@@ -504,8 +616,7 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
     private fun setupWriteGroup() {
         protocolTest(protocol, server) {
             operation {
-                val result = it.addGroup(listOf(led1, led2)).attempt().unsafeRunSync()
-                assertTrue(result.isRight())
+                it.addGroup(listOf(led1, led2))
             } pcSends {
                 listOf(
                     getPayload(

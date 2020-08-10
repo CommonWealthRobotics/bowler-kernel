@@ -16,16 +16,13 @@
  */
 package com.commonwealthrobotics.bowlerkernel.hardware.protocol
 
-import arrow.fx.IO
 import com.commonwealthrobotics.bowlerkernel.deviceserver.getPayload
 import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.AttachmentPoint
 import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
-import org.junit.jupiter.api.Assertions.assertArrayEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
-import org.junit.jupiter.api.assertThrows
 import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
@@ -46,8 +43,7 @@ internal class DefaultBowlerRPCProtocolReadTest {
 
         protocolTest(protocol, server) {
             operation {
-                val result = it.read(lineSensor).unsafeRunSync()
-                result.shouldBe(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(0, 1)))
+                it.read(lineSensor).shouldBe(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(0, 1)))
             } pcSends {
                 listOf(
                     getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE)
@@ -65,8 +61,8 @@ internal class DefaultBowlerRPCProtocolReadTest {
         protocolTest(protocol, server) {
             operation {
                 // Test a write with missing members
-                assertThrows<UnsupportedOperationException> {
-                    protocol.read(lineSensor).unsafeRunSync()
+                shouldThrow<UnsupportedOperationException> {
+                    protocol.read(lineSensor)
                 }
             } pcSends {
                 emptyList()
@@ -85,8 +81,7 @@ internal class DefaultBowlerRPCProtocolReadTest {
 
         protocolTest(protocol, server) {
             operation {
-                val result = it.add(id).attempt().unsafeRunSync()
-                assertTrue(result.isRight())
+                it.add(id)
             } pcSends {
                 listOf(
                     getPayload(
@@ -113,8 +108,7 @@ internal class DefaultBowlerRPCProtocolReadTest {
         val response = getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf(1, 2))
         protocolTest(protocol, server) {
             operation {
-                val result = it.read(id).unsafeRunSync()
-                assertArrayEquals(response, result)
+                it.read(id).shouldBe(response)
             } pcSends {
                 listOf(getPayload(DefaultBowlerRPCProtocol.PAYLOAD_SIZE, byteArrayOf()))
             } deviceResponds {
@@ -127,12 +121,11 @@ internal class DefaultBowlerRPCProtocolReadTest {
 
     private fun setupReadImpl(
         resourceId: ResourceId,
-        operation: DefaultBowlerRPCProtocol.() -> IO<Unit>
+        operation: DefaultBowlerRPCProtocol.() -> Unit
     ) {
         protocolTest(protocol, server) {
             operation {
-                val result = it.operation().attempt().unsafeRunSync()
-                assertTrue(result.isRight())
+                it.operation()
             } pcSends {
                 listOf(
                     getPayload(
