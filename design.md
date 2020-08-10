@@ -54,7 +54,9 @@ The kernel runs a gRPC server that supports the following operations.
   - The kernel can ask the IDE for credentials. The IDE may respond with credentials or may deny the request.
   - The kernel can ask the IDE for a 2FA code. The IDE may respond with the code or may deny the request.
   - The kernel can send an archive of the script output to the IDE.
-  - The IDE can send a patch to apply new local changes.
+  - The IDE can send a new robot config while the robot is loaded. This must cause the relevant parts of the robot to be re-loaded.
+  - The kernel can send a validated (and possibly modified) robot config to the IDE. The IDE should compute a diff relative to the robot config on disk and present this to the user in a rich manner.
+    - This is used to validate the robot config after CAD generation. Ideally, the IDE displays differences using the relevant validation UI element for the value. For example, if the joint limits have been updated, then the user should see their joint limits in red with the new joint limits display close to theirs so that they understand that Bowler determined that their joint limits are invalid and suggested valid joint limits.
 
 #### Timeout
 
@@ -226,6 +228,11 @@ The client must periodically call a keepalive function in the kernel. If the ker
 ### CAD
 
 - Use the existing JCSG API for now.
+
+### Robot Config Validation
+
+- There is a robot config validation interface that specifies a method for validating a robot config along with its CAD.
+  - This method returns a new robot config file that may differ from the original; any difference should be presented to the user in the rich robot config editor.
 
 ### Installing and Updating
 
