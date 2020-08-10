@@ -21,7 +21,7 @@ The kernel runs a gRPC server that supports the following operations.
 
 #### Script Operations
 
-- Run a script from a file specifier and a list of dev'd libraries
+- Run a script from a file specifier, a list of dev'd libraries, and a `ScriptEnvironment`
 
 #### Hardware Operations
 
