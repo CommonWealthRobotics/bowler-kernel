@@ -17,8 +17,8 @@
 package com.commonwealthrobotics.bowlerkernel.scripting
 
 import com.commonwealthrobotics.bowlerkernel.gitfs.DependencyResolver
-import com.commonwealthrobotics.bowlerkernel.testutil.fileSpec
-import com.commonwealthrobotics.bowlerkernel.testutil.projectSpec
+import com.commonwealthrobotics.bowlerkernel.proto.fileSpec
+import com.commonwealthrobotics.bowlerkernel.proto.projectSpec
 import io.kotest.assertions.arrow.either.shouldBeLeft
 import io.kotest.assertions.arrow.either.shouldBeRight
 import io.mockk.every

@@ -16,11 +16,11 @@
  */
 package com.commonwealthrobotics.bowlerkernel.scripthost
 
+import com.commonwealthrobotics.bowlerkernel.proto.fileSpec
+import com.commonwealthrobotics.bowlerkernel.proto.projectSpec
+import com.commonwealthrobotics.bowlerkernel.proto.runRequest
+import com.commonwealthrobotics.bowlerkernel.proto.sessionClientMessage
 import com.commonwealthrobotics.bowlerkernel.scripting.ScriptLoader
-import com.commonwealthrobotics.bowlerkernel.testutil.fileSpec
-import com.commonwealthrobotics.bowlerkernel.testutil.projectSpec
-import com.commonwealthrobotics.bowlerkernel.testutil.runRequest
-import com.commonwealthrobotics.bowlerkernel.testutil.sessionClientMessage
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyOrder
