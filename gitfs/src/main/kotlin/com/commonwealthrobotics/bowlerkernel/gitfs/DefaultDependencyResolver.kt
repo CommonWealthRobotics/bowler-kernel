@@ -17,11 +17,20 @@
 package com.commonwealthrobotics.bowlerkernel.gitfs
 
 import com.commonwealthrobotics.proto.gitfs.FileSpec
+import com.commonwealthrobotics.proto.gitfs.ProjectSpec
 import java.io.File
 
 class DefaultDependencyResolver : DependencyResolver {
 
     override fun resolve(fileSpec: FileSpec): File {
+        TODO("Not yet implemented")
+    }
+
+    override fun addDev(dev: ProjectSpec) {
+        TODO("Not yet implemented")
+    }
+
+    override fun addDevs(devs: List<ProjectSpec>) {
         TODO("Not yet implemented")
     }
 }

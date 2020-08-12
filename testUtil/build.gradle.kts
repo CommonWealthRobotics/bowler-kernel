@@ -16,5 +16,5 @@ dependencies {
 
     api(group = "org.jacoco", name = "org.jacoco.agent", version = Versions.jacocoTool)
 
-    implementation(project(":proto"))
+    api(project(":proto"))
 }
