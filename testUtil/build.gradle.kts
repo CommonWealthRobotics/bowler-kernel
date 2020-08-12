@@ -15,4 +15,6 @@ dependencies {
     api(group = "io.arrow-kt", name = "arrow-core-data", version = Versions.arrow)
 
     api(group = "org.jacoco", name = "org.jacoco.agent", version = Versions.jacocoTool)
+
+    implementation(project(":proto"))
 }

@@ -10,6 +10,8 @@ include(":gitfs")
 include(":hardware")
 include(":logging")
 include(":proto")
+include(":scripthost")
+include(":scripting")
 include(":testUtil")
 include(":util")
 

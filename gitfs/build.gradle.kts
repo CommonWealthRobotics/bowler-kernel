@@ -11,6 +11,7 @@ dependencies {
 
     implementation(project(":logging"))
     implementation(project(":util"))
+    implementation(project(":proto"))
 
     implementation(
         group = "org.eclipse.jgit",
