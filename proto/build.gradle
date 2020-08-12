@@ -12,11 +12,11 @@ dependencies {
 sourceSets {
     main {
         proto {
-            srcDir("$projectDir/bowler-proto/src/proto")
+            srcDir("${projectDir.absolutePath}/bowler-proto/src/proto")
         }
         java {
-            srcDir("$buildDir/generated/source/proto/main/grpc")
-            srcDir("$buildDir/generated/source/proto/main/java")
+            srcDir("${buildDir.absolutePath}/generated/source/proto/main/grpc")
+            srcDir("${buildDir.absolutePath}/generated/source/proto/main/java")
         }
     }
 }
