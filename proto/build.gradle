@@ -38,7 +38,7 @@ protobuf {
                 grpc { }
             }
             project.tasks.named("classes").configure {
-                it.dependsOn(task)
+                it.finalizedBy(task)
 //                it.outputs.upToDateWhen { false }
             }
         }
