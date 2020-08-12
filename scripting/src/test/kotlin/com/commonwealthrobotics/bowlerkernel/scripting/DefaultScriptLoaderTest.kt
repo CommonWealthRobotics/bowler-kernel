@@ -36,7 +36,7 @@ internal class DefaultScriptLoaderTest {
     @Test
     fun `resolveAndLoad a script with no devs and no env that returns a simple value`() {
         val file1 = createTempFile().apply { writeText("1") }
-        val dependencyResolver = mockk<DependencyResolver> {
+        val dependencyResolver = mockk<DependencyResolver>(relaxUnitFun = true) {
             every { resolve(fileSpec1) } returns file1
         }
 
@@ -52,7 +52,7 @@ internal class DefaultScriptLoaderTest {
     @Test
     fun `resolveAndLoad a script with a compiler error`() {
         val file1 = createTempFile().apply { writeText(" \" ") }
-        val dependencyResolver = mockk<DependencyResolver> {
+        val dependencyResolver = mockk<DependencyResolver>(relaxUnitFun = true) {
             every { resolve(fileSpec1) } returns file1
         }
 
@@ -76,7 +76,7 @@ internal class DefaultScriptLoaderTest {
                 """.trimMargin()
             )
         }
-        val dependencyResolver = mockk<DependencyResolver> {
+        val dependencyResolver = mockk<DependencyResolver>(relaxUnitFun = true) {
             every { resolve(fileSpec1) } returns file1
         }
 
