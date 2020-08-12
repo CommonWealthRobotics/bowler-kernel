@@ -37,10 +37,10 @@ protobuf {
             task.plugins {
                 grpc { }
             }
-            project.tasks.named("classes").configure {
-                it.finalizedBy(task)
-//                it.outputs.upToDateWhen { false }
-            }
+//            project.tasks.named("classes").configure {
+//                it.finalizedBy(task)
+////                it.outputs.upToDateWhen { false }
+//            }
         }
     }
 }
