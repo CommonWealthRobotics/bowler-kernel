@@ -7,11 +7,13 @@ dependencies {
     api(group: "com.google.protobuf", name: "protobuf-java", version: Versions.protobufJava)
     api(group: "io.grpc", name: "grpc-all", version: Versions.grpcAll)
     api(group: "javax.annotation", name: "javax.annotation-api", version: Versions.javaxAnnotationAPI)
-    protobuf(files("$projectDir/bowler-proto/src/proto"))
 }
 
 sourceSets {
     main {
+        proto {
+            srcDir("$projectDir/bowler-proto/src/proto")
+        }
         java {
             srcDir("$buildDir/generated/source/proto/main/grpc")
             srcDir("$buildDir/generated/source/proto/main/java")
