@@ -79,7 +79,7 @@ The client must periodically call a keepalive function in the kernel. If the ker
 
 ### Script Dependency Management
 
-- Scripts may import from other scripts in the project. These dependencies are resolved to the relevant files in the project.
+- Scripts may import other scripts in the project. These dependencies are resolved to the relevant files in the project.
 - Scripts may depend on Bowler libraries specified by a Git Repo URI.
   - By default, resolution uses GitFS to pull in the scripts.
   - If the URI resolves to a Bowler library that has been dev'd, then the dev'd version must be used instead of the version from the remote. The kernel must then ask the client to provide the files in the dev'd dependency.

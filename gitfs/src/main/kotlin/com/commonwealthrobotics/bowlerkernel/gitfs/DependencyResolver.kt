@@ -17,6 +17,7 @@
 package com.commonwealthrobotics.bowlerkernel.gitfs
 
 import com.commonwealthrobotics.proto.gitfs.FileSpec
+import com.commonwealthrobotics.proto.gitfs.ProjectSpec
 import java.io.File
 
 /**
@@ -24,5 +25,30 @@ import java.io.File
  */
 interface DependencyResolver {
 
+    /**
+     * Resolve a local [File] from a [FileSpec]. Dependency management works as follows:
+     * - Scripts may import other scripts in their project. These dependencies are resolved to the relevant files in
+     * the project.
+     * - Scripts may import scripts in other Bowler libraries. By default, [GitFS] will be used to clone the library the
+     * script is contained in and the script will be resolved to the local file within that library. However, when
+     * developing another Bowler library, it may be useful to resolve scripts located in that library to their local
+     * files instead of to the files on the remote. In this case, the library should be added as a dev using [addDev].
+     * If a script is located inside a project that is dev'd, then that script will be resolved to the local file inside
+     * that dev.
+     */
     fun resolve(fileSpec: FileSpec): File
+
+    /**
+     * Add a dev to this resolver. See the [resolve] docs for more information.
+     *
+     * @param dev The project to dev.
+     */
+    fun addDev(dev: ProjectSpec)
+
+    /**
+     * Add devs to this resolver. See the [resolve] docs for more information.
+     *
+     * @param devs The projects to dev.
+     */
+    fun addDevs(devs: List<ProjectSpec>)
 }

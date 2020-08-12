@@ -38,7 +38,7 @@ class DefaultScriptLoader(
         scriptEnvironment: Map<String, String>
     ): Script {
         val scriptFile = dependencyResolver.resolve(fileSpec)
-        // TODO: Register the devs with the dependencyResolver
+        dependencyResolver.addDevs(devs)
         return DefaultScript(loadGroovyScript(scriptFile, scriptEnvironment), this)
     }
 
@@ -46,6 +46,7 @@ class DefaultScriptLoader(
      * Loads a Groovy script and sets up the returned [Thread] for execution.
      *
      * @param file The local file containing the script.
+     * @param scriptEnvironment The environment map that will be given to the script every time it is run.
      * @return The closure that will be given the script's args to run the script. This closure uses the contextual
      * class loader from the thread it is run on.
      */
