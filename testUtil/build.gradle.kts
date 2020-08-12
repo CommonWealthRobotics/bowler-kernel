@@ -18,3 +18,7 @@ dependencies {
 
     api(group = "org.jacoco", name = "org.jacoco.agent", version = Versions.jacocoTool)
 }
+
+tasks.named("classes").configure {
+    dependsOn(project(":proto").tasks.named("generateProto"))
+}
