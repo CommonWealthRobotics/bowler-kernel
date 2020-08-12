@@ -43,4 +43,5 @@ protobuf {
 
 project.tasks.named("classes").configure {
     it.dependsOn(project.tasks.named("generateProto"))
+    it.outputs.upToDateWhen { false }
 }
