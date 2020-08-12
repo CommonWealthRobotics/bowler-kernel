@@ -37,6 +37,7 @@ protobuf {
             task.plugins {
                 grpc { }
             }
+            task.finalizedBy(project.tasks.named("classes"))
 //            project.tasks.named("classes").configure {
 //                it.finalizedBy(task)
 ////                it.outputs.upToDateWhen { false }

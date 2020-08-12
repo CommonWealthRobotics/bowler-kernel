@@ -9,9 +9,9 @@ dependencies {
 
     api(group = "io.arrow-kt", name = "arrow-fx", version = Versions.arrow)
 
+    api(project(":proto"))
     implementation(project(":logging"))
     implementation(project(":util"))
-    implementation(project(":proto"))
 
     implementation(
         group = "org.eclipse.jgit",

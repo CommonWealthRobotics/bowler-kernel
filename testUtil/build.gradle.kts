@@ -1,6 +1,8 @@
 description = "Test utilities for internal use."
 
 dependencies {
+    api(project(":proto"))
+
     api(group = "org.junit.jupiter", name = "junit-jupiter-api", version = Versions.junit)
     api(group = "org.junit.jupiter", name = "junit-jupiter-engine", version = Versions.junit)
     api(group = "org.junit.jupiter", name = "junit-jupiter-params", version = Versions.junit)
@@ -15,6 +17,4 @@ dependencies {
     api(group = "io.arrow-kt", name = "arrow-core-data", version = Versions.arrow)
 
     api(group = "org.jacoco", name = "org.jacoco.agent", version = Versions.jacocoTool)
-
-    api(project(":proto"))
 }
