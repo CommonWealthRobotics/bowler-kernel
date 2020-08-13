@@ -15,8 +15,8 @@ sourceSets {
             srcDir("bowler-proto/src/proto")
         }
         java {
-            srcDir("${buildDir.absolutePath}/generated/source/proto/main/grpc")
-            srcDir("${buildDir.absolutePath}/generated/source/proto/main/java")
+            srcDir("$buildDir/generated/source/proto/main/grpc")
+            srcDir("$buildDir/generated/source/proto/main/java")
         }
     }
 }
@@ -33,9 +33,9 @@ protobuf {
     generateProtoTasks {
         all().each { task ->
             // Disable caching because of https://github.com/google/protobuf-gradle-plugin/issues/180
-            task.doFirst {
-                delete(task.outputs)
-            }
+//            task.doFirst {
+//                delete(task.outputs)
+//            }
             task.outputs.upToDateWhen { false }
             task.plugins {
                 grpc { }
