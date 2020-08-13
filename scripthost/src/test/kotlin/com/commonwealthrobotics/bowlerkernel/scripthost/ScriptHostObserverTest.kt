@@ -17,6 +17,7 @@
 package com.commonwealthrobotics.bowlerkernel.scripthost
 
 import com.commonwealthrobotics.bowlerkernel.proto.fileSpec
+import com.commonwealthrobotics.bowlerkernel.proto.patch
 import com.commonwealthrobotics.bowlerkernel.proto.projectSpec
 import com.commonwealthrobotics.bowlerkernel.proto.runRequest
 import com.commonwealthrobotics.bowlerkernel.proto.sessionClientMessage
@@ -35,8 +36,11 @@ internal class ScriptHostObserverTest {
         }
 
         val scriptHost = ScriptHostObserver(scriptLoader)
-        val file = fileSpec(projectSpec("git@github.com:user/repo1.git", "master", byteArrayOf()), "file1.groovy")
-        val devs = listOf(projectSpec("git@github.com:user/repo2.git", "master", byteArrayOf()))
+        val file = fileSpec(
+            projectSpec("git@github.com:user/repo1.git", "master", patch(byteArrayOf())),
+            "file1.groovy"
+        )
+        val devs = listOf(projectSpec("git@github.com:user/repo2.git", "master", patch(byteArrayOf())))
         val environment = mapOf("KEY" to "VALUE")
         scriptHost.onNext(sessionClientMessage(runRequest = runRequest(1, file, devs, environment)))
 

@@ -18,6 +18,7 @@ package com.commonwealthrobotics.bowlerkernel.scripting
 
 import com.commonwealthrobotics.bowlerkernel.gitfs.DependencyResolver
 import com.commonwealthrobotics.bowlerkernel.proto.fileSpec
+import com.commonwealthrobotics.bowlerkernel.proto.patch
 import com.commonwealthrobotics.bowlerkernel.proto.projectSpec
 import io.kotest.assertions.arrow.either.shouldBeLeft
 import io.kotest.assertions.arrow.either.shouldBeRight
@@ -29,7 +30,7 @@ import org.junit.jupiter.api.Test
 internal class DefaultScriptLoaderTest {
 
     private val fileSpec1 = fileSpec(
-        projectSpec("git@github.com:user/repo1.git", "master", byteArrayOf()),
+        projectSpec("git@github.com:user/repo1.git", "master", patch(byteArrayOf())),
         "file1.groovy"
     )
 

@@ -19,14 +19,17 @@ package com.commonwealthrobotics.bowlerkernel.proto
 import com.commonwealthrobotics.proto.gitfs.ClearCacheRequest
 import com.commonwealthrobotics.proto.gitfs.ClearCacheResponse
 import com.commonwealthrobotics.proto.gitfs.FileSpec
+import com.commonwealthrobotics.proto.gitfs.Patch
 import com.commonwealthrobotics.proto.gitfs.ProjectSpec
 import com.google.protobuf.ByteString
 
-fun projectSpec(repoRemote: String, revision: String, patch: ByteArray) = ProjectSpec.newBuilder().apply {
+fun projectSpec(repoRemote: String, revision: String, patch: Patch) = ProjectSpec.newBuilder().apply {
     setRepoRemote(repoRemote)
     setRevision(revision)
-    setPatch(ByteString.copyFrom(patch))
+    setPatch(patch)
 }.build()
+
+fun patch(patch: ByteArray) = Patch.newBuilder().apply { setPatch(ByteString.copyFrom(patch)) }.build()
 
 fun fileSpec(project: ProjectSpec, path: String) = FileSpec.newBuilder().apply {
     setProject(project)
