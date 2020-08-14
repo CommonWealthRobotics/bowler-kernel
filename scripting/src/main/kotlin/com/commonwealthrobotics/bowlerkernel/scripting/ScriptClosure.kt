@@ -16,4 +16,9 @@
  */
 package com.commonwealthrobotics.bowlerkernel.scripting
 
+/**
+ * The "interface" a script must conform to. Parameters are: <arguments>, <script execution env>.
+ *
+ * The script environment map MUST be injected into the script when it is loaded by the [ScriptLoader].
+ */
 typealias ScriptClosure = (List<Any?>, ScriptExecutionEnvironment) -> Any?
