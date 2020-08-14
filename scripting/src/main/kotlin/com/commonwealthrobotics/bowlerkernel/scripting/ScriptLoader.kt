@@ -21,5 +21,14 @@ import com.commonwealthrobotics.proto.gitfs.ProjectSpec
 
 interface ScriptLoader {
 
+    /**
+     * Resolves the script specified by the [fileSpec] and loads it into an instance of [Script]. Adds the [devs] for
+     * dependency resolution. Passes the [scriptEnvironment] to the script.
+     *
+     * @param fileSpec The script to resolve and load.
+     * @param devs Any dev'd dependencies.
+     * @param scriptEnvironment The script environment.
+     * @return A runnable script.
+     */
     fun resolveAndLoad(fileSpec: FileSpec, devs: List<ProjectSpec>, scriptEnvironment: Map<String, String>): Script
 }
