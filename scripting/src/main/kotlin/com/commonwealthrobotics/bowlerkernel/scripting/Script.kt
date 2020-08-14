@@ -17,7 +17,6 @@
 package com.commonwealthrobotics.bowlerkernel.scripting
 
 import arrow.core.Either
-import com.commonwealthrobotics.bowlerkernel.gitfs.DependencyResolver
 import java.util.concurrent.TimeUnit
 
 /**

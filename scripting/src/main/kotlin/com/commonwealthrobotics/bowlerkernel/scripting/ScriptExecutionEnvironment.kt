@@ -16,8 +16,8 @@
  */
 package com.commonwealthrobotics.bowlerkernel.scripting
 
-import com.commonwealthrobotics.proto.gitfs.FileSpec
 import com.commonwealthrobotics.bowlerkernel.gitfs.DependencyResolver
+import com.commonwealthrobotics.proto.gitfs.FileSpec
 
 /**
  * This "execution environment" provides all the facilities a script needs to interact with the Bowler stack. Scripts
@@ -40,6 +40,7 @@ interface ScriptExecutionEnvironment {
      *
      * @param fileSpec The script to run.
      * @param scriptEnvironment The environment to pass to the script.
+     * @return A runnable script.
      */
     fun resolveAndLoad(fileSpec: FileSpec, scriptEnvironment: Map<String, String>): Script
 }
