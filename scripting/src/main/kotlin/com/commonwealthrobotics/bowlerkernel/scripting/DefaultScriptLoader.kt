@@ -39,6 +39,7 @@ class DefaultScriptLoader(
     ): Script {
         val scriptFile = dependencyResolver.resolve(fileSpec)
         dependencyResolver.addDevs(devs)
+        // Pass ourselves as the script loader so that child scripts inherit the dependency resolver of their parent
         return DefaultScript(loadGroovyScript(scriptFile, scriptEnvironment), this)
     }
 

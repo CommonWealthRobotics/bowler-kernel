@@ -17,6 +17,7 @@
 package com.commonwealthrobotics.bowlerkernel.scripting
 
 import com.commonwealthrobotics.proto.gitfs.FileSpec
+import com.commonwealthrobotics.bowlerkernel.gitfs.DependencyResolver
 
 /**
  * This "execution environment" provides all the facilities a script needs to interact with the Bowler stack. Scripts
@@ -33,7 +34,9 @@ interface ScriptExecutionEnvironment {
     fun addThread(thread: Thread)
 
     /**
-     * Resolves and runs the script specified by the [fileSpec].
+     * Resolves and runs the script specified by the [fileSpec]. Scripts started this way inherit the
+     * [DependencyResolver] of their parent script, meaning that and devs given when starting the parent script will be
+     * inherited by all scripts within the execution tree.
      *
      * @param fileSpec The script to run.
      * @param scriptEnvironment The environment to pass to the script.

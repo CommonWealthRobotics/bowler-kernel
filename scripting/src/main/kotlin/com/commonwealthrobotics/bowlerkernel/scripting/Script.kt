@@ -17,8 +17,13 @@
 package com.commonwealthrobotics.bowlerkernel.scripting
 
 import arrow.core.Either
+import com.commonwealthrobotics.bowlerkernel.gitfs.DependencyResolver
 import java.util.concurrent.TimeUnit
 
+/**
+ * Scripts are the basic unit of execution in the Bowler stack. Scripts may contain arbitrary code and preferably
+ * interact with the Bowler stack via the [ScriptExecutionEnvironment] they are given.
+ */
 interface Script {
 
     /**
