@@ -35,18 +35,10 @@ protobuf {
     generateProtoTasks {
         all().each { task ->
             // Disable caching because of https://github.com/google/protobuf-gradle-plugin/issues/180
-//            task.doFirst {
-//                delete(task.outputs)
-//            }
             task.outputs.upToDateWhen { false }
             task.plugins {
                 grpc { }
             }
-//            task.finalizedBy(project.tasks.named("classes"))
-//            project.tasks.named("classes").configure {
-//                it.finalizedBy(task)
-////                it.outputs.upToDateWhen { false }
-//            }
         }
     }
 }
