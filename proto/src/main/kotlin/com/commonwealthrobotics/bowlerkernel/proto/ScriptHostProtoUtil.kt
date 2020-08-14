@@ -20,9 +20,13 @@ import com.commonwealthrobotics.proto.gitfs.FileSpec
 import com.commonwealthrobotics.proto.gitfs.ProjectSpec
 import com.commonwealthrobotics.proto.script_host.ConfirmationResponse
 import com.commonwealthrobotics.proto.script_host.CredentialsResponse
+import com.commonwealthrobotics.proto.script_host.NewTask
 import com.commonwealthrobotics.proto.script_host.RequestError
 import com.commonwealthrobotics.proto.script_host.RunRequest
 import com.commonwealthrobotics.proto.script_host.SessionClientMessage
+import com.commonwealthrobotics.proto.script_host.SessionServerMessage
+import com.commonwealthrobotics.proto.script_host.TaskEnd
+import com.commonwealthrobotics.proto.script_host.TaskUpdate
 import com.commonwealthrobotics.proto.script_host.TwoFactorResponse
 
 fun sessionClientMessage(
@@ -46,3 +50,35 @@ fun runRequest(requestId: Long, file: FileSpec, devs: List<ProjectSpec>, environ
         addAllDevs(devs)
         putAllEnvironment(environment)
     }.build()
+
+fun sessionServerMessage(
+    newTask: NewTask? = null,
+    taskUpdate: TaskUpdate? = null,
+    taskEnd: TaskEnd? = null,
+    requestError: RequestError? = null
+) = SessionServerMessage.newBuilder().apply {
+    newTask?.let { setNewTask(newTask) }
+    taskUpdate?.let { setTaskUpdate(taskUpdate) }
+    taskEnd?.let { setTaskEnd(taskEnd) }
+    requestError?.let { setError(requestError) }
+}.build()
+
+fun newTask(requestId: Long, description: String, task: TaskUpdate) = NewTask.newBuilder().apply {
+    setRequestId(requestId)
+    setDescription(description)
+    setTask(task)
+}.build()
+
+fun taskUpdate(taskId: Long, progress: Number) = TaskUpdate.newBuilder().apply {
+    setTaskId(taskId)
+    setProgress(progress.toFloat())
+}.build()
+
+fun taskEnd(taskId: Long) = TaskEnd.newBuilder().apply {
+    setTaskId(taskId)
+}.build()
+
+fun requestError(requestId: Long, description: String) = RequestError.newBuilder().apply {
+    setRequestId(requestId)
+    setDescription(description)
+}.build()

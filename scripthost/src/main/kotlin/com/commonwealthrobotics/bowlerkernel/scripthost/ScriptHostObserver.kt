@@ -16,6 +16,9 @@
  */
 package com.commonwealthrobotics.bowlerkernel.scripthost
 
+import arrow.core.Either
+import arrow.core.extensions.fx
+import com.commonwealthrobotics.bowlerkernel.proto.withTask
 import com.commonwealthrobotics.bowlerkernel.scripting.Script
 import com.commonwealthrobotics.bowlerkernel.scripting.ScriptLoader
 import com.commonwealthrobotics.proto.script_host.ConfirmationResponse
@@ -23,23 +26,32 @@ import com.commonwealthrobotics.proto.script_host.CredentialsResponse
 import com.commonwealthrobotics.proto.script_host.RequestError
 import com.commonwealthrobotics.proto.script_host.RunRequest
 import com.commonwealthrobotics.proto.script_host.SessionClientMessage
+import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.commonwealthrobotics.proto.script_host.TwoFactorResponse
 import io.grpc.stub.StreamObserver
+import mu.KotlinLogging
 
 class ScriptHostObserver(
+    private val responseObserver: StreamObserver<SessionServerMessage>,
     private val scriptLoader: ScriptLoader
 ) : StreamObserver<SessionClientMessage> {
 
     private val scriptRequestMap = mutableMapOf<Long, Script>()
 
     override fun onNext(value: SessionClientMessage) {
-        when {
+        @Suppress("ThrowableNotThrown")
+        val status = when {
             value.hasRunRequest() -> onRunRequest(value.runRequest)
             value.hasConfirmationResponse() -> onConfirmationResponse(value.confirmationResponse)
             value.hasCredentialsResponse() -> onCredentialsResponse(value.credentialsResponse)
             value.hasTwoFactorResponse() -> on2FAResponse(value.twoFactorResponse)
             value.hasError() -> onRequestError(value.error)
-            else -> error("Unrecognized value: $value")
+            else -> Either.Left(IllegalStateException("Unrecognized value: $value"))
+        }
+
+        // Just log the error because we will have already sent a RequestError if necessary
+        status.mapLeft {
+            logger.error(it) { "Error responding to $value" }
         }
     }
 
@@ -51,24 +63,37 @@ class ScriptHostObserver(
         TODO("Not yet implemented")
     }
 
-    private fun onRunRequest(runRequest: RunRequest) {
-        scriptRequestMap[runRequest.requestId] =
-            scriptLoader.resolveAndLoad(runRequest.file, runRequest.devsList, runRequest.environmentMap)
+    private fun onRunRequest(runRequest: RunRequest): Either<Throwable, Unit> = Either.fx {
+        val script = responseObserver.withTask(runRequest.requestId, "Initializing ${runRequest.file.path}") {
+            val script = scriptLoader.resolveAndLoad(runRequest.file, runRequest.devsList, runRequest.environmentMap)
+            scriptRequestMap[runRequest.requestId] = script
+            script
+        }.bind()
+
+        responseObserver.withTask(runRequest.requestId, "Running ${runRequest.file.path}") {
+            script.start(emptyList(), null)
+            val scriptResult = script.join()
+            logger.info { "Script returned:\n$scriptResult" }
+        }.bind()
     }
 
-    private fun onConfirmationResponse(confirmationResponse: ConfirmationResponse) {
+    private fun onConfirmationResponse(confirmationResponse: ConfirmationResponse): Either<Throwable, Unit> {
         TODO("Not yet implemented")
     }
 
-    private fun onCredentialsResponse(credentialsResponse: CredentialsResponse) {
+    private fun onCredentialsResponse(credentialsResponse: CredentialsResponse): Either<Throwable, Unit> {
         TODO("Not yet implemented")
     }
 
-    private fun on2FAResponse(twoFactorResponse: TwoFactorResponse) {
+    private fun on2FAResponse(twoFactorResponse: TwoFactorResponse): Either<Throwable, Unit> {
         TODO("Not yet implemented")
     }
 
-    private fun onRequestError(error: RequestError) {
+    private fun onRequestError(error: RequestError): Either<Throwable, Unit> {
         TODO("Not yet implemented")
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger { }
     }
 }

@@ -16,12 +16,20 @@
  */
 package com.commonwealthrobotics.bowlerkernel.scripthost
 
+import arrow.core.Either
 import com.commonwealthrobotics.bowlerkernel.proto.fileSpec
+import com.commonwealthrobotics.bowlerkernel.proto.newTask
 import com.commonwealthrobotics.bowlerkernel.proto.patch
 import com.commonwealthrobotics.bowlerkernel.proto.projectSpec
 import com.commonwealthrobotics.bowlerkernel.proto.runRequest
 import com.commonwealthrobotics.bowlerkernel.proto.sessionClientMessage
+import com.commonwealthrobotics.bowlerkernel.proto.sessionServerMessage
+import com.commonwealthrobotics.bowlerkernel.proto.taskEnd
+import com.commonwealthrobotics.bowlerkernel.proto.taskUpdate
+import com.commonwealthrobotics.bowlerkernel.scripting.Script
 import com.commonwealthrobotics.bowlerkernel.scripting.ScriptLoader
+import com.commonwealthrobotics.proto.script_host.SessionServerMessage
+import io.grpc.stub.StreamObserver
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyOrder
@@ -31,11 +39,17 @@ internal class ScriptHostObserverTest {
 
     @Test
     fun `a run request must trigger the script loader`() {
+        val responseObserver = mockk< StreamObserver<SessionServerMessage>>(relaxUnitFun = true) {
+        }
+        // Have the script return nothing interesting
+        val script = mockk<Script>(relaxUnitFun = true) {
+            every { join(any(), any(), any()) } returns Either.Right(Unit)
+        }
         val scriptLoader = mockk<ScriptLoader> {
-            every { resolveAndLoad(any(), any(), any()) } returns mockk()
+            every { resolveAndLoad(any(), any(), any()) } returns script
         }
 
-        val scriptHost = ScriptHostObserver(scriptLoader)
+        val scriptHost = ScriptHostObserver(responseObserver, scriptLoader)
         val file = fileSpec(
             projectSpec("git@github.com:user/repo1.git", "master", patch(byteArrayOf())),
             "file1.groovy"
@@ -45,7 +59,24 @@ internal class ScriptHostObserverTest {
         scriptHost.onNext(sessionClientMessage(runRequest = runRequest(1, file, devs, environment)))
 
         verifyOrder {
+            // Initialize the script
+            responseObserver.onNext(
+                sessionServerMessage(
+                    newTask = newTask(1, "Initializing file1.groovy", task = taskUpdate(0, Float.NaN))
+                )
+            )
             scriptLoader.resolveAndLoad(file, devs, environment)
+            responseObserver.onNext(sessionServerMessage(taskEnd = taskEnd(0)))
+
+            // Run the script
+            responseObserver.onNext(
+                sessionServerMessage(
+                    newTask = newTask(1, "Running file1.groovy", task = taskUpdate(1, Float.NaN))
+                )
+            )
+            script.start(emptyList(), null)
+            script.join(any(), any(), any())
+            responseObserver.onNext(sessionServerMessage(taskEnd = taskEnd(1)))
         }
     }
 }

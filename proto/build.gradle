@@ -7,6 +7,8 @@ dependencies {
     api(group: "com.google.protobuf", name: "protobuf-java", version: Versions.protobufJava)
     api(group: "io.grpc", name: "grpc-all", version: Versions.grpcAll)
     api(group: "javax.annotation", name: "javax.annotation-api", version: Versions.javaxAnnotationAPI)
+
+    implementation(group: "io.arrow-kt", name: "arrow-core-data", version: Versions.arrow)
 }
 
 sourceSets {
