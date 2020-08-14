@@ -71,6 +71,7 @@ class DefaultScript(
         // This suppression is fine because we treat the exception carefully and propagate it to the user.
         @SuppressWarnings("TooGenericExceptionCaught")
         val result = try {
+            // A timeout of 0 means to wait forever. `get` doesn't handle this, so we have to.
             if (scriptTimeout == 0L) {
                 returnValue.get().right()
             } else {
