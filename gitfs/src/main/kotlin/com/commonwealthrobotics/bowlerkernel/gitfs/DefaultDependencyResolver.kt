@@ -20,29 +20,28 @@ import arrow.fx.IO
 import com.commonwealthrobotics.proto.gitfs.FileSpec
 import com.commonwealthrobotics.proto.gitfs.ProjectSpec
 import java.io.File
-import java.nio.file.Paths
 
 /**
  * @param gitFS The [GitFS] used to download dependencies.
  */
 class DefaultDependencyResolver(
-        private val gitFS: GitFS
+    private val gitFS: GitFS
 ) : DependencyResolver {
 
     override fun resolve(fileSpec: FileSpec): File {
         return gitFS.cloneRepo(fileSpec.project.repoRemote, fileSpec.project.revision).flatMap { repoDir ->
             gitFS.getFilesInRepo(repoDir).flatMap { files ->
-                 val file = files.firstOrNull { it.relativeTo(repoDir).path == fileSpec.path }
+                val file = files.firstOrNull { it.relativeTo(repoDir).path == fileSpec.path }
                 file?.let { IO.just(it) } ?: IO.raiseError(IllegalStateException("Cannot resolve $fileSpec"))
             }
         }.unsafeRunSync()
     }
 
     override fun addDev(dev: ProjectSpec) {
-        TODO("Not yet implemented")
+        // TODO: Implement me
     }
 
     override fun addDevs(devs: List<ProjectSpec>) {
-        TODO("Not yet implemented")
+        // TODO: Implement me
     }
 }

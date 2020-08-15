@@ -28,6 +28,7 @@ import com.commonwealthrobotics.bowlerkernel.protoutil.taskEnd
 import com.commonwealthrobotics.bowlerkernel.protoutil.taskUpdate
 import com.commonwealthrobotics.bowlerkernel.scripting.Script
 import com.commonwealthrobotics.bowlerkernel.scripting.ScriptLoader
+import com.commonwealthrobotics.bowlerkernel.testutil.KoinTestFixture
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
 import io.grpc.stub.StreamObserver
@@ -35,8 +36,9 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyOrder
 import org.junit.jupiter.api.Test
+import org.koin.dsl.module
 
-internal class ScriptHostObserverTest {
+internal class ScriptHostObserverTest : KoinTestFixture() {
 
     @Test
     fun `a run request must trigger the script loader`() {
@@ -50,7 +52,13 @@ internal class ScriptHostObserverTest {
             every { resolveAndLoad(any(), any(), any()) } returns script
         }
 
-        val scriptHost = ScriptHostObserver(responseObserver, scriptLoader)
+        testKoin(
+            module {
+                factory { scriptLoader }
+            }
+        )
+
+        val scriptHost = ScriptHostObserver(responseObserver)
         val file = fileSpec(
             projectSpec("git@github.com:user/repo1.git", "master", patch(byteArrayOf())),
             "file1.groovy"

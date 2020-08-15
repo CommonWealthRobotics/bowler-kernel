@@ -38,6 +38,7 @@ private object TaskUtil {
  * @param f The function to execute in the context of the task.
  * @return The return value of the function or an error. Non-fatal exceptions are caught an wrapped in [Either.Left].
  */
+@SuppressWarnings("TooGenericExceptionCaught")
 fun <T> StreamObserver<SessionServerMessage>.withTask(
     requestId: Long,
     description: String,

@@ -14,16 +14,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.commonwealthrobotics.bowlerkernel.scripthost
+package com.commonwealthrobotics.bowlerkernel.authservice
 
-import com.commonwealthrobotics.proto.script_host.ScriptHostGrpc
-import com.commonwealthrobotics.proto.script_host.SessionClientMessage
-import com.commonwealthrobotics.proto.script_host.SessionServerMessage
-import io.grpc.stub.StreamObserver
+/**
+ * Only support anonymous connections.
+ */
+object AnonymousCredentialsProvider : CredentialsProvider {
 
-class ScriptHost : ScriptHostGrpc.ScriptHostImplBase() {
+    override fun getCredentialsFor(remote: String) = Credentials.Anonymous
 
-    override fun session(responseObserver: StreamObserver<SessionServerMessage>): StreamObserver<SessionClientMessage> {
-        return ScriptHostObserver(responseObserver)
-    }
+    override fun getTwoFactorFor(remote: String) =
+        throw UnsupportedOperationException("Cannot get a two-factor code for an anonymous authentication.")
 }

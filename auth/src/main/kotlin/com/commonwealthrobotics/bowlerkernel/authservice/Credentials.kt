@@ -14,16 +14,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.commonwealthrobotics.bowlerkernel.scripthost
+package com.commonwealthrobotics.bowlerkernel.authservice
 
-import com.commonwealthrobotics.proto.script_host.ScriptHostGrpc
-import com.commonwealthrobotics.proto.script_host.SessionClientMessage
-import com.commonwealthrobotics.proto.script_host.SessionServerMessage
-import io.grpc.stub.StreamObserver
+sealed class Credentials {
 
-class ScriptHost : ScriptHostGrpc.ScriptHostImplBase() {
+    data class Basic(val username: String, val password: String) : Credentials()
 
-    override fun session(responseObserver: StreamObserver<SessionServerMessage>): StreamObserver<SessionClientMessage> {
-        return ScriptHostObserver(responseObserver)
-    }
+    data class OAuth(val token: String) : Credentials()
+
+    object Anonymous : Credentials()
 }

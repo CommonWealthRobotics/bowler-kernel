@@ -44,6 +44,7 @@ object Versions {
     const val javaxAnnotationAPI = "1.3.+"
     const val groovy = "3.0.+"
     const val ivy = "2.5.+"
+    const val koin = "2.1.+"
 
     const val jacocoTool = "0.8.5"
     const val gradleWrapper = "6.5.1"

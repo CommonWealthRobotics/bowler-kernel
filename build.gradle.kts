@@ -14,14 +14,17 @@ plugins {
 }
 
 val kotlinProjects = listOf(
+    project(":auth"),
     project(":device-server"),
     project(":device-server-benchmark"),
+    project(":di"),
     project(":gitfs"),
     project(":hardware"),
     project(":proto"),
     project(":protoutil"),
     project(":scripthost"),
     project(":scripting"),
+    project(":server"),
     project(":testUtil"),
     project(":util")
 )
@@ -232,5 +235,5 @@ val jacocoRootReport by tasks.creating(JacocoReport::class) {
 
 tasks.wrapper {
     distributionType = Wrapper.DistributionType.ALL
-    version = Versions.gradleWrapper
+    gradleVersion = Versions.gradleWrapper
 }

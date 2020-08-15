@@ -18,13 +18,14 @@
 
 package com.commonwealthrobotics.bowlerkernel.gitfs
 
-import arrow.core.Eval
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
 import arrow.core.extensions.option.applicative.just
 import arrow.fx.IO
 import arrow.fx.handleErrorWith
+import com.commonwealthrobotics.bowlerkernel.authservice.Credentials
+import com.commonwealthrobotics.bowlerkernel.authservice.CredentialsProvider
 import com.commonwealthrobotics.bowlerkernel.util.BOWLERKERNEL_DIRECTORY
 import com.commonwealthrobotics.bowlerkernel.util.BOWLER_DIRECTORY
 import com.commonwealthrobotics.bowlerkernel.util.GITHUB_CACHE_DIRECTORY
@@ -33,6 +34,7 @@ import mu.KotlinLogging
 import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.errors.RepositoryNotFoundException
+import org.eclipse.jgit.errors.TransportException
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.kohsuke.github.GHObject
 import org.kohsuke.github.GitHub
@@ -42,14 +44,10 @@ import java.nio.file.Paths
 
 /**
  * A [GitFS] which interfaces with GitHub.
- *
- * @param gitHub The [GitHub] to connect to GitHub with.
- * @param credentials The credentials to authenticate to GitHub with.
  */
 @SuppressWarnings("LargeClass")
 class GitHubFS(
-    private val gitHub: GitHub,
-    private val credentials: Pair<String, String>,
+    private val credentialsProvider: CredentialsProvider,
     internal val gitHubCacheDirectory: String = Paths.get(
         System.getProperty("user.home"),
         BOWLER_DIRECTORY,
@@ -58,9 +56,6 @@ class GitHubFS(
         GITHUB_CACHE_DIRECTORY
     ).toString()
 ) : GitFS {
-
-    private val myGists = Eval.later { gitHub.myself.listGists().toList() }
-    private val myRepositories = Eval.later { gitHub.myself.allRepositories.values }
 
     override fun cloneRepo(
         gitUrl: String,
@@ -108,15 +103,18 @@ class GitHubFS(
 
     override fun getFilesInRepo(repoDir: File): IO<Set<File>> = mapToRepoFiles(IO.just(repoDir))
 
-    override fun isOwner(gitUrl: String): IO<Boolean> = IO {
-        myGists.value.firstOrNull {
-            it.gitPullUrl == gitUrl
-        } != null
-    }.handleErrorWith {
+    override fun isOwner(gitUrl: String): IO<Boolean> = IO { getGitHub(gitUrl) }.flatMap { gitHub ->
         IO {
-            myRepositories.value.first { repo ->
-                repo.gitTransportUrl == gitUrl
-            }.hasPushAccess()
+            @Suppress("BlockingMethodInNonBlockingContext")
+            gitHub.myself.listGists().firstOrNull {
+                it.gitPullUrl == gitUrl
+            } != null
+        }.handleErrorWith {
+            IO {
+                gitHub.myself.listRepositories().first { repo ->
+                    repo.gitTransportUrl == gitUrl
+                }.hasPushAccess()
+            }
         }
     }
 
@@ -171,24 +169,32 @@ class GitHubFS(
         branch: String,
         directory: File
     ) {
-        Git.cloneRepository()
-            .setURI(gitUrl)
-            .setBranch(branch)
-            .setDirectory(directory)
-            .setCredentialsProvider(
-                // TODO: Support OAUTH as well
-                UsernamePasswordCredentialsProvider(
-                    credentials.first,
-                    credentials.second
-                )
-            )
-            .call()
-            .use {
-                Git.wrap(it.repository).use {
-                    it.submoduleInit().call()
-                    it.submoduleUpdate().call()
-                }
+        // Try to clone without credentials first. If we can't, then request credentials.
+        val git = try {
+            Git.cloneRepository()
+                .setURI(gitUrl)
+                .setBranch(branch)
+                .setDirectory(directory)
+                .call()
+        } catch (ex: Exception) {
+            when (ex) {
+                is TransportException ->
+                    Git.cloneRepository()
+                        .setURI(gitUrl)
+                        .setBranch(branch)
+                        .setDirectory(directory)
+                        .setCredentialsProvider(getJGitCredentialsProvider(gitUrl))
+                        .call()
+                else -> throw ex
             }
+        }
+
+        git.use {
+            Git.wrap(it.repository).use {
+                it.submoduleInit().call()
+                it.submoduleUpdate().call()
+            }
+        }
     }
 
     /**
@@ -197,6 +203,7 @@ class GitHubFS(
      * @param githubRepo The repo to fork.
      * @return The fork of the repository.
      */
+    @Suppress("BlockingMethodInNonBlockingContext")
     private fun forkRepo(
         githubRepo: GitHubRepo
     ): IO<GHObject> {
@@ -211,13 +218,31 @@ class GitHubFS(
             when (githubRepo) {
                 is GitHubRepo.Repository -> {
                     val repoFullName = "${githubRepo.owner}/${githubRepo.name}"
-                    gitHub.getRepository(repoFullName).fork()
+                    getGitHub("https://github.com/$repoFullName.git").getRepository(repoFullName).fork()
                 }
 
-                is GitHubRepo.Gist -> gitHub.getGist(githubRepo.gistId).fork()
+                is GitHubRepo.Gist ->
+                    getGitHub("https://gist.github.com/${githubRepo.gistId}.git")
+                        .getGist(githubRepo.gistId).fork()
             }
         }
     }
+
+    private fun getJGitCredentialsProvider(gitUrl: String): UsernamePasswordCredentialsProvider =
+        when (val credentials = credentialsProvider.getCredentialsFor(gitUrl)) {
+            is Credentials.Basic -> UsernamePasswordCredentialsProvider(credentials.username, credentials.password)
+            // TODO: Validate this works
+            is Credentials.OAuth -> UsernamePasswordCredentialsProvider(credentials.token, "x-oauth-basic")
+            is Credentials.Anonymous -> UsernamePasswordCredentialsProvider("", "")
+        }
+
+    private fun getGitHub(remote: String): GitHub =
+        when (val credentials = credentialsProvider.getCredentialsFor(remote)) {
+            // TODO: Handle 2FA
+            is Credentials.Basic -> GitHub.connect(credentials.username, credentials.password)
+            is Credentials.OAuth -> GitHub.connectUsingOAuth(credentials.token)
+            Credentials.Anonymous -> GitHub.connectAnonymously()
+        }
 
     companion object {
 
@@ -331,7 +356,5 @@ class GitHubFS(
                 * subDirs.toTypedArray()
             ).toFile()
         }
-
-        private val GHObject.gitUrl get() = "${htmlUrl.toExternalForm()}.git"
     }
 }

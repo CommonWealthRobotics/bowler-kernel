@@ -14,16 +14,25 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.commonwealthrobotics.bowlerkernel.scripthost
+package com.commonwealthrobotics.bowlerkernel.authservice
 
-import com.commonwealthrobotics.proto.script_host.ScriptHostGrpc
-import com.commonwealthrobotics.proto.script_host.SessionClientMessage
-import com.commonwealthrobotics.proto.script_host.SessionServerMessage
-import io.grpc.stub.StreamObserver
+interface CredentialsProvider {
 
-class ScriptHost : ScriptHostGrpc.ScriptHostImplBase() {
+    /**
+     * Get the credentials for the [remote] (e.g. `https://github.com/CommonWealthRobotics/BowlerBuilder.git`).
+     *
+     * These credentials should never be stored.
+     *
+     * @param remote The remote to ask for.
+     * @return The credentials for that remote.
+     */
+    fun getCredentialsFor(remote: String): Credentials
 
-    override fun session(responseObserver: StreamObserver<SessionServerMessage>): StreamObserver<SessionClientMessage> {
-        return ScriptHostObserver(responseObserver)
-    }
+    /**
+     * Get a 2FA response for the [remote] (e.g. `https://github.com/CommonWealthRobotics/BowlerBuilder.git`).
+     *
+     * @param remote The remote to ask for.
+     * @return A 2FA code.
+     */
+    fun getTwoFactorFor(remote: String): String
 }

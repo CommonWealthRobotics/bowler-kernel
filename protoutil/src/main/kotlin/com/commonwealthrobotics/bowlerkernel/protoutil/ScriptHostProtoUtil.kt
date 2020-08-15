@@ -14,13 +14,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:SuppressWarnings("TooManyFunctions")
+
 package com.commonwealthrobotics.bowlerkernel.protoutil
 
 import com.commonwealthrobotics.proto.gitfs.FileSpec
 import com.commonwealthrobotics.proto.gitfs.ProjectSpec
+import com.commonwealthrobotics.proto.script_host.BasicCredentials
 import com.commonwealthrobotics.proto.script_host.ConfirmationResponse
 import com.commonwealthrobotics.proto.script_host.CredentialsResponse
 import com.commonwealthrobotics.proto.script_host.NewTask
+import com.commonwealthrobotics.proto.script_host.OAuthCredentials
 import com.commonwealthrobotics.proto.script_host.RequestError
 import com.commonwealthrobotics.proto.script_host.RunRequest
 import com.commonwealthrobotics.proto.script_host.SessionClientMessage
@@ -50,6 +54,30 @@ fun runRequest(requestId: Long, file: FileSpec, devs: List<ProjectSpec>, environ
         setFile(file)
         addAllDevs(devs)
         putAllEnvironment(environment)
+    }.build()
+
+fun credentialsResponse(requestId: Long, basic: BasicCredentials? = null, oauth: OAuthCredentials? = null) =
+    CredentialsResponse.newBuilder().apply {
+        setRequestId(requestId)
+        basic?.let { setBasic(basic) }
+        oauth?.let { setOauth(oauth) }
+    }.build()
+
+fun basicCredentials(username: String, password: String) =
+    BasicCredentials.newBuilder().apply {
+        setUsername(username)
+        setPassword(password)
+    }.build()
+
+fun oauthCredentials(token: String) =
+    OAuthCredentials.newBuilder().apply {
+        setToken(token)
+    }.build()
+
+fun twoFactorResponse(requestId: Long, twoFactor: String) =
+    TwoFactorResponse.newBuilder().apply {
+        setRequestId(requestId)
+        setTwoFactor(twoFactor)
     }.build()
 
 fun sessionServerMessage(

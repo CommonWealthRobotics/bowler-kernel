@@ -18,6 +18,12 @@ package com.commonwealthrobotics.bowlerkernel.scripthost
 
 import arrow.core.Either
 import arrow.core.extensions.fx
+import arrow.core.nonFatalOrThrow
+import com.commonwealthrobotics.bowlerkernel.authservice.Credentials
+import com.commonwealthrobotics.bowlerkernel.authservice.CredentialsProvider
+import com.commonwealthrobotics.bowlerkernel.di.BowlerKernelKoinComponent
+import com.commonwealthrobotics.bowlerkernel.gitfs.GitFS
+import com.commonwealthrobotics.bowlerkernel.gitfs.GitHubFS
 import com.commonwealthrobotics.bowlerkernel.protoutil.withTask
 import com.commonwealthrobotics.bowlerkernel.scripting.Script
 import com.commonwealthrobotics.bowlerkernel.scripting.ScriptLoader
@@ -30,11 +36,12 @@ import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.commonwealthrobotics.proto.script_host.TwoFactorResponse
 import io.grpc.stub.StreamObserver
 import mu.KotlinLogging
+import org.koin.core.get
+import org.koin.dsl.module
 
 class ScriptHostObserver(
-    private val responseObserver: StreamObserver<SessionServerMessage>,
-    private val scriptLoader: ScriptLoader
-) : StreamObserver<SessionClientMessage> {
+    private val responseObserver: StreamObserver<SessionServerMessage>
+) : StreamObserver<SessionClientMessage>, CredentialsProvider, BowlerKernelKoinComponent {
 
     private val scriptRequestMap = mutableMapOf<Long, Script>()
 
@@ -55,15 +62,33 @@ class ScriptHostObserver(
         }
     }
 
-    override fun onError(t: Throwable?) {
-        TODO("Not yet implemented")
+    override fun onError(t: Throwable) {
+        val ex = t.nonFatalOrThrow()
+        logger.error(ex) { "" }
     }
 
     override fun onCompleted() {
+        responseObserver.onCompleted()
+    }
+
+    override fun getCredentialsFor(remote: String): Credentials {
+        TODO("Not yet implemented")
+    }
+
+    override fun getTwoFactorFor(remote: String): String {
         TODO("Not yet implemented")
     }
 
     private fun onRunRequest(runRequest: RunRequest): Either<Throwable, Unit> = Either.fx {
+        val modules = listOf(
+            module {
+                single<GitFS> { GitHubFS(this@ScriptHostObserver) }
+            }
+        )
+        getKoin().loadModules(modules)
+
+        val scriptLoader = get<ScriptLoader>()
+
         val script = responseObserver.withTask(runRequest.requestId, "Initializing ${runRequest.file.path}") {
             val script = scriptLoader.resolveAndLoad(runRequest.file, runRequest.devsList, runRequest.environmentMap)
             scriptRequestMap[runRequest.requestId] = script
@@ -75,6 +100,8 @@ class ScriptHostObserver(
             val scriptResult = script.join()
             logger.info { "Script returned:\n$scriptResult" }
         }.bind()
+
+        getKoin().unloadModules(modules)
     }
 
     private fun onConfirmationResponse(confirmationResponse: ConfirmationResponse): Either<Throwable, Unit> {

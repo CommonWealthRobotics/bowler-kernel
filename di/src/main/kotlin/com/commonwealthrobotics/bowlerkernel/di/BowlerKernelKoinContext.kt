@@ -14,16 +14,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.commonwealthrobotics.bowlerkernel.scripthost
+package com.commonwealthrobotics.bowlerkernel.di
 
-import com.commonwealthrobotics.proto.script_host.ScriptHostGrpc
-import com.commonwealthrobotics.proto.script_host.SessionClientMessage
-import com.commonwealthrobotics.proto.script_host.SessionServerMessage
-import io.grpc.stub.StreamObserver
+import org.koin.core.KoinApplication
 
-class ScriptHost : ScriptHostGrpc.ScriptHostImplBase() {
-
-    override fun session(responseObserver: StreamObserver<SessionServerMessage>): StreamObserver<SessionClientMessage> {
-        return ScriptHostObserver(responseObserver)
-    }
+object BowlerKernelKoinContext {
+    lateinit var koinApp: KoinApplication
 }
