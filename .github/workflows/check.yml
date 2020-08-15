@@ -40,7 +40,5 @@ jobs:
         run: ./gradlew --stop
 
       - name: Upload Coverage
-        run: bash <(curl --connect-timeout 10 --retry 10 --retry-max-time 0 https://codecov.io/bash) || (sleep 30 && bash <(curl --connect-timeout 10 --retry 10 --retry-max-time 0 https://codecov.io/bash))
         if: ${{ runner.os == 'Linux' }}
-        with:
-          fail_ci_if_error: true
+        run: bash <(curl --connect-timeout 10 --retry 10 --retry-max-time 0 https://codecov.io/bash) || (sleep 30 && bash <(curl --connect-timeout 10 --retry 10 --retry-max-time 0 https://codecov.io/bash))
