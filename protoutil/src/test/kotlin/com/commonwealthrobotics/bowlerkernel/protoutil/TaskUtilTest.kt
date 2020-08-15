@@ -17,6 +17,7 @@
 package com.commonwealthrobotics.bowlerkernel.protoutil
 
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
+import com.commonwealthrobotics.proto.script_host.TaskEndCause
 import io.grpc.stub.StreamObserver
 import io.kotest.assertions.arrow.either.shouldBeLeft
 import io.kotest.assertions.arrow.either.shouldBeRight
@@ -47,7 +48,7 @@ internal class TaskUtilTest {
 
         verifyOrder {
             responseObserver.onNext(sessionServerMessage(newTask = newTask(1, "desc", taskUpdate(0, Float.NaN))))
-            responseObserver.onNext(sessionServerMessage(taskEnd = taskEnd(0)))
+            responseObserver.onNext(sessionServerMessage(taskEnd = taskEnd(0, TaskEndCause.TASK_COMPLETED)))
         }
     }
 
@@ -64,6 +65,7 @@ internal class TaskUtilTest {
 
         verifyOrder {
             responseObserver.onNext(sessionServerMessage(newTask = newTask(1, "desc", taskUpdate(1, Float.NaN))))
+            responseObserver.onNext(sessionServerMessage(taskEnd = taskEnd(1, TaskEndCause.TASK_FAILED)))
             responseObserver.onNext(sessionServerMessage(requestError = requestError(1, "Boom!")))
         }
     }

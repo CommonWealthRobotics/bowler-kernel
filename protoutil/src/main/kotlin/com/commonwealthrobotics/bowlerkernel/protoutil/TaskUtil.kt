@@ -19,6 +19,7 @@ package com.commonwealthrobotics.bowlerkernel.protoutil
 import arrow.core.Either
 import arrow.core.nonFatalOrThrow
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
+import com.commonwealthrobotics.proto.script_host.TaskEndCause
 import io.grpc.stub.StreamObserver
 import mu.KotlinLogging
 import java.util.concurrent.atomic.AtomicLong
@@ -55,6 +56,7 @@ fun <T> StreamObserver<SessionServerMessage>.withTask(
 
         // Handle non-fatal exceptions by erroring the request
         val nonFatal = ex.nonFatalOrThrow()
+        onNext(sessionServerMessage(taskEnd = taskEnd(taskId, TaskEndCause.TASK_FAILED)))
         onNext(
             sessionServerMessage(
                 requestError =
@@ -66,7 +68,7 @@ fun <T> StreamObserver<SessionServerMessage>.withTask(
         return Either.Left(ex)
     }
 
-    onNext(sessionServerMessage(taskEnd = taskEnd(taskId)))
+    onNext(sessionServerMessage(taskEnd = taskEnd(taskId, TaskEndCause.TASK_COMPLETED)))
     return Either.Right(out)
 }
 

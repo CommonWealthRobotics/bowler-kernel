@@ -29,6 +29,7 @@ import com.commonwealthrobotics.bowlerkernel.protoutil.taskUpdate
 import com.commonwealthrobotics.bowlerkernel.scripting.Script
 import com.commonwealthrobotics.bowlerkernel.scripting.ScriptLoader
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
+import com.commonwealthrobotics.proto.script_host.TaskEndCause
 import io.grpc.stub.StreamObserver
 import io.mockk.every
 import io.mockk.mockk
@@ -66,7 +67,7 @@ internal class ScriptHostObserverTest {
                 )
             )
             scriptLoader.resolveAndLoad(file, devs, environment)
-            responseObserver.onNext(sessionServerMessage(taskEnd = taskEnd(0)))
+            responseObserver.onNext(sessionServerMessage(taskEnd = taskEnd(0, TaskEndCause.TASK_COMPLETED)))
 
             // Run the script
             responseObserver.onNext(
@@ -76,7 +77,7 @@ internal class ScriptHostObserverTest {
             )
             script.start(emptyList(), null)
             script.join(any(), any(), any())
-            responseObserver.onNext(sessionServerMessage(taskEnd = taskEnd(1)))
+            responseObserver.onNext(sessionServerMessage(taskEnd = taskEnd(1, TaskEndCause.TASK_COMPLETED)))
         }
     }
 }

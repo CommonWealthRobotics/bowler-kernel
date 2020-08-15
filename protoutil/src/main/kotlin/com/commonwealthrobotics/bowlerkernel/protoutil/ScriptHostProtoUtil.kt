@@ -26,6 +26,7 @@ import com.commonwealthrobotics.proto.script_host.RunRequest
 import com.commonwealthrobotics.proto.script_host.SessionClientMessage
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.commonwealthrobotics.proto.script_host.TaskEnd
+import com.commonwealthrobotics.proto.script_host.TaskEndCause
 import com.commonwealthrobotics.proto.script_host.TaskUpdate
 import com.commonwealthrobotics.proto.script_host.TwoFactorResponse
 
@@ -74,8 +75,9 @@ fun taskUpdate(taskId: Long, progress: Number) = TaskUpdate.newBuilder().apply {
     setProgress(progress.toFloat())
 }.build()
 
-fun taskEnd(taskId: Long) = TaskEnd.newBuilder().apply {
+fun taskEnd(taskId: Long, cause: TaskEndCause) = TaskEnd.newBuilder().apply {
     setTaskId(taskId)
+    setCause(cause)
 }.build()
 
 fun requestError(requestId: Long, description: String) = RequestError.newBuilder().apply {
