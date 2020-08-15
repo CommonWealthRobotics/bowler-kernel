@@ -9,7 +9,7 @@ dependencies {
 
     api(group = "io.arrow-kt", name = "arrow-fx", version = Versions.arrow)
 
-    api(project(":proto"))
+    api(project(":protoutil"))
     implementation(project(":logging"))
     implementation(project(":util"))
 

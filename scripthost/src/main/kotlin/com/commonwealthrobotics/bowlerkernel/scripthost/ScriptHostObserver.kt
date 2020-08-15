@@ -18,7 +18,7 @@ package com.commonwealthrobotics.bowlerkernel.scripthost
 
 import arrow.core.Either
 import arrow.core.extensions.fx
-import com.commonwealthrobotics.bowlerkernel.proto.withTask
+import com.commonwealthrobotics.bowlerkernel.protoutil.withTask
 import com.commonwealthrobotics.bowlerkernel.scripting.Script
 import com.commonwealthrobotics.bowlerkernel.scripting.ScriptLoader
 import com.commonwealthrobotics.proto.script_host.ConfirmationResponse

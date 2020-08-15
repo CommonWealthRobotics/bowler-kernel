@@ -3,7 +3,7 @@ description = "Support for loading and running scripts."
 dependencies {
     implementation(project(":gitfs"))
     implementation(project(":hardware"))
-    implementation(project(":proto"))
+    implementation(project(":protoutil"))
 
     implementation(group = "org.codehaus.groovy", name = "groovy", version = Versions.groovy)
     implementation(group = "org.apache.ivy", name = "ivy", version = Versions.ivy)

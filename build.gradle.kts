@@ -19,6 +19,7 @@ val kotlinProjects = listOf(
     project(":gitfs"),
     project(":hardware"),
     project(":proto"),
+    project(":protoutil"),
     project(":scripthost"),
     project(":scripting"),
     project(":testUtil"),

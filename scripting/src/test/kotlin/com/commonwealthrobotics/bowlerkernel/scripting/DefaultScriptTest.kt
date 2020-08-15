@@ -16,9 +16,9 @@
  */
 package com.commonwealthrobotics.bowlerkernel.scripting
 
-import com.commonwealthrobotics.bowlerkernel.proto.fileSpec
-import com.commonwealthrobotics.bowlerkernel.proto.patch
-import com.commonwealthrobotics.bowlerkernel.proto.projectSpec
+import com.commonwealthrobotics.bowlerkernel.protoutil.fileSpec
+import com.commonwealthrobotics.bowlerkernel.protoutil.patch
+import com.commonwealthrobotics.bowlerkernel.protoutil.projectSpec
 import io.kotest.assertions.arrow.either.shouldBeLeft
 import io.kotest.assertions.arrow.either.shouldBeRight
 import io.kotest.assertions.throwables.shouldThrow

@@ -17,15 +17,15 @@
 package com.commonwealthrobotics.bowlerkernel.scripthost
 
 import arrow.core.Either
-import com.commonwealthrobotics.bowlerkernel.proto.fileSpec
-import com.commonwealthrobotics.bowlerkernel.proto.newTask
-import com.commonwealthrobotics.bowlerkernel.proto.patch
-import com.commonwealthrobotics.bowlerkernel.proto.projectSpec
-import com.commonwealthrobotics.bowlerkernel.proto.runRequest
-import com.commonwealthrobotics.bowlerkernel.proto.sessionClientMessage
-import com.commonwealthrobotics.bowlerkernel.proto.sessionServerMessage
-import com.commonwealthrobotics.bowlerkernel.proto.taskEnd
-import com.commonwealthrobotics.bowlerkernel.proto.taskUpdate
+import com.commonwealthrobotics.bowlerkernel.protoutil.fileSpec
+import com.commonwealthrobotics.bowlerkernel.protoutil.newTask
+import com.commonwealthrobotics.bowlerkernel.protoutil.patch
+import com.commonwealthrobotics.bowlerkernel.protoutil.projectSpec
+import com.commonwealthrobotics.bowlerkernel.protoutil.runRequest
+import com.commonwealthrobotics.bowlerkernel.protoutil.sessionClientMessage
+import com.commonwealthrobotics.bowlerkernel.protoutil.sessionServerMessage
+import com.commonwealthrobotics.bowlerkernel.protoutil.taskEnd
+import com.commonwealthrobotics.bowlerkernel.protoutil.taskUpdate
 import com.commonwealthrobotics.bowlerkernel.scripting.Script
 import com.commonwealthrobotics.bowlerkernel.scripting.ScriptLoader
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
@@ -62,7 +62,7 @@ internal class ScriptHostObserverTest {
             // Initialize the script
             responseObserver.onNext(
                 sessionServerMessage(
-                    newTask = newTask(1, "Initializing file1.groovy", task = taskUpdate(0, Float.NaN))
+                    newTask = newTask(1, "Initializing file1.groovy", taskUpdate(0, Float.NaN))
                 )
             )
             scriptLoader.resolveAndLoad(file, devs, environment)
@@ -71,7 +71,7 @@ internal class ScriptHostObserverTest {
             // Run the script
             responseObserver.onNext(
                 sessionServerMessage(
-                    newTask = newTask(1, "Running file1.groovy", task = taskUpdate(1, Float.NaN))
+                    newTask = newTask(1, "Running file1.groovy", taskUpdate(1, Float.NaN))
                 )
             )
             script.start(emptyList(), null)

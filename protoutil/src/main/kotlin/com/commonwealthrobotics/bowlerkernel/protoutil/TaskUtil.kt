@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.commonwealthrobotics.bowlerkernel.proto
+package com.commonwealthrobotics.bowlerkernel.protoutil
 
 import arrow.core.Either
 import arrow.core.nonFatalOrThrow
@@ -24,7 +24,7 @@ import mu.KotlinLogging
 import java.util.concurrent.atomic.AtomicLong
 
 private object TaskUtil {
-    val taskIdCounter = AtomicLong()
+    val taskIdCounter = AtomicLong(0)
     val logger = KotlinLogging.logger { }
 }
 
@@ -43,7 +43,7 @@ fun <T> StreamObserver<SessionServerMessage>.withTask(
     f: () -> T
 ): Either<Throwable, T> {
     val taskId = nextTaskId()
-    onNext(sessionServerMessage(newTask = newTask(requestId, description, task = taskUpdate(taskId, Float.NaN))))
+    onNext(sessionServerMessage(newTask = newTask(requestId, description, taskUpdate(taskId, Float.NaN))))
 
     val out: T
     try {
