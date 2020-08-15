@@ -18,7 +18,8 @@ package com.commonwealthrobotics.bowlerkernel.gitfs
 
 import arrow.core.Either
 import arrow.core.Option
-import arrow.core.right
+import io.kotest.assertions.arrow.either.shouldBeRight
+import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -92,14 +93,13 @@ internal class GitHubFSTest {
                 .attempt()
                 .unsafeRunSync()
 
-            assertEquals(
-                setOf(
+            files.shouldBeRight {
+                it.shouldContainAll(
                     Paths.get(repoPath.toString(), "fileA.txt").toString(),
                     Paths.get(repoPath.toString(), "dirA").toString(),
                     Paths.get(repoPath.toString(), "dirA", "fileB.txt").toString()
-                ).right(),
-                files
-            )
+                )
+            }
         }
 
         @Test
@@ -119,14 +119,13 @@ internal class GitHubFSTest {
                 .attempt()
                 .unsafeRunSync()
 
-            assertEquals(
-                setOf(
+            files.shouldBeRight {
+                it.shouldContainAll(
                     Paths.get(repoPath.toString(), "fileA.txt").toString(),
                     Paths.get(repoPath.toString(), "dirA").toString(),
                     Paths.get(repoPath.toString(), "dirA", "fileB.txt").toString()
-                ).right(),
-                files
-            )
+                )
+            }
         }
 
         @Test
