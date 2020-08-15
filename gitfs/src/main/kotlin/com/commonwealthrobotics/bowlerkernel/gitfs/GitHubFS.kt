@@ -34,12 +34,9 @@ import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.errors.RepositoryNotFoundException
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
-import org.kohsuke.github.GHGist
-import org.kohsuke.github.GHGistFile
 import org.kohsuke.github.GHObject
 import org.kohsuke.github.GitHub
 import java.io.File
-import java.io.IOException
 import java.nio.file.FileSystems
 import java.nio.file.Paths
 
@@ -75,6 +72,7 @@ class GitHubFS(
             IO {
                 // The repo was already on disk, so directory exists, so pull
                 LOGGER.info { "Pulling repository in directory $directory" }
+                @Suppress("BlockingMethodInNonBlockingContext")
                 Git.open(directory).use { it.pull().call() }
             }.handleErrorWith {
                 if (it is RepositoryNotFoundException) {
@@ -98,6 +96,33 @@ class GitHubFS(
                 }
             }.map { directory }
         }
+    }
+
+    override fun forkRepo(gitUrl: String): IO<String> =
+        when (val repo = parseRepo(gitUrl)) {
+            is None -> IO.raiseError(IllegalArgumentException("Invalid git url: $gitUrl"))
+            is Some -> forkRepo(repo.t).map {
+                it.url.toExternalForm()
+            }
+        }
+
+    override fun getFilesInRepo(repoDir: File): IO<Set<File>> = mapToRepoFiles(IO.just(repoDir))
+
+    override fun isOwner(gitUrl: String): IO<Boolean> = IO {
+        myGists.value.firstOrNull {
+            it.gitPullUrl == gitUrl
+        } != null
+    }.handleErrorWith {
+        IO {
+            myRepositories.value.first { repo ->
+                repo.gitTransportUrl == gitUrl
+            }.hasPushAccess()
+        }
+    }
+
+    override fun deleteCache(): IO<Unit> = IO {
+        @Suppress("BlockingMethodInNonBlockingContext")
+        FileUtils.deleteDirectory(Paths.get(gitHubCacheDirectory).toFile())
     }
 
     /**
@@ -151,6 +176,7 @@ class GitHubFS(
             .setBranch(branch)
             .setDirectory(directory)
             .setCredentialsProvider(
+                // TODO: Support OAUTH as well
                 UsernamePasswordCredentialsProvider(
                     credentials.first,
                     credentials.second
@@ -163,56 +189,6 @@ class GitHubFS(
                     it.submoduleUpdate().call()
                 }
             }
-    }
-
-    override fun cloneRepoAndGetFiles(
-        gitUrl: String,
-        branch: String
-    ): IO<Set<File>> = mapToRepoFiles(cloneRepo(gitUrl, branch))
-
-    override fun forkRepo(gitUrl: String): IO<String> =
-        when (val repo = parseRepo(gitUrl)) {
-            is None -> IO.raiseError(IllegalArgumentException("Invalid git url: $gitUrl"))
-            is Some -> forkRepo(repo.t).map {
-                it.url.toExternalForm()
-            }
-        }
-
-    override fun forkAndCloneRepo(
-        gitUrl: String,
-        branch: String
-    ): IO<File> = when (val repo = parseRepo(gitUrl)) {
-        is None -> IO.raiseError(IllegalArgumentException("Invalid git url: $gitUrl"))
-        is Some -> forkRepo(repo.t).flatMap {
-            cloneRepo(it.gitUrl, branch)
-        }
-    }
-
-    override fun forkAndCloneRepoAndGetFiles(
-        gitUrl: String,
-        branch: String
-    ): IO<Set<File>> = mapToRepoFiles(forkAndCloneRepo(gitUrl, branch))
-
-    override fun isOwner(gitUrl: String): IO<Boolean> = IO {
-        myGists.value.firstOrNull {
-            it.gitPullUrl == gitUrl
-        } != null
-    }.handleErrorWith {
-        IO {
-            myRepositories.value.first { repo ->
-                repo.gitTransportUrl == gitUrl
-            }.hasPushAccess()
-        }
-    }
-
-    override fun deleteCache() {
-        try {
-            FileUtils.deleteDirectory(Paths.get(gitHubCacheDirectory).toFile())
-        } catch (e: IOException) {
-            LOGGER.error(e) {
-                "Unable to delete the GitHub cache."
-            }
-        }
     }
 
     /**
@@ -244,24 +220,8 @@ class GitHubFS(
     }
 
     companion object {
-        private val LOGGER = KotlinLogging.logger { }
 
-        /**
-         * Maps a file in a gist to its file on disk. Fails if the file is not on disk.
-         *
-         * @param gitHubCacheDirectory The directory path GitHub files are cached in.
-         * @param gist The gist.
-         * @param gistFile The file in the gist.
-         * @return The file on disk.
-         */
-        fun mapGistFileToFileOnDisk(
-            gitHubCacheDirectory: String,
-            gist: GHGist,
-            gistFile: GHGistFile
-        ): IO<File> = IO {
-            gitUrlToDirectory(gitHubCacheDirectory, gist.gitPullUrl).walkTopDown()
-                .first { it.name == gistFile.fileName }
-        }
+        private val LOGGER = KotlinLogging.logger { }
 
         /**
          * Returns whether the [url] is a valid GitHub repository Git URL.

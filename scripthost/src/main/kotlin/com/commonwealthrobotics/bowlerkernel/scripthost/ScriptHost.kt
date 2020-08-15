@@ -26,6 +26,6 @@ import io.grpc.stub.StreamObserver
 class ScriptHost : ScriptHostGrpc.ScriptHostImplBase() {
 
     override fun session(responseObserver: StreamObserver<SessionServerMessage>): StreamObserver<SessionClientMessage> {
-        return ScriptHostObserver(responseObserver, DefaultScriptLoader(DefaultDependencyResolver()))
+        return ScriptHostObserver(responseObserver, DefaultScriptLoader(DefaultDependencyResolver(gitFS)))
     }
 }

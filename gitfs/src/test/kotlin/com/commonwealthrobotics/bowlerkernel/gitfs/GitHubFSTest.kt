@@ -88,7 +88,8 @@ internal class GitHubFSTest {
             val fs = GitHubFS(GitHub.connectAnonymously(), "" to "", tmpCachePath.toString())
             val repoPath = Paths.get(fs.gitHubCacheDirectory, orgName, repoName)
 
-            val files = fs.cloneRepoAndGetFiles(testRepoUrl)
+            val files = fs.cloneRepo(testRepoUrl)
+                .flatMap { fs.getFilesInRepo(it) }
                 .map { files -> files.map { it.toString() }.toSet() }
                 .attempt()
                 .unsafeRunSync()
@@ -114,7 +115,8 @@ internal class GitHubFSTest {
             repoPath.toFile().apply { mkdirs() }
             Paths.get(repoPath.toString(), ".git").toFile().apply { mkdirs() }
 
-            val files = fs.cloneRepoAndGetFiles(testRepoUrl)
+            val files = fs.cloneRepo(testRepoUrl)
+                .flatMap { fs.getFilesInRepo(it) }
                 .map { files -> files.map { it.toString() }.toSet() }
                 .attempt()
                 .unsafeRunSync()

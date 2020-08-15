@@ -26,6 +26,8 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyOrder
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import java.io.File
 
 internal class DefaultScriptLoaderTest {
 
@@ -35,8 +37,8 @@ internal class DefaultScriptLoaderTest {
     )
 
     @Test
-    fun `resolveAndLoad a script with no devs and no env that returns a simple value`() {
-        val file1 = createTempFile().apply { writeText("1") }
+    fun `resolveAndLoad a script with no devs and no env that returns a simple value`(@TempDir tempDir: File) {
+        val file1 = createTempFile(directory = tempDir).apply { writeText("1") }
         val dependencyResolver = mockk<DependencyResolver>(relaxUnitFun = true) {
             every { resolve(fileSpec1) } returns file1
         }
@@ -51,8 +53,8 @@ internal class DefaultScriptLoaderTest {
     }
 
     @Test
-    fun `resolveAndLoad a script with a compiler error`() {
-        val file1 = createTempFile().apply { writeText(" \" ") }
+    fun `resolveAndLoad a script with a compiler error`(@TempDir tempDir: File) {
+        val file1 = createTempFile(directory = tempDir).apply { writeText(" \" ") }
         val dependencyResolver = mockk<DependencyResolver>(relaxUnitFun = true) {
             every { resolve(fileSpec1) } returns file1
         }
@@ -67,8 +69,8 @@ internal class DefaultScriptLoaderTest {
     }
 
     @Test
-    fun `check the compiled script has the required globals`() {
-        val file1 = createTempFile().apply {
+    fun `check the compiled script has the required globals`(@TempDir tempDir: File) {
+        val file1 = createTempFile(directory = tempDir).apply {
             writeText(
                 """
                 |assert args == [1]
