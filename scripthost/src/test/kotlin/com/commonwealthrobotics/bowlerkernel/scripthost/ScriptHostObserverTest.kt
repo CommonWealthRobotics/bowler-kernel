@@ -17,6 +17,7 @@
 package com.commonwealthrobotics.bowlerkernel.scripthost
 
 import arrow.core.Either
+import com.commonwealthrobotics.bowlerkernel.gitfs.DependencyResolver
 import com.commonwealthrobotics.bowlerkernel.protoutil.fileSpec
 import com.commonwealthrobotics.bowlerkernel.protoutil.newTask
 import com.commonwealthrobotics.bowlerkernel.protoutil.patch
@@ -87,5 +88,16 @@ internal class ScriptHostObserverTest : KoinTestFixture() {
             script.join(any(), any(), any())
             responseObserver.onNext(sessionServerMessage(taskEnd = taskEnd(1, TaskEndCause.TASK_COMPLETED)))
         }
+    }
+
+    @Test
+    fun `request credentials during script resolution`() {
+        val remote = "git@github.com:user/repo1.git"
+        val responseObserver = mockk< StreamObserver<SessionServerMessage>>(relaxUnitFun = true) {
+            every { onNext() }
+        }
+
+        val scriptHost = ScriptHostObserver(responseObserver)
+        scriptHost.getCredentialsFor(remote)
     }
 }

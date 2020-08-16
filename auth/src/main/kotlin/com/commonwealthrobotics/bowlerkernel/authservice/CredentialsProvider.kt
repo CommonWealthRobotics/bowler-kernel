@@ -26,7 +26,7 @@ interface CredentialsProvider {
      * @param remote The remote to ask for.
      * @return The credentials for that remote.
      */
-    fun getCredentialsFor(remote: String): Credentials
+    suspend fun getCredentialsFor(remote: String): Credentials
 
     /**
      * Get a 2FA response for the [remote] (e.g. `https://github.com/CommonWealthRobotics/BowlerBuilder.git`).

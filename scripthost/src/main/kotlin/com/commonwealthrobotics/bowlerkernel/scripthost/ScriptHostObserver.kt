@@ -24,6 +24,8 @@ import com.commonwealthrobotics.bowlerkernel.authservice.CredentialsProvider
 import com.commonwealthrobotics.bowlerkernel.di.BowlerKernelKoinComponent
 import com.commonwealthrobotics.bowlerkernel.gitfs.GitFS
 import com.commonwealthrobotics.bowlerkernel.gitfs.GitHubFS
+import com.commonwealthrobotics.bowlerkernel.protoutil.credentialsRequest
+import com.commonwealthrobotics.bowlerkernel.protoutil.sessionServerMessage
 import com.commonwealthrobotics.bowlerkernel.protoutil.withTask
 import com.commonwealthrobotics.bowlerkernel.scripting.Script
 import com.commonwealthrobotics.bowlerkernel.scripting.ScriptLoader
@@ -38,12 +40,17 @@ import io.grpc.stub.StreamObserver
 import mu.KotlinLogging
 import org.koin.core.get
 import org.koin.dsl.module
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Future
+import java.util.concurrent.atomic.AtomicLong
 
 class ScriptHostObserver(
     private val responseObserver: StreamObserver<SessionServerMessage>
 ) : StreamObserver<SessionClientMessage>, CredentialsProvider, BowlerKernelKoinComponent {
 
     private val scriptRequestMap = mutableMapOf<Long, Script>()
+    private val requestID = AtomicLong(0)
+    private val credentialsResponses = mutableMapOf<Long, Future<Credentials>>()
 
     override fun onNext(value: SessionClientMessage) {
         @Suppress("ThrowableNotThrown")
@@ -72,6 +79,9 @@ class ScriptHostObserver(
     }
 
     override fun getCredentialsFor(remote: String): Credentials {
+        val requestId = requestID.getAndIncrement()
+        credentialsResponses[requestId] = CompletableFuture()
+        responseObserver.onNext(sessionServerMessage(credentialsRequest = credentialsRequest(requestId, 0, remote)))
         TODO("Not yet implemented")
     }
 

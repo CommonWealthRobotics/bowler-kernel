@@ -173,6 +173,7 @@ configure(kotlinProjects) {
     dependencies {
         implementation(group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk8", version = Versions.kotlin)
         implementation(group = "org.jetbrains.kotlin", name = "kotlin-reflect", version = Versions.kotlin)
+        implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = Versions.kotlinCoroutines)
 
         implementation(group = "io.github.microutils", name = "kotlin-logging", version = Versions.kotlinLogging)
     }

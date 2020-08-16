@@ -20,19 +20,26 @@ package com.commonwealthrobotics.bowlerkernel.protoutil
 
 import com.commonwealthrobotics.proto.gitfs.FileSpec
 import com.commonwealthrobotics.proto.gitfs.ProjectSpec
+import com.commonwealthrobotics.proto.robot_config.RobotConfig
 import com.commonwealthrobotics.proto.script_host.BasicCredentials
+import com.commonwealthrobotics.proto.script_host.ConfirmationRequest
 import com.commonwealthrobotics.proto.script_host.ConfirmationResponse
+import com.commonwealthrobotics.proto.script_host.CredentialsRequest
 import com.commonwealthrobotics.proto.script_host.CredentialsResponse
+import com.commonwealthrobotics.proto.script_host.NewConfig
 import com.commonwealthrobotics.proto.script_host.NewTask
 import com.commonwealthrobotics.proto.script_host.OAuthCredentials
 import com.commonwealthrobotics.proto.script_host.RequestError
 import com.commonwealthrobotics.proto.script_host.RunRequest
+import com.commonwealthrobotics.proto.script_host.ScriptOutput
 import com.commonwealthrobotics.proto.script_host.SessionClientMessage
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.commonwealthrobotics.proto.script_host.TaskEnd
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
 import com.commonwealthrobotics.proto.script_host.TaskUpdate
+import com.commonwealthrobotics.proto.script_host.TwoFactorRequest
 import com.commonwealthrobotics.proto.script_host.TwoFactorResponse
+import com.google.protobuf.ByteString
 
 fun sessionClientMessage(
     runRequest: RunRequest? = null,
@@ -84,11 +91,21 @@ fun sessionServerMessage(
     newTask: NewTask? = null,
     taskUpdate: TaskUpdate? = null,
     taskEnd: TaskEnd? = null,
+    confirmationRequest: ConfirmationRequest? = null,
+    credentialsRequest: CredentialsRequest? = null,
+    twoFactorRequest: TwoFactorRequest? = null,
+    scriptOutput: ScriptOutput? = null,
+    newConfig: NewConfig? = null,
     requestError: RequestError? = null
 ) = SessionServerMessage.newBuilder().apply {
     newTask?.let { setNewTask(newTask) }
     taskUpdate?.let { setTaskUpdate(taskUpdate) }
     taskEnd?.let { setTaskEnd(taskEnd) }
+    confirmationRequest?.let { setConfirmationRequest(confirmationRequest) }
+    credentialsRequest?.let { setCredentialsRequest(credentialsRequest) }
+    twoFactorRequest?.let { setTwoFactorRequest(twoFactorRequest) }
+    scriptOutput?.let { setScriptOutput(scriptOutput) }
+    newConfig?.let { setNewConfig(newConfig) }
     requestError?.let { setError(requestError) }
 }.build()
 
@@ -106,6 +123,30 @@ fun taskUpdate(taskId: Long, progress: Number) = TaskUpdate.newBuilder().apply {
 fun taskEnd(taskId: Long, cause: TaskEndCause) = TaskEnd.newBuilder().apply {
     setTaskId(taskId)
     setCause(cause)
+}.build()
+
+fun confirmationRequest(requestId: Long, description: String) = ConfirmationRequest.newBuilder().apply {
+    setRequestId(requestId)
+    setDescription(description)
+}.build()
+
+fun credentialsRequest(requestId: Long, taskId: Long, remote: String) = CredentialsRequest.newBuilder().apply {
+    setRequestId(requestId)
+    setTaskId(taskId)
+    setRemote(remote)
+}.build()
+
+fun twoFactorRequest(requestId: Long, description: String) = TwoFactorRequest.newBuilder().apply {
+    setRequestId(requestId)
+    setDescription(description)
+}.build()
+
+fun scriptOutput(tarball: ByteArray) = ScriptOutput.newBuilder().apply {
+    setTarball(ByteString.copyFrom(tarball))
+}.build()
+
+fun newConfig(config: RobotConfig) = NewConfig.newBuilder().apply {
+    setConfig(config)
 }.build()
 
 fun requestError(requestId: Long, description: String) = RequestError.newBuilder().apply {
