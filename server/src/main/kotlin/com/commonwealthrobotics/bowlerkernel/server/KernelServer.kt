@@ -45,6 +45,8 @@ class KernelServer {
             )
         }
 
+        // TODO: Include the port number in the name server
+        // TODO: Support setting the port number via a cmdline option
         server = NettyServerBuilder.forPort(0).apply {
             // TODO: Support SSL
             addService(ScriptHost())
