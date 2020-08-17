@@ -6,6 +6,7 @@ dependencies {
     implementation(project(":scripting"))
     implementation(project(":gitfs"))
     implementation(project(":di"))
+    implementation(project(":util"))
     implementation(group = "io.arrow-kt", name = "arrow-core-data", version = Versions.arrow)
     implementation(group = "io.arrow-kt", name = "arrow-core", version = Versions.arrow)
 
