@@ -34,5 +34,5 @@ interface CredentialsProvider {
      * @param remote The remote to ask for.
      * @return A 2FA code.
      */
-    fun getTwoFactorFor(remote: String): String
+    suspend fun getTwoFactorFor(remote: String): String
 }

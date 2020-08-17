@@ -164,7 +164,7 @@ class GitHubFS(
         }
     }
 
-    private fun cloneRepository(
+    private suspend fun cloneRepository(
         gitUrl: String,
         branch: String,
         directory: File
@@ -228,7 +228,7 @@ class GitHubFS(
         }
     }
 
-    private fun getJGitCredentialsProvider(gitUrl: String): UsernamePasswordCredentialsProvider =
+    private suspend fun getJGitCredentialsProvider(gitUrl: String): UsernamePasswordCredentialsProvider =
         when (val credentials = credentialsProvider.getCredentialsFor(gitUrl)) {
             is Credentials.Basic -> UsernamePasswordCredentialsProvider(credentials.username, credentials.password)
             // TODO: Validate this works
@@ -236,7 +236,7 @@ class GitHubFS(
             is Credentials.Anonymous -> UsernamePasswordCredentialsProvider("", "")
         }
 
-    private fun getGitHub(remote: String): GitHub =
+    private suspend fun getGitHub(remote: String): GitHub =
         when (val credentials = credentialsProvider.getCredentialsFor(remote)) {
             // TODO: Handle 2FA
             is Credentials.Basic -> GitHub.connect(credentials.username, credentials.password)

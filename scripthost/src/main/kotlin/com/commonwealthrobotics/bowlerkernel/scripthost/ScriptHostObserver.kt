@@ -78,14 +78,14 @@ class ScriptHostObserver(
         responseObserver.onCompleted()
     }
 
-    override fun getCredentialsFor(remote: String): Credentials {
+    override suspend fun getCredentialsFor(remote: String): Credentials {
         val requestId = requestID.getAndIncrement()
         credentialsResponses[requestId] = CompletableFuture()
         responseObserver.onNext(sessionServerMessage(credentialsRequest = credentialsRequest(requestId, 0, remote)))
         TODO("Not yet implemented")
     }
 
-    override fun getTwoFactorFor(remote: String): String {
+    override suspend fun getTwoFactorFor(remote: String): String {
         TODO("Not yet implemented")
     }
 

@@ -36,6 +36,7 @@ import io.grpc.stub.StreamObserver
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyOrder
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.koin.dsl.module
 
@@ -98,6 +99,6 @@ internal class ScriptHostObserverTest : KoinTestFixture() {
         }
 
         val scriptHost = ScriptHostObserver(responseObserver)
-        scriptHost.getCredentialsFor(remote)
+        runBlocking { scriptHost.getCredentialsFor(remote) }
     }
 }
