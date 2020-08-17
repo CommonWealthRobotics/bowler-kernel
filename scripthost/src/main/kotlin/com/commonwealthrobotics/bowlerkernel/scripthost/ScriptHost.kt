@@ -62,7 +62,7 @@ class Session(
         val clientChannel = client.toChannel(scope)
         var nextRequest: Long = 0
         val requestHandlers: MutableMap<Long, suspend (SessionClientMessage) -> Unit> = mutableMapOf()
-        while (true) {
+        while (!clientChannel.isClosedForReceive) {
             select<Unit> {
                 credentialsTransactions.onReceive {
                     val msg = SessionServerMessage.newBuilder()
