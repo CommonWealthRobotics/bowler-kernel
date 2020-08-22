@@ -54,27 +54,3 @@ protobuf {
         }
     }
 }
-/*
-protobuf {
-    protoc {
-        artifact = "com.google.protobuf:protoc:${Versions.protobufJava}"
-    }
-    plugins {
-        grpc {
-            artifact = "io.grpc:protoc-gen-grpc-java:${Versions.grpcAll}"
-        }
-    }
-    generateProtoTasks {
-        all().each { task ->
-            task.doFirst {
-                delete(task.outputs)
-            }
-            // Disable caching because of https://github.com/google/protobuf-gradle-plugin/issues/180
-            task.outputs.upToDateWhen { false }
-            task.plugins {
-                grpc { }
-            }
-        }
-    }
-}
- */

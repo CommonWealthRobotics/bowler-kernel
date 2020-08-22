@@ -189,6 +189,8 @@ configure(kotlinProjects) {
         kotlin {
             ktlint(Versions.ktlint)
             licenseHeaderFile(rootProject.rootDir.toPath().resolve("config").resolve("spotless").resolve("license.txt"))
+            // Generated proto sources
+            targetExclude(project(":proto").buildDir.walkTopDown().toList())
         }
     }
 
@@ -201,6 +203,9 @@ configure(kotlinProjects) {
         version.set(Versions.ktlint)
         enableExperimentalRules.set(true)
         additionalEditorconfigFile.set(file(rootProject.rootDir.toPath().resolve("config").resolve("ktlint").resolve(".editorconfig")))
+        filter {
+            exclude { it.file.path.contains("generated/") }
+        }
     }
 
     detekt {

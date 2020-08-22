@@ -17,7 +17,7 @@
 package com.commonwealthrobotics.bowlerkernel.scripthost
 
 import arrow.core.Either
-import com.commonwealthrobotics.bowlerkernel.gitfs.DependencyResolver
+import com.commonwealthrobotics.bowlerkernel.authservice.Credentials
 import com.commonwealthrobotics.bowlerkernel.protoutil.fileSpec
 import com.commonwealthrobotics.bowlerkernel.protoutil.newTask
 import com.commonwealthrobotics.bowlerkernel.protoutil.patch
@@ -30,22 +30,29 @@ import com.commonwealthrobotics.bowlerkernel.protoutil.taskUpdate
 import com.commonwealthrobotics.bowlerkernel.scripting.Script
 import com.commonwealthrobotics.bowlerkernel.scripting.ScriptLoader
 import com.commonwealthrobotics.bowlerkernel.testutil.KoinTestFixture
+import com.commonwealthrobotics.bowlerkernel.util.toChannel
+import com.commonwealthrobotics.proto.script_host.SessionClientMessage
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
 import io.grpc.stub.StreamObserver
+import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyOrder
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.koin.dsl.module
+import kotlin.concurrent.thread
 
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class ScriptHostObserverTest : KoinTestFixture() {
 
     @Test
     fun `a run request must trigger the script loader`() {
-        val responseObserver = mockk< StreamObserver<SessionServerMessage>>(relaxUnitFun = true) {
-        }
+        val responseObserver = mockk< StreamObserver<SessionServerMessage>>(relaxUnitFun = true)
         // Have the script return nothing interesting
         val script = mockk<Script>(relaxUnitFun = true) {
             every { join(any(), any(), any()) } returns Either.Right(Unit)
@@ -94,11 +101,37 @@ internal class ScriptHostObserverTest : KoinTestFixture() {
     @Test
     fun `request credentials during script resolution`() {
         val remote = "git@github.com:user/repo1.git"
-        val responseObserver = mockk< StreamObserver<SessionServerMessage>>(relaxUnitFun = true) {
-            every { onNext() }
-        }
 
-        val scriptHost = ScriptHostObserver(responseObserver)
-        runBlocking { scriptHost.getCredentialsFor(remote) }
+        val clientFlow = flowOf(
+            SessionClientMessage.newBuilder().apply {
+                credentialsResponseBuilder.apply {
+                    requestId = 1
+                    basicBuilder.apply {
+                        username = "username"
+                        password = "password"
+                    }
+                }
+            }.build()
+        ).toChannel()
+        val session = ScriptSession(clientFlow)
+        thread { runBlocking { session.sessionFlow.collect() } }
+        runBlocking { session.getCredentialsFor(remote) } shouldBe Credentials.Basic("username", "password")
+    }
+
+    @Test
+    fun `request 2fa during script resolution`() {
+        val remote = "git@github.com:user/repo1.git"
+
+        val clientFlow = flowOf(
+            SessionClientMessage.newBuilder().apply {
+                twoFactorResponseBuilder.apply {
+                    requestId = 1
+                    twoFactor = "token"
+                }
+            }.build()
+        ).toChannel()
+        val session = ScriptSession(clientFlow)
+        thread { runBlocking { session.sessionFlow.collect() } }
+        runBlocking { session.getTwoFactorFor(remote) } shouldBe "token"
     }
 }
