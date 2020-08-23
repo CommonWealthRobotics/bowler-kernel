@@ -30,21 +30,23 @@ import com.commonwealthrobotics.bowlerkernel.protoutil.taskUpdate
 import com.commonwealthrobotics.bowlerkernel.scripting.Script
 import com.commonwealthrobotics.bowlerkernel.scripting.ScriptLoader
 import com.commonwealthrobotics.bowlerkernel.testutil.KoinTestFixture
-import com.commonwealthrobotics.bowlerkernel.util.toChannel
 import com.commonwealthrobotics.proto.script_host.SessionClientMessage
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
 import io.grpc.stub.StreamObserver
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyOrder
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.koin.dsl.module
+import java.lang.IllegalStateException
 import kotlin.concurrent.thread
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -112,10 +114,63 @@ internal class ScriptHostObserverTest : KoinTestFixture() {
                     }
                 }
             }.build()
-        ).toChannel()
+        )
         val session = ScriptSession(clientFlow)
         thread { runBlocking { session.sessionFlow.collect() } }
         runBlocking { session.getCredentialsFor(remote) } shouldBe Credentials.Basic("username", "password")
+    }
+
+    @Test
+    fun `request credentials during script resolution out of order`() {
+        val remote = "git@github.com:user/repo1.git"
+
+        val clientFlow = flowOf(
+            SessionClientMessage.newBuilder().apply {
+                twoFactorResponseBuilder.apply {
+                    requestId = 1
+                    twoFactor = "token"
+                }
+            }.build(),
+            SessionClientMessage.newBuilder().apply {
+                credentialsResponseBuilder.apply {
+                    requestId = 1
+                    basicBuilder.apply {
+                        username = "username"
+                        password = "password"
+                    }
+                }
+            }.build()
+        )
+        val session = ScriptSession(clientFlow)
+        thread { runBlocking { session.sessionFlow.collect() } }
+        runBlocking { session.getCredentialsFor(remote) } shouldBe Credentials.Basic("username", "password")
+    }
+
+    @Test
+    fun `error during credentials request during script resolution`() {
+        val remote = "git@github.com:user/repo1.git"
+
+        val clientFlow = flow {
+            emit(
+                SessionClientMessage.newBuilder().apply {
+                    cancelRequestBuilder.apply {
+                        requestId = 1
+                        taskId = 1
+                    }
+                }.build()
+            )
+            emit(
+                SessionClientMessage.newBuilder().apply {
+                    errorBuilder.apply {
+                        requestId = 1
+                        description = "Boom!"
+                    }
+                }.build()
+            )
+        }
+        val session = ScriptSession(clientFlow)
+        thread { runBlocking { session.sessionFlow.collect() } }
+        runBlocking { shouldThrow<IllegalStateException> { session.getCredentialsFor(remote) } }
     }
 
     @Test
@@ -129,7 +184,7 @@ internal class ScriptHostObserverTest : KoinTestFixture() {
                     twoFactor = "token"
                 }
             }.build()
-        ).toChannel()
+        )
         val session = ScriptSession(clientFlow)
         thread { runBlocking { session.sessionFlow.collect() } }
         runBlocking { session.getTwoFactorFor(remote) } shouldBe "token"

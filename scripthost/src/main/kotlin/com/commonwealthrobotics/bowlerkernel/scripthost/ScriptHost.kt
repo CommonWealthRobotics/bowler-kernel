@@ -23,11 +23,14 @@ import com.commonwealthrobotics.proto.script_host.ScriptHostGrpcKt
 import com.commonwealthrobotics.proto.script_host.SessionClientMessage
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import java.util.concurrent.atomic.AtomicLong
 
@@ -35,33 +38,43 @@ import java.util.concurrent.atomic.AtomicLong
 class ScriptHost : ScriptHostGrpcKt.ScriptHostCoroutineImplBase() {
 
     override fun session(requests: Flow<SessionClientMessage>): Flow<SessionServerMessage> =
-        ScriptSession(requests.toChannel()).sessionFlow
+        ScriptSession(requests).sessionFlow
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ScriptSession(
-    _client: ReceiveChannel<SessionClientMessage>
+    _client: Flow<SessionClientMessage>
 ) : CredentialsProvider {
 
-    private val client = _client.receiveAsFlow().map { logger.debug { "Received $it" }; it }.toChannel()
+    private val client = _client.map { logger.debug { "Received $it" }; it }
     private val session = Channel<SessionServerMessage>()
     private val nextRequestId = AtomicLong(1)
 
     val sessionFlow = session.receiveAsFlow().map { logger.debug { "Sending $it" }; it }
 
-    override suspend fun getCredentialsFor(remote: String): Credentials {
-        session.send(
-            SessionServerMessage.newBuilder().apply {
-                credentialsRequestBuilder.apply {
-                    setRemote(remote)
-                    // TODO: Either remove task id from the credentials request or setup some task context thing
-                    taskId = 1
-                    requestId = nextRequestId.getAndIncrement()
-                }
-            }.build()
-        )
+    init {
+        GlobalScope.launch {
+            client.filter { it.hasCancelRequest() }.map {
+                logger.debug { "Cancel request: $it" }
+            }.collect()
+        }
+    }
 
-        val msg = client.receive()
+    override suspend fun getCredentialsFor(remote: String): Credentials {
+        val request = SessionServerMessage.newBuilder().apply {
+            credentialsRequestBuilder.apply {
+                setRemote(remote)
+                // TODO: Either remove task id from the credentials request or setup some task context thing
+                taskId = 1
+                requestId = nextRequestId.getAndIncrement()
+            }
+        }.build()
+        session.send(request)
+
+        val msg = client.filter {
+            (it.hasCredentialsResponse() && it.credentialsResponse.requestId == request.credentialsRequest.requestId) ||
+                it.hasError()
+        }.toChannel().receive()
 
         return when {
             msg.hasCredentialsResponse() -> {
@@ -77,16 +90,18 @@ class ScriptSession(
     }
 
     override suspend fun getTwoFactorFor(remote: String): String {
-        session.send(
-            SessionServerMessage.newBuilder().apply {
-                twoFactorRequestBuilder.apply {
-                    description = remote
-                    requestId = nextRequestId.getAndIncrement()
-                }
-            }.build()
-        )
+        val request = SessionServerMessage.newBuilder().apply {
+            twoFactorRequestBuilder.apply {
+                description = remote
+                requestId = nextRequestId.getAndIncrement()
+            }
+        }.build()
+        session.send(request)
 
-        val msg = client.receive()
+        val msg = client.filter {
+            (it.hasTwoFactorResponse() && it.twoFactorResponse.requestId == request.twoFactorRequest.requestId) ||
+                it.hasError()
+        }.toChannel().receive()
 
         return when {
             msg.hasTwoFactorResponse() -> msg.twoFactorResponse.twoFactor
