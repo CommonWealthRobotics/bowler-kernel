@@ -182,12 +182,6 @@ subprojects {
             trimTrailingWhitespace()
             endWithNewline()
             licenseHeaderFile(rootProject.rootDir.toPath().resolve("config").resolve("spotless").resolve("license.txt"))
-            targetExclude(
-                (
-                    project(":proto").buildDir.walkTopDown() +
-                        project(":translator:bowler-script-kernel").projectDir.walkTopDown()
-                    ).toList()
-            )
         }
     }
 }
@@ -225,7 +219,6 @@ configure(kotlinProjects) {
         kotlin {
             ktlint(Versions.ktlint)
             licenseHeaderFile(rootProject.rootDir.toPath().resolve("config").resolve("spotless").resolve("license.txt"))
-            targetExclude(project(":proto").buildDir.walkTopDown().toList())
         }
     }
 
