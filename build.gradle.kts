@@ -23,6 +23,7 @@ val kotlinProjects = listOf(
     project(":scripthost"),
     project(":scripting"),
     project(":testUtil"),
+    project(":translator"),
     project(":util")
 )
 
@@ -38,6 +39,12 @@ allprojects {
     repositories {
         mavenCentral()
         jcenter()
+        // Needed for bowler-script-kernel
+        maven("https://dl.bintray.com/s1m0nw1/KtsRunner") {
+            content {
+                includeGroup("de.swirtz")
+            }
+        }
     }
 
     // Configures the Jacoco tool version to be the same for all projects that have it applied.
@@ -64,22 +71,50 @@ allprojects {
         kotlinGradle {
             ktlint(Versions.ktlint)
             trimTrailingWhitespace()
+            targetExclude(project(":translator:bowler-script-kernel").projectDir.walkTopDown().toList())
         }
         freshmark {
             trimTrailingWhitespace()
             indentWithSpaces(2)
             endWithNewline()
+            targetExclude(project(":translator:bowler-script-kernel").projectDir.walkTopDown().toList())
         }
         format("extraneous") {
             target("src/**/*.fxml")
             trimTrailingWhitespace()
             indentWithSpaces(2)
             endWithNewline()
+            targetExclude(project(":translator:bowler-script-kernel").projectDir.walkTopDown().toList())
         }
     }
 }
 
+project(":translator:bowler-script-kernel") {
+    apply {
+        plugin("java-library")
+    }
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    tasks.withType<JavaCompile> {
+        options.encoding = "UTF-8"
+        options.isIncremental = true
+    }
+}
+
 subprojects {
+    if (this in listOf(
+        project(":translator:bowler-script-kernel"),
+        project(":translator:bowler-script-kernel:java-bowler"),
+        project(":translator:bowler-script-kernel:JCSG")
+    )
+    ) {
+        return@subprojects
+    }
+
     apply {
         plugin("java-library")
         plugin("jacoco")
@@ -148,7 +183,10 @@ subprojects {
             endWithNewline()
             licenseHeaderFile(rootProject.rootDir.toPath().resolve("config").resolve("spotless").resolve("license.txt"))
             // Generated proto sources
-            targetExclude(project(":proto").buildDir.walkTopDown().toList())
+            targetExclude(
+                project(":proto").buildDir.walkTopDown().toList() +
+                    project(":translator:bowler-script-kernel").projectDir.walkTopDown().toList()
+            )
         }
     }
 }
@@ -185,6 +223,7 @@ configure(kotlinProjects) {
         kotlin {
             ktlint(Versions.ktlint)
             licenseHeaderFile(rootProject.rootDir.toPath().resolve("config").resolve("spotless").resolve("license.txt"))
+            targetExclude(project(":translator:bowler-script-kernel").projectDir.walkTopDown().toList())
         }
     }
 
@@ -208,7 +247,11 @@ configure(kotlinProjects) {
 
 val jacocoRootReport by tasks.creating(JacocoReport::class) {
     group = "verification"
-    val excludedProjects = listOf<Project>()
+    val excludedProjects = listOf(
+        project(":translator:bowler-script-kernel"),
+        project(":translator:bowler-script-kernel:java-bowler"),
+        project(":translator:bowler-script-kernel:JCSG")
+    )
     val includedProjects = subprojects.filter { it !in excludedProjects }
 
     dependsOn(includedProjects.flatMap { it.tasks.withType(JacocoReport::class) } - this)
