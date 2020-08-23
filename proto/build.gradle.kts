@@ -16,6 +16,15 @@ dependencies {
     api(group = "javax.annotation", name = "javax.annotation-api", version = Versions.javaxAnnotationAPI)
 }
 
+spotless {
+    java {
+        targetExclude("**/*")
+    }
+    kotlin {
+        targetExclude("**/*")
+    }
+}
+
 sourceSets {
     main {
         proto {
