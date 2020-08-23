@@ -182,10 +182,11 @@ subprojects {
             trimTrailingWhitespace()
             endWithNewline()
             licenseHeaderFile(rootProject.rootDir.toPath().resolve("config").resolve("spotless").resolve("license.txt"))
-            // Generated proto sources
             targetExclude(
-                project(":proto").buildDir.walkTopDown().toList() +
-                    project(":translator:bowler-script-kernel").projectDir.walkTopDown().toList()
+                (
+                    project(":proto").buildDir.walkTopDown() +
+                        project(":translator:bowler-script-kernel").projectDir.walkTopDown()
+                    ).toList()
             )
         }
     }
@@ -208,6 +209,7 @@ configure(kotlinProjects) {
     dependencies {
         implementation(group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk8", version = Versions.kotlin)
         implementation(group = "org.jetbrains.kotlin", name = "kotlin-reflect", version = Versions.kotlin)
+        implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = Versions.kotlinCoroutines)
 
         implementation(group = "io.github.microutils", name = "kotlin-logging", version = Versions.kotlinLogging)
     }
@@ -223,7 +225,7 @@ configure(kotlinProjects) {
         kotlin {
             ktlint(Versions.ktlint)
             licenseHeaderFile(rootProject.rootDir.toPath().resolve("config").resolve("spotless").resolve("license.txt"))
-            targetExclude(project(":translator:bowler-script-kernel").projectDir.walkTopDown().toList())
+            targetExclude(project(":proto").buildDir.walkTopDown().toList())
         }
     }
 
@@ -236,6 +238,11 @@ configure(kotlinProjects) {
         version.set(Versions.ktlint)
         enableExperimentalRules.set(true)
         additionalEditorconfigFile.set(file(rootProject.rootDir.toPath().resolve("config").resolve("ktlint").resolve(".editorconfig")))
+        filter {
+            exclude {
+                it.file.path.contains("generated/")
+            }
+        }
     }
 
     detekt {
@@ -275,5 +282,5 @@ val jacocoRootReport by tasks.creating(JacocoReport::class) {
 
 tasks.wrapper {
     distributionType = Wrapper.DistributionType.ALL
-    version = Versions.gradleWrapper
+    gradleVersion = Versions.gradleWrapper
 }
