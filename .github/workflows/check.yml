@@ -31,7 +31,12 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
 
+      - name: Check (Linux)
+        if: ${{ runner.os == 'Linux' }}
+        run: xvfb-run -s '-screen 0 1024x768x24' ./gradlew check --info --stacktrace -Plogtests
+
       - name: Check
+        if: ${{ runner.os != 'Linux' }}
         run: ./gradlew check --info --stacktrace -Plogtests
 
       - name: JacocoRootReport
