@@ -71,17 +71,20 @@ allprojects {
         kotlinGradle {
             ktlint(Versions.ktlint)
             trimTrailingWhitespace()
+            targetExclude(project(":translator:bowler-script-kernel").projectDir.walkTopDown().toList())
         }
         freshmark {
             trimTrailingWhitespace()
             indentWithSpaces(2)
             endWithNewline()
+            targetExclude(project(":translator:bowler-script-kernel").projectDir.walkTopDown().toList())
         }
         format("extraneous") {
             target("src/**/*.fxml")
             trimTrailingWhitespace()
             indentWithSpaces(2)
             endWithNewline()
+            targetExclude(project(":translator:bowler-script-kernel").projectDir.walkTopDown().toList())
         }
     }
 }
@@ -179,6 +182,7 @@ subprojects {
             trimTrailingWhitespace()
             endWithNewline()
             licenseHeaderFile(rootProject.rootDir.toPath().resolve("config").resolve("spotless").resolve("license.txt"))
+            targetExclude(project(":translator:bowler-script-kernel").projectDir.walkTopDown().toList())
         }
     }
 }
