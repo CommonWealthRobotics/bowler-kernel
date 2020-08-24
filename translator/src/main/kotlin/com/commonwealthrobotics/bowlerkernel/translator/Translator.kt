@@ -22,5 +22,7 @@ import com.neuronrobotics.sdk.addons.kinematics.MobileBase
 class Translator
 
 fun main() {
-    println(MobileBaseLoader.fromGit("https://github.com/OperationSmallKat/Luna.git","MediumKat.xml"))
+    val base =MobileBaseLoader.fromGit("https://github.com/OperationSmallKat/Luna.git","MediumKat.xml")
+    println (base.getXml())
+    base.disconnect();
 }
