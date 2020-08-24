@@ -16,10 +16,11 @@
  */
 package com.commonwealthrobotics.bowlerkernel.translator
 
+import com.neuronrobotics.bowlerstudio.creature.MobileBaseLoader
 import com.neuronrobotics.sdk.addons.kinematics.MobileBase
 
 class Translator
 
 fun main() {
-    println(MobileBase.getDisconnectListeners())
+    println(MobileBaseLoader.fromGit("https://github.com/OperationSmallKat/Luna.git","MediumKat.xml"))
 }
