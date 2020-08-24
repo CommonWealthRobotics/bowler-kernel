@@ -23,6 +23,7 @@ val kotlinProjects = listOf(
     project(":scripthost"),
     project(":scripting"),
     project(":testUtil"),
+    project(":translator"),
     project(":util")
 )
 

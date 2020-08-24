@@ -14,6 +14,8 @@ include(":protoutil")
 include(":scripthost")
 include(":scripting")
 include(":testUtil")
+includeBuild("translator/bowler-script-kernel")
+include(":translator")
 include(":util")
 
 gradleEnterprise {
