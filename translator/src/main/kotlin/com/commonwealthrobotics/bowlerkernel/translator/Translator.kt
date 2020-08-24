@@ -21,8 +21,7 @@ import com.neuronrobotics.bowlerstudio.creature.MobileBaseLoader
 class Translator
 
 fun main() {
-    val base =MobileBaseLoader.fromGit("https://github.com/OperationSmallKat/Luna.git","MediumKat.xml")
-    println (base.getXml())
-    base.disconnect();
-
+    val base = MobileBaseLoader.fromGit("https://github.com/OperationSmallKat/Luna.git", "MediumKat.xml")
+    println(base.getXml())
+    base.disconnect()
 }
