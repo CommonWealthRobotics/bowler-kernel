@@ -4,6 +4,10 @@ plugins {
 
 rootProject.name = "bowler-kernel"
 
+include(":translator:bowler-script-kernel")
+include(":translator:bowler-script-kernel:java-bowler")
+include(":translator:bowler-script-kernel:JCSG")
+
 include(":device-server")
 include(":device-server-benchmark")
 include(":gitfs")
@@ -14,7 +18,6 @@ include(":protoutil")
 include(":scripthost")
 include(":scripting")
 include(":testUtil")
-includeBuild("translator/bowler-script-kernel")
 include(":translator")
 include(":util")
 
