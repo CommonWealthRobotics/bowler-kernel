@@ -71,20 +71,17 @@ allprojects {
         kotlinGradle {
             ktlint(Versions.ktlint)
             trimTrailingWhitespace()
-            targetExclude(project(":translator:bowler-script-kernel").projectDir.walkTopDown().toList())
         }
         freshmark {
             trimTrailingWhitespace()
             indentWithSpaces(2)
             endWithNewline()
-            targetExclude(project(":translator:bowler-script-kernel").projectDir.walkTopDown().toList())
         }
         format("extraneous") {
             target("src/**/*.fxml")
             trimTrailingWhitespace()
             indentWithSpaces(2)
             endWithNewline()
-            targetExclude(project(":translator:bowler-script-kernel").projectDir.walkTopDown().toList())
         }
     }
 }
