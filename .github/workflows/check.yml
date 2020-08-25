@@ -6,7 +6,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, windows-latest, macos-latest]
+        os: [ubuntu-18.04, macos-latest] # TODO: Re-enable windows-latest after https://github.com/grpc/grpc-kotlin/issues/116 is closed
 
     steps:
       - name: Cancel Previous Runs
