@@ -14,6 +14,10 @@ include(":protoutil")
 include(":scripthost")
 include(":scripting")
 include(":testUtil")
+include(":translator")
+include(":translator:bowler-script-kernel")
+include(":translator:bowler-script-kernel:java-bowler")
+include(":translator:bowler-script-kernel:JCSG")
 include(":util")
 
 gradleEnterprise {
