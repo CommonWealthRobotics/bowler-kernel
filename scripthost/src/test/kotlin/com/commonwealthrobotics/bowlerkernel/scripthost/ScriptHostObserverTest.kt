@@ -18,15 +18,7 @@ package com.commonwealthrobotics.bowlerkernel.scripthost
 
 import arrow.core.Either
 import com.commonwealthrobotics.bowlerkernel.authservice.Credentials
-import com.commonwealthrobotics.bowlerkernel.protoutil.fileSpec
-import com.commonwealthrobotics.bowlerkernel.protoutil.newTask
-import com.commonwealthrobotics.bowlerkernel.protoutil.patch
-import com.commonwealthrobotics.bowlerkernel.protoutil.projectSpec
-import com.commonwealthrobotics.bowlerkernel.protoutil.runRequest
-import com.commonwealthrobotics.bowlerkernel.protoutil.sessionClientMessage
-import com.commonwealthrobotics.bowlerkernel.protoutil.sessionServerMessage
-import com.commonwealthrobotics.bowlerkernel.protoutil.taskEnd
-import com.commonwealthrobotics.bowlerkernel.protoutil.taskUpdate
+import com.commonwealthrobotics.bowlerkernel.protoutil.*
 import com.commonwealthrobotics.bowlerkernel.scripting.Script
 import com.commonwealthrobotics.bowlerkernel.scripting.ScriptLoader
 import com.commonwealthrobotics.bowlerkernel.testutil.KoinTestFixture
@@ -46,7 +38,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.koin.dsl.module
-import java.lang.IllegalStateException
 import kotlin.concurrent.thread
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -188,5 +179,42 @@ internal class ScriptHostObserverTest : KoinTestFixture() {
         val session = ScriptSession(clientFlow)
         thread { runBlocking { session.sessionFlow.collect() } }
         runBlocking { session.getTwoFactorFor(remote) } shouldBe "token"
+    }
+
+    @Test
+    fun `request credentials during script resolution race condition`() {
+        val remote1 = "git@github.com:user/repo1.git"
+        val remote2 = "git@github.com:user/repo2.git"
+
+        val clientFlow = flowOf(
+                SessionClientMessage.newBuilder().apply {
+                    credentialsResponseBuilder.apply {
+                        requestId = 2
+                        basicBuilder.apply {
+                            username = "username2"
+                            password = "password2"
+                        }
+                    }
+                }.build(),
+                SessionClientMessage.newBuilder().apply {
+                    credentialsResponseBuilder.apply {
+                        requestId = 1
+                        basicBuilder.apply {
+                            username = "username1"
+                            password = "password1"
+                        }
+                    }
+                }.build()
+        )
+        val session = ScriptSession(clientFlow)
+        thread { runBlocking { session.sessionFlow.collect() } }
+        runBlocking {
+            val result1 = session.getCredentialsFor(remote1)
+            val result2 = session.getCredentialsFor(remote2)
+            Pair(result1, result2)
+        } shouldBe Pair(
+                Credentials.Basic("username1", "password1"),
+                Credentials.Basic("username2", "password2")
+        )
     }
 }
