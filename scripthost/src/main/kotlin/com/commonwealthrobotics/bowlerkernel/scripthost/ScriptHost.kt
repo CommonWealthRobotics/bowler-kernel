@@ -19,38 +19,89 @@ package com.commonwealthrobotics.bowlerkernel.scripthost
 import com.commonwealthrobotics.bowlerkernel.authservice.Credentials
 import com.commonwealthrobotics.bowlerkernel.authservice.CredentialsProvider
 import com.commonwealthrobotics.bowlerkernel.util.toChannel
+import com.commonwealthrobotics.proto.script_host.ScriptHostGrpc
 import com.commonwealthrobotics.proto.script_host.ScriptHostGrpcKt
 import com.commonwealthrobotics.proto.script_host.SessionClientMessage
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
+import io.grpc.stub.StreamObserver
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.selects.select
 import mu.KotlinLogging
-import java.util.concurrent.atomic.AtomicLong
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
-@OptIn(ExperimentalCoroutinesApi::class)
-class ScriptHost : ScriptHostGrpcKt.ScriptHostCoroutineImplBase() {
+class ScriptHost : ScriptHostGrpc.ScriptHostImplBase() {
 
-    override fun session(requests: Flow<SessionClientMessage>): Flow<SessionServerMessage> =
-        ScriptSession(requests).sessionFlow
+    override fun session(responseObserver: StreamObserver<SessionServerMessage>): StreamObserver<SessionClientMessage> {
+        return ScriptHostObserver(responseObserver)
+    }
 }
 
-@OptIn(ExperimentalCoroutinesApi::class)
-class ScriptSession(
-    _client: Flow<SessionClientMessage>
+class Session(
+        private val scope: CoroutineScope,
+        private val client: Flow<SessionClientMessage>
 ) : CredentialsProvider {
+    private data class CredentialsTransaction(val remote: String, val handler: suspend (SessionClientMessage) -> Unit)
+    private data class TwoFactorTransaction(val remote: String, val handler: suspend (SessionClientMessage) -> Unit)
 
-    private val client = _client.map { logger.debug { "Received $it" }; it }
-    private val session = Channel<SessionServerMessage>()
-    private val nextRequestId = AtomicLong(1)
+    private val credentialsTransactions = Channel<CredentialsTransaction>()
+    private val twoFactorTransactions = Channel<TwoFactorTransaction>()
 
-    val sessionFlow = session.receiveAsFlow().map { logger.debug { "Sending $it" }; it }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val session = flow {
+        val clientChannel = client.toChannel(scope)
+        var nextRequest: Long = 0
+        val requestHandlers: MutableMap<Long, suspend (SessionClientMessage) -> Unit> = mutableMapOf()
+        while (!clientChannel.isClosedForReceive) {
+            select<Unit> {
+                credentialsTransactions.onReceive {
+                    val msg = SessionServerMessage.newBuilder()
+                    val req = msg.credentialsRequestBuilder
+                    req.requestId = nextRequest++
+                    req.remote = it.remote
+                    emit(msg.build())
+                    requestHandlers[req.requestId] = it.handler
+                }
+                twoFactorTransactions.onReceive {
+                    val msg = SessionServerMessage.newBuilder()
+                    val req = msg.twoFactorRequestBuilder
+                    req.requestId = nextRequest++
+                    req.description = it.remote
+                    emit(msg.build())
+                    requestHandlers[req.requestId] = it.handler
+                }
+                clientChannel.onReceive {
+                    val requestId = when {
+                        it.hasConfirmationResponse() -> it.confirmationResponse.requestId
+                        it.hasCredentialsResponse() -> it.credentialsResponse.requestId
+                        it.hasTwoFactorResponse() -> it.twoFactorResponse.requestId
+                        it.hasError() -> it.error.requestId
+                        else -> null
+                    }
+                    if (requestId != null) {
+                        requestHandlers.remove(requestId)?.invoke(it)
+                    } else {
+                        when {
+                            it.hasRunRequest() -> TODO("Not yet implemented")
+                            it.hasCancelRequest() -> TODO("Not yet implemented")
+                            it.hasNewConfig() -> TODO("Not yet implemented")
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     init {
         GlobalScope.launch {
@@ -61,21 +112,9 @@ class ScriptSession(
     }
 
     override suspend fun getCredentialsFor(remote: String): Credentials {
-        val request = SessionServerMessage.newBuilder().apply {
-            credentialsRequestBuilder.apply {
-                setRemote(remote)
-                // TODO: Either remove task id from the credentials request or setup some task context thing
-                taskId = 1
-                requestId = nextRequestId.getAndIncrement()
-            }
-        }.build()
-        session.send(request)
-
-        val msg = client.filter {
-            (it.hasCredentialsResponse() && it.credentialsResponse.requestId == request.credentialsRequest.requestId) ||
-                it.hasError()
-        }.toChannel().receive()
-
+        val msg = suspendCoroutine<SessionClientMessage> { cont ->
+            credentialsTransactions.sendBlocking(CredentialsTransaction(remote) { cont.resume(it) })
+        }
         return when {
             msg.hasCredentialsResponse() -> {
                 val res = msg.credentialsResponse
@@ -85,27 +124,19 @@ class ScriptSession(
                     else -> Credentials.Anonymous
                 }
             }
-            else -> error(msg)
+            msg.hasError() -> throw RuntimeException("Credentials request error: " + msg.error.description)
+            else -> throw RuntimeException("Unknown credentials response: $msg")
         }
     }
 
     override suspend fun getTwoFactorFor(remote: String): String {
-        val request = SessionServerMessage.newBuilder().apply {
-            twoFactorRequestBuilder.apply {
-                description = remote
-                requestId = nextRequestId.getAndIncrement()
-            }
-        }.build()
-        session.send(request)
-
-        val msg = client.filter {
-            (it.hasTwoFactorResponse() && it.twoFactorResponse.requestId == request.twoFactorRequest.requestId) ||
-                it.hasError()
-        }.toChannel().receive()
-
+        val msg = suspendCoroutine<SessionClientMessage> { cont ->
+            twoFactorTransactions.sendBlocking(TwoFactorTransaction(remote) { cont.resume(it) })
+        }
         return when {
             msg.hasTwoFactorResponse() -> msg.twoFactorResponse.twoFactor
-            else -> error(msg)
+            msg.hasError() -> throw RuntimeException("2FA request error: " + msg.error.description)
+            else -> throw RuntimeException("Unknown 2FA response: $msg")
         }
     }
 
