@@ -22,11 +22,15 @@ import com.commonwealthrobotics.bowlerkernel.protoutil.projectSpec
 import com.commonwealthrobotics.bowlerkernel.protoutil.runRequest
 import com.commonwealthrobotics.bowlerkernel.protoutil.sessionClientMessage
 import com.commonwealthrobotics.proto.script_host.ScriptHostGrpc
+import com.commonwealthrobotics.proto.script_host.ScriptHostGrpcKt
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
 import io.grpc.ManagedChannelBuilder
 import io.grpc.stub.StreamObserver
 import io.kotest.matchers.collections.shouldExist
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
@@ -46,44 +50,34 @@ internal class KernelServerIntegTest {
         server.start()
 
         val channel = ManagedChannelBuilder.forAddress("localhost", server.port).usePlaintext().build()
-        val stub = ScriptHostGrpc.newStub(channel)
+        val stub = ScriptHostGrpcKt.ScriptHostCoroutineStub(channel)
         val received = mutableListOf<SessionServerMessage>()
         val latch = CountDownLatch(4)
-        val session = stub.session(object : StreamObserver<SessionServerMessage> {
-            override fun onNext(value: SessionServerMessage) {
-                logger.debug { "$value" }
-                received.add(value)
+        runBlocking {
+            stub.session(flow {
+                emit(
+                        sessionClientMessage(
+                                runRequest = runRequest(
+                                        1,
+                                        fileSpec(
+                                                projectSpec(
+                                                        "https://github.com/CommonWealthRobotics/bowler-kernel-test-repo.git",
+                                                        "master",
+                                                        patch(byteArrayOf())
+                                                ),
+                                                "scriptA.groovy"
+                                        ),
+                                        listOf(),
+                                        mapOf()
+                                )
+                        )
+                )
+            }).collect {
+                logger.debug { "$it" }
+                received.add(it)
                 latch.countDown()
             }
-
-            override fun onError(t: Throwable) {
-                throw t
-            }
-
-            @SuppressWarnings("EmptyFunctionBlock")
-            override fun onCompleted() {
-            }
-        })
-
-        session.onNext(
-            sessionClientMessage(
-                runRequest = runRequest(
-                    1,
-                    fileSpec(
-                        projectSpec(
-                            "https://github.com/CommonWealthRobotics/bowler-kernel-test-repo.git",
-                            "master",
-                            patch(byteArrayOf())
-                        ),
-                        "scriptA.groovy"
-                    ),
-                    listOf(),
-                    mapOf()
-                )
-            )
-        )
-
-        session.onCompleted()
+        }
         latch.await()
 
         received.shouldExist { it.hasNewTask() && it.newTask.description == "Running scriptA.groovy" }

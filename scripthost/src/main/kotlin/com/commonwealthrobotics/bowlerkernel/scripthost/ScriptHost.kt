@@ -41,10 +41,12 @@ import mu.KotlinLogging
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class ScriptHost : ScriptHostGrpc.ScriptHostImplBase() {
+class ScriptHost(
+        private val scope: CoroutineScope
+) : ScriptHostGrpcKt.ScriptHostCoroutineImplBase() {
 
-    override fun session(responseObserver: StreamObserver<SessionServerMessage>): StreamObserver<SessionClientMessage> {
-        return ScriptHostObserver(responseObserver)
+    override fun session(requests: Flow<SessionClientMessage>): Flow<SessionServerMessage> {
+        return Session(scope, requests).session
     }
 }
 
