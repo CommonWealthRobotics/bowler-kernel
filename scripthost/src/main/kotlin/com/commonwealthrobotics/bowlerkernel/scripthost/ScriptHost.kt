@@ -48,47 +48,52 @@ class Session(
     private val twoFactor = CallbackLatch<String, SessionClientMessage>()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val session = flow {
-        logger.debug { "Session started" }
-        val clientChannel = client.toChannel(scope)
-        val requestHandlers: MutableMap<Long, (SessionClientMessage) -> Unit> = mutableMapOf()
-        context().apply {
-            do {
-                select<Unit> {
-                    credentials.onReceive {
-                        emitRequest { id ->
-                            val req = credentialsRequestBuilder
-                            req.requestId = id
-                            req.remote = it.input
-                            requestHandlers[id] = it.callback
+    val session: Flow<SessionServerMessage> = flow {
+        try {
+            logger.debug { "Session started" }
+            val clientChannel = client.toChannel(scope)
+            val requestHandlers: MutableMap<Long, (SessionClientMessage) -> Unit> = mutableMapOf()
+            context().apply {
+                do {
+                    select<Unit> {
+                        credentials.onReceive {
+                            emitRequest { id ->
+                                val req = credentialsRequestBuilder
+                                req.requestId = id
+                                req.remote = it.input
+                                requestHandlers[id] = it.callback
+                            }
+                        }
+                        twoFactor.onReceive {
+                            emitRequest { id ->
+                                val req = twoFactorRequestBuilder
+                                req.requestId = id
+                                req.description = it.input
+                                requestHandlers[id] = it.callback
+                            }
+                        }
+                        clientChannel.onReceive {
+                            logger.debug { "Received: $it" }
+                            val requestId = when {
+                                it.hasConfirmationResponse() -> it.confirmationResponse.requestId
+                                it.hasCredentialsResponse() -> it.credentialsResponse.requestId
+                                it.hasTwoFactorResponse() -> it.twoFactorResponse.requestId
+                                it.hasError() -> it.error.requestId
+                                else -> null
+                            }
+                            when {
+                                requestId != null -> requestHandlers.remove(requestId)?.invoke(it)
+                                it.hasRunRequest() -> TODO("Not yet implemented")
+                                it.hasCancelRequest() -> TODO("Not yet implemented")
+                                it.hasNewConfig() -> TODO("Not yet implemented")
+                            }
                         }
                     }
-                    twoFactor.onReceive {
-                        emitRequest { id ->
-                            val req = twoFactorRequestBuilder
-                            req.requestId = id
-                            req.description = it.input
-                            requestHandlers[id] = it.callback
-                        }
-                    }
-                    clientChannel.onReceive {
-                        logger.debug { "Received: $it" }
-                        val requestId = when {
-                            it.hasConfirmationResponse() -> it.confirmationResponse.requestId
-                            it.hasCredentialsResponse() -> it.credentialsResponse.requestId
-                            it.hasTwoFactorResponse() -> it.twoFactorResponse.requestId
-                            it.hasError() -> it.error.requestId
-                            else -> null
-                        }
-                        when {
-                            requestId != null -> requestHandlers.remove(requestId)?.invoke(it)
-                            it.hasRunRequest() -> TODO("Not yet implemented")
-                            it.hasCancelRequest() -> TODO("Not yet implemented")
-                            it.hasNewConfig() -> TODO("Not yet implemented")
-                        }
-                    }
-                }
-            } while (!clientChannel.isClosedForReceive)
+                } while (!clientChannel.isClosedForReceive)
+            }
+        } catch (t: Throwable) {
+            logger.error(t) { "Unhandled error in session" }
+            throw t
         }
     }
 
