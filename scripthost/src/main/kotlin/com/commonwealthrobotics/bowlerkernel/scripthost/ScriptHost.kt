@@ -25,6 +25,7 @@ import com.commonwealthrobotics.proto.script_host.SessionClientMessage
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.selects.select
@@ -46,44 +47,52 @@ class Session(
     private val credentials = CallbackLatch<String, SessionClientMessage>()
     private val twoFactor = CallbackLatch<String, SessionClientMessage>()
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+    @OptIn(ExperimentalCoroutinesApi::class, InternalCoroutinesApi::class)
     val session: Flow<SessionServerMessage> = flow {
         try {
             logger.debug { "Session started" }
             val clientChannel = client.toChannel(scope)
             mediate {
                 do {
-                    select<Unit> {
+                    val cont: Boolean = select {
                         handleRequest(credentials) { id, input ->
                             credentialsRequestBuilder.apply {
                                 requestId = id
                                 remote = input
                             }
+                            true
                         }
                         handleRequest(twoFactor) { id, input ->
                             twoFactorRequestBuilder.apply {
                                 requestId = id
                                 description = input
                             }
+                            true
                         }
-                        clientChannel.onReceive {
-                            logger.debug { "Received: $it" }
-                            val requestId = when {
-                                it.hasConfirmationResponse() -> it.confirmationResponse.requestId
-                                it.hasCredentialsResponse() -> it.credentialsResponse.requestId
-                                it.hasTwoFactorResponse() -> it.twoFactorResponse.requestId
-                                it.hasError() -> it.error.requestId
-                                else -> null
-                            }
+                        clientChannel.onReceiveOrClosed {
                             when {
-                                requestId != null -> handleResponse(requestId, it)
-                                it.hasRunRequest() -> TODO("Not yet implemented")
-                                it.hasCancelRequest() -> TODO("Not yet implemented")
-                                it.hasNewConfig() -> TODO("Not yet implemented")
+                                it.isClosed -> false
+                                else -> it.value.run {
+                                    logger.debug { "Received: $this" }
+                                    val requestId = when {
+                                        hasConfirmationResponse() -> confirmationResponse.requestId
+                                        hasCredentialsResponse() -> credentialsResponse.requestId
+                                        hasTwoFactorResponse() -> twoFactorResponse.requestId
+                                        hasError() -> error.requestId
+                                        else -> null
+                                    }
+                                    when {
+                                        requestId != null -> handleResponse(requestId, this)
+                                        hasRunRequest() -> TODO("Not yet implemented")
+                                        hasCancelRequest() -> TODO("Not yet implemented")
+                                        hasNewConfig() -> TODO("Not yet implemented")
+                                    }
+                                    true
+                                }
                             }
                         }
                     }
-                } while (!clientChannel.isClosedForReceive)
+                } while (cont)
             }
         } catch (t: Throwable) {
             logger.error(t) { "Unhandled error in session" }
