@@ -20,7 +20,7 @@ import arrow.core.Either
 import arrow.core.nonFatalOrThrow
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
-import io.grpc.stub.StreamObserver
+import kotlinx.coroutines.channels.SendChannel
 import mu.KotlinLogging
 import java.util.concurrent.atomic.AtomicLong
 
@@ -39,13 +39,13 @@ private object TaskUtil {
  * @return The return value of the function or an error. Non-fatal exceptions are caught an wrapped in [Either.Left].
  */
 @SuppressWarnings("TooGenericExceptionCaught")
-fun <T> StreamObserver<SessionServerMessage>.withTask(
+suspend fun <T> SendChannel<SessionServerMessage>.withTask(
     requestId: Long,
     description: String,
     f: () -> T
 ): Either<Throwable, T> {
     val taskId = nextTaskId()
-    onNext(sessionServerMessage(newTask = newTask(requestId, description, taskUpdate(taskId, Float.NaN))))
+    send(sessionServerMessage(newTask = newTask(requestId, description, taskUpdate(taskId, Float.NaN))))
 
     val out: T
     try {
@@ -57,8 +57,8 @@ fun <T> StreamObserver<SessionServerMessage>.withTask(
 
         // Handle non-fatal exceptions by erroring the request
         val nonFatal = ex.nonFatalOrThrow()
-        onNext(sessionServerMessage(taskEnd = taskEnd(taskId, TaskEndCause.TASK_FAILED)))
-        onNext(
+        send(sessionServerMessage(taskEnd = taskEnd(taskId, TaskEndCause.TASK_FAILED)))
+        send(
             sessionServerMessage(
                 requestError =
                     requestError(requestId, nonFatal.message ?: "Unknown exception message.")
@@ -69,7 +69,7 @@ fun <T> StreamObserver<SessionServerMessage>.withTask(
         return Either.Left(ex)
     }
 
-    onNext(sessionServerMessage(taskEnd = taskEnd(taskId, TaskEndCause.TASK_COMPLETED)))
+    send(sessionServerMessage(taskEnd = taskEnd(taskId, TaskEndCause.TASK_COMPLETED)))
     return Either.Right(out)
 }
 
