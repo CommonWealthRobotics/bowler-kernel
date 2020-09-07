@@ -3,11 +3,12 @@ package com.commonwealthrobotics.bowlerkernel.scripthost
 import com.commonwealthrobotics.bowlerkernel.util.CallbackLatch
 import com.commonwealthrobotics.proto.script_host.SessionClientMessage
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
-import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.selects.SelectBuilder
+import java.util.concurrent.atomic.AtomicLong
 
-class RequestMediator(val out: FlowCollector<SessionServerMessage>) {
-    var nextRequest: Long = 0
+class RequestMediator(val out: SendChannel<SessionServerMessage>) {
+    var nextRequest = AtomicLong(0)
     val responseHandlers: MutableMap<Long, (SessionClientMessage) -> Unit> = mutableMapOf()
 
     inline fun <T, R> SelectBuilder<R>.handleRequest(
@@ -16,9 +17,9 @@ class RequestMediator(val out: FlowCollector<SessionServerMessage>) {
     ) {
         latch.onReceive {
             val msg = SessionServerMessage.newBuilder()
-            val id = nextRequest++
+            val id = nextRequest.getAndIncrement()
             val r = build(msg, id, it.input)
-            out.emit(msg.build())
+            out.send(msg.build())
             responseHandlers[id] = it.callback
             r
         }
@@ -29,6 +30,6 @@ class RequestMediator(val out: FlowCollector<SessionServerMessage>) {
     }
 }
 
-inline fun FlowCollector<SessionServerMessage>.mediate(run: RequestMediator.()-> Unit) {
+inline fun SendChannel<SessionServerMessage>.mediate(run: RequestMediator.()-> Unit) {
     run(RequestMediator(this))
 }

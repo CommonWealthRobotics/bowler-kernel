@@ -26,8 +26,9 @@ import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.selects.select
 import mu.KotlinLogging
 
@@ -48,7 +49,7 @@ class Session(
     private val twoFactor = CallbackLatch<String, SessionClientMessage>()
 
     @OptIn(ExperimentalCoroutinesApi::class, InternalCoroutinesApi::class)
-    val session: Flow<SessionServerMessage> = flow {
+    val session: Flow<SessionServerMessage> = scope.produce<SessionServerMessage> {
         try {
             logger.debug { "Session started" }
             val clientChannel = client.toChannel(scope)
@@ -98,7 +99,7 @@ class Session(
             logger.error(t) { "Unhandled error in session" }
             throw t
         }
-    }
+    }.consumeAsFlow()
 
     override suspend fun getCredentialsFor(remote: String): Credentials {
         val msg = credentials.call(remote)
