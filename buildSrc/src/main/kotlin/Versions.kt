@@ -32,7 +32,7 @@ object Versions {
     const val kotlinCoroutines = "1.3.9"
     const val ktlint = "0.38.1"
     const val junit = "5.6.+"
-    const val kotest = "4.1.+"
+    const val kotest = "4.2.+"
     const val logback = "1.2.+"
     const val kotlinLogging = "1.7.+"
     const val mockk = "1.10.+"
@@ -50,5 +50,5 @@ object Versions {
     const val koin = "2.1.+"
 
     const val jacocoTool = "0.8.5"
-    const val gradleWrapper = "6.5.1"
+    const val gradleWrapper = "6.6.1"
 }
