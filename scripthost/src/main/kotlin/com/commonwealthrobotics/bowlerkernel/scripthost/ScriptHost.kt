@@ -26,7 +26,6 @@ import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.selects.select
 import mu.KotlinLogging
@@ -52,24 +51,19 @@ class Session(
         try {
             logger.debug { "Session started" }
             val clientChannel = client.toChannel(scope)
-            val requestHandlers: MutableMap<Long, (SessionClientMessage) -> Unit> = mutableMapOf()
-            context().apply {
+            mediate {
                 do {
                     select<Unit> {
-                        credentials.onReceive {
-                            emitRequest { id ->
-                                val req = credentialsRequestBuilder
-                                req.requestId = id
-                                req.remote = it.input
-                                requestHandlers[id] = it.callback
+                        handleRequest(credentials) { id, input ->
+                            credentialsRequestBuilder.apply {
+                                requestId = id
+                                remote = input
                             }
                         }
-                        twoFactor.onReceive {
-                            emitRequest { id ->
-                                val req = twoFactorRequestBuilder
-                                req.requestId = id
-                                req.description = it.input
-                                requestHandlers[id] = it.callback
+                        handleRequest(twoFactor) { id, input ->
+                            twoFactorRequestBuilder.apply {
+                                requestId = id
+                                description = input
                             }
                         }
                         clientChannel.onReceive {
@@ -82,7 +76,7 @@ class Session(
                                 else -> null
                             }
                             when {
-                                requestId != null -> requestHandlers.remove(requestId)?.invoke(it)
+                                requestId != null -> handleResponse(requestId, it)
                                 it.hasRunRequest() -> TODO("Not yet implemented")
                                 it.hasCancelRequest() -> TODO("Not yet implemented")
                                 it.hasNewConfig() -> TODO("Not yet implemented")
@@ -124,15 +118,5 @@ class Session(
 
     companion object {
         private val logger = KotlinLogging.logger { }
-
-        private fun FlowCollector<SessionServerMessage>.context() = object {
-            private var nextRequest: Long = 0
-
-            suspend inline fun emitRequest(build: SessionServerMessage.Builder.(Long) -> Unit) {
-                val msg = SessionServerMessage.newBuilder()
-                build(msg, nextRequest++)
-                emit(msg.build())
-            }
-        }
     }
 }
