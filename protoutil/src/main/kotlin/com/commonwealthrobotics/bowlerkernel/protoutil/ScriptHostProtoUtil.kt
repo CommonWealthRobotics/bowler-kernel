@@ -130,9 +130,8 @@ fun confirmationRequest(requestId: Long, description: String) = ConfirmationRequ
     setDescription(description)
 }.build()
 
-fun credentialsRequest(requestId: Long, taskId: Long, remote: String) = CredentialsRequest.newBuilder().apply {
+fun credentialsRequest(requestId: Long, remote: String) = CredentialsRequest.newBuilder().apply {
     setRequestId(requestId)
-    setTaskId(taskId)
     setRemote(remote)
 }.build()
 
