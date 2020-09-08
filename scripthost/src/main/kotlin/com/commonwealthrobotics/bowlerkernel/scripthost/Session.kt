@@ -1,3 +1,19 @@
+/*
+ * This file is part of bowler-kernel.
+ *
+ * bowler-kernel is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * bowler-kernel is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
+ */
 package com.commonwealthrobotics.bowlerkernel.scripthost
 
 import arrow.core.Either
@@ -33,8 +49,8 @@ import org.koin.dsl.module
 import java.util.concurrent.atomic.AtomicLong
 
 class Session(
-        private val scope: CoroutineScope,
-        private val client: Flow<SessionClientMessage>
+    private val scope: CoroutineScope,
+    private val client: Flow<SessionClientMessage>
 ) : CredentialsProvider, BowlerKernelKoinComponent {
 
     private val nextRequest = AtomicLong(1)
@@ -44,11 +60,11 @@ class Session(
     private val scriptRequestMap = mutableMapOf<Long, Script>()
 
     private fun isRequest(builder: GeneratedMessageV3.Builder<*>) =
-            (builder as SessionServerMessage.Builder).let {
-                builder.hasConfirmationRequest() ||
-                        builder.hasCredentialsRequest() ||
-                        builder.hasTwoFactorRequest()
-            }
+        (builder as SessionServerMessage.Builder).let {
+            builder.hasConfirmationRequest() ||
+                builder.hasCredentialsRequest() ||
+                builder.hasTwoFactorRequest()
+        }
 
     @OptIn(ExperimentalCoroutinesApi::class, InternalCoroutinesApi::class)
     val session: Flow<SessionServerMessage> = scope.produce {
@@ -63,8 +79,10 @@ class Session(
 
                             val msgBuilder = it.input as SessionServerMessage.Builder
                             when {
-                                msgBuilder.hasConfirmationRequest() -> msgBuilder.confirmationRequestBuilder.requestId = id
-                                msgBuilder.hasCredentialsRequest() -> msgBuilder.credentialsRequestBuilder.requestId = id
+                                msgBuilder.hasConfirmationRequest() ->
+                                    msgBuilder.confirmationRequestBuilder.requestId = id
+                                msgBuilder.hasCredentialsRequest() ->
+                                    msgBuilder.credentialsRequestBuilder.requestId = id
                                 msgBuilder.hasTwoFactorRequest() -> msgBuilder.twoFactorRequestBuilder.requestId = id
                             }
 
@@ -108,25 +126,33 @@ class Session(
     }.consumeAsFlow()
 
     private suspend fun runRequest(
-            runRequest: RunRequest,
-            out: SendChannel<SessionServerMessage>
+        runRequest: RunRequest,
+        out: SendChannel<SessionServerMessage>
     ): Either<Throwable, Any?> {
         val modules = listOf(
-                module {
-                    single<GitFS> { GitHubFS(this@Session) }
-                }
+            module {
+                single<GitFS> { GitHubFS(this@Session) }
+            }
         )
         getKoin().loadModules(modules)
 
         val scriptLoader = get<ScriptLoader>()
 
-        val script = out.withTask(runRequest.requestId, nextTaskID.getAndIncrement(), "Initializing ${runRequest.file.path}") {
+        val script = out.withTask(
+            runRequest.requestId,
+            nextTaskID.getAndIncrement(),
+            "Initializing ${runRequest.file.path}"
+        ) {
             val script = scriptLoader.resolveAndLoad(runRequest.file, runRequest.devsList, runRequest.environmentMap)
             scriptRequestMap[runRequest.requestId] = script
             script
         }
 
-        val result = out.withTask(runRequest.requestId, nextTaskID.getAndIncrement(), "Running ${runRequest.file.path}") {
+        val result = out.withTask(
+            runRequest.requestId,
+            nextTaskID.getAndIncrement(),
+            "Running ${runRequest.file.path}"
+        ) {
             script.flatMap {
                 it.start(emptyList(), null)
                 val scriptResult = it.join()
@@ -141,7 +167,9 @@ class Session(
     }
 
     override suspend fun getCredentialsFor(remote: String): Credentials {
-        val msg = requests.call(SessionServerMessage.newBuilder().setCredentialsRequest(CredentialsRequest.newBuilder().setRemote(remote)))
+        val msg = requests.call(
+            SessionServerMessage.newBuilder().setCredentialsRequest(CredentialsRequest.newBuilder().setRemote(remote))
+        )
         return when {
             msg.hasCredentialsResponse() -> {
                 val res = msg.credentialsResponse
@@ -157,7 +185,9 @@ class Session(
     }
 
     override suspend fun getTwoFactorFor(remote: String): String {
-        val msg = requests.call(SessionServerMessage.newBuilder().setTwoFactorRequest(TwoFactorRequest.newBuilder().setDescription(remote)))
+        val msg = requests.call(
+            SessionServerMessage.newBuilder().setTwoFactorRequest(TwoFactorRequest.newBuilder().setDescription(remote))
+        )
         return when {
             msg.hasTwoFactorResponse() -> msg.twoFactorResponse.twoFactor
             msg.hasError() -> throw RuntimeException("2FA request error: " + msg.error.description)

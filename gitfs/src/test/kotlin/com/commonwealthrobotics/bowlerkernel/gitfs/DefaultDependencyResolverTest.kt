@@ -17,9 +17,8 @@
 package com.commonwealthrobotics.bowlerkernel.gitfs
 
 import arrow.fx.IO
-import com.commonwealthrobotics.bowlerkernel.protoutil.fileSpec
-import com.commonwealthrobotics.bowlerkernel.protoutil.patch
-import com.commonwealthrobotics.bowlerkernel.protoutil.projectSpec
+import com.commonwealthrobotics.proto.gitfs.FileSpec
+import com.google.protobuf.ByteString
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -32,19 +31,25 @@ internal class DefaultDependencyResolverTest {
 
     @Test
     fun `resolve a script with no patch and no devs`(@TempDir tempDir: File) {
-        val project = projectSpec("git@github.com:user/repo.git", "master", patch(byteArrayOf()))
         val fileToResolve = createTempFile(suffix = ".groovy", directory = tempDir)
+        val file = FileSpec.newBuilder().apply {
+            projectBuilder.repoRemote = "git@github.com:user/repo1.git"
+            projectBuilder.revision = "master"
+            projectBuilder.patchBuilder.patch = ByteString.copyFrom(byteArrayOf())
+            path = fileToResolve.name
+        }.build()
+
         val gitFS = mockk<GitFS> {
-            every { cloneRepo(project.repoRemote, project.revision) } returns IO.just(tempDir)
+            every { cloneRepo(file.project.repoRemote, file.project.revision) } returns IO.just(tempDir)
             every { getFilesInRepo(tempDir) } returns IO.just(setOf(fileToResolve))
         }
 
         val resolver = DefaultDependencyResolver(gitFS)
-        val resolvedFile = resolver.resolve(fileSpec(project, fileToResolve.name))
+        val resolvedFile = resolver.resolve(file)
         resolvedFile.shouldBe(fileToResolve)
 
         verifyOrder {
-            gitFS.cloneRepo(project.repoRemote, project.revision)
+            gitFS.cloneRepo(file.project.repoRemote, file.project.revision)
             gitFS.getFilesInRepo(tempDir)
         }
     }

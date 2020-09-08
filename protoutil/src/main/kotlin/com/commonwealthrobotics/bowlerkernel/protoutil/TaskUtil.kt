@@ -22,7 +22,6 @@ import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
 import kotlinx.coroutines.channels.SendChannel
 import mu.KotlinLogging
-import java.util.concurrent.atomic.AtomicLong
 
 private object TaskUtil {
     val logger = KotlinLogging.logger { }
@@ -45,7 +44,14 @@ suspend fun <T> SendChannel<SessionServerMessage>.withTask(
     description: String,
     f: () -> T
 ): Either<Throwable, T> {
-    send(sessionServerMessage(newTask = newTask(requestId, description, taskUpdate(taskId, Float.NaN))))
+    send(
+        sessionServerMessage {
+            newTaskBuilder.requestId = requestId
+            newTaskBuilder.description = description
+            newTaskBuilder.taskBuilder.taskId = taskId
+            newTaskBuilder.taskBuilder.progress = Float.NaN
+        }
+    )
 
     val out: T
     try {
@@ -57,18 +63,28 @@ suspend fun <T> SendChannel<SessionServerMessage>.withTask(
 
         // Handle non-fatal exceptions by erroring the request
         val nonFatal = ex.nonFatalOrThrow()
-        send(sessionServerMessage(taskEnd = taskEnd(taskId, TaskEndCause.TASK_FAILED)))
         send(
-            sessionServerMessage(
-                requestError =
-                    requestError(requestId, nonFatal.message ?: "Unknown exception message.")
-            )
+            sessionServerMessage {
+                taskEndBuilder.taskId = taskId
+                taskEndBuilder.cause = TaskEndCause.TASK_FAILED
+            }
+        )
+        send(
+            sessionServerMessage {
+                errorBuilder.requestId = requestId
+                errorBuilder.description = nonFatal.message ?: "Unknown exception message."
+            }
         )
 
         // Exit early to avoid sending a TaskEnd in addition to a RequestError
         return Either.Left(ex)
     }
 
-    send(sessionServerMessage(taskEnd = taskEnd(taskId, TaskEndCause.TASK_COMPLETED)))
+    send(
+        sessionServerMessage {
+            taskEndBuilder.taskId = taskId
+            taskEndBuilder.cause = TaskEndCause.TASK_COMPLETED
+        }
+    )
     return Either.Right(out)
 }

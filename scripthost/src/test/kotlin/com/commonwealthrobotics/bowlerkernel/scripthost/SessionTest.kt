@@ -18,16 +18,17 @@ package com.commonwealthrobotics.bowlerkernel.scripthost
 
 import arrow.core.Either
 import com.commonwealthrobotics.bowlerkernel.authservice.Credentials
-import com.commonwealthrobotics.bowlerkernel.protoutil.*
+import com.commonwealthrobotics.bowlerkernel.protoutil.sessionClientMessage
+import com.commonwealthrobotics.bowlerkernel.protoutil.sessionServerMessage
 import com.commonwealthrobotics.bowlerkernel.scripting.Script
 import com.commonwealthrobotics.bowlerkernel.scripting.ScriptLoader
 import com.commonwealthrobotics.bowlerkernel.testutil.KoinTestFixture
-import com.commonwealthrobotics.proto.script_host.SessionClientMessage
+import com.commonwealthrobotics.proto.gitfs.ProjectSpec
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
+import com.google.protobuf.ByteString
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
-import io.kotest.matchers.collections.shouldContainInOrder
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -41,11 +42,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.Timeout
-import org.junit.platform.commons.annotation.Testable
 import org.koin.dsl.module
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
@@ -73,27 +71,53 @@ internal class SessionTest : KoinTestFixture() {
             }
         )
 
-        val file = fileSpec(
-                projectSpec("git@github.com:user/repo1.git", "master", patch(byteArrayOf())),
-                "file1.groovy"
-        )
-        val devs = listOf(projectSpec("git@github.com:user/repo2.git", "master", patch(byteArrayOf())))
-        val environment = mapOf("KEY" to "VALUE")
-        val client = flowOf(sessionClientMessage(runRequest = runRequest(1, file, devs, environment)))
+        val msg = sessionClientMessage {
+            runRequestBuilder.requestId = 1
+            runRequestBuilder.fileBuilder.projectBuilder.repoRemote = "git@github.com:user/repo1.git"
+            runRequestBuilder.fileBuilder.projectBuilder.revision = "master"
+            runRequestBuilder.fileBuilder.projectBuilder.patchBuilder.patch = ByteString.copyFrom(byteArrayOf())
+            runRequestBuilder.fileBuilder.path = "file1.groovy"
+            runRequestBuilder.addDevs(
+                ProjectSpec.newBuilder().apply {
+                    repoRemote = "git@github.com:user/repo2.git"
+                    revision = "master"
+                    patchBuilder.patch = ByteString.copyFrom(byteArrayOf())
+                }
+            )
+            runRequestBuilder.putEnvironment("KEY", "VALUE")
+        }
+
+        val client = flowOf(msg)
         val session = Session(CoroutineScope(Dispatchers.Default), client)
         val responses = runBlocking { session.session.toList() }
 
         // Order should not be important because the task ID can be used by the client to determine ordering
         responses.shouldContainAll(
-                sessionServerMessage(newTask = newTask(1, "Initializing file1.groovy", taskUpdate(1, Float.NaN))),
-                sessionServerMessage(taskEnd = taskEnd(1, TaskEndCause.TASK_COMPLETED)),
-                sessionServerMessage(newTask = newTask(1, "Running file1.groovy", taskUpdate(2, Float.NaN))),
-                sessionServerMessage(taskEnd = taskEnd(2, TaskEndCause.TASK_COMPLETED))
+            sessionServerMessage {
+                newTaskBuilder.requestId = 1
+                newTaskBuilder.description = "Initializing file1.groovy"
+                newTaskBuilder.taskBuilder.taskId = 1
+                newTaskBuilder.taskBuilder.progress = Float.NaN
+            },
+            sessionServerMessage {
+                taskEndBuilder.taskId = 1
+                taskEndBuilder.cause = TaskEndCause.TASK_COMPLETED
+            },
+            sessionServerMessage {
+                newTaskBuilder.requestId = 1
+                newTaskBuilder.description = "Running file1.groovy"
+                newTaskBuilder.taskBuilder.taskId = 2
+                newTaskBuilder.taskBuilder.progress = Float.NaN
+            },
+            sessionServerMessage {
+                taskEndBuilder.taskId = 2
+                taskEndBuilder.cause = TaskEndCause.TASK_COMPLETED
+            }
         )
 
         verifyOrder {
             // Initialize the script
-            scriptLoader.resolveAndLoad(file, devs, environment)
+            scriptLoader.resolveAndLoad(msg.runRequest.file, msg.runRequest.devsList, msg.runRequest.environmentMap)
 
             // Run the script
             script.start(emptyList(), null)
@@ -106,15 +130,13 @@ internal class SessionTest : KoinTestFixture() {
         val client = flow {
             while (true) {
                 delay(100)
-                emit(SessionClientMessage.newBuilder().apply {
-                    credentialsResponseBuilder.apply {
-                        requestId = 1
-                        basicBuilder.apply {
-                            username = "username"
-                            password = "password"
-                        }
+                emit(
+                    sessionClientMessage {
+                        credentialsResponseBuilder.requestId = 1
+                        credentialsResponseBuilder.basicBuilder.username = "username"
+                        credentialsResponseBuilder.basicBuilder.password = "password"
                     }
-                }.build())
+                )
             }
         }
         val session = Session(CoroutineScope(Dispatchers.Default), client)
@@ -127,12 +149,12 @@ internal class SessionTest : KoinTestFixture() {
         val client = flow {
             while (true) {
                 delay(100)
-                emit(SessionClientMessage.newBuilder().apply {
-                    errorBuilder.apply {
-                        requestId = 1
-                        description = "Boom!"
+                emit(
+                    sessionClientMessage {
+                        errorBuilder.requestId = 1
+                        errorBuilder.description = "Boom!"
                     }
-                }.build())
+                )
             }
         }
         val session = Session(CoroutineScope(Dispatchers.Default), client)
@@ -145,12 +167,12 @@ internal class SessionTest : KoinTestFixture() {
         val client = flow {
             while (true) {
                 delay(100)
-                emit(SessionClientMessage.newBuilder().apply {
-                    twoFactorResponseBuilder.apply {
-                        requestId = 1
-                        twoFactor = "token"
+                emit(
+                    sessionClientMessage {
+                        twoFactorResponseBuilder.requestId = 1
+                        twoFactorResponseBuilder.twoFactor = "token"
                     }
-                }.build())
+                )
             }
         }
         val session = Session(CoroutineScope(Dispatchers.Default), client)
@@ -163,32 +185,28 @@ internal class SessionTest : KoinTestFixture() {
         val client = flow {
             while (true) {
                 delay(100)
-                emit(SessionClientMessage.newBuilder().apply {
-                    credentialsResponseBuilder.apply {
-                        requestId = 2
-                        basicBuilder.apply {
-                            username = "username2"
-                            password = "password2"
-                        }
+                emit(
+                    sessionClientMessage {
+                        credentialsResponseBuilder.requestId = 2
+                        credentialsResponseBuilder.basicBuilder.username = "username2"
+                        credentialsResponseBuilder.basicBuilder.password = "password2"
                     }
-                }.build())
-                emit(SessionClientMessage.newBuilder().apply {
-                    credentialsResponseBuilder.apply {
-                        requestId = 1
-                        basicBuilder.apply {
-                            username = "username1"
-                            password = "password1"
-                        }
+                )
+                emit(
+                    sessionClientMessage {
+                        credentialsResponseBuilder.requestId = 1
+                        credentialsResponseBuilder.basicBuilder.username = "username1"
+                        credentialsResponseBuilder.basicBuilder.password = "password1"
                     }
-                }.build())
+                )
             }
         }
         val session = Session(CoroutineScope(Dispatchers.Default), client)
         thread { runBlocking { session.session.collect() } }
         runBlocking {
             listOf(session.getCredentialsFor(remote1), session.getCredentialsFor(remote2)).shouldContainExactly(
-                    Credentials.Basic("username1", "password1"),
-                    Credentials.Basic("username2", "password2")
+                Credentials.Basic("username1", "password1"),
+                Credentials.Basic("username2", "password2")
             )
         }
     }

@@ -16,9 +16,8 @@
  */
 package com.commonwealthrobotics.bowlerkernel.scripting
 
-import com.commonwealthrobotics.bowlerkernel.protoutil.fileSpec
-import com.commonwealthrobotics.bowlerkernel.protoutil.patch
-import com.commonwealthrobotics.bowlerkernel.protoutil.projectSpec
+import com.commonwealthrobotics.proto.gitfs.FileSpec
+import com.google.protobuf.ByteString
 import io.kotest.assertions.arrow.either.shouldBeLeft
 import io.kotest.assertions.arrow.either.shouldBeRight
 import io.kotest.assertions.throwables.shouldThrow
@@ -106,10 +105,12 @@ internal class DefaultScriptTest {
 
     @Test
     fun `resolve and load a script inside a script`() {
-        val fileSpec1 = fileSpec(
-            projectSpec("git@github.com:user/repo1.git", "master", patch(byteArrayOf())),
-            "file1.groovy"
-        )
+        val fileSpec1 = FileSpec.newBuilder().apply {
+            projectBuilder.repoRemote = "git@github.com:user/repo1.git"
+            projectBuilder.revision = "master"
+            projectBuilder.patchBuilder.patch = ByteString.copyFrom(byteArrayOf())
+            path = "file1.groovy"
+        }.build()
 
         val scriptLoader = mockk<ScriptLoader> {
             every { resolveAndLoad(any(), any(), any()) } returns mockk()

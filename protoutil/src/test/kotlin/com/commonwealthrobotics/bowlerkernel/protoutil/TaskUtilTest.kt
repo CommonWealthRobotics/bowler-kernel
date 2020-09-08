@@ -18,7 +18,6 @@ package com.commonwealthrobotics.bowlerkernel.protoutil
 
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
-import io.grpc.stub.StreamObserver
 import io.kotest.assertions.arrow.either.shouldBeLeft
 import io.kotest.assertions.arrow.either.shouldBeRight
 import io.kotest.assertions.throwables.shouldThrow
@@ -26,17 +25,10 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.coVerifyOrder
 import io.mockk.mockk
-import io.mockk.verifyOrder
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.MethodOrderer
-import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestMethodOrder
 
-/**
- * Careful ordering between these tests because of the global task ID counter.
- */
 internal class TaskUtilTest {
 
     @Test
@@ -47,8 +39,20 @@ internal class TaskUtilTest {
         result.shouldBeRight { it.shouldBe(42) }
 
         coVerifyOrder {
-            responseObserver.send(sessionServerMessage(newTask = newTask(1, "desc", taskUpdate(1, Float.NaN))))
-            responseObserver.send(sessionServerMessage(taskEnd = taskEnd(1, TaskEndCause.TASK_COMPLETED)))
+            responseObserver.send(
+                sessionServerMessage {
+                    newTaskBuilder.requestId = 1
+                    newTaskBuilder.description = "desc"
+                    newTaskBuilder.taskBuilder.taskId = 1
+                    newTaskBuilder.taskBuilder.progress = Float.NaN
+                }
+            )
+            responseObserver.send(
+                sessionServerMessage {
+                    taskEndBuilder.taskId = 1
+                    taskEndBuilder.cause = TaskEndCause.TASK_COMPLETED
+                }
+            )
         }
     }
 
@@ -63,9 +67,26 @@ internal class TaskUtilTest {
         }
 
         coVerifyOrder {
-            responseObserver.send(sessionServerMessage(newTask = newTask(1, "desc", taskUpdate(1, Float.NaN))))
-            responseObserver.send(sessionServerMessage(taskEnd = taskEnd(1, TaskEndCause.TASK_FAILED)))
-            responseObserver.send(sessionServerMessage(requestError = requestError(1, "Boom!")))
+            responseObserver.send(
+                sessionServerMessage {
+                    newTaskBuilder.requestId = 1
+                    newTaskBuilder.description = "desc"
+                    newTaskBuilder.taskBuilder.taskId = 1
+                    newTaskBuilder.taskBuilder.progress = Float.NaN
+                }
+            )
+            responseObserver.send(
+                sessionServerMessage {
+                    taskEndBuilder.taskId = 1
+                    taskEndBuilder.cause = TaskEndCause.TASK_FAILED
+                }
+            )
+            responseObserver.send(
+                sessionServerMessage {
+                    errorBuilder.requestId = 1
+                    errorBuilder.description = "Boom!"
+                }
+            )
         }
     }
 
@@ -80,7 +101,14 @@ internal class TaskUtilTest {
         }
 
         coVerifyOrder {
-            responseObserver.send(sessionServerMessage(newTask = newTask(1, "desc", taskUpdate(1, Float.NaN))))
+            responseObserver.send(
+                sessionServerMessage {
+                    newTaskBuilder.requestId = 1
+                    newTaskBuilder.description = "desc"
+                    newTaskBuilder.taskBuilder.taskId = 1
+                    newTaskBuilder.taskBuilder.progress = Float.NaN
+                }
+            )
         }
     }
 }

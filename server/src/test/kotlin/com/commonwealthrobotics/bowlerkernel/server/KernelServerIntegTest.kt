@@ -16,24 +16,14 @@
  */
 package com.commonwealthrobotics.bowlerkernel.server
 
-import com.commonwealthrobotics.bowlerkernel.protoutil.fileSpec
-import com.commonwealthrobotics.bowlerkernel.protoutil.patch
-import com.commonwealthrobotics.bowlerkernel.protoutil.projectSpec
-import com.commonwealthrobotics.bowlerkernel.protoutil.runRequest
 import com.commonwealthrobotics.bowlerkernel.protoutil.sessionClientMessage
-import com.commonwealthrobotics.proto.gitfs.FileSpec
-import com.commonwealthrobotics.proto.script_host.RunRequest
-import com.commonwealthrobotics.proto.script_host.ScriptHostGrpc
 import com.commonwealthrobotics.proto.script_host.ScriptHostGrpcKt
-import com.commonwealthrobotics.proto.script_host.SessionClientMessage
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
 import com.google.protobuf.ByteString
 import io.grpc.ManagedChannelBuilder
-import io.grpc.stub.StreamObserver
 import io.kotest.matchers.collections.shouldExist
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -59,15 +49,20 @@ internal class KernelServerIntegTest {
         val received = mutableListOf<SessionServerMessage>()
         val latch = CountDownLatch(4)
         runBlocking {
-            stub.session(flowOf(
-                    SessionClientMessage.newBuilder().apply {
+            stub.session(
+                flowOf(
+                    sessionClientMessage {
                         runRequestBuilder.requestId = 1
-                        runRequestBuilder.fileBuilder.projectBuilder.repoRemote = "https://github.com/CommonWealthRobotics/bowler-kernel-test-repo.git"
+                        runRequestBuilder.fileBuilder.projectBuilder.repoRemote =
+                            "https://github.com/CommonWealthRobotics/bowler-kernel-test-repo.git"
                         runRequestBuilder.fileBuilder.projectBuilder.revision = "master"
-                        runRequestBuilder.fileBuilder.projectBuilder.patchBuilder.patch = ByteString.copyFrom(byteArrayOf())
+                        runRequestBuilder.fileBuilder.projectBuilder.patchBuilder.patch = ByteString.copyFrom(
+                            byteArrayOf()
+                        )
                         runRequestBuilder.fileBuilder.path = "scriptA.groovy"
-                    }.build()
-            )).collect {
+                    }
+                )
+            ).collect {
                 logger.debug { "$it" }
                 received.add(it)
                 latch.countDown()

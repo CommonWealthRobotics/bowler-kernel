@@ -109,11 +109,7 @@ project(":translator:bowler-script-kernel") {
 }
 
 subprojects {
-    if (this in listOf(
-        project(":translator:bowler-script-kernel"),
-        project(":translator:bowler-script-kernel:java-bowler"),
-        project(":translator:bowler-script-kernel:JCSG")
-    )
+    if (this in listOf(project(":translator:bowler-script-kernel"), project(":translator:bowler-script-kernel:java-bowler"), project(":translator:bowler-script-kernel:JCSG"))
     ) {
         return@subprojects
     }
