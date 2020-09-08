@@ -75,8 +75,9 @@ class Session(
      * This is the main loop that handles a single session.
      */
     @OptIn(ExperimentalCoroutinesApi::class, InternalCoroutinesApi::class)
-    val session: Flow<SessionServerMessage> = coroutineScope.produce<SessionServerMessage> {
+    val server: Flow<SessionServerMessage> = coroutineScope.produce<SessionServerMessage> {
         val sessionChannel = this
+        @Suppress("TooGenericExceptionCaught") // Okay because we just log and rethrow
         try {
             logger.debug { "Session started" }
 
@@ -156,6 +157,7 @@ class Session(
             "A session may not be started in GlobalScope."
         }
 
+        @Suppress("TooGenericExceptionCaught") // Okay because we just log and rethrow
         try {
             getKoin().loadModules(modules)
         } catch (t: Throwable) {

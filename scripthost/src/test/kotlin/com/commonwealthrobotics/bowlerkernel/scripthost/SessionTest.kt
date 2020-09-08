@@ -93,7 +93,7 @@ internal class SessionTest : KoinTestFixture() {
 
         val client = flowOf(msg)
         val session = Session(CoroutineScope(Dispatchers.Default), client)
-        val responses = runBlocking { session.session.toList() }
+        val responses = runBlocking { session.server.toList() }
 
         // Order should not be important because the task ID can be used by the client to determine ordering
         responses.shouldContainAll(
@@ -145,7 +145,7 @@ internal class SessionTest : KoinTestFixture() {
             }
         }
         val session = Session(CoroutineScope(Dispatchers.Default), client)
-        thread { runBlocking { session.session.collect() } }
+        thread { runBlocking { session.server.collect() } }
         runBlocking { session.getCredentialsFor(remote1) } shouldBe Credentials.Basic("username", "password")
     }
 
@@ -164,7 +164,7 @@ internal class SessionTest : KoinTestFixture() {
             }
         }
         val session = Session(CoroutineScope(Dispatchers.Default), client)
-        thread { runBlocking { session.session.collect() } }
+        thread { runBlocking { session.server.collect() } }
         runBlocking { shouldThrow<IllegalStateException> { session.getCredentialsFor(remote1) } }
     }
 
@@ -183,7 +183,7 @@ internal class SessionTest : KoinTestFixture() {
             }
         }
         val session = Session(CoroutineScope(Dispatchers.Default), client)
-        thread { runBlocking { session.session.collect() } }
+        thread { runBlocking { session.server.collect() } }
         runBlocking { session.getTwoFactorFor(remote1) } shouldBe "token"
     }
 
@@ -210,7 +210,7 @@ internal class SessionTest : KoinTestFixture() {
             }
         }
         val session = Session(CoroutineScope(Dispatchers.Default), client)
-        thread { runBlocking { session.session.collect() } }
+        thread { runBlocking { session.server.collect() } }
         runBlocking {
             listOf(session.getCredentialsFor(remote1), session.getCredentialsFor(remote2)).shouldContainExactly(
                 Credentials.Basic("username1", "password1"),

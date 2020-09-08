@@ -34,7 +34,7 @@ class ScriptHost(private val scope: CoroutineScope) : ScriptHostGrpcKt.ScriptHos
             error("Cannot create a concurrent session. Only one session may operate at a time.")
         }
 
-        return Session(scope, requests).session.onCompletion { concurrentSessionCount.decrementAndGet() }
+        return Session(scope, requests).server.onCompletion { concurrentSessionCount.decrementAndGet() }
     }
 
     companion object {
