@@ -24,8 +24,11 @@ import io.kotest.assertions.arrow.either.shouldBeRight
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import io.mockk.coVerifyOrder
 import io.mockk.mockk
 import io.mockk.verifyOrder
+import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
@@ -34,54 +37,50 @@ import org.junit.jupiter.api.TestMethodOrder
 /**
  * Careful ordering between these tests because of the global task ID counter.
  */
-@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 internal class TaskUtilTest {
 
     @Test
-    @Order(1)
     fun `run a task that does not throw an exception`() {
-        val responseObserver = mockk< StreamObserver<SessionServerMessage>>(relaxUnitFun = true) {
-        }
+        val responseObserver = mockk<SendChannel<SessionServerMessage>>(relaxUnitFun = true)
 
-        val result = responseObserver.withTask(1, "desc") { 42 }
+        val result = runBlocking { responseObserver.withTask(1, 1, "desc") { 42 } }
         result.shouldBeRight { it.shouldBe(42) }
 
-        verifyOrder {
-            responseObserver.onNext(sessionServerMessage(newTask = newTask(1, "desc", taskUpdate(0, Float.NaN))))
-            responseObserver.onNext(sessionServerMessage(taskEnd = taskEnd(0, TaskEndCause.TASK_COMPLETED)))
+        coVerifyOrder {
+            responseObserver.send(sessionServerMessage(newTask = newTask(1, "desc", taskUpdate(1, Float.NaN))))
+            responseObserver.send(sessionServerMessage(taskEnd = taskEnd(1, TaskEndCause.TASK_COMPLETED)))
         }
     }
 
     @Test
-    @Order(2)
     fun `run a task that throws a non-fatal exception`() {
-        val responseObserver = mockk< StreamObserver<SessionServerMessage>>(relaxUnitFun = true) {
-        }
+        val responseObserver = mockk<SendChannel<SessionServerMessage>>(relaxUnitFun = true)
 
-        val result = responseObserver.withTask(1, "desc") { error("Boom!") }
+        val result = runBlocking { responseObserver.withTask(1, 1, "desc") { error("Boom!") } }
         result.shouldBeLeft {
-            it.shouldBeInstanceOf<IllegalStateException> { it.message.shouldBe("Boom!") }
+            it.shouldBeInstanceOf<IllegalStateException>()
+            it.message.shouldBe("Boom!")
         }
 
-        verifyOrder {
-            responseObserver.onNext(sessionServerMessage(newTask = newTask(1, "desc", taskUpdate(1, Float.NaN))))
-            responseObserver.onNext(sessionServerMessage(taskEnd = taskEnd(1, TaskEndCause.TASK_FAILED)))
-            responseObserver.onNext(sessionServerMessage(requestError = requestError(1, "Boom!")))
+        coVerifyOrder {
+            responseObserver.send(sessionServerMessage(newTask = newTask(1, "desc", taskUpdate(1, Float.NaN))))
+            responseObserver.send(sessionServerMessage(taskEnd = taskEnd(1, TaskEndCause.TASK_FAILED)))
+            responseObserver.send(sessionServerMessage(requestError = requestError(1, "Boom!")))
         }
     }
 
     @Test
-    @Order(3)
     fun `run a task that throws a fatal exception`() {
-        val responseObserver = mockk< StreamObserver<SessionServerMessage>>(relaxUnitFun = true) {
+        val responseObserver = mockk<SendChannel<SessionServerMessage>>(relaxUnitFun = true)
+
+        runBlocking {
+            shouldThrow<OutOfMemoryError> {
+                responseObserver.withTask(1, 1, "desc") { throw OutOfMemoryError() }
+            }
         }
 
-        shouldThrow<OutOfMemoryError> {
-            responseObserver.withTask(1, "desc") { throw OutOfMemoryError() }
-        }
-
-        verifyOrder {
-            responseObserver.onNext(sessionServerMessage(newTask = newTask(1, "desc", taskUpdate(2, Float.NaN))))
+        coVerifyOrder {
+            responseObserver.send(sessionServerMessage(newTask = newTask(1, "desc", taskUpdate(1, Float.NaN))))
         }
     }
 }

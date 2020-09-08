@@ -25,7 +25,6 @@ import mu.KotlinLogging
 import java.util.concurrent.atomic.AtomicLong
 
 private object TaskUtil {
-    val taskIdCounter = AtomicLong(0)
     val logger = KotlinLogging.logger { }
 }
 
@@ -33,7 +32,8 @@ private object TaskUtil {
  * Runs [f] in the context of a new task. The new task responds to the request with id [requestId] and has a
  * [description]. The task will start with an indeterminate progress.
  *
- * @param requestId The id of the request this task was created from.
+ * @param requestId The ID of the request this task was created from.
+ * @param taskId The ID of this task.
  * @param description A short description of the task.
  * @param f The function to execute in the context of the task.
  * @return The return value of the function or an error. Non-fatal exceptions are caught an wrapped in [Either.Left].
@@ -41,10 +41,10 @@ private object TaskUtil {
 @SuppressWarnings("TooGenericExceptionCaught")
 suspend fun <T> SendChannel<SessionServerMessage>.withTask(
     requestId: Long,
+    taskId: Long,
     description: String,
     f: () -> T
 ): Either<Throwable, T> {
-    val taskId = nextTaskId()
     send(sessionServerMessage(newTask = newTask(requestId, description, taskUpdate(taskId, Float.NaN))))
 
     val out: T
@@ -72,5 +72,3 @@ suspend fun <T> SendChannel<SessionServerMessage>.withTask(
     send(sessionServerMessage(taskEnd = taskEnd(taskId, TaskEndCause.TASK_COMPLETED)))
     return Either.Right(out)
 }
-
-private fun nextTaskId() = TaskUtil.taskIdCounter.getAndIncrement()
