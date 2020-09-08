@@ -35,6 +35,7 @@ import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.google.protobuf.GeneratedMessageV3
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.produce
@@ -42,37 +43,49 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.selects.select
 import mu.KotlinLogging
-import org.koin.core.get
 import org.koin.dsl.module
 import java.util.concurrent.atomic.AtomicLong
 
+/**
+ * Implements the bidirectional session RPC.
+ *
+ * @param coroutineScope The scope used to process messages from the client flow. Cannot be GlobalScope.
+ * @param client The client flow.
+ */
 class Session(
-    private val scope: CoroutineScope,
+    private val coroutineScope: CoroutineScope,
     private val client: Flow<SessionClientMessage>
 ) : CredentialsProvider, BowlerKernelKoinComponent {
 
+    // Bind a GitFS using this session so that credentials requests will go through this session
+    private val modules by lazy {
+        listOf(module { single<GitFS> { GitHubFS(this@Session) } })
+    }
+
+    // Session-scoped unique ID counters
     private val nextRequest = AtomicLong(1)
     private val nextTaskID = AtomicLong(1)
+
+    // Request-response handling
     private val responseHandlers: MutableMap<Long, (SessionClientMessage) -> Unit> = mutableMapOf()
     private val requests = CallbackLatch<GeneratedMessageV3.Builder<*>, SessionClientMessage>()
     private val scriptRequestMap = mutableMapOf<Long, Script>()
 
-    private fun isRequest(builder: GeneratedMessageV3.Builder<*>) =
-        (builder as SessionServerMessage.Builder).let {
-            builder.hasConfirmationRequest() ||
-                builder.hasCredentialsRequest() ||
-                builder.hasTwoFactorRequest()
-        }
-
+    /**
+     * This is the main loop that handles a single session.
+     */
     @OptIn(ExperimentalCoroutinesApi::class, InternalCoroutinesApi::class)
-    val session: Flow<SessionServerMessage> = scope.produce {
+    val session: Flow<SessionServerMessage> = coroutineScope.produce<SessionServerMessage> {
+        val sessionChannel = this
         try {
             logger.debug { "Session started" }
-            val clientChannel = client.toChannel(scope)
+
+            val clientChannel = client.toChannel(coroutineScope)
             do {
                 val cont = select<Boolean> {
                     requests.onReceive {
                         if (isRequest(it.input)) {
+                            // For requests, generate a new request ID and set it on the relevant builder
                             val id = nextRequest.getAndIncrement()
 
                             val msgBuilder = it.input as SessionServerMessage.Builder
@@ -85,6 +98,8 @@ class Session(
                             }
 
                             send(it.input.build() as SessionServerMessage)
+
+                            // Also need to set the response handler so the callback will be called
                             responseHandlers[id] = it.callback
                         } else {
                             send(it.input.build() as SessionServerMessage)
@@ -114,7 +129,7 @@ class Session(
                                         Either.Right(Unit)
                                     }
 
-                                    msg.hasRunRequest() -> runRequest(msg.runRequest, this@produce)
+                                    msg.hasRunRequest() -> runRequest(msg.runRequest, sessionChannel)
                                     msg.hasCancelRequest() -> TODO("Not yet implemented")
                                     msg.hasNewConfig() -> TODO("Not yet implemented")
                                     else -> throw IllegalStateException("Unhandled message type: $msg")
@@ -131,23 +146,38 @@ class Session(
         } catch (t: Throwable) {
             logger.error(t) { "Unhandled error in session" }
             throw t
+        } finally {
+            getKoin().unloadModules(modules)
         }
     }.consumeAsFlow()
 
+    init {
+        require(coroutineScope != GlobalScope) {
+            "A session may not be started in GlobalScope."
+        }
+
+        try {
+            getKoin().loadModules(modules)
+        } catch (t: Throwable) {
+            logger.error(t) { "Unhandled error when constructing session" }
+            throw t
+        }
+    }
+
+    /**
+     * Handles a [RunRequest].
+     *
+     * @param runRequest The [RunRequest]
+     * @param sessionChannel A channel to send messages to the client.
+     * @return The result of loading and running the script.
+     */
     private suspend fun runRequest(
         runRequest: RunRequest,
-        out: SendChannel<SessionServerMessage>
+        sessionChannel: SendChannel<SessionServerMessage>
     ): Either<Throwable, Any?> {
-        val modules = listOf(
-            module {
-                single<GitFS> { GitHubFS(this@Session) }
-            }
-        )
-        getKoin().loadModules(modules)
+        val scriptLoader = getKoin().get<ScriptLoader>()
 
-        val scriptLoader = get<ScriptLoader>()
-
-        val script = out.withTask(
+        val script = sessionChannel.withTask(
             runRequest.requestId,
             nextTaskID.getAndIncrement(),
             "Initializing ${runRequest.file.path}"
@@ -157,7 +187,7 @@ class Session(
             script
         }
 
-        val result = out.withTask(
+        return sessionChannel.withTask(
             runRequest.requestId,
             nextTaskID.getAndIncrement(),
             "Running ${runRequest.file.path}"
@@ -169,10 +199,6 @@ class Session(
                 scriptResult
             }
         }.flatten()
-
-        getKoin().unloadModules(modules)
-
-        return result
     }
 
     override suspend fun getCredentialsFor(remote: String): Credentials {
@@ -209,6 +235,16 @@ class Session(
             else -> throw IllegalStateException("Unknown 2FA response: $msg")
         }
     }
+
+    /**
+     * @return true if the [builder] is a "request" type (meaning it has a request ID).
+     */
+    private fun isRequest(builder: GeneratedMessageV3.Builder<*>) =
+        (builder as SessionServerMessage.Builder).let {
+            builder.hasConfirmationRequest() ||
+                builder.hasCredentialsRequest() ||
+                builder.hasTwoFactorRequest()
+        }
 
     companion object {
         private val logger = KotlinLogging.logger { }

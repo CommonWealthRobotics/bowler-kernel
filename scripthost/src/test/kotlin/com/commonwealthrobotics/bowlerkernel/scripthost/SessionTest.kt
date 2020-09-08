@@ -35,6 +35,7 @@ import io.mockk.mockk
 import io.mockk.verifyOrder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
@@ -43,11 +44,14 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
+import org.junit.jupiter.api.parallel.Execution
+import org.junit.jupiter.api.parallel.ExecutionMode
 import org.koin.dsl.module
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
+@Execution(ExecutionMode.SAME_THREAD)
 internal class SessionTest : KoinTestFixture() {
 
     companion object {
@@ -127,6 +131,7 @@ internal class SessionTest : KoinTestFixture() {
 
     @Test
     fun `request credentials during script resolution`() {
+        testKoin(module {})
         val client = flow {
             while (true) {
                 delay(100)
@@ -146,6 +151,7 @@ internal class SessionTest : KoinTestFixture() {
 
     @Test
     fun `error during credentials request during script resolution`() {
+        testKoin(module {})
         val client = flow {
             while (true) {
                 delay(100)
@@ -164,6 +170,7 @@ internal class SessionTest : KoinTestFixture() {
 
     @Test
     fun `request 2fa during script resolution`() {
+        testKoin(module {})
         val client = flow {
             while (true) {
                 delay(100)
@@ -182,6 +189,7 @@ internal class SessionTest : KoinTestFixture() {
 
     @Test
     fun `request credentials during script resolution race condition`() {
+        testKoin(module {})
         val client = flow {
             while (true) {
                 delay(100)
@@ -208,6 +216,14 @@ internal class SessionTest : KoinTestFixture() {
                 Credentials.Basic("username1", "password1"),
                 Credentials.Basic("username2", "password2")
             )
+        }
+    }
+
+    @Test
+    fun `starting a session in GlobalScope is an error`() {
+        testKoin(module {})
+        shouldThrow<IllegalArgumentException> {
+            Session(GlobalScope, flowOf())
         }
     }
 }
