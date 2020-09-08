@@ -29,11 +29,9 @@ import com.commonwealthrobotics.bowlerkernel.scripting.Script
 import com.commonwealthrobotics.bowlerkernel.scripting.ScriptLoader
 import com.commonwealthrobotics.bowlerkernel.util.CallbackLatch
 import com.commonwealthrobotics.bowlerkernel.util.toChannel
-import com.commonwealthrobotics.proto.script_host.CredentialsRequest
 import com.commonwealthrobotics.proto.script_host.RunRequest
 import com.commonwealthrobotics.proto.script_host.SessionClientMessage
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
-import com.commonwealthrobotics.proto.script_host.TwoFactorRequest
 import com.google.protobuf.GeneratedMessageV3
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -98,21 +96,32 @@ class Session(
                     clientChannel.onReceiveOrClosed {
                         when {
                             it.isClosed -> false
-                            else -> it.value.run {
-                                logger.debug { "Received: $this" }
+
+                            else -> it.value.let { msg ->
+                                logger.debug { "Received: $msg" }
+
                                 val requestId = when {
-                                    hasConfirmationResponse() -> confirmationResponse.requestId
-                                    hasCredentialsResponse() -> credentialsResponse.requestId
-                                    hasTwoFactorResponse() -> twoFactorResponse.requestId
-                                    hasError() -> error.requestId
+                                    msg.hasConfirmationResponse() -> msg.confirmationResponse.requestId
+                                    msg.hasCredentialsResponse() -> msg.credentialsResponse.requestId
+                                    msg.hasTwoFactorResponse() -> msg.twoFactorResponse.requestId
+                                    msg.hasError() -> msg.error.requestId
                                     else -> null
                                 }
-                                when {
-                                    requestId != null -> responseHandlers.remove(requestId)?.invoke(this)
-                                    hasRunRequest() -> runRequest(runRequest, this@produce)
-                                    hasCancelRequest() -> TODO("Not yet implemented")
-                                    hasNewConfig() -> TODO("Not yet implemented")
+
+                                val result = when {
+                                    requestId != null -> {
+                                        responseHandlers.remove(requestId)?.invoke(msg)
+                                        Either.Right(Unit)
+                                    }
+
+                                    msg.hasRunRequest() -> runRequest(msg.runRequest, this@produce)
+                                    msg.hasCancelRequest() -> TODO("Not yet implemented")
+                                    msg.hasNewConfig() -> TODO("Not yet implemented")
+                                    else -> throw IllegalStateException("Unhandled message type: $msg")
                                 }
+
+                                logger.debug { "Result of handling client message: $result" }
+
                                 true
                             }
                         }
@@ -168,8 +177,11 @@ class Session(
 
     override suspend fun getCredentialsFor(remote: String): Credentials {
         val msg = requests.call(
-            SessionServerMessage.newBuilder().setCredentialsRequest(CredentialsRequest.newBuilder().setRemote(remote))
+            SessionServerMessage.newBuilder().apply {
+                credentialsRequestBuilder.remote = remote
+            }
         )
+
         return when {
             msg.hasCredentialsResponse() -> {
                 val res = msg.credentialsResponse
@@ -180,18 +192,21 @@ class Session(
                 }
             }
             msg.hasError() -> throw IllegalStateException("Credentials request error: " + msg.error.description)
-            else -> throw RuntimeException("Unknown credentials response: $msg")
+            else -> throw IllegalStateException("Unknown credentials response: $msg")
         }
     }
 
     override suspend fun getTwoFactorFor(remote: String): String {
         val msg = requests.call(
-            SessionServerMessage.newBuilder().setTwoFactorRequest(TwoFactorRequest.newBuilder().setDescription(remote))
+            SessionServerMessage.newBuilder().apply {
+                twoFactorRequestBuilder.description = remote
+            }
         )
+
         return when {
             msg.hasTwoFactorResponse() -> msg.twoFactorResponse.twoFactor
-            msg.hasError() -> throw RuntimeException("2FA request error: " + msg.error.description)
-            else -> throw RuntimeException("Unknown 2FA response: $msg")
+            msg.hasError() -> throw IllegalStateException("2FA request error: " + msg.error.description)
+            else -> throw IllegalStateException("Unknown 2FA response: $msg")
         }
     }
 
