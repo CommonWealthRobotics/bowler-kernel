@@ -23,6 +23,7 @@ import com.commonwealthrobotics.bowlerkernel.protoutil.sessionServerMessage
 import com.commonwealthrobotics.bowlerkernel.scripting.Script
 import com.commonwealthrobotics.bowlerkernel.scripting.ScriptLoader
 import com.commonwealthrobotics.bowlerkernel.testutil.KoinTestFixture
+import com.commonwealthrobotics.bowlerkernel.testutil.alwaysEmit
 import com.commonwealthrobotics.proto.gitfs.ProjectSpec
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
 import com.google.protobuf.ByteString
@@ -37,22 +38,17 @@ import io.mockk.verifyOrder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
-import org.junit.jupiter.api.parallel.Execution
-import org.junit.jupiter.api.parallel.ExecutionMode
 import org.koin.dsl.module
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
-@Execution(ExecutionMode.SAME_THREAD)
 internal class SessionTest : KoinTestFixture() {
 
     companion object {
@@ -199,18 +195,13 @@ internal class SessionTest : KoinTestFixture() {
     @Test
     fun `request credentials`() {
         testKoin(module {})
-        val client = flow {
-            while (true) {
-                delay(100)
-                emit(
-                    sessionClientMessage {
-                        credentialsResponseBuilder.requestId = 1
-                        credentialsResponseBuilder.basicBuilder.username = "username"
-                        credentialsResponseBuilder.basicBuilder.password = "password"
-                    }
-                )
+        val client = alwaysEmit(
+            sessionClientMessage {
+                credentialsResponseBuilder.requestId = 1
+                credentialsResponseBuilder.basicBuilder.username = "username"
+                credentialsResponseBuilder.basicBuilder.password = "password"
             }
-        }
+        )
         val session = Session(CoroutineScope(Dispatchers.Default), client)
         thread { runBlocking { session.server.collect() } }
         runBlocking { session.getCredentialsFor(remote1) } shouldBe Credentials.Basic("username", "password")
@@ -219,17 +210,12 @@ internal class SessionTest : KoinTestFixture() {
     @Test
     fun `error during credentials request`() {
         testKoin(module {})
-        val client = flow {
-            while (true) {
-                delay(100)
-                emit(
-                    sessionClientMessage {
-                        errorBuilder.requestId = 1
-                        errorBuilder.description = "Boom!"
-                    }
-                )
+        val client = alwaysEmit(
+            sessionClientMessage {
+                errorBuilder.requestId = 1
+                errorBuilder.description = "Boom!"
             }
-        }
+        )
         val session = Session(CoroutineScope(Dispatchers.Default), client)
         thread { runBlocking { session.server.collect() } }
         runBlocking { shouldThrow<IllegalStateException> { session.getCredentialsFor(remote1) } }
@@ -238,17 +224,12 @@ internal class SessionTest : KoinTestFixture() {
     @Test
     fun `request 2fa`() {
         testKoin(module {})
-        val client = flow {
-            while (true) {
-                delay(100)
-                emit(
-                    sessionClientMessage {
-                        twoFactorResponseBuilder.requestId = 1
-                        twoFactorResponseBuilder.twoFactor = "token"
-                    }
-                )
+        val client = alwaysEmit(
+            sessionClientMessage {
+                twoFactorResponseBuilder.requestId = 1
+                twoFactorResponseBuilder.twoFactor = "token"
             }
-        }
+        )
         val session = Session(CoroutineScope(Dispatchers.Default), client)
         thread { runBlocking { session.server.collect() } }
         runBlocking { session.getTwoFactorFor(remote1) } shouldBe "token"
@@ -257,17 +238,12 @@ internal class SessionTest : KoinTestFixture() {
     @Test
     fun `error during 2fa request`() {
         testKoin(module {})
-        val client = flow {
-            while (true) {
-                delay(100)
-                emit(
-                    sessionClientMessage {
-                        errorBuilder.requestId = 1
-                        errorBuilder.description = "Boom!"
-                    }
-                )
+        val client = alwaysEmit(
+            sessionClientMessage {
+                errorBuilder.requestId = 1
+                errorBuilder.description = "Boom!"
             }
-        }
+        )
         val session = Session(CoroutineScope(Dispatchers.Default), client)
         thread { runBlocking { session.server.collect() } }
         runBlocking { shouldThrow<IllegalStateException> { session.getTwoFactorFor(remote1) } }
@@ -276,25 +252,18 @@ internal class SessionTest : KoinTestFixture() {
     @Test
     fun `request credentials during script resolution race condition`() {
         testKoin(module {})
-        val client = flow {
-            while (true) {
-                delay(100)
-                emit(
-                    sessionClientMessage {
-                        credentialsResponseBuilder.requestId = 2
-                        credentialsResponseBuilder.basicBuilder.username = "username2"
-                        credentialsResponseBuilder.basicBuilder.password = "password2"
-                    }
-                )
-                emit(
-                    sessionClientMessage {
-                        credentialsResponseBuilder.requestId = 1
-                        credentialsResponseBuilder.basicBuilder.username = "username1"
-                        credentialsResponseBuilder.basicBuilder.password = "password1"
-                    }
-                )
+        val client = alwaysEmit(
+            sessionClientMessage {
+                credentialsResponseBuilder.requestId = 2
+                credentialsResponseBuilder.basicBuilder.username = "username2"
+                credentialsResponseBuilder.basicBuilder.password = "password2"
+            },
+            sessionClientMessage {
+                credentialsResponseBuilder.requestId = 1
+                credentialsResponseBuilder.basicBuilder.username = "username1"
+                credentialsResponseBuilder.basicBuilder.password = "password1"
             }
-        }
+        )
         val session = Session(CoroutineScope(Dispatchers.Default), client)
         thread { runBlocking { session.server.collect() } }
         runBlocking {
