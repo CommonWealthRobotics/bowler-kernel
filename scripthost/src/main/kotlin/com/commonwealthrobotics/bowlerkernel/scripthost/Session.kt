@@ -161,6 +161,7 @@ class Session(
             throw t
         } finally {
             getKoin().unloadModules(modules)
+            logger.debug { "Session ended" }
         }
     }.consumeAsFlow()
 

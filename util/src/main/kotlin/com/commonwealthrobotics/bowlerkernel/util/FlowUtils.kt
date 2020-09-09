@@ -18,14 +18,10 @@ package com.commonwealthrobotics.bowlerkernel.util
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
-
-@ExperimentalCoroutinesApi
-fun <T> Flow<T>.toChannel() = toChannel(GlobalScope)
 
 @ExperimentalCoroutinesApi
 fun <T> Flow<T>.toChannel(scope: CoroutineScope): ReceiveChannel<T> = scope.produce { collect { send(it) } }
