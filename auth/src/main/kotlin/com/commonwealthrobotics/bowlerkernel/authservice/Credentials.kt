@@ -16,11 +16,28 @@
  */
 package com.commonwealthrobotics.bowlerkernel.authservice
 
+/**
+ * Encapsulates the different ways authentication can happen.
+ */
 sealed class Credentials {
 
+    /**
+     * "Traditional" credentials.
+     *
+     * @param username The username.
+     * @param password Either a password or a personal access token.
+     */
     data class Basic(val username: String, val password: String) : Credentials()
 
+    /**
+     * OAuth authentication.
+     *
+     * @param token The OAuth token.
+     */
     data class OAuth(val token: String) : Credentials()
 
+    /**
+     * Anonymous authentication.
+     */
     object Anonymous : Credentials()
 }

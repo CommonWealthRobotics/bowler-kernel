@@ -17,7 +17,7 @@
 package com.commonwealthrobotics.bowlerkernel.authservice
 
 /**
- * Only support anonymous connections.
+ * Only supports anonymous connections.
  */
 object AnonymousCredentialsProvider : CredentialsProvider {
 

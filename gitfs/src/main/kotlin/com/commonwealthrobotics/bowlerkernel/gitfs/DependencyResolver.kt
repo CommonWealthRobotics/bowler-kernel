@@ -26,15 +26,17 @@ import java.io.File
 interface DependencyResolver {
 
     /**
-     * Resolve a local [File] from a [FileSpec]. Dependency management works as follows:
-     * - Scripts may import other scripts in their project. These dependencies are resolved to the relevant files in
-     * the project.
-     * - Scripts may import scripts in other Bowler libraries. By default, [GitFS] will be used to clone the library the
-     * script is contained in and the script will be resolved to the local file within that library. However, when
-     * developing another Bowler library, it may be useful to resolve scripts located in that library to their local
-     * files instead of to the files on the remote. In this case, the library should be added as a dev using [addDev].
-     * If a script is located inside a project that is dev'd, then that script will be resolved to the local file inside
-     * that dev.
+     * Resolve a local [File] from a [FileSpec]. Dependency resolution works as follows:
+     * 1. Scripts may import scripts from the same project. These dependencies are resolved to the relevant files
+     * in that project.
+     *
+     * 2. Scripts may import scripts in other Bowler libraries that are hosted on a Git remote.
+     *
+     *     a) If the script being imported is not dev'd, that script is resolved to the version of the script on the
+     *     remote.
+     *
+     *     b) If the script being imported is dev'd, that script is resolved to the local (local to the client) version
+     *     of that script.
      */
     fun resolve(fileSpec: FileSpec): File
 

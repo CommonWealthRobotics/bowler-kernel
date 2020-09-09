@@ -60,37 +60,35 @@ class GitHubFS(
     override fun cloneRepo(
         gitUrl: String,
         branch: String
-    ): IO<File> {
-        return freshClone(gitUrl, branch).handleErrorWith {
-            val directory = gitUrlToDirectory(gitHubCacheDirectory, gitUrl)
+    ) = freshClone(gitUrl, branch).handleErrorWith {
+        val directory = gitUrlToDirectory(gitHubCacheDirectory, gitUrl)
 
-            IO {
-                // The repo was already on disk, so directory exists, so pull
-                LOGGER.info { "Pulling repository in directory $directory" }
-                @Suppress("BlockingMethodInNonBlockingContext")
-                Git.open(directory).use { it.pull().call() }
-            }.handleErrorWith {
-                if (it is RepositoryNotFoundException) {
-                    IO.defer {
-                        // The directory was not a valid repo
-                        LOGGER.catching(it)
-                        LOGGER.warn {
-                            "Failed to pull from repo in $directory. Deleting directory."
-                        }
-
-                        if (!directory.deleteRecursively()) {
-                            LOGGER.error { "Failed to delete $directory" }
-                            throw IllegalStateException("Failed to delete $directory")
-                        }
-
-                        // After deleting the directory, try to clone again
-                        freshClone(gitUrl, branch)
+        IO {
+            // The repo was already on disk, so directory exists, so pull
+            logger.info { "Pulling repository in directory $directory" }
+            @Suppress("BlockingMethodInNonBlockingContext")
+            Git.open(directory).use { it.pull().call() }
+        }.handleErrorWith {
+            if (it is RepositoryNotFoundException) {
+                IO.defer {
+                    // The directory was not a valid repo
+                    logger.catching(it)
+                    logger.warn {
+                        "Failed to pull from repo in $directory. Deleting directory."
                     }
-                } else {
-                    IO.raiseError(it)
+
+                    if (!directory.deleteRecursively()) {
+                        logger.error { "Failed to delete $directory" }
+                        throw IllegalStateException("Failed to delete $directory")
+                    }
+
+                    // After deleting the directory, try to clone again
+                    freshClone(gitUrl, branch)
                 }
-            }.map { directory }
-        }
+            } else {
+                IO.raiseError(it)
+            }
+        }.map { directory }
     }
 
     override fun forkRepo(gitUrl: String): IO<String> =
@@ -137,7 +135,7 @@ class GitHubFS(
         gitUrl: String,
         branch: String
     ): IO<File> {
-        LOGGER.info {
+        logger.info {
             """
             |Cloning repository:
             |gitUrl: $gitUrl
@@ -207,7 +205,7 @@ class GitHubFS(
     private fun forkRepo(
         githubRepo: GitHubRepo
     ): IO<GHObject> {
-        LOGGER.info {
+        logger.info {
             """
             |Forking repository:
             |$githubRepo
@@ -246,7 +244,7 @@ class GitHubFS(
 
     companion object {
 
-        private val LOGGER = KotlinLogging.logger { }
+        private val logger = KotlinLogging.logger { }
 
         /**
          * Returns whether the [url] is a valid GitHub repository Git URL.

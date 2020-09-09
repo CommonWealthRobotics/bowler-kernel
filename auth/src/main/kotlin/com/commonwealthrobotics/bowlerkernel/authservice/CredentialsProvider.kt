@@ -16,6 +16,11 @@
  */
 package com.commonwealthrobotics.bowlerkernel.authservice
 
+/**
+ * Encapsulates the ways in which the client can provide credentials. No credentials received via this interface should
+ * ever be stored for longer than necessary. Always favor requesting credentials again over storing them. NEVER store
+ * credentials in a file (hashed or not).
+ */
 interface CredentialsProvider {
 
     /**

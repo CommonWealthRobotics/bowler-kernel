@@ -21,8 +21,8 @@ package com.commonwealthrobotics.bowlerkernel.protoutil
 import com.commonwealthrobotics.proto.script_host.SessionClientMessage
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 
-fun sessionServerMessage(conf: SessionServerMessage.Builder.() -> Unit) =
+fun sessionServerMessage(conf: SessionServerMessage.Builder.() -> Unit): SessionServerMessage =
     SessionServerMessage.newBuilder().apply { conf() }.build()
 
-fun sessionClientMessage(conf: SessionClientMessage.Builder.() -> Unit) =
+fun sessionClientMessage(conf: SessionClientMessage.Builder.() -> Unit): SessionClientMessage =
     SessionClientMessage.newBuilder().apply { conf() }.build()
