@@ -211,6 +211,7 @@ class Session(
                 val scriptResult = it.join()
                 logger.info { "Script returned:\n$scriptResult" }
                 when (scriptResult) {
+                    // Throw when the script errored so that the task and request fail
                     is Either.Left -> throw scriptResult.a
                     is Either.Right -> scriptResult.b
                 }
