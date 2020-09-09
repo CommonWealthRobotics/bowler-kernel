@@ -17,13 +17,12 @@
 package com.commonwealthrobotics.bowlerkernel.scripthost
 
 import arrow.core.Either
-import arrow.core.extensions.either.monad.flatten
-import arrow.core.flatMap
 import com.commonwealthrobotics.bowlerkernel.authservice.Credentials
 import com.commonwealthrobotics.bowlerkernel.authservice.CredentialsProvider
 import com.commonwealthrobotics.bowlerkernel.di.BowlerKernelKoinComponent
 import com.commonwealthrobotics.bowlerkernel.gitfs.GitFS
 import com.commonwealthrobotics.bowlerkernel.gitfs.GitHubFS
+import com.commonwealthrobotics.bowlerkernel.protoutil.sessionServerMessage
 import com.commonwealthrobotics.bowlerkernel.protoutil.withTask
 import com.commonwealthrobotics.bowlerkernel.scripting.Script
 import com.commonwealthrobotics.bowlerkernel.scripting.ScriptLoader
@@ -138,6 +137,19 @@ class Session(
 
                                 logger.debug { "Result of handling client message: $result" }
 
+                                if (msg.hasRunRequest()) {
+                                    if (result is Either.Left) {
+                                        logger.warn(result.a) { "Script did not run successfully." }
+                                        send(
+                                            sessionServerMessage {
+                                                errorBuilder.requestId = msg.runRequest.requestId
+                                                errorBuilder.description =
+                                                    "Script did not run successfully: ${result.a.localizedMessage}"
+                                            }
+                                        )
+                                    }
+                                }
+
                                 true
                             }
                         }
@@ -194,13 +206,16 @@ class Session(
             nextTaskID.getAndIncrement(),
             "Running ${runRequest.file.path}"
         ) {
-            script.flatMap {
+            script.map {
                 it.start(emptyList(), null)
                 val scriptResult = it.join()
                 logger.info { "Script returned:\n$scriptResult" }
-                scriptResult
+                when (scriptResult) {
+                    is Either.Left -> throw scriptResult.a
+                    is Either.Right -> scriptResult.b
+                }
             }
-        }.flatten()
+        }
     }
 
     override suspend fun getCredentialsFor(remote: String): Credentials {

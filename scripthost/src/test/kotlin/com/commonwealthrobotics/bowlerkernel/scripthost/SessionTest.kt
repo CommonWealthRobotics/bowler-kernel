@@ -29,6 +29,7 @@ import com.google.protobuf.ByteString
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldExist
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -59,6 +60,22 @@ internal class SessionTest : KoinTestFixture() {
         private const val remote2 = "git@github.com:user/repo2.git"
     }
 
+    private val runScriptMsg = sessionClientMessage {
+        runRequestBuilder.requestId = 1
+        runRequestBuilder.fileBuilder.projectBuilder.repoRemote = "git@github.com:user/repo1.git"
+        runRequestBuilder.fileBuilder.projectBuilder.revision = "master"
+        runRequestBuilder.fileBuilder.projectBuilder.patchBuilder.patch = ByteString.copyFrom(byteArrayOf())
+        runRequestBuilder.fileBuilder.path = "file1.groovy"
+        runRequestBuilder.addDevs(
+            ProjectSpec.newBuilder().apply {
+                repoRemote = "git@github.com:user/repo2.git"
+                revision = "master"
+                patchBuilder.patch = ByteString.copyFrom(byteArrayOf())
+            }
+        )
+        runRequestBuilder.putEnvironment("KEY", "VALUE")
+    }
+
     @Test
     fun `a run request must trigger the script loader`() {
         // Have the script return nothing interesting
@@ -75,23 +92,7 @@ internal class SessionTest : KoinTestFixture() {
             }
         )
 
-        val msg = sessionClientMessage {
-            runRequestBuilder.requestId = 1
-            runRequestBuilder.fileBuilder.projectBuilder.repoRemote = "git@github.com:user/repo1.git"
-            runRequestBuilder.fileBuilder.projectBuilder.revision = "master"
-            runRequestBuilder.fileBuilder.projectBuilder.patchBuilder.patch = ByteString.copyFrom(byteArrayOf())
-            runRequestBuilder.fileBuilder.path = "file1.groovy"
-            runRequestBuilder.addDevs(
-                ProjectSpec.newBuilder().apply {
-                    repoRemote = "git@github.com:user/repo2.git"
-                    revision = "master"
-                    patchBuilder.patch = ByteString.copyFrom(byteArrayOf())
-                }
-            )
-            runRequestBuilder.putEnvironment("KEY", "VALUE")
-        }
-
-        val client = flowOf(msg)
+        val client = flowOf(runScriptMsg)
         val session = Session(CoroutineScope(Dispatchers.Default), client)
         val responses = runBlocking { session.server.toList() }
 
@@ -121,7 +122,11 @@ internal class SessionTest : KoinTestFixture() {
 
         verifyOrder {
             // Initialize the script
-            scriptLoader.resolveAndLoad(msg.runRequest.file, msg.runRequest.devsList, msg.runRequest.environmentMap)
+            scriptLoader.resolveAndLoad(
+                runScriptMsg.runRequest.file,
+                runScriptMsg.runRequest.devsList,
+                runScriptMsg.runRequest.environmentMap
+            )
 
             // Run the script
             script.start(emptyList(), null)
@@ -130,7 +135,69 @@ internal class SessionTest : KoinTestFixture() {
     }
 
     @Test
-    fun `request credentials during script resolution`() {
+    fun `error running a script`() {
+        // Have the script return nothing interesting
+        val script = mockk<Script>(relaxUnitFun = true) {
+            every { join(any(), any(), any()) } returns Either.Left(RuntimeException("Boom!"))
+        }
+        val scriptLoader = mockk<ScriptLoader> {
+            every { resolveAndLoad(any(), any(), any()) } returns script
+        }
+
+        testKoin(
+            module {
+                factory { scriptLoader }
+            }
+        )
+
+        val client = flowOf(runScriptMsg)
+        val session = Session(CoroutineScope(Dispatchers.Default), client)
+        val responses = runBlocking { session.server.toList() }
+
+        // Order should not be important because the task ID can be used by the client to determine ordering
+        responses.shouldContainAll(
+            sessionServerMessage {
+                newTaskBuilder.requestId = 1
+                newTaskBuilder.description = "Initializing file1.groovy"
+                newTaskBuilder.taskBuilder.taskId = 1
+                newTaskBuilder.taskBuilder.progress = Float.NaN
+            },
+            sessionServerMessage {
+                taskEndBuilder.taskId = 1
+                taskEndBuilder.cause = TaskEndCause.TASK_COMPLETED
+            },
+            sessionServerMessage {
+                newTaskBuilder.requestId = 1
+                newTaskBuilder.description = "Running file1.groovy"
+                newTaskBuilder.taskBuilder.taskId = 2
+                newTaskBuilder.taskBuilder.progress = Float.NaN
+            },
+            sessionServerMessage {
+                taskEndBuilder.taskId = 2
+                taskEndBuilder.cause = TaskEndCause.TASK_FAILED
+            }
+        )
+        // Error because the script returned an Either.Left
+        responses.shouldExist {
+            it.hasError() && it.error.requestId == 1L
+        }
+
+        verifyOrder {
+            // Initialize the script
+            scriptLoader.resolveAndLoad(
+                runScriptMsg.runRequest.file,
+                runScriptMsg.runRequest.devsList,
+                runScriptMsg.runRequest.environmentMap
+            )
+
+            // Run the script
+            script.start(emptyList(), null)
+            script.join(any(), any(), any())
+        }
+    }
+
+    @Test
+    fun `request credentials`() {
         testKoin(module {})
         val client = flow {
             while (true) {
@@ -150,7 +217,7 @@ internal class SessionTest : KoinTestFixture() {
     }
 
     @Test
-    fun `error during credentials request during script resolution`() {
+    fun `error during credentials request`() {
         testKoin(module {})
         val client = flow {
             while (true) {
@@ -169,7 +236,7 @@ internal class SessionTest : KoinTestFixture() {
     }
 
     @Test
-    fun `request 2fa during script resolution`() {
+    fun `request 2fa`() {
         testKoin(module {})
         val client = flow {
             while (true) {
@@ -185,6 +252,25 @@ internal class SessionTest : KoinTestFixture() {
         val session = Session(CoroutineScope(Dispatchers.Default), client)
         thread { runBlocking { session.server.collect() } }
         runBlocking { session.getTwoFactorFor(remote1) } shouldBe "token"
+    }
+
+    @Test
+    fun `error during 2fa request`() {
+        testKoin(module {})
+        val client = flow {
+            while (true) {
+                delay(100)
+                emit(
+                    sessionClientMessage {
+                        errorBuilder.requestId = 1
+                        errorBuilder.description = "Boom!"
+                    }
+                )
+            }
+        }
+        val session = Session(CoroutineScope(Dispatchers.Default), client)
+        thread { runBlocking { session.server.collect() } }
+        runBlocking { shouldThrow<IllegalStateException> { session.getTwoFactorFor(remote1) } }
     }
 
     @Test

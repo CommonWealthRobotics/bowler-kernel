@@ -41,7 +41,13 @@ internal class DefaultDependencyResolverTest {
 
         val gitFS = mockk<GitFS> {
             every { cloneRepo(file.project.repoRemote, file.project.revision) } returns IO.just(tempDir)
-            every { getFilesInRepo(tempDir) } returns IO.just(setOf(fileToResolve))
+            every { getFilesInRepo(tempDir) } returns IO.just(
+                setOf(
+                    createTempFile(".groovy", directory = tempDir),
+                    fileToResolve,
+                    createTempFile(".groovy", directory = tempDir)
+                )
+            )
         }
 
         val resolver = DefaultDependencyResolver(gitFS)
