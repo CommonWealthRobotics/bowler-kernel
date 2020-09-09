@@ -216,31 +216,35 @@ class GitHubFS(
             when (githubRepo) {
                 is GitHubRepo.Repository -> {
                     val repoFullName = "${githubRepo.owner}/${githubRepo.name}"
-                    getGitHub("https://github.com/$repoFullName.git").getRepository(repoFullName).fork()
+                    getGitHub("https://github.com/$repoFullName").getRepository(repoFullName).fork()
                 }
 
                 is GitHubRepo.Gist ->
-                    getGitHub("https://gist.github.com/${githubRepo.gistId}.git")
+                    getGitHub("https://gist.github.com/${githubRepo.gistId}")
                         .getGist(githubRepo.gistId).fork()
             }
         }
     }
 
-    private suspend fun getJGitCredentialsProvider(gitUrl: String): UsernamePasswordCredentialsProvider =
-        when (val credentials = credentialsProvider.getCredentialsFor(gitUrl)) {
+    private suspend fun getJGitCredentialsProvider(gitUrl: String): UsernamePasswordCredentialsProvider {
+        require(gitUrl.endsWith(".git"))
+        return when (val credentials = credentialsProvider.getCredentialsFor(gitUrl)) {
             is Credentials.Basic -> UsernamePasswordCredentialsProvider(credentials.username, credentials.password)
             // TODO: Validate this works
             is Credentials.OAuth -> UsernamePasswordCredentialsProvider(credentials.token, "x-oauth-basic")
             is Credentials.Anonymous -> UsernamePasswordCredentialsProvider("", "")
         }
+    }
 
-    private suspend fun getGitHub(remote: String): GitHub =
-        when (val credentials = credentialsProvider.getCredentialsFor(remote)) {
+    private suspend fun getGitHub(remote: String): GitHub {
+        require(!remote.endsWith(".git"))
+        return when (val credentials = credentialsProvider.getCredentialsFor(remote)) {
             // TODO: Handle 2FA
             is Credentials.Basic -> GitHub.connect(credentials.username, credentials.password)
             is Credentials.OAuth -> GitHub.connectUsingOAuth(credentials.token)
             Credentials.Anonymous -> GitHub.connectAnonymously()
         }
+    }
 
     companion object {
 

@@ -24,7 +24,9 @@ package com.commonwealthrobotics.bowlerkernel.authservice
 interface CredentialsProvider {
 
     /**
-     * Get the credentials for the [remote] (e.g. `https://github.com/CommonWealthRobotics/BowlerBuilder.git`).
+     * Get the credentials for the [remote] (e.g. `https://github.com/CommonWealthRobotics/BowlerBuilder.git`). If the
+     * [remote] ends with `.git`, it is assumed the credentials will be used for authenticating via `git`. Otherwise,
+     * it is assumed the credentials are for a Git remote.
      *
      * These credentials should never be stored.
      *
