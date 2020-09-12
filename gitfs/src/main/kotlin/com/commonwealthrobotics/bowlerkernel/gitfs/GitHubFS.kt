@@ -41,6 +41,8 @@ import org.kohsuke.github.GitHub
 import java.io.File
 import java.nio.file.FileSystems
 import java.nio.file.Paths
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 /**
  * A [GitFS] which interfaces with GitHub.
@@ -57,6 +59,8 @@ class GitHubFS(
     ).toString()
 ) : GitFS {
 
+    private val fsLock = ReentrantLock()
+
     override fun cloneRepo(
         gitUrl: String,
         branch: String
@@ -67,7 +71,7 @@ class GitHubFS(
             // The repo was already on disk, so directory exists, so pull
             logger.info { "Pulling repository in directory $directory" }
             @Suppress("BlockingMethodInNonBlockingContext")
-            Git.open(directory).use { it.pull().call() }
+            fsLock.withLock { Git.open(directory).use { it.pull().call() } }
         }.handleErrorWith {
             if (it is RepositoryNotFoundException) {
                 IO.defer {
@@ -77,7 +81,7 @@ class GitHubFS(
                         "Failed to pull from repo in $directory. Deleting directory."
                     }
 
-                    if (!directory.deleteRecursively()) {
+                    if (fsLock.withLock { !directory.deleteRecursively() }) {
                         logger.error { "Failed to delete $directory" }
                         throw IllegalStateException("Failed to delete $directory")
                     }
@@ -118,7 +122,7 @@ class GitHubFS(
 
     override fun deleteCache(): IO<Unit> = IO {
         @Suppress("BlockingMethodInNonBlockingContext")
-        FileUtils.deleteDirectory(Paths.get(gitHubCacheDirectory).toFile())
+        fsLock.withLock { FileUtils.deleteDirectory(Paths.get(gitHubCacheDirectory).toFile()) }
     }
 
     /**
@@ -145,7 +149,7 @@ class GitHubFS(
 
         return if (isValidHttpGitURL(gitUrl)) {
             val directory = gitUrlToDirectory(gitHubCacheDirectory, gitUrl)
-            if (directory.mkdirs()) {
+            if (fsLock.withLock { directory.mkdirs() }) {
                 IO { cloneRepository(gitUrl, branch, directory) }.map { directory }
             } else {
                 IO.raiseError(IllegalStateException("Directory $directory already exists."))
@@ -167,30 +171,34 @@ class GitHubFS(
         branch: String,
         directory: File
     ) {
-        // Try to clone without credentials first. If we can't, then request credentials.
-        val git = try {
-            Git.cloneRepository()
-                .setURI(gitUrl)
-                .setBranch(branch)
-                .setDirectory(directory)
-                .call()
-        } catch (ex: Exception) {
-            when (ex) {
-                is TransportException ->
-                    Git.cloneRepository()
-                        .setURI(gitUrl)
-                        .setBranch(branch)
-                        .setDirectory(directory)
-                        .setCredentialsProvider(getJGitCredentialsProvider(gitUrl))
-                        .call()
-                else -> throw ex
+        val jGitCredentialsProvider = getJGitCredentialsProvider(gitUrl)
+        fsLock.withLock {
+            // Try to clone without credentials first. If we can't, then request credentials.
+            val git = try {
+                Git.cloneRepository()
+                    .setURI(gitUrl)
+                    .setBranch(branch)
+                    .setDirectory(directory)
+                    .call()
+            } catch (ex: Exception) {
+                when (ex) {
+                    is TransportException -> {
+                        Git.cloneRepository()
+                            .setURI(gitUrl)
+                            .setBranch(branch)
+                            .setDirectory(directory)
+                            .setCredentialsProvider(jGitCredentialsProvider)
+                            .call()
+                    }
+                    else -> throw ex
+                }
             }
-        }
 
-        git.use {
-            Git.wrap(it.repository).use {
-                it.submoduleInit().call()
-                it.submoduleUpdate().call()
+            git.use {
+                Git.wrap(it.repository).use {
+                    it.submoduleInit().call()
+                    it.submoduleUpdate().call()
+                }
             }
         }
     }
@@ -243,6 +251,21 @@ class GitHubFS(
             is Credentials.Basic -> GitHub.connect(credentials.username, credentials.password)
             is Credentials.OAuth -> GitHub.connectUsingOAuth(credentials.token)
             Credentials.Anonymous -> GitHub.connectAnonymously()
+        }
+    }
+
+    /**
+     * Maps a repository to its files.
+     *
+     * @param repoIO The repository.
+     * @return The files in the repository, excluding `.git/` files and the receiver file.
+     */
+    private fun mapToRepoFiles(repoIO: IO<File>) = repoIO.map { repoFile ->
+        fsLock.withLock {
+            repoFile.walkTopDown()
+                .filter { file -> file.path != repoFile.path }
+                .filter { !it.path.contains(".git") }
+                .toSet()
         }
     }
 
@@ -321,19 +344,6 @@ class GitHubFS(
 
                 else -> Option.empty()
             }
-        }
-
-        /**
-         * Maps a repository to its files.
-         *
-         * @param repoIO The repository.
-         * @return The files in the repository, excluding `.git/` files and the receiver file.
-         */
-        internal fun mapToRepoFiles(repoIO: IO<File>) = repoIO.map { repoFile ->
-            repoFile.walkTopDown()
-                .filter { file -> file.path != repoFile.path }
-                .filter { !it.path.contains(".git") }
-                .toSet()
         }
 
         /**

@@ -37,14 +37,19 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import mu.KotlinLogging
 import org.koin.dsl.module
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.coroutines.coroutineContext
+import kotlin.time.ExperimentalTime
 
 /**
  * Implements the bidirectional session RPC.
@@ -69,12 +74,13 @@ class Session(
     // Request-response handling
     private val responseHandlers: MutableMap<Long, (SessionClientMessage) -> Unit> = mutableMapOf()
     private val requests = CallbackLatch<SessionServerMessage.Builder, SessionClientMessage>()
+    private val jobs = mutableListOf<Job>()
     private val scriptRequestMap = mutableMapOf<Long, Script>()
 
     /**
      * This is the main loop that handles a single session.
      */
-    @OptIn(ExperimentalCoroutinesApi::class, InternalCoroutinesApi::class)
+    @OptIn(ExperimentalCoroutinesApi::class, InternalCoroutinesApi::class, ExperimentalTime::class)
     val server: Flow<SessionServerMessage> = coroutineScope.produce<SessionServerMessage> {
         val sessionChannel = this
         @Suppress("TooGenericExceptionCaught") // Okay because we just log and rethrow
@@ -89,13 +95,12 @@ class Session(
                             // For requests, generate a new request ID and set it on the relevant builder
                             val id = nextRequest.getAndIncrement()
 
-                            val msgBuilder = it.input as SessionServerMessage.Builder
-                            when {
-                                msgBuilder.hasConfirmationRequest() ->
-                                    msgBuilder.confirmationRequestBuilder.requestId = id
-                                msgBuilder.hasCredentialsRequest() ->
-                                    msgBuilder.credentialsRequestBuilder.requestId = id
-                                msgBuilder.hasTwoFactorRequest() -> msgBuilder.twoFactorRequestBuilder.requestId = id
+                            it.input.apply {
+                                when {
+                                    hasConfirmationRequest() -> confirmationRequestBuilder.requestId = id
+                                    hasCredentialsRequest() -> credentialsRequestBuilder.requestId = id
+                                    hasTwoFactorRequest() -> twoFactorRequestBuilder.requestId = id
+                                }
                             }
 
                             send(it.input.build() as SessionServerMessage)
@@ -124,29 +129,33 @@ class Session(
                                     else -> null
                                 }
 
-                                val result = when {
-                                    requestId != null -> IO {
+                                val resultThunk = when {
+                                    requestId != null -> IO(coroutineScope.coroutineContext) {
                                         responseHandlers.remove(requestId)?.invoke(msg)
                                     }
-
                                     msg.hasRunRequest() -> runRequest(msg.runRequest, sessionChannel)
                                     msg.hasCancelRequest() -> TODO("Not yet implemented")
                                     msg.hasNewConfig() -> TODO("Not yet implemented")
                                     else -> throw IllegalStateException("Unhandled message type: $msg")
-                                }.attempt().suspended()
-
-                                logger.debug { "Result of handling client message: $result" }
-
-                                if (result is Either.Left) {
-                                    logger.warn(result.a) { "Request failed." }
-                                    send(
-                                        sessionServerMessage {
-                                            errorBuilder.requestId = msg.runRequest.requestId
-                                            errorBuilder.description =
-                                                "Request failed: ${result.a.localizedMessage}"
-                                        }
-                                    )
                                 }
+
+                                jobs.add(
+                                    launch {
+                                        val result = resultThunk.attempt().suspended()
+                                        logger.debug { "Result of handling client message: $result" }
+
+                                        if (result is Either.Left) {
+                                            logger.warn(result.a) { "Request failed." }
+                                            send(
+                                                sessionServerMessage {
+                                                    errorBuilder.requestId = msg.runRequest.requestId
+                                                    errorBuilder.description =
+                                                        "Request failed: ${result.a.localizedMessage}"
+                                                }
+                                            )
+                                        }
+                                    }
+                                )
 
                                 true
                             }
@@ -158,6 +167,7 @@ class Session(
             logger.error(t) { "Unhandled error in session" }
             throw t
         } finally {
+            jobs.joinAll()
             getKoin().unloadModules(modules)
             logger.debug { "Session ended" }
         }
@@ -193,7 +203,8 @@ class Session(
         val script = sessionChannel.withTask(
             runRequest.requestId,
             nextTaskID.getAndIncrement(),
-            "Initializing ${runRequest.file.path}"
+            "Initializing ${runRequest.file.path}",
+            coroutineScope.coroutineContext
         ) {
             val script = scriptLoader.resolveAndLoad(runRequest.file, runRequest.devsList, runRequest.environmentMap)
             scriptRequestMap[runRequest.requestId] = script
@@ -203,7 +214,8 @@ class Session(
         sessionChannel.withTask(
             runRequest.requestId,
             nextTaskID.getAndIncrement(),
-            "Running ${runRequest.file.path}"
+            "Running ${runRequest.file.path}",
+            coroutineScope.coroutineContext
         ) {
             script.start(emptyList(), null)
             val scriptResult = script.join()

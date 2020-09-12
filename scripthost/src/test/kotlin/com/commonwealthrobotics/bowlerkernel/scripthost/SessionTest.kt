@@ -45,6 +45,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.koin.dsl.module
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
@@ -280,5 +281,54 @@ internal class SessionTest : KoinTestFixture() {
         shouldThrow<IllegalArgumentException> {
             Session(GlobalScope, flowOf())
         }
+    }
+
+    @Test
+    fun `scripts must be able to run in parallel`() {
+        val runScript1 = sessionClientMessage {
+            runRequestBuilder.requestId = 1
+            runRequestBuilder.fileBuilder.projectBuilder.repoRemote = "git@github.com:user/repo1.git"
+            runRequestBuilder.fileBuilder.projectBuilder.revision = "master"
+            runRequestBuilder.fileBuilder.projectBuilder.patchBuilder.patch = ByteString.copyFrom(byteArrayOf())
+            runRequestBuilder.fileBuilder.path = "file1.groovy"
+        }
+        val runScript2 = sessionClientMessage {
+            runRequestBuilder.requestId = 2
+            runRequestBuilder.fileBuilder.projectBuilder.repoRemote = "git@github.com:user/repo1.git"
+            runRequestBuilder.fileBuilder.projectBuilder.revision = "master"
+            runRequestBuilder.fileBuilder.projectBuilder.patchBuilder.patch = ByteString.copyFrom(byteArrayOf())
+            runRequestBuilder.fileBuilder.path = "file2.groovy"
+        }
+        val client = flowOf(runScript1, runScript2)
+
+        val scriptLatch = CountDownLatch(2)
+        val script1 = mockk<Script>(relaxUnitFun = true) {
+            every { join(any(), any(), any()) } answers {
+                scriptLatch.countDown()
+                scriptLatch.await()
+                Either.Right(Unit)
+            }
+        }
+        val script2 = mockk<Script>(relaxUnitFun = true) {
+            every { join(any(), any(), any()) } answers {
+                scriptLatch.countDown()
+                scriptLatch.await()
+                Either.Right(Unit)
+            }
+        }
+        val scriptLoader = mockk<ScriptLoader> {
+            every { resolveAndLoad(runScript1.runRequest.file, any(), any()) } returns script1
+            every { resolveAndLoad(runScript2.runRequest.file, any(), any()) } returns script2
+        }
+
+        testKoin(
+            module {
+                factory { scriptLoader }
+            }
+        )
+
+        val session = Session(CoroutineScope(Dispatchers.Default), client)
+        runBlocking { session.server.collect() }
+        scriptLatch.await()
     }
 }

@@ -21,6 +21,7 @@ import com.commonwealthrobotics.proto.gitfs.FileSpec
 import com.commonwealthrobotics.proto.gitfs.ProjectSpec
 import groovy.lang.Binding
 import groovy.lang.GroovyShell
+import mu.KotlinLogging
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
 import java.io.File
@@ -60,6 +61,14 @@ class DefaultScriptLoader(
         }
 
         return { args: List<Any?>, scriptExecutionEnvironment: ScriptExecutionEnvironment ->
+            logger.debug {
+                """
+                |Script running.
+                |args=$args
+                |scriptExecutionEnvironment=$scriptExecutionEnvironment
+                """.trimMargin()
+            }
+
             val script = GroovyShell(
                 Thread.currentThread().contextClassLoader,
                 Binding().apply {
@@ -75,6 +84,8 @@ class DefaultScriptLoader(
     }
 
     companion object {
+
+        private val logger = KotlinLogging.logger { }
 
         private val groovyStarImports = listOf(
             "java.util",

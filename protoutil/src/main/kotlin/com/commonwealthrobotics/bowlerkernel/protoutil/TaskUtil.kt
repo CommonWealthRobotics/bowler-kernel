@@ -22,6 +22,8 @@ import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
 import kotlinx.coroutines.channels.SendChannel
 import mu.KotlinLogging
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 private object TaskUtil {
     val logger = KotlinLogging.logger { }
@@ -34,6 +36,7 @@ private object TaskUtil {
  * @param requestId The ID of the request this task was created from.
  * @param taskId The ID of this task.
  * @param description A short description of the task.
+ * @param ctx The [CoroutineContext] used to dispatch the returned [IO].
  * @param f The function to execute in the context of the task.
  * @return The return value of [f].
  */
@@ -42,8 +45,9 @@ suspend fun <T> SendChannel<SessionServerMessage>.withTask(
     requestId: Long,
     taskId: Long,
     description: String,
+    ctx: CoroutineContext = EmptyCoroutineContext,
     f: suspend () -> T
-): IO<T> = IO {
+): IO<T> = IO(ctx) {
     send(
         sessionServerMessage {
             newTaskBuilder.requestId = requestId

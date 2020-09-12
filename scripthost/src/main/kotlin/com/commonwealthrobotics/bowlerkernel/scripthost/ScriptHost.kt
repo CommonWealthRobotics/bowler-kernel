@@ -23,6 +23,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onCompletion
+import mu.KotlinLogging
 import java.util.concurrent.atomic.AtomicInteger
 
 class ScriptHost(private val scope: CoroutineScope) : ScriptHostGrpcKt.ScriptHostCoroutineImplBase() {
@@ -31,13 +32,16 @@ class ScriptHost(private val scope: CoroutineScope) : ScriptHostGrpcKt.ScriptHos
     override fun session(requests: Flow<SessionClientMessage>): Flow<SessionServerMessage> {
         if (concurrentSessionCount.getAndIncrement() != 0) {
             concurrentSessionCount.decrementAndGet()
-            error("Cannot create a concurrent session. Only one session may operate at a time.")
+            logger.throwing(
+                IllegalStateException("Cannot create a concurrent session. Only one session may operate at a time.")
+            )
         }
 
         return Session(scope, requests).server.onCompletion { concurrentSessionCount.decrementAndGet() }
     }
 
     companion object {
+        private val logger = KotlinLogging.logger { }
         private val concurrentSessionCount = AtomicInteger(0)
     }
 }
