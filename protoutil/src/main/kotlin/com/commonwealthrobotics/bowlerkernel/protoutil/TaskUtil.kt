@@ -16,8 +16,8 @@
  */
 package com.commonwealthrobotics.bowlerkernel.protoutil
 
-import arrow.core.Either
 import arrow.core.nonFatalOrThrow
+import arrow.fx.IO
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
 import kotlinx.coroutines.channels.SendChannel
@@ -35,15 +35,15 @@ private object TaskUtil {
  * @param taskId The ID of this task.
  * @param description A short description of the task.
  * @param f The function to execute in the context of the task.
- * @return The return value of the function or an error. Non-fatal exceptions are caught an wrapped in [Either.Left].
+ * @return The return value of [f].
  */
 @SuppressWarnings("TooGenericExceptionCaught")
 suspend fun <T> SendChannel<SessionServerMessage>.withTask(
     requestId: Long,
     taskId: Long,
     description: String,
-    f: () -> T
-): Either<Throwable, T> {
+    f: suspend () -> T
+): IO<T> = IO {
     send(
         sessionServerMessage {
             newTaskBuilder.requestId = requestId
@@ -53,9 +53,8 @@ suspend fun <T> SendChannel<SessionServerMessage>.withTask(
         }
     )
 
-    val out: T
-    try {
-        out = f()
+    val out = try {
+        f()
     } catch (ex: Throwable) {
         TaskUtil.logger.error(ex) {
             "Error running the script during request $requestId"
@@ -77,7 +76,7 @@ suspend fun <T> SendChannel<SessionServerMessage>.withTask(
         )
 
         // Exit early to avoid sending a TaskEnd in addition to a RequestError
-        return Either.Left(ex)
+        throw ex
     }
 
     send(
@@ -86,5 +85,6 @@ suspend fun <T> SendChannel<SessionServerMessage>.withTask(
             taskEndBuilder.cause = TaskEndCause.TASK_COMPLETED
         }
     )
-    return Either.Right(out)
+
+    out
 }

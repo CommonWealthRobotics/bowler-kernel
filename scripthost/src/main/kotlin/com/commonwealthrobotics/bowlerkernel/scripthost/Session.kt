@@ -17,6 +17,8 @@
 package com.commonwealthrobotics.bowlerkernel.scripthost
 
 import arrow.core.Either
+import arrow.fx.IO
+import arrow.fx.extensions.io.monad.flatten
 import com.commonwealthrobotics.bowlerkernel.authservice.Credentials
 import com.commonwealthrobotics.bowlerkernel.authservice.CredentialsProvider
 import com.commonwealthrobotics.bowlerkernel.di.BowlerKernelKoinComponent
@@ -31,7 +33,6 @@ import com.commonwealthrobotics.bowlerkernel.util.toChannel
 import com.commonwealthrobotics.proto.script_host.RunRequest
 import com.commonwealthrobotics.proto.script_host.SessionClientMessage
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
-import com.google.protobuf.GeneratedMessageV3
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -67,7 +68,7 @@ class Session(
 
     // Request-response handling
     private val responseHandlers: MutableMap<Long, (SessionClientMessage) -> Unit> = mutableMapOf()
-    private val requests = CallbackLatch<GeneratedMessageV3.Builder<*>, SessionClientMessage>()
+    private val requests = CallbackLatch<SessionServerMessage.Builder, SessionClientMessage>()
     private val scriptRequestMap = mutableMapOf<Long, Script>()
 
     /**
@@ -124,30 +125,27 @@ class Session(
                                 }
 
                                 val result = when {
-                                    requestId != null -> {
+                                    requestId != null -> IO {
                                         responseHandlers.remove(requestId)?.invoke(msg)
-                                        Either.Right(Unit)
                                     }
 
                                     msg.hasRunRequest() -> runRequest(msg.runRequest, sessionChannel)
                                     msg.hasCancelRequest() -> TODO("Not yet implemented")
                                     msg.hasNewConfig() -> TODO("Not yet implemented")
                                     else -> throw IllegalStateException("Unhandled message type: $msg")
-                                }
+                                }.attempt().suspended()
 
                                 logger.debug { "Result of handling client message: $result" }
 
-                                if (msg.hasRunRequest()) {
-                                    if (result is Either.Left) {
-                                        logger.warn(result.a) { "Script did not run successfully." }
-                                        send(
-                                            sessionServerMessage {
-                                                errorBuilder.requestId = msg.runRequest.requestId
-                                                errorBuilder.description =
-                                                    "Script did not run successfully: ${result.a.localizedMessage}"
-                                            }
-                                        )
-                                    }
+                                if (result is Either.Left) {
+                                    logger.warn(result.a) { "Request failed." }
+                                    send(
+                                        sessionServerMessage {
+                                            errorBuilder.requestId = msg.runRequest.requestId
+                                            errorBuilder.description =
+                                                "Request failed: ${result.a.localizedMessage}"
+                                        }
+                                    )
                                 }
 
                                 true
@@ -189,7 +187,7 @@ class Session(
     private suspend fun runRequest(
         runRequest: RunRequest,
         sessionChannel: SendChannel<SessionServerMessage>
-    ): Either<Throwable, Any?> {
+    ): IO<Any?> = IO {
         val scriptLoader = getKoin().get<ScriptLoader>()
 
         val script = sessionChannel.withTask(
@@ -200,25 +198,23 @@ class Session(
             val script = scriptLoader.resolveAndLoad(runRequest.file, runRequest.devsList, runRequest.environmentMap)
             scriptRequestMap[runRequest.requestId] = script
             script
-        }
+        }.suspended()
 
-        return sessionChannel.withTask(
+        sessionChannel.withTask(
             runRequest.requestId,
             nextTaskID.getAndIncrement(),
             "Running ${runRequest.file.path}"
         ) {
-            script.map {
-                it.start(emptyList(), null)
-                val scriptResult = it.join()
-                logger.info { "Script returned:\n$scriptResult" }
-                when (scriptResult) {
-                    // Throw when the script errored so that the task and request fail
-                    is Either.Left -> throw scriptResult.a
-                    is Either.Right -> scriptResult.b
-                }
+            script.start(emptyList(), null)
+            val scriptResult = script.join()
+            logger.info { "Script returned:\n$scriptResult" }
+            when (scriptResult) {
+                // Throw when the script errored so that the task and request fail
+                is Either.Left -> throw scriptResult.a
+                is Either.Right -> scriptResult.b
             }
         }
-    }
+    }.flatten()
 
     override suspend fun getCredentialsFor(remote: String): Credentials {
         val msg = requests.call(
@@ -258,12 +254,8 @@ class Session(
     /**
      * @return true if the [builder] is a "request" type (meaning it has a request ID).
      */
-    private fun isRequest(builder: GeneratedMessageV3.Builder<*>) =
-        (builder as SessionServerMessage.Builder).let {
-            builder.hasConfirmationRequest() ||
-                builder.hasCredentialsRequest() ||
-                builder.hasTwoFactorRequest()
-        }
+    private fun isRequest(builder: SessionServerMessage.Builder) =
+        builder.hasConfirmationRequest() || builder.hasCredentialsRequest() || builder.hasTwoFactorRequest()
 
     companion object {
         private val logger = KotlinLogging.logger { }

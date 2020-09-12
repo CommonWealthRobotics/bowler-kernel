@@ -36,7 +36,7 @@ object Versions {
     const val logback = "1.2.+"
     const val kotlinLogging = "1.7.+"
     const val mockk = "1.10.+"
-    const val arrow = "0.10.+"
+    const val arrow = "0.11.+"
     const val githubAPI = "1.115"
     const val jgit = "5.4.0.201906121030-r"
     const val commonsMath3 = "3.6.+"
