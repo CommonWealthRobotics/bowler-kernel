@@ -36,29 +36,12 @@ interface GitFS {
     fun cloneRepo(gitUrl: String, branch: String = "HEAD"): IO<File>
 
     /**
-     * Forks a repository.
-     *
-     * @param gitUrl The `.git` URL to fork from, i.e.
-     * `https://github.com/CommonWealthRobotics/BowlerBuilder.git` or
-     * `https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git`.
-     * @return The git URL of the fork.
-     */
-    fun forkRepo(gitUrl: String): IO<String>
-
-    /**
      * Gets the files in the repo, excluding the files inside `.git`.
      *
      * @param repoDir The directory of the repository root.
      * @return The files in the repository.
      */
     fun getFilesInRepo(repoDir: File): IO<Set<File>>
-
-    /**
-     * Returns whether the authenticated user has push access to the Git resource at [gitUrl].
-     *
-     * @param gitUrl
-     */
-    fun isOwner(gitUrl: String): IO<Boolean>
 
     /**
      * Clears the local Git cache.

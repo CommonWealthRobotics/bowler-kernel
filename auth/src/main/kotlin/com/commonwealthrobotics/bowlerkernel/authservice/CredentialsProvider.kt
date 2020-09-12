@@ -24,9 +24,7 @@ package com.commonwealthrobotics.bowlerkernel.authservice
 interface CredentialsProvider {
 
     /**
-     * Get the credentials for the [remote] (e.g. `https://github.com/CommonWealthRobotics/BowlerBuilder.git`). If the
-     * [remote] ends with `.git`, it is assumed the credentials will be used for authenticating via `git`. Otherwise,
-     * it is assumed the credentials are for a Git remote.
+     * Get the credentials for the [remote] (e.g. `https://github.com/CommonWealthRobotics/BowlerBuilder.git`).
      *
      * These credentials should never be stored.
      *
@@ -34,12 +32,4 @@ interface CredentialsProvider {
      * @return The credentials for that remote.
      */
     suspend fun getCredentialsFor(remote: String): Credentials
-
-    /**
-     * Get a 2FA response for the [remote] (e.g. `https://github.com/CommonWealthRobotics/BowlerBuilder.git`).
-     *
-     * @param remote The remote to ask for.
-     * @return A 2FA code.
-     */
-    suspend fun getTwoFactorFor(remote: String): String
 }

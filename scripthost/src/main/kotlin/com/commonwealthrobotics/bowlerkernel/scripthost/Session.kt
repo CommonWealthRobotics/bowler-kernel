@@ -99,7 +99,6 @@ class Session(
                                 when {
                                     hasConfirmationRequest() -> confirmationRequestBuilder.requestId = id
                                     hasCredentialsRequest() -> credentialsRequestBuilder.requestId = id
-                                    hasTwoFactorRequest() -> twoFactorRequestBuilder.requestId = id
                                 }
                             }
 
@@ -124,7 +123,6 @@ class Session(
                                 val requestId = when {
                                     msg.hasConfirmationResponse() -> msg.confirmationResponse.requestId
                                     msg.hasCredentialsResponse() -> msg.credentialsResponse.requestId
-                                    msg.hasTwoFactorResponse() -> msg.twoFactorResponse.requestId
                                     msg.hasError() -> msg.error.requestId
                                     else -> null
                                 }
@@ -249,25 +247,11 @@ class Session(
         }
     }
 
-    override suspend fun getTwoFactorFor(remote: String): String {
-        val msg = requests.call(
-            SessionServerMessage.newBuilder().apply {
-                twoFactorRequestBuilder.description = remote
-            }
-        )
-
-        return when {
-            msg.hasTwoFactorResponse() -> msg.twoFactorResponse.twoFactor
-            msg.hasError() -> throw IllegalStateException("2FA request error: " + msg.error.description)
-            else -> throw IllegalStateException("Unknown 2FA response: $msg")
-        }
-    }
-
     /**
      * @return true if the [builder] is a "request" type (meaning it has a request ID).
      */
     private fun isRequest(builder: SessionServerMessage.Builder) =
-        builder.hasConfirmationRequest() || builder.hasCredentialsRequest() || builder.hasTwoFactorRequest()
+        builder.hasConfirmationRequest() || builder.hasCredentialsRequest()
 
     companion object {
         private val logger = KotlinLogging.logger { }

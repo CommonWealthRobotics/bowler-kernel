@@ -18,9 +18,7 @@
 
 package com.commonwealthrobotics.bowlerkernel.gitfs
 
-import arrow.core.None
 import arrow.core.Option
-import arrow.core.Some
 import arrow.core.extensions.option.applicative.just
 import arrow.fx.IO
 import arrow.fx.handleErrorWith
@@ -36,8 +34,6 @@ import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.errors.RepositoryNotFoundException
 import org.eclipse.jgit.errors.TransportException
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
-import org.kohsuke.github.GHObject
-import org.kohsuke.github.GitHub
 import java.io.File
 import java.nio.file.FileSystems
 import java.nio.file.Paths
@@ -95,30 +91,7 @@ class GitHubFS(
         }.map { directory }
     }
 
-    override fun forkRepo(gitUrl: String): IO<String> =
-        when (val repo = parseRepo(gitUrl)) {
-            is None -> IO.raiseError(IllegalArgumentException("Invalid git url: $gitUrl"))
-            is Some -> forkRepo(repo.t).map {
-                it.url.toExternalForm()
-            }
-        }
-
     override fun getFilesInRepo(repoDir: File): IO<Set<File>> = mapToRepoFiles(IO.just(repoDir))
-
-    override fun isOwner(gitUrl: String): IO<Boolean> = IO { getGitHub(gitUrl) }.flatMap { gitHub ->
-        IO {
-            @Suppress("BlockingMethodInNonBlockingContext")
-            gitHub.myself.listGists().firstOrNull {
-                it.gitPullUrl == gitUrl
-            } != null
-        }.handleErrorWith {
-            IO {
-                gitHub.myself.listRepositories().first { repo ->
-                    repo.gitTransportUrl == gitUrl
-                }.hasPushAccess()
-            }
-        }
-    }
 
     override fun deleteCache(): IO<Unit> = IO {
         @Suppress("BlockingMethodInNonBlockingContext")
@@ -203,37 +176,6 @@ class GitHubFS(
         }
     }
 
-    /**
-     * Forks a repository.
-     *
-     * @param githubRepo The repo to fork.
-     * @return The fork of the repository.
-     */
-    @Suppress("BlockingMethodInNonBlockingContext")
-    private fun forkRepo(
-        githubRepo: GitHubRepo
-    ): IO<GHObject> {
-        logger.info {
-            """
-            |Forking repository:
-            |$githubRepo
-            """.trimMargin()
-        }
-
-        return IO {
-            when (githubRepo) {
-                is GitHubRepo.Repository -> {
-                    val repoFullName = "${githubRepo.owner}/${githubRepo.name}"
-                    getGitHub("https://github.com/$repoFullName").getRepository(repoFullName).fork()
-                }
-
-                is GitHubRepo.Gist ->
-                    getGitHub("https://gist.github.com/${githubRepo.gistId}")
-                        .getGist(githubRepo.gistId).fork()
-            }
-        }
-    }
-
     private suspend fun getJGitCredentialsProvider(gitUrl: String): UsernamePasswordCredentialsProvider {
         require(gitUrl.endsWith(".git"))
         return when (val credentials = credentialsProvider.getCredentialsFor(gitUrl)) {
@@ -241,16 +183,6 @@ class GitHubFS(
             // TODO: Validate this works
             is Credentials.OAuth -> UsernamePasswordCredentialsProvider(credentials.token, "x-oauth-basic")
             is Credentials.Anonymous -> UsernamePasswordCredentialsProvider("", "")
-        }
-    }
-
-    private suspend fun getGitHub(remote: String): GitHub {
-        require(!remote.endsWith(".git"))
-        return when (val credentials = credentialsProvider.getCredentialsFor(remote)) {
-            // TODO: Handle 2FA
-            is Credentials.Basic -> GitHub.connect(credentials.username, credentials.password)
-            is Credentials.OAuth -> GitHub.connectUsingOAuth(credentials.token)
-            Credentials.Anonymous -> GitHub.connectAnonymously()
         }
     }
 

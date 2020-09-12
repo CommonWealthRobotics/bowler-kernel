@@ -223,34 +223,6 @@ internal class SessionTest : KoinTestFixture() {
     }
 
     @Test
-    fun `request 2fa`() {
-        testKoin(module {})
-        val client = alwaysEmit(
-            sessionClientMessage {
-                twoFactorResponseBuilder.requestId = 1
-                twoFactorResponseBuilder.twoFactor = "token"
-            }
-        )
-        val session = Session(CoroutineScope(Dispatchers.Default), client)
-        thread { runBlocking { session.server.collect() } }
-        runBlocking { session.getTwoFactorFor(remote1) } shouldBe "token"
-    }
-
-    @Test
-    fun `error during 2fa request`() {
-        testKoin(module {})
-        val client = alwaysEmit(
-            sessionClientMessage {
-                errorBuilder.requestId = 1
-                errorBuilder.description = "Boom!"
-            }
-        )
-        val session = Session(CoroutineScope(Dispatchers.Default), client)
-        thread { runBlocking { session.server.collect() } }
-        runBlocking { shouldThrow<IllegalStateException> { session.getTwoFactorFor(remote1) } }
-    }
-
-    @Test
     fun `request credentials during script resolution race condition`() {
         testKoin(module {})
         val client = alwaysEmit(

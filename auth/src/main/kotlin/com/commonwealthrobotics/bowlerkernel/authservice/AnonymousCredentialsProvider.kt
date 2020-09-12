@@ -22,7 +22,4 @@ package com.commonwealthrobotics.bowlerkernel.authservice
 object AnonymousCredentialsProvider : CredentialsProvider {
 
     override suspend fun getCredentialsFor(remote: String) = Credentials.Anonymous
-
-    override suspend fun getTwoFactorFor(remote: String) =
-        throw UnsupportedOperationException("Cannot get a two-factor code for an anonymous authentication.")
 }

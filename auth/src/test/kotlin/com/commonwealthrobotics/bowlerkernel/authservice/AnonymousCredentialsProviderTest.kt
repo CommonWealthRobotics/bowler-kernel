@@ -16,7 +16,6 @@
  */
 package com.commonwealthrobotics.bowlerkernel.authservice
 
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
@@ -27,15 +26,6 @@ internal class AnonymousCredentialsProviderTest {
     fun `credentials returns anonymous`() {
         runBlocking {
             AnonymousCredentialsProvider.getCredentialsFor("").shouldBe(Credentials.Anonymous)
-        }
-    }
-
-    @Test
-    fun `cannot request 2FA code for anonymous`() {
-        runBlocking {
-            shouldThrow<UnsupportedOperationException> {
-                AnonymousCredentialsProvider.getTwoFactorFor("")
-            }
         }
     }
 }

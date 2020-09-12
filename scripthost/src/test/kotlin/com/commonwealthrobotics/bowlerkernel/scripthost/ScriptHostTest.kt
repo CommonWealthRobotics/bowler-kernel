@@ -16,7 +16,6 @@
  */
 package com.commonwealthrobotics.bowlerkernel.scripthost
 
-import com.commonwealthrobotics.bowlerkernel.protoutil.sessionClientMessage
 import com.commonwealthrobotics.bowlerkernel.testutil.KoinTestFixture
 import io.kotest.assertions.throwables.shouldThrow
 import kotlinx.coroutines.CoroutineScope
@@ -43,9 +42,9 @@ internal class ScriptHostTest : KoinTestFixture() {
     fun `starting one session after another sequentially is okay`() {
         testKoin(module {})
         val host = ScriptHost(CoroutineScope(Dispatchers.Default))
-        val session1 = host.session(flowOf(sessionClientMessage { errorBuilder.requestId = 1 }))
+        val session1 = host.session(flowOf())
         runBlocking { session1.collect() }
-        val session2 = host.session(flowOf(sessionClientMessage { errorBuilder.requestId = 1 }))
+        val session2 = host.session(flowOf())
         runBlocking { session2.collect() }
     }
 }
