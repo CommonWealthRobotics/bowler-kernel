@@ -11,20 +11,21 @@ import java.util.concurrent.atomic.AtomicInteger
  * @param count The initial count of the latch.
  */
 class KCountDownLatch(count: Int) {
-    private val count = AtomicInteger(count)
+    private val _count = AtomicInteger(count)
     private val mutex = Mutex(true)
 
     /**
      * Get the current count of the latch.
      * @return The current count of the latch.
      */
-    fun count(): Int = count.get()
+    val count: Int
+        get() = _count.get()
 
     /**
      * Decrement the current count of the latch.
      */
     fun countDown() {
-        val previous = count.getAndUpdate { if (it == 0) 0 else it - 1 }
+        val previous = _count.getAndUpdate { if (it == 0) 0 else it - 1 }
         if (previous == 0) throw IllegalStateException("KCountDownLatch is already at zero")
         else if (previous == 1) mutex.unlock()
     }
