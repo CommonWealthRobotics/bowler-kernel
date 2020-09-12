@@ -23,8 +23,11 @@ import com.commonwealthrobotics.bowlerkernel.protoutil.sessionServerMessage
 import com.commonwealthrobotics.bowlerkernel.scripting.Script
 import com.commonwealthrobotics.bowlerkernel.scripting.ScriptLoader
 import com.commonwealthrobotics.bowlerkernel.testutil.KoinTestFixture
-import com.commonwealthrobotics.bowlerkernel.testutil.alwaysEmit
+import com.commonwealthrobotics.bowlerkernel.util.KCountDownLatch
+import com.commonwealthrobotics.bowlerkernel.util.toChannel
 import com.commonwealthrobotics.proto.gitfs.ProjectSpec
+import com.commonwealthrobotics.proto.script_host.SessionClientMessage
+import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
 import com.google.protobuf.ByteString
 import io.kotest.assertions.throwables.shouldThrow
@@ -35,19 +38,17 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyOrder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.channels.produce
+import kotlinx.coroutines.flow.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.koin.dsl.module
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import kotlin.concurrent.thread
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class SessionTest : KoinTestFixture() {
@@ -71,6 +72,21 @@ internal class SessionTest : KoinTestFixture() {
             }
         )
         runRequestBuilder.putEnvironment("KEY", "VALUE")
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun runSession(client: suspend SendChannel<SessionClientMessage>.(ReceiveChannel<SessionServerMessage>) -> Unit): Session {
+        val channel = Channel<Flow<SessionServerMessage>>()
+        val scope = CoroutineScope(Dispatchers.Default)
+
+        val clientFlow = scope.produce {
+            val serverFlow = channel.receive()
+            client(serverFlow.toChannel(scope))
+        }.consumeAsFlow()
+
+        val session = Session(scope, clientFlow)
+        runBlocking { channel.send(session.server) }
+        return session
     }
 
     @Test
@@ -196,51 +212,70 @@ internal class SessionTest : KoinTestFixture() {
     @Test
     fun `request credentials`() {
         testKoin(module {})
-        val client = alwaysEmit(
-            sessionClientMessage {
-                credentialsResponseBuilder.requestId = 1
+        val session = runSession { server ->
+            val id = server.receive().run {
+                hasCredentialsRequest() shouldBe true
+                credentialsRequest.remote shouldBe remote1
+                credentialsRequest.requestId
+            }
+            send(sessionClientMessage {
+                credentialsResponseBuilder.requestId = id
                 credentialsResponseBuilder.basicBuilder.username = "username"
                 credentialsResponseBuilder.basicBuilder.password = "password"
-            }
-        )
-        val session = Session(CoroutineScope(Dispatchers.Default), client)
-        thread { runBlocking { session.server.collect() } }
+            })
+        }
         runBlocking { session.getCredentialsFor(remote1) } shouldBe Credentials.Basic("username", "password")
     }
 
     @Test
     fun `error during credentials request`() {
         testKoin(module {})
-        val client = alwaysEmit(
-            sessionClientMessage {
-                errorBuilder.requestId = 1
-                errorBuilder.description = "Boom!"
+        val session = runSession { server ->
+            val id = server.receive().run {
+                hasCredentialsRequest() shouldBe true
+                credentialsRequest.remote shouldBe remote1
+                credentialsRequest.requestId
             }
-        )
-        val session = Session(CoroutineScope(Dispatchers.Default), client)
-        thread { runBlocking { session.server.collect() } }
+            send(sessionClientMessage {
+                errorBuilder.requestId = id
+                errorBuilder.description = "Boom!"
+            })
+        }
         runBlocking { shouldThrow<IllegalStateException> { session.getCredentialsFor(remote1) } }
     }
 
     @Test
     fun `request credentials during script resolution race condition`() {
         testKoin(module {})
-        val client = alwaysEmit(
-            sessionClientMessage {
-                credentialsResponseBuilder.requestId = 2
+        val latch = KCountDownLatch(1)
+        val session = runSession { server ->
+            val id1 = server.receive().run {
+                hasCredentialsRequest() shouldBe true
+                credentialsRequest.remote shouldBe remote1
+                credentialsRequest.requestId
+            }
+            latch.countDown()
+            val id2 = server.receive().run {
+                hasCredentialsRequest() shouldBe true
+                credentialsRequest.remote shouldBe remote2
+                credentialsRequest.requestId
+            }
+            send(sessionClientMessage {
+                credentialsResponseBuilder.requestId = id2
                 credentialsResponseBuilder.basicBuilder.username = "username2"
                 credentialsResponseBuilder.basicBuilder.password = "password2"
-            },
-            sessionClientMessage {
-                credentialsResponseBuilder.requestId = 1
+            })
+            send(sessionClientMessage {
+                credentialsResponseBuilder.requestId = id1
                 credentialsResponseBuilder.basicBuilder.username = "username1"
                 credentialsResponseBuilder.basicBuilder.password = "password1"
-            }
-        )
-        val session = Session(CoroutineScope(Dispatchers.Default), client)
-        thread { runBlocking { session.server.collect() } }
+            })
+        }
         runBlocking {
-            listOf(session.getCredentialsFor(remote1), session.getCredentialsFor(remote2)).shouldContainExactly(
+            awaitAll(
+                    async { session.getCredentialsFor(remote1) },
+                    async { latch.await(); session.getCredentialsFor(remote2) }
+            ).shouldContainExactly(
                 Credentials.Basic("username1", "password1"),
                 Credentials.Basic("username2", "password2")
             )
