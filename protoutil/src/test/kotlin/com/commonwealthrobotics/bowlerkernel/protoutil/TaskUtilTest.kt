@@ -20,7 +20,6 @@ import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
 import io.kotest.assertions.arrow.either.shouldBeLeft
 import io.kotest.assertions.arrow.either.shouldBeRight
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.coVerifyOrder
@@ -36,7 +35,7 @@ internal class TaskUtilTest {
         val responseObserver = mockk<SendChannel<SessionServerMessage>>(relaxUnitFun = true)
 
         val result = runBlocking { responseObserver.withTask(1, 1, "desc") { 42 } }
-        result.shouldBeRight { it.shouldBe(42) }
+        result.attempt().unsafeRunSync().shouldBeRight { it.shouldBe(42) }
 
         coVerifyOrder {
             responseObserver.send(
@@ -61,7 +60,7 @@ internal class TaskUtilTest {
         val responseObserver = mockk<SendChannel<SessionServerMessage>>(relaxUnitFun = true)
 
         val result = runBlocking { responseObserver.withTask(1, 1, "desc") { error("Boom!") } }
-        result.shouldBeLeft {
+        result.attempt().unsafeRunSync().shouldBeLeft {
             it.shouldBeInstanceOf<IllegalStateException>()
             it.message.shouldBe("Boom!")
         }
@@ -95,9 +94,7 @@ internal class TaskUtilTest {
         val responseObserver = mockk<SendChannel<SessionServerMessage>>(relaxUnitFun = true)
 
         runBlocking {
-            shouldThrow<OutOfMemoryError> {
-                responseObserver.withTask(1, 1, "desc") { throw OutOfMemoryError() }
-            }
+            responseObserver.withTask(1, 1, "desc") { throw OutOfMemoryError() }.attempt().suspended().shouldBeLeft()
         }
 
         coVerifyOrder {
