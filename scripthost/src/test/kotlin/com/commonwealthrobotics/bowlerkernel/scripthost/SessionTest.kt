@@ -24,10 +24,7 @@ import com.commonwealthrobotics.bowlerkernel.scripting.Script
 import com.commonwealthrobotics.bowlerkernel.scripting.ScriptLoader
 import com.commonwealthrobotics.bowlerkernel.testutil.KoinTestFixture
 import com.commonwealthrobotics.bowlerkernel.util.KCountDownLatch
-import com.commonwealthrobotics.bowlerkernel.util.toChannel
 import com.commonwealthrobotics.proto.gitfs.ProjectSpec
-import com.commonwealthrobotics.proto.script_host.SessionClientMessage
-import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
 import com.google.protobuf.ByteString
 import io.kotest.assertions.throwables.shouldThrow
@@ -38,12 +35,15 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyOrder
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.channels.produce
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.koin.dsl.module
@@ -72,21 +72,6 @@ internal class SessionTest : KoinTestFixture() {
             }
         )
         runRequestBuilder.putEnvironment("KEY", "VALUE")
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun runSession(client: suspend SendChannel<SessionClientMessage>.(ReceiveChannel<SessionServerMessage>) -> Unit): Session {
-        val channel = Channel<Flow<SessionServerMessage>>()
-        val scope = CoroutineScope(Dispatchers.Default)
-
-        val clientFlow = scope.produce {
-            val serverFlow = channel.receive()
-            client(serverFlow.toChannel(scope))
-        }.consumeAsFlow()
-
-        val session = Session(scope, clientFlow)
-        runBlocking { channel.send(session.server) }
-        return session
     }
 
     @Test
@@ -213,16 +198,13 @@ internal class SessionTest : KoinTestFixture() {
     fun `request credentials`() {
         testKoin(module {})
         val session = runSession { server ->
-            val id = server.receive().run {
-                hasCredentialsRequest() shouldBe true
-                credentialsRequest.remote shouldBe remote1
-                credentialsRequest.requestId
-            }
-            send(sessionClientMessage {
-                credentialsResponseBuilder.requestId = id
-                credentialsResponseBuilder.basicBuilder.username = "username"
-                credentialsResponseBuilder.basicBuilder.password = "password"
-            })
+            send(
+                sessionClientMessage {
+                    credentialsResponseBuilder.requestId = server.receive().credentialsRequest.requestId
+                    credentialsResponseBuilder.basicBuilder.username = "username"
+                    credentialsResponseBuilder.basicBuilder.password = "password"
+                }
+            )
         }
         runBlocking { session.getCredentialsFor(remote1) } shouldBe Credentials.Basic("username", "password")
     }
@@ -231,15 +213,12 @@ internal class SessionTest : KoinTestFixture() {
     fun `error during credentials request`() {
         testKoin(module {})
         val session = runSession { server ->
-            val id = server.receive().run {
-                hasCredentialsRequest() shouldBe true
-                credentialsRequest.remote shouldBe remote1
-                credentialsRequest.requestId
-            }
-            send(sessionClientMessage {
-                errorBuilder.requestId = id
-                errorBuilder.description = "Boom!"
-            })
+            send(
+                sessionClientMessage {
+                    errorBuilder.requestId = server.receive().credentialsRequest.requestId
+                    errorBuilder.description = "Boom!"
+                }
+            )
         }
         runBlocking { shouldThrow<IllegalStateException> { session.getCredentialsFor(remote1) } }
     }
@@ -260,21 +239,30 @@ internal class SessionTest : KoinTestFixture() {
                 credentialsRequest.remote shouldBe remote2
                 credentialsRequest.requestId
             }
-            send(sessionClientMessage {
-                credentialsResponseBuilder.requestId = id2
-                credentialsResponseBuilder.basicBuilder.username = "username2"
-                credentialsResponseBuilder.basicBuilder.password = "password2"
-            })
-            send(sessionClientMessage {
-                credentialsResponseBuilder.requestId = id1
-                credentialsResponseBuilder.basicBuilder.username = "username1"
-                credentialsResponseBuilder.basicBuilder.password = "password1"
-            })
+            // Respond to the second request first on purpose
+            send(
+                sessionClientMessage {
+                    credentialsResponseBuilder.requestId = id2
+                    credentialsResponseBuilder.basicBuilder.username = "username2"
+                    credentialsResponseBuilder.basicBuilder.password = "password2"
+                }
+            )
+            send(
+                sessionClientMessage {
+                    credentialsResponseBuilder.requestId = id1
+                    credentialsResponseBuilder.basicBuilder.username = "username1"
+                    credentialsResponseBuilder.basicBuilder.password = "password1"
+                }
+            )
         }
         runBlocking {
             awaitAll(
-                    async { session.getCredentialsFor(remote1) },
-                    async { latch.await(); session.getCredentialsFor(remote2) }
+                async { session.getCredentialsFor(remote1) },
+                async {
+                    // Wait for the first request to finish first
+                    latch.await()
+                    session.getCredentialsFor(remote2)
+                }
             ).shouldContainExactly(
                 Credentials.Basic("username1", "password1"),
                 Credentials.Basic("username2", "password2")
