@@ -18,17 +18,38 @@ package com.commonwealthrobotics.bowlerkernel.util
 
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.selects.select
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
+/**
+ * Models "synchronous" method calls using coroutines. Meant to be used in combination with [select] to implement
+ * "synchronous" method calls over a send channel and a receive channel.
+ */
 class CallbackLatch<T, R> {
+
+    /**
+     * A single request-response transaction.
+     *
+     * @param input The data of the request.
+     * @param callback Called with the data of the response.
+     */
     data class Transaction<T, R>(val input: T, val callback: (R) -> Unit)
 
     private val transactions = Channel<Transaction<T, R>>()
 
+    /**
+     * Meant to be used in a [select] expression.
+     */
     val onReceive = transactions.onReceive
 
-    suspend fun call(input: T): R = suspendCoroutine<R> { cont ->
+    /**
+     * Perform a "synchronous" request-response transaction. Suspends until a response is received.
+     *
+     * @param input The data of the request.
+     * @return The data of the response.
+     */
+    suspend fun call(input: T): R = suspendCoroutine { cont ->
         transactions.sendBlocking(Transaction(input) { cont.resume(it) })
     }
 }
