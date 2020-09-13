@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Timeout
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
-@Timeout(value = 30, unit = TimeUnit.SECONDS)
+@Timeout(value = 5, unit = TimeUnit.MINUTES)
 internal class KernelServerIntegTest {
 
     companion object {
