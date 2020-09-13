@@ -38,7 +38,7 @@ import kotlinx.coroutines.runBlocking
  * @return The [Session].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-internal fun runSession(
+fun runSession(
     client: suspend SendChannel<SessionClientMessage>.(ReceiveChannel<SessionServerMessage>) -> Unit
 ): Session {
     val channel = Channel<Flow<SessionServerMessage>>()

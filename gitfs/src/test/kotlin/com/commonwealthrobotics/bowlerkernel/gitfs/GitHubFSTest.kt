@@ -72,7 +72,7 @@ internal class GitHubFSTest {
             val expected = Paths.get(tempDir.absolutePath, orgName, repoName)
 
             val actual = GitHubFS.gitUrlToDirectory(
-                tempDir.absolutePath,
+                tempDir.toPath(),
                 testRepoUrl
             )
 
@@ -84,8 +84,8 @@ internal class GitHubFSTest {
             // Don't use a TempDir because jgit leaves something open so Windows builds fail
             val tmpCachePath = getRandomTempFile()
 
-            val fs = GitHubFS(AnonymousCredentialsProvider, tmpCachePath.toString())
-            val repoPath = Paths.get(fs.gitHubCacheDirectory, orgName, repoName)
+            val fs = GitHubFS(AnonymousCredentialsProvider, tmpCachePath)
+            val repoPath = fs.gitHubCacheDirectory.resolve(orgName).resolve(repoName)
 
             val files = fs.cloneRepo(testRepoUrl)
                 .flatMap { fs.getFilesInRepo(it) }
@@ -106,9 +106,9 @@ internal class GitHubFSTest {
         fun `test cloning with corrupted git folder`() {
             // Don't use a TempDir because jgit leaves something open so Windows builds fail
             val tmpCachePath = getRandomTempFile()
-            val fs = GitHubFS(AnonymousCredentialsProvider, tmpCachePath.toString())
+            val fs = GitHubFS(AnonymousCredentialsProvider, tmpCachePath)
 
-            val repoPath = Paths.get(fs.gitHubCacheDirectory, orgName, repoName)
+            val repoPath = fs.gitHubCacheDirectory.resolve(orgName).resolve(repoName)
 
             // Make an empty .git directory so it appears corrupted
             repoPath.toFile().apply { mkdirs() }
@@ -131,7 +131,7 @@ internal class GitHubFSTest {
 
         @Test
         fun `test deleteCache`(@TempDir tempDir: File) {
-            val fs = GitHubFS(AnonymousCredentialsProvider, tempDir.absolutePath)
+            val fs = GitHubFS(AnonymousCredentialsProvider, tempDir.toPath())
 
             val repoPath = Paths.get(tempDir.absolutePath, orgName, repoName)
 
@@ -158,7 +158,7 @@ internal class GitHubFSTest {
 
     @Test
     fun `test cloning from invalid git url`(@TempDir tempDir: File) {
-        val fs = GitHubFS(AnonymousCredentialsProvider, tempDir.absolutePath)
+        val fs = GitHubFS(AnonymousCredentialsProvider, tempDir.toPath())
 
         val actual = fs.cloneRepo("invalidGitRepo").attempt().unsafeRunSync()
 

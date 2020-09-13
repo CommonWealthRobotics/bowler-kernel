@@ -17,30 +17,32 @@
 package com.commonwealthrobotics.bowlerkernel.server
 
 import com.commonwealthrobotics.bowlerkernel.di.BowlerKernelKoinContext
+import com.commonwealthrobotics.bowlerkernel.di.GITHUB_CACHE_DIRECTORY_KOIN_NAME
 import com.commonwealthrobotics.bowlerkernel.gitfs.DefaultDependencyResolver
 import com.commonwealthrobotics.bowlerkernel.gitfs.DependencyResolver
 import com.commonwealthrobotics.bowlerkernel.scripthost.ScriptHost
 import com.commonwealthrobotics.bowlerkernel.scripting.DefaultScriptLoader
 import com.commonwealthrobotics.bowlerkernel.scripting.ScriptLoader
+import com.commonwealthrobotics.bowlerkernel.util.getFullPathToGitHubCacheDirectory
 import io.grpc.Server
 import io.grpc.netty.NettyServerBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import mu.KotlinLogging
+import org.koin.core.qualifier.named
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
+import java.nio.file.Path
 
 class KernelServer {
 
     private lateinit var server: Server
 
-    val port
-        get() = server.port
-
-    fun start() {
+    fun start(gitHubCacheDirectory: Path = getFullPathToGitHubCacheDirectory()) {
         BowlerKernelKoinContext.koinApp = koinApplication {
             modules(
                 module {
+                    single(named(GITHUB_CACHE_DIRECTORY_KOIN_NAME)) { gitHubCacheDirectory }
                     factory<DependencyResolver> { DefaultDependencyResolver(get()) }
                     factory<ScriptLoader> { DefaultScriptLoader(get()) }
                 }

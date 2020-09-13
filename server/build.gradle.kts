@@ -5,6 +5,8 @@ dependencies {
     implementation(project(":scripting"))
     implementation(project(":gitfs"))
     implementation(project(":di"))
+    implementation(project(":util"))
 
     testImplementation(project(":testUtil"))
+    testImplementation(testFixtures(project(":scripthost")))
 }

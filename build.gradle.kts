@@ -11,6 +11,7 @@ plugins {
     kotlin("jvm") version Versions.kotlin
     id("org.jlleitschuh.gradle.ktlint") version Versions.ktlintPlugin
     id("io.gitlab.arturbosch.detekt") version Versions.detektPlugin
+    `java-test-fixtures`
 }
 
 val kotlinProjects = listOf(
@@ -117,6 +118,7 @@ subprojects {
     apply {
         plugin("java-library")
         plugin("jacoco")
+        plugin("java-test-fixtures")
     }
 
     java {
@@ -204,8 +206,11 @@ configure(kotlinProjects) {
         implementation(group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk8", version = Versions.kotlin)
         implementation(group = "org.jetbrains.kotlin", name = "kotlin-reflect", version = Versions.kotlin)
         implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = Versions.kotlinCoroutines)
-
         implementation(group = "io.github.microutils", name = "kotlin-logging", version = Versions.kotlinLogging)
+
+        testFixturesImplementation(group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk8", version = Versions.kotlin)
+        testFixturesImplementation(group = "org.jetbrains.kotlin", name = "kotlin-reflect", version = Versions.kotlin)
+        testFixturesImplementation(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = Versions.kotlinCoroutines)
     }
 
     tasks.withType<KotlinCompile> {

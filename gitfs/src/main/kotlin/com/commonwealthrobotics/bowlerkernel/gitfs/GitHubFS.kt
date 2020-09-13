@@ -24,10 +24,7 @@ import arrow.fx.IO
 import arrow.fx.handleErrorWith
 import com.commonwealthrobotics.bowlerkernel.authservice.Credentials
 import com.commonwealthrobotics.bowlerkernel.authservice.CredentialsProvider
-import com.commonwealthrobotics.bowlerkernel.util.BOWLERKERNEL_DIRECTORY
-import com.commonwealthrobotics.bowlerkernel.util.BOWLER_DIRECTORY
-import com.commonwealthrobotics.bowlerkernel.util.GITHUB_CACHE_DIRECTORY
-import com.commonwealthrobotics.bowlerkernel.util.GIT_CACHE_DIRECTORY
+import com.commonwealthrobotics.bowlerkernel.util.getFullPathToGitHubCacheDirectory
 import mu.KotlinLogging
 import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.Git
@@ -36,23 +33,20 @@ import org.eclipse.jgit.errors.TransportException
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import java.io.File
 import java.nio.file.FileSystems
-import java.nio.file.Paths
+import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
 /**
  * A [GitFS] which interfaces with GitHub.
+ *
+ * @param credentialsProvider The [CredentialsProvider] used to ask for `Git` credentials.
+ * @param gitHubCacheDirectory The directory inside of which the GitHub cache (repos, gists, etc.) will be maintained.
  */
 @SuppressWarnings("LargeClass")
 class GitHubFS(
     private val credentialsProvider: CredentialsProvider,
-    internal val gitHubCacheDirectory: String = Paths.get(
-        System.getProperty("user.home"),
-        BOWLER_DIRECTORY,
-        BOWLERKERNEL_DIRECTORY,
-        GIT_CACHE_DIRECTORY,
-        GITHUB_CACHE_DIRECTORY
-    ).toString()
+    internal val gitHubCacheDirectory: Path = getFullPathToGitHubCacheDirectory()
 ) : GitFS {
 
     private val fsLock = ReentrantLock()
@@ -67,7 +61,9 @@ class GitHubFS(
             // The repo was already on disk, so directory exists, so pull
             logger.info { "Pulling repository in directory $directory" }
             @Suppress("BlockingMethodInNonBlockingContext")
-            fsLock.withLock { Git.open(directory).use { it.pull().call() } }
+            fsLock.withLock {
+                Git.open(directory).use { it.pull().call() }
+            }
         }.handleErrorWith {
             if (it is RepositoryNotFoundException) {
                 IO.defer {
@@ -77,13 +73,15 @@ class GitHubFS(
                         "Failed to pull from repo in $directory. Deleting directory."
                     }
 
-                    if (fsLock.withLock { !directory.deleteRecursively() }) {
-                        logger.error { "Failed to delete $directory" }
-                        throw IllegalStateException("Failed to delete $directory")
-                    }
+                    fsLock.withLock {
+                        if (!directory.deleteRecursively()) {
+                            logger.error { "Failed to delete $directory" }
+                            throw IllegalStateException("Failed to delete $directory")
+                        }
 
-                    // After deleting the directory, try to clone again
-                    freshClone(gitUrl, branch)
+                        // After deleting the directory, try to clone again
+                        freshClone(gitUrl, branch)
+                    }
                 }
             } else {
                 IO.raiseError(it)
@@ -95,7 +93,7 @@ class GitHubFS(
 
     override fun deleteCache(): IO<Unit> = IO {
         @Suppress("BlockingMethodInNonBlockingContext")
-        fsLock.withLock { FileUtils.deleteDirectory(Paths.get(gitHubCacheDirectory).toFile()) }
+        fsLock.withLock { FileUtils.deleteDirectory(gitHubCacheDirectory.toFile()) }
     }
 
     /**
@@ -122,7 +120,7 @@ class GitHubFS(
 
         return if (isValidHttpGitURL(gitUrl)) {
             val directory = gitUrlToDirectory(gitHubCacheDirectory, gitUrl)
-            if (fsLock.withLock { directory.mkdirs() }) {
+            if (directory.mkdirs()) {
                 IO { cloneRepository(gitUrl, branch, directory) }.map { directory }
             } else {
                 IO.raiseError(IllegalStateException("Directory $directory already exists."))
@@ -193,12 +191,10 @@ class GitHubFS(
      * @return The files in the repository, excluding `.git/` files and the receiver file.
      */
     private fun mapToRepoFiles(repoIO: IO<File>) = repoIO.map { repoFile ->
-        fsLock.withLock {
-            repoFile.walkTopDown()
-                .filter { file -> file.path != repoFile.path }
-                .filter { !it.path.contains(".git") }
-                .toSet()
-        }
+        repoFile.walkTopDown()
+            .filter { file -> file.path != repoFile.path }
+            .filter { !it.path.contains(".git") }
+            .toSet()
     }
 
     companion object {
@@ -287,7 +283,7 @@ class GitHubFS(
          * `https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git`.
          */
         @SuppressWarnings("SpreadOperator")
-        internal fun gitUrlToDirectory(gitHubCacheDirectory: String, gitUrl: String): File {
+        internal fun gitUrlToDirectory(gitHubCacheDirectory: Path, gitUrl: String): File {
             require(isRepoUrl(gitUrl) || isGistUrl(gitUrl)) {
                 "The supplied Git URL ($gitUrl) was not a valid repository or Gist URL."
             }
@@ -295,10 +291,9 @@ class GitHubFS(
             val subDirs = stripUrlCharactersFromGitUrl(gitUrl)
                 .split(FileSystems.getDefault().separator)
 
-            return Paths.get(
-                gitHubCacheDirectory,
-                * subDirs.toTypedArray()
-            ).toFile()
+            return subDirs.fold(gitHubCacheDirectory) { acc, elem ->
+                acc.resolve(elem)
+            }.toFile()
         }
     }
 }

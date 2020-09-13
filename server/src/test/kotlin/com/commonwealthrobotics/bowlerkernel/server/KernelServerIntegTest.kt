@@ -17,55 +17,57 @@
 package com.commonwealthrobotics.bowlerkernel.server
 
 import com.commonwealthrobotics.bowlerkernel.protoutil.sessionClientMessage
-import com.commonwealthrobotics.proto.script_host.ScriptHostGrpcKt
+import com.commonwealthrobotics.bowlerkernel.scripthost.runSession
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
 import com.google.protobuf.ByteString
-import io.grpc.ManagedChannelBuilder
 import io.kotest.matchers.collections.shouldExist
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
+import kotlinx.coroutines.flow.consumeAsFlow
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
+import org.junit.jupiter.api.io.TempDir
+import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 @Timeout(value = 5, unit = TimeUnit.MINUTES)
 internal class KernelServerIntegTest {
 
-    companion object {
-        private val logger = KotlinLogging.logger { }
-    }
-
     @Test
-    fun `run test script`() {
+    fun `run test script`(@TempDir tempDir: File) {
         val server = KernelServer()
-        server.start()
+        server.start(gitHubCacheDirectory = tempDir.toPath())
 
-        val channel = ManagedChannelBuilder.forAddress("localhost", server.port).usePlaintext().build()
-        val stub = ScriptHostGrpcKt.ScriptHostCoroutineStub(channel)
         val received = mutableListOf<SessionServerMessage>()
         val latch = CountDownLatch(4)
-        runBlocking {
-            stub.session(
-                flowOf(
-                    sessionClientMessage {
-                        runRequestBuilder.requestId = 1
-                        runRequestBuilder.fileBuilder.projectBuilder.repoRemote =
-                            "https://github.com/CommonWealthRobotics/bowler-kernel-test-repo.git"
-                        runRequestBuilder.fileBuilder.projectBuilder.revision = "master"
-                        runRequestBuilder.fileBuilder.projectBuilder.patchBuilder.patch = ByteString.copyFrom(
-                            byteArrayOf()
-                        )
-                        runRequestBuilder.fileBuilder.path = "scriptA.groovy"
+        runSession { serverFlow ->
+            send(
+                sessionClientMessage {
+                    runRequestBuilder.requestId = 1
+                    runRequestBuilder.fileBuilder.projectBuilder.repoRemote =
+                        "https://github.com/CommonWealthRobotics/bowler-kernel-test-repo.git"
+                    runRequestBuilder.fileBuilder.projectBuilder.revision = "master"
+                    runRequestBuilder.fileBuilder.projectBuilder.patchBuilder.patch = ByteString.copyFrom(
+                        byteArrayOf()
+                    )
+                    runRequestBuilder.fileBuilder.path = "scriptA.groovy"
+                }
+            )
+
+            serverFlow.consumeAsFlow().collect {
+                when {
+                    it.hasCredentialsRequest() -> send(
+                        sessionClientMessage {
+                            credentialsResponseBuilder.requestId = it.credentialsRequest.requestId
+                            credentialsResponseBuilder
+                        }
+                    )
+                    it.hasNewTask() || it.hasTaskEnd() -> {
+                        received.add(it)
+                        latch.countDown()
                     }
-                )
-            ).collect {
-                logger.debug { "$it" }
-                received.add(it)
-                latch.countDown()
+                }
             }
         }
         latch.await()
