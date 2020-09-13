@@ -38,8 +38,8 @@ The kernel runs a gRPC server that supports the following operations.
 #### Client Interaction
 
 - The client and kernel share a bidirectional stream.
-  - The kernel can create tasks. Task schema:
-    - Unique ID
+  - The kernel can create tasks. A task created during a request will not exist past the end of that request. Task schema:
+    - Unique ID (unique at least within the scope of the request)
     - Description
     - Progress
   - The kernel can update tasks. Update schema:
@@ -52,7 +52,6 @@ The kernel runs a gRPC server that supports the following operations.
     - Confirmation response: Allowed/Denied
   - A progress of `NaN` must show an indeterminate progress bar. Otherwise, progress is a percentage stored as a floating point number in the range `[0, 100]`.
   - The kernel can ask the IDE for credentials. The IDE may respond with credentials or may deny the request.
-  - The kernel can ask the IDE for a 2FA code. The IDE may respond with the code or may deny the request.
   - The kernel can send an archive of the script output to the IDE.
   - The IDE can send a new robot config while the robot is loaded. This must cause the relevant parts of the robot to be re-loaded.
   - The kernel can send a validated (and possibly modified) robot config to the IDE. The IDE should compute a diff relative to the robot config on disk and present this to the user in a rich manner.
