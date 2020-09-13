@@ -87,12 +87,13 @@ class Session(
         val sessionChannel = this
         @Suppress("TooGenericExceptionCaught") // Okay because we just log and rethrow
         try {
-            logger.debug { "Session started" }
+            logger.debug { "Session started." }
 
             val clientChannel = client.toChannel(coroutineScope)
             do {
                 val cont = select<Boolean> {
                     requests.onReceive {
+                        logger.debug { "Got internal request: ${it.input} " }
                         if (isRequest(it.input)) {
                             // For requests, generate a new request ID and set it on the relevant builder
                             val id = nextRequest.getAndIncrement()
@@ -117,7 +118,10 @@ class Session(
 
                     clientChannel.onReceiveOrClosed {
                         when {
-                            it.isClosed -> false
+                            it.isClosed -> {
+                                logger.debug { "Client channel closed." }
+                                false
+                            }
 
                             else -> it.value.let { msg ->
                                 logger.debug { "Received: $msg" }
@@ -167,9 +171,11 @@ class Session(
             logger.error(t) { "Unhandled error in session" }
             throw t
         } finally {
+            logger.debug { "Joining all Jobs. ${jobs.size} remaining." }
             jobs.joinAll()
+            logger.debug { "Unloading Koin modules." }
             getKoin().unloadModules(modules)
-            logger.debug { "Session ended" }
+            logger.debug { "Session ended." }
         }
     }.consumeAsFlow()
 
@@ -198,7 +204,9 @@ class Session(
         runRequest: RunRequest,
         sessionChannel: SendChannel<SessionServerMessage>
     ): IO<Any?> = IO {
+        logger.debug { "requestId=${runRequest.requestId} Starting run request $runRequest" }
         val scriptLoader = getKoin().get<ScriptLoader>()
+        logger.debug { "requestId=${runRequest.requestId} Got script loader $scriptLoader" }
 
         val script = sessionChannel.withTask(
             runRequest.requestId,
@@ -206,10 +214,13 @@ class Session(
             "Initializing ${runRequest.file.path}",
             coroutineScope.coroutineContext
         ) {
+            logger.debug { "requestId=${runRequest.requestId} Loading script." }
             val script = scriptLoader.resolveAndLoad(runRequest.file, runRequest.devsList, runRequest.environmentMap)
             scriptRequestMap[runRequest.requestId] = script
             script
         }.suspended()
+
+        logger.debug { "requestId=${runRequest.requestId} Script initialized." }
 
         sessionChannel.withTask(
             runRequest.requestId,
@@ -217,9 +228,10 @@ class Session(
             "Running ${runRequest.file.path}",
             coroutineScope.coroutineContext
         ) {
+            logger.debug { "requestId=${runRequest.requestId} Starting script." }
             script.start(emptyList(), null)
             val scriptResult = script.join()
-            logger.info { "Script returned:\n$scriptResult" }
+            logger.info { "requestId=${runRequest.requestId} Script returned:\n$scriptResult" }
             when (scriptResult) {
                 // Throw when the script errored so that the task and request fail
                 is Either.Left -> throw scriptResult.a
