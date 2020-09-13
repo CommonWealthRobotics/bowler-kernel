@@ -16,7 +16,11 @@
  */
 package com.commonwealthrobotics.bowlerkernel.gitfs
 
+/**
+ * Encapsulates the types of GitHub repository.
+ */
 internal sealed class GitHubRepo {
+
     data class Repository(
         val owner: String,
         val name: String

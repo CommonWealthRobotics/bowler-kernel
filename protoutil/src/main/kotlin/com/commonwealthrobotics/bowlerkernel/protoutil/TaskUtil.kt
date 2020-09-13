@@ -16,16 +16,16 @@
  */
 package com.commonwealthrobotics.bowlerkernel.protoutil
 
-import arrow.core.Either
 import arrow.core.nonFatalOrThrow
+import arrow.fx.IO
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
-import io.grpc.stub.StreamObserver
+import kotlinx.coroutines.channels.SendChannel
 import mu.KotlinLogging
-import java.util.concurrent.atomic.AtomicLong
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 private object TaskUtil {
-    val taskIdCounter = AtomicLong(0)
     val logger = KotlinLogging.logger { }
 }
 
@@ -33,22 +33,32 @@ private object TaskUtil {
  * Runs [f] in the context of a new task. The new task responds to the request with id [requestId] and has a
  * [description]. The task will start with an indeterminate progress.
  *
- * @param requestId The id of the request this task was created from.
+ * @param requestId The ID of the request this task was created from.
+ * @param taskId The ID of this task.
  * @param description A short description of the task.
+ * @param ctx The [CoroutineContext] used to dispatch the returned [IO].
  * @param f The function to execute in the context of the task.
- * @return The return value of the function or an error. Non-fatal exceptions are caught an wrapped in [Either.Left].
+ * @return The return value of [f].
  */
-fun <T> StreamObserver<SessionServerMessage>.withTask(
+@SuppressWarnings("TooGenericExceptionCaught")
+suspend fun <T> SendChannel<SessionServerMessage>.withTask(
     requestId: Long,
+    taskId: Long,
     description: String,
-    f: () -> T
-): Either<Throwable, T> {
-    val taskId = nextTaskId()
-    onNext(sessionServerMessage(newTask = newTask(requestId, description, taskUpdate(taskId, Float.NaN))))
+    ctx: CoroutineContext = EmptyCoroutineContext,
+    f: suspend () -> T
+): IO<T> = IO(ctx) {
+    send(
+        sessionServerMessage {
+            newTaskBuilder.requestId = requestId
+            newTaskBuilder.description = description
+            newTaskBuilder.taskBuilder.taskId = taskId
+            newTaskBuilder.taskBuilder.progress = Float.NaN
+        }
+    )
 
-    val out: T
-    try {
-        out = f()
+    val out = try {
+        f()
     } catch (ex: Throwable) {
         TaskUtil.logger.error(ex) {
             "Error running the script during request $requestId"
@@ -56,20 +66,29 @@ fun <T> StreamObserver<SessionServerMessage>.withTask(
 
         // Handle non-fatal exceptions by erroring the request
         val nonFatal = ex.nonFatalOrThrow()
-        onNext(sessionServerMessage(taskEnd = taskEnd(taskId, TaskEndCause.TASK_FAILED)))
-        onNext(
-            sessionServerMessage(
-                requestError =
-                    requestError(requestId, nonFatal.message ?: "Unknown exception message.")
-            )
+        send(
+            sessionServerMessage {
+                taskEndBuilder.taskId = taskId
+                taskEndBuilder.cause = TaskEndCause.TASK_FAILED
+            }
+        )
+        send(
+            sessionServerMessage {
+                errorBuilder.requestId = requestId
+                errorBuilder.description = nonFatal.message ?: "Unknown exception message."
+            }
         )
 
         // Exit early to avoid sending a TaskEnd in addition to a RequestError
-        return Either.Left(ex)
+        throw ex
     }
 
-    onNext(sessionServerMessage(taskEnd = taskEnd(taskId, TaskEndCause.TASK_COMPLETED)))
-    return Either.Right(out)
-}
+    send(
+        sessionServerMessage {
+            taskEndBuilder.taskId = taskId
+            taskEndBuilder.cause = TaskEndCause.TASK_COMPLETED
+        }
+    )
 
-private fun nextTaskId() = TaskUtil.taskIdCounter.getAndIncrement()
+    out
+}

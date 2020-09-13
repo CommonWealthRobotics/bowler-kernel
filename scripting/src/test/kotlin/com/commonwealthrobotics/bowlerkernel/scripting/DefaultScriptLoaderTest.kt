@@ -17,26 +17,29 @@
 package com.commonwealthrobotics.bowlerkernel.scripting
 
 import com.commonwealthrobotics.bowlerkernel.gitfs.DependencyResolver
-import com.commonwealthrobotics.bowlerkernel.protoutil.fileSpec
-import com.commonwealthrobotics.bowlerkernel.protoutil.patch
-import com.commonwealthrobotics.bowlerkernel.protoutil.projectSpec
+import com.commonwealthrobotics.proto.gitfs.FileSpec
+import com.google.protobuf.ByteString
 import io.kotest.assertions.arrow.either.shouldBeLeft
 import io.kotest.assertions.arrow.either.shouldBeRight
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyOrder
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import java.io.File
 
 internal class DefaultScriptLoaderTest {
 
-    private val fileSpec1 = fileSpec(
-        projectSpec("git@github.com:user/repo1.git", "master", patch(byteArrayOf())),
-        "file1.groovy"
-    )
+    private val fileSpec1 = FileSpec.newBuilder().apply {
+        projectBuilder.repoRemote = "git@github.com:user/repo1.git"
+        projectBuilder.revision = "master"
+        projectBuilder.patchBuilder.patch = ByteString.copyFrom(byteArrayOf())
+        path = "file1.groovy"
+    }.build()
 
     @Test
-    fun `resolveAndLoad a script with no devs and no env that returns a simple value`() {
-        val file1 = createTempFile().apply { writeText("1") }
+    fun `resolveAndLoad a script with no devs and no env that returns a simple value`(@TempDir tempDir: File) {
+        val file1 = createTempFile(directory = tempDir).apply { writeText("1") }
         val dependencyResolver = mockk<DependencyResolver>(relaxUnitFun = true) {
             every { resolve(fileSpec1) } returns file1
         }
@@ -51,8 +54,8 @@ internal class DefaultScriptLoaderTest {
     }
 
     @Test
-    fun `resolveAndLoad a script with a compiler error`() {
-        val file1 = createTempFile().apply { writeText(" \" ") }
+    fun `resolveAndLoad a script with a compiler error`(@TempDir tempDir: File) {
+        val file1 = createTempFile(directory = tempDir).apply { writeText(" \" ") }
         val dependencyResolver = mockk<DependencyResolver>(relaxUnitFun = true) {
             every { resolve(fileSpec1) } returns file1
         }
@@ -67,8 +70,8 @@ internal class DefaultScriptLoaderTest {
     }
 
     @Test
-    fun `check the compiled script has the required globals`() {
-        val file1 = createTempFile().apply {
+    fun `check the compiled script has the required globals`(@TempDir tempDir: File) {
+        val file1 = createTempFile(directory = tempDir).apply {
             writeText(
                 """
                 |assert args == [1]

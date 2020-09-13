@@ -36,61 +36,15 @@ interface GitFS {
     fun cloneRepo(gitUrl: String, branch: String = "HEAD"): IO<File>
 
     /**
-     * Clones a repository and returns the files in it, excluding the `.git` files.
+     * Gets the files in the repo, excluding the files inside `.git`.
      *
-     * @param gitUrl The `.git` URL to clone from, i.e.
-     * `https://github.com/CommonWealthRobotics/BowlerBuilder.git` or
-     * `https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git`.
-     * @param branch The branch to checkout.
+     * @param repoDir The directory of the repository root.
      * @return The files in the repository.
      */
-    fun cloneRepoAndGetFiles(gitUrl: String, branch: String = "HEAD"): IO<Set<File>>
-
-    /**
-     * Forks a repository.
-     *
-     * @param gitUrl The `.git` URL to fork from, i.e.
-     * `https://github.com/CommonWealthRobotics/BowlerBuilder.git` or
-     * `https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git`.
-     * @return The git URL of the fork.
-     */
-    fun forkRepo(gitUrl: String): IO<String>
-
-    /**
-     * Forks a repository and clones the fork.
-     *
-     * @param gitUrl The `.git` URL to fork from, i.e.
-     * `https://github.com/CommonWealthRobotics/BowlerBuilder.git` or
-     * `https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git`.
-     * @param branch The branch to checkout.
-     * @return The directory of the cloned repository.
-     */
-    fun forkAndCloneRepo(gitUrl: String, branch: String = "HEAD"): IO<File>
-
-    /**
-     * Forks a repository, clones the fork, and returns the files in it, excluding the `.git`
-     * files.
-     *
-     * @param gitUrl The `.git` URL to fork from, i.e.
-     * `https://github.com/CommonWealthRobotics/BowlerBuilder.git` or
-     * `https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git`.
-     * @param branch The branch to checkout.
-     * @return The files in the repository.
-     */
-    fun forkAndCloneRepoAndGetFiles(
-        gitUrl: String,
-        branch: String = "HEAD"
-    ): IO<Set<File>>
-
-    /**
-     * Returns whether the authenticated user has push access to the Git resource at [gitUrl].
-     *
-     * @param gitUrl
-     */
-    fun isOwner(gitUrl: String): IO<Boolean>
+    fun getFilesInRepo(repoDir: File): IO<Set<File>>
 
     /**
      * Clears the local Git cache.
      */
-    fun deleteCache()
+    fun deleteCache(): IO<Unit>
 }

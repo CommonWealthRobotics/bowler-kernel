@@ -18,86 +18,82 @@
 
 package com.commonwealthrobotics.bowlerkernel.gitfs
 
-import arrow.core.Eval
-import arrow.core.None
 import arrow.core.Option
-import arrow.core.Some
 import arrow.core.extensions.option.applicative.just
 import arrow.fx.IO
 import arrow.fx.handleErrorWith
-import com.commonwealthrobotics.bowlerkernel.util.BOWLERKERNEL_DIRECTORY
-import com.commonwealthrobotics.bowlerkernel.util.BOWLER_DIRECTORY
-import com.commonwealthrobotics.bowlerkernel.util.GITHUB_CACHE_DIRECTORY
-import com.commonwealthrobotics.bowlerkernel.util.GIT_CACHE_DIRECTORY
+import com.commonwealthrobotics.bowlerkernel.authservice.Credentials
+import com.commonwealthrobotics.bowlerkernel.authservice.CredentialsProvider
+import com.commonwealthrobotics.bowlerkernel.util.getFullPathToGitHubCacheDirectory
 import mu.KotlinLogging
 import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.errors.RepositoryNotFoundException
+import org.eclipse.jgit.errors.TransportException
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
-import org.kohsuke.github.GHGist
-import org.kohsuke.github.GHGistFile
-import org.kohsuke.github.GHObject
-import org.kohsuke.github.GitHub
 import java.io.File
-import java.io.IOException
 import java.nio.file.FileSystems
-import java.nio.file.Paths
+import java.nio.file.Path
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 /**
  * A [GitFS] which interfaces with GitHub.
  *
- * @param gitHub The [GitHub] to connect to GitHub with.
- * @param credentials The credentials to authenticate to GitHub with.
+ * @param credentialsProvider The [CredentialsProvider] used to ask for `Git` credentials.
+ * @param gitHubCacheDirectory The directory inside of which the GitHub cache (repos, gists, etc.) will be maintained.
  */
 @SuppressWarnings("LargeClass")
 class GitHubFS(
-    private val gitHub: GitHub,
-    private val credentials: Pair<String, String>,
-    internal val gitHubCacheDirectory: String = Paths.get(
-        System.getProperty("user.home"),
-        BOWLER_DIRECTORY,
-        BOWLERKERNEL_DIRECTORY,
-        GIT_CACHE_DIRECTORY,
-        GITHUB_CACHE_DIRECTORY
-    ).toString()
+    private val credentialsProvider: CredentialsProvider,
+    internal val gitHubCacheDirectory: Path = getFullPathToGitHubCacheDirectory()
 ) : GitFS {
 
-    private val myGists = Eval.later { gitHub.myself.listGists().toList() }
-    private val myRepositories = Eval.later { gitHub.myself.allRepositories.values }
+    private val fsLock = ReentrantLock()
 
     override fun cloneRepo(
         gitUrl: String,
         branch: String
-    ): IO<File> {
-        return freshClone(gitUrl, branch).handleErrorWith {
-            val directory = gitUrlToDirectory(gitHubCacheDirectory, gitUrl)
+    ) = freshClone(gitUrl, branch).handleErrorWith {
+        val directory = gitUrlToDirectory(gitHubCacheDirectory, gitUrl)
 
-            IO {
-                // The repo was already on disk, so directory exists, so pull
-                LOGGER.info { "Pulling repository in directory $directory" }
+        IO {
+            // The repo was already on disk, so directory exists, so pull
+            logger.info { "Pulling repository in directory $directory" }
+            @Suppress("BlockingMethodInNonBlockingContext")
+            fsLock.withLock {
                 Git.open(directory).use { it.pull().call() }
-            }.handleErrorWith {
-                if (it is RepositoryNotFoundException) {
-                    IO.defer {
-                        // The directory was not a valid repo
-                        LOGGER.catching(it)
-                        LOGGER.warn {
-                            "Failed to pull from repo in $directory. Deleting directory."
-                        }
+            }
+        }.handleErrorWith {
+            if (it is RepositoryNotFoundException) {
+                IO.defer {
+                    // The directory was not a valid repo
+                    logger.catching(it)
+                    logger.warn {
+                        "Failed to pull from repo in $directory. Deleting directory."
+                    }
 
+                    fsLock.withLock {
                         if (!directory.deleteRecursively()) {
-                            LOGGER.error { "Failed to delete $directory" }
+                            logger.error { "Failed to delete $directory" }
                             throw IllegalStateException("Failed to delete $directory")
                         }
 
                         // After deleting the directory, try to clone again
                         freshClone(gitUrl, branch)
                     }
-                } else {
-                    IO.raiseError(it)
                 }
-            }.map { directory }
-        }
+            } else {
+                IO.raiseError(it)
+            }
+        }.map { directory }
+    }
+
+    override fun getFilesInRepo(repoDir: File): IO<Set<File>> = mapToRepoFiles(IO.just(repoDir))
+
+    override fun deleteCache(): IO<Unit> = IO {
+        @Suppress("BlockingMethodInNonBlockingContext")
+        fsLock.withLock { FileUtils.deleteDirectory(gitHubCacheDirectory.toFile()) }
     }
 
     /**
@@ -114,7 +110,7 @@ class GitHubFS(
         gitUrl: String,
         branch: String
     ): IO<File> {
-        LOGGER.info {
+        logger.info {
             """
             |Cloning repository:
             |gitUrl: $gitUrl
@@ -141,127 +137,69 @@ class GitHubFS(
         }
     }
 
-    private fun cloneRepository(
+    private suspend fun cloneRepository(
         gitUrl: String,
         branch: String,
         directory: File
     ) {
-        Git.cloneRepository()
-            .setURI(gitUrl)
-            .setBranch(branch)
-            .setDirectory(directory)
-            .setCredentialsProvider(
-                UsernamePasswordCredentialsProvider(
-                    credentials.first,
-                    credentials.second
-                )
-            )
-            .call()
-            .use {
+        val jGitCredentialsProvider = getJGitCredentialsProvider(gitUrl)
+        fsLock.withLock {
+            // Try to clone without credentials first. If we can't, then request credentials.
+            val git = try {
+                Git.cloneRepository()
+                    .setURI(gitUrl)
+                    .setBranch(branch)
+                    .setDirectory(directory)
+                    .call()
+            } catch (ex: Exception) {
+                when (ex) {
+                    is TransportException -> {
+                        Git.cloneRepository()
+                            .setURI(gitUrl)
+                            .setBranch(branch)
+                            .setDirectory(directory)
+                            .setCredentialsProvider(jGitCredentialsProvider)
+                            .call()
+                    }
+                    else -> throw ex
+                }
+            }
+
+            git.use {
                 Git.wrap(it.repository).use {
                     it.submoduleInit().call()
                     it.submoduleUpdate().call()
                 }
             }
-    }
-
-    override fun cloneRepoAndGetFiles(
-        gitUrl: String,
-        branch: String
-    ): IO<Set<File>> = mapToRepoFiles(cloneRepo(gitUrl, branch))
-
-    override fun forkRepo(gitUrl: String): IO<String> =
-        when (val repo = parseRepo(gitUrl)) {
-            is None -> IO.raiseError(IllegalArgumentException("Invalid git url: $gitUrl"))
-            is Some -> forkRepo(repo.t).map {
-                it.url.toExternalForm()
-            }
-        }
-
-    override fun forkAndCloneRepo(
-        gitUrl: String,
-        branch: String
-    ): IO<File> = when (val repo = parseRepo(gitUrl)) {
-        is None -> IO.raiseError(IllegalArgumentException("Invalid git url: $gitUrl"))
-        is Some -> forkRepo(repo.t).flatMap {
-            cloneRepo(it.gitUrl, branch)
         }
     }
 
-    override fun forkAndCloneRepoAndGetFiles(
-        gitUrl: String,
-        branch: String
-    ): IO<Set<File>> = mapToRepoFiles(forkAndCloneRepo(gitUrl, branch))
-
-    override fun isOwner(gitUrl: String): IO<Boolean> = IO {
-        myGists.value.firstOrNull {
-            it.gitPullUrl == gitUrl
-        } != null
-    }.handleErrorWith {
-        IO {
-            myRepositories.value.first { repo ->
-                repo.gitTransportUrl == gitUrl
-            }.hasPushAccess()
-        }
-    }
-
-    override fun deleteCache() {
-        try {
-            FileUtils.deleteDirectory(Paths.get(gitHubCacheDirectory).toFile())
-        } catch (e: IOException) {
-            LOGGER.error(e) {
-                "Unable to delete the GitHub cache."
-            }
+    private suspend fun getJGitCredentialsProvider(gitUrl: String): UsernamePasswordCredentialsProvider {
+        require(gitUrl.endsWith(".git"))
+        return when (val credentials = credentialsProvider.getCredentialsFor(gitUrl)) {
+            is Credentials.Basic -> UsernamePasswordCredentialsProvider(credentials.username, credentials.password)
+            // TODO: Validate this works
+            is Credentials.OAuth -> UsernamePasswordCredentialsProvider(credentials.token, "x-oauth-basic")
+            is Credentials.Anonymous -> UsernamePasswordCredentialsProvider("", "")
         }
     }
 
     /**
-     * Forks a repository.
+     * Maps a repository to its files.
      *
-     * @param githubRepo The repo to fork.
-     * @return The fork of the repository.
+     * @param repoIO The repository.
+     * @return The files in the repository, excluding `.git/` files and the receiver file.
      */
-    private fun forkRepo(
-        githubRepo: GitHubRepo
-    ): IO<GHObject> {
-        LOGGER.info {
-            """
-            |Forking repository:
-            |$githubRepo
-            """.trimMargin()
-        }
-
-        return IO {
-            when (githubRepo) {
-                is GitHubRepo.Repository -> {
-                    val repoFullName = "${githubRepo.owner}/${githubRepo.name}"
-                    gitHub.getRepository(repoFullName).fork()
-                }
-
-                is GitHubRepo.Gist -> gitHub.getGist(githubRepo.gistId).fork()
-            }
-        }
+    private fun mapToRepoFiles(repoIO: IO<File>) = repoIO.map { repoFile ->
+        repoFile.walkTopDown()
+            .filter { file -> file.path != repoFile.path }
+            .filter { !it.path.contains(".git") }
+            .toSet()
     }
 
     companion object {
-        private val LOGGER = KotlinLogging.logger { }
 
-        /**
-         * Maps a file in a gist to its file on disk. Fails if the file is not on disk.
-         *
-         * @param gitHubCacheDirectory The directory path GitHub files are cached in.
-         * @param gist The gist.
-         * @param gistFile The file in the gist.
-         * @return The file on disk.
-         */
-        fun mapGistFileToFileOnDisk(
-            gitHubCacheDirectory: String,
-            gist: GHGist,
-            gistFile: GHGistFile
-        ): IO<File> = IO {
-            gitUrlToDirectory(gitHubCacheDirectory, gist.gitPullUrl).walkTopDown()
-                .first { it.name == gistFile.fileName }
-        }
+        private val logger = KotlinLogging.logger { }
 
         /**
          * Returns whether the [url] is a valid GitHub repository Git URL.
@@ -337,19 +275,6 @@ class GitHubFS(
         }
 
         /**
-         * Maps a repository to its files.
-         *
-         * @param repoIO The repository.
-         * @return The files in the repository, excluding `.git/` files and the receiver file.
-         */
-        internal fun mapToRepoFiles(repoIO: IO<File>) = repoIO.map { repoFile ->
-            repoFile.walkTopDown()
-                .filter { file -> file.path != repoFile.path }
-                .filter { !it.path.contains(".git") }
-                .toSet()
-        }
-
-        /**
          * Maps a [gitUrl] to its directory on disk. The directory does not necessarily exist.
          *
          * @param gitHubCacheDirectory The directory path GitHub files are cached in.
@@ -358,7 +283,7 @@ class GitHubFS(
          * `https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git`.
          */
         @SuppressWarnings("SpreadOperator")
-        internal fun gitUrlToDirectory(gitHubCacheDirectory: String, gitUrl: String): File {
+        internal fun gitUrlToDirectory(gitHubCacheDirectory: Path, gitUrl: String): File {
             require(isRepoUrl(gitUrl) || isGistUrl(gitUrl)) {
                 "The supplied Git URL ($gitUrl) was not a valid repository or Gist URL."
             }
@@ -366,12 +291,9 @@ class GitHubFS(
             val subDirs = stripUrlCharactersFromGitUrl(gitUrl)
                 .split(FileSystems.getDefault().separator)
 
-            return Paths.get(
-                gitHubCacheDirectory,
-                * subDirs.toTypedArray()
-            ).toFile()
+            return subDirs.fold(gitHubCacheDirectory) { acc, elem ->
+                acc.resolve(elem)
+            }.toFile()
         }
-
-        private val GHObject.gitUrl get() = "${htmlUrl.toExternalForm()}.git"
     }
 }

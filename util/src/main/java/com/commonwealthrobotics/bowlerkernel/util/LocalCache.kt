@@ -16,6 +16,9 @@
  */
 package com.commonwealthrobotics.bowlerkernel.util
 
+import java.nio.file.Path
+import java.nio.file.Paths
+
 /**
  * The main directory Bowler applications work in.
  */
@@ -40,3 +43,11 @@ const val GITHUB_CACHE_DIRECTORY = "github-cache"
  * The kernel's logs directory.
  */
 const val LOGS_DIRECTORY = "logs"
+
+fun getFullPathToGitHubCacheDirectory(): Path = Paths.get(
+    System.getProperty("user.home"),
+    BOWLER_DIRECTORY,
+    BOWLERKERNEL_DIRECTORY,
+    GIT_CACHE_DIRECTORY,
+    GITHUB_CACHE_DIRECTORY
+)

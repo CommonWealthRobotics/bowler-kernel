@@ -18,6 +18,7 @@ package com.commonwealthrobotics.bowlerkernel.gitfs
 
 import arrow.core.Either
 import arrow.core.Option
+import com.commonwealthrobotics.bowlerkernel.authservice.AnonymousCredentialsProvider
 import io.kotest.assertions.arrow.either.shouldBeRight
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
@@ -32,9 +33,7 @@ import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import org.kohsuke.github.GitHub
 import java.io.File
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
@@ -73,7 +72,7 @@ internal class GitHubFSTest {
             val expected = Paths.get(tempDir.absolutePath, orgName, repoName)
 
             val actual = GitHubFS.gitUrlToDirectory(
-                tempDir.absolutePath,
+                tempDir.toPath(),
                 testRepoUrl
             )
 
@@ -85,10 +84,11 @@ internal class GitHubFSTest {
             // Don't use a TempDir because jgit leaves something open so Windows builds fail
             val tmpCachePath = getRandomTempFile()
 
-            val fs = GitHubFS(GitHub.connectAnonymously(), "" to "", tmpCachePath.toString())
-            val repoPath = Paths.get(fs.gitHubCacheDirectory, orgName, repoName)
+            val fs = GitHubFS(AnonymousCredentialsProvider, tmpCachePath)
+            val repoPath = fs.gitHubCacheDirectory.resolve(orgName).resolve(repoName)
 
-            val files = fs.cloneRepoAndGetFiles(testRepoUrl)
+            val files = fs.cloneRepo(testRepoUrl)
+                .flatMap { fs.getFilesInRepo(it) }
                 .map { files -> files.map { it.toString() }.toSet() }
                 .attempt()
                 .unsafeRunSync()
@@ -106,15 +106,16 @@ internal class GitHubFSTest {
         fun `test cloning with corrupted git folder`() {
             // Don't use a TempDir because jgit leaves something open so Windows builds fail
             val tmpCachePath = getRandomTempFile()
-            val fs = GitHubFS(GitHub.connectAnonymously(), "" to "", tmpCachePath.toString())
+            val fs = GitHubFS(AnonymousCredentialsProvider, tmpCachePath)
 
-            val repoPath = Paths.get(fs.gitHubCacheDirectory, orgName, repoName)
+            val repoPath = fs.gitHubCacheDirectory.resolve(orgName).resolve(repoName)
 
             // Make an empty .git directory so it appears corrupted
             repoPath.toFile().apply { mkdirs() }
             Paths.get(repoPath.toString(), ".git").toFile().apply { mkdirs() }
 
-            val files = fs.cloneRepoAndGetFiles(testRepoUrl)
+            val files = fs.cloneRepo(testRepoUrl)
+                .flatMap { fs.getFilesInRepo(it) }
                 .map { files -> files.map { it.toString() }.toSet() }
                 .attempt()
                 .unsafeRunSync()
@@ -130,11 +131,7 @@ internal class GitHubFSTest {
 
         @Test
         fun `test deleteCache`(@TempDir tempDir: File) {
-            val fs = GitHubFS(
-                GitHub.connectAnonymously(),
-                "" to "",
-                tempDir.absolutePath
-            )
+            val fs = GitHubFS(AnonymousCredentialsProvider, tempDir.toPath())
 
             val repoPath = Paths.get(tempDir.absolutePath, orgName, repoName)
 
@@ -145,7 +142,7 @@ internal class GitHubFSTest {
 
             assertTrue(fileInRepo.exists())
 
-            fs.deleteCache()
+            fs.deleteCache().unsafeRunSync()
 
             assertAll(
                 { assertFalse(fileInRepo.exists()) },
@@ -153,21 +150,15 @@ internal class GitHubFSTest {
             )
         }
 
-        private fun getRandomTempFile(): Path {
-            return Paths.get(
-                System.getProperty("java.io.tmpdir"),
-                Random.nextBytes(15).joinToString(separator = "").replace("-", "")
-            )
-        }
+        private fun getRandomTempFile() = Paths.get(
+            System.getProperty("java.io.tmpdir"),
+            Random.nextBytes(15).joinToString(separator = "").replace("-", "")
+        )
     }
 
     @Test
     fun `test cloning from invalid git url`(@TempDir tempDir: File) {
-        val fs = GitHubFS(
-            GitHub.connectAnonymously(),
-            "" to "",
-            tempDir.absolutePath
-        )
+        val fs = GitHubFS(AnonymousCredentialsProvider, tempDir.toPath())
 
         val actual = fs.cloneRepo("invalidGitRepo").attempt().unsafeRunSync()
 

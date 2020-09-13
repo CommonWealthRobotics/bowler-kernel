@@ -16,16 +16,32 @@
  */
 package com.commonwealthrobotics.bowlerkernel.scripthost
 
-import com.commonwealthrobotics.bowlerkernel.gitfs.DefaultDependencyResolver
-import com.commonwealthrobotics.bowlerkernel.scripting.DefaultScriptLoader
-import com.commonwealthrobotics.proto.script_host.ScriptHostGrpc
+import com.commonwealthrobotics.proto.script_host.ScriptHostGrpcKt
 import com.commonwealthrobotics.proto.script_host.SessionClientMessage
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
-import io.grpc.stub.StreamObserver
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.onCompletion
+import mu.KotlinLogging
+import java.util.concurrent.atomic.AtomicInteger
 
-class ScriptHost : ScriptHostGrpc.ScriptHostImplBase() {
+class ScriptHost(private val scope: CoroutineScope) : ScriptHostGrpcKt.ScriptHostCoroutineImplBase() {
 
-    override fun session(responseObserver: StreamObserver<SessionServerMessage>): StreamObserver<SessionClientMessage> {
-        return ScriptHostObserver(responseObserver, DefaultScriptLoader(DefaultDependencyResolver()))
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun session(requests: Flow<SessionClientMessage>): Flow<SessionServerMessage> {
+        if (concurrentSessionCount.getAndIncrement() != 0) {
+            concurrentSessionCount.decrementAndGet()
+            logger.throwing(
+                IllegalStateException("Cannot create a concurrent session. Only one session may operate at a time.")
+            )
+        }
+
+        return Session(scope, requests).server.onCompletion { concurrentSessionCount.decrementAndGet() }
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger { }
+        private val concurrentSessionCount = AtomicInteger(0)
     }
 }

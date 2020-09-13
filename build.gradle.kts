@@ -11,17 +11,21 @@ plugins {
     kotlin("jvm") version Versions.kotlin
     id("org.jlleitschuh.gradle.ktlint") version Versions.ktlintPlugin
     id("io.gitlab.arturbosch.detekt") version Versions.detektPlugin
+    `java-test-fixtures`
 }
 
 val kotlinProjects = listOf(
+    project(":auth"),
     project(":device-server"),
     project(":device-server-benchmark"),
+    project(":di"),
     project(":gitfs"),
     project(":hardware"),
     project(":proto"),
     project(":protoutil"),
     project(":scripthost"),
     project(":scripting"),
+    project(":server"),
     project(":testUtil"),
     project(":translator"),
     project(":util")
@@ -106,11 +110,7 @@ project(":translator:bowler-script-kernel") {
 }
 
 subprojects {
-    if (this in listOf(
-        project(":translator:bowler-script-kernel"),
-        project(":translator:bowler-script-kernel:java-bowler"),
-        project(":translator:bowler-script-kernel:JCSG")
-    )
+    if (this in listOf(project(":translator:bowler-script-kernel"), project(":translator:bowler-script-kernel:java-bowler"), project(":translator:bowler-script-kernel:JCSG"))
     ) {
         return@subprojects
     }
@@ -118,6 +118,7 @@ subprojects {
     apply {
         plugin("java-library")
         plugin("jacoco")
+        plugin("java-test-fixtures")
     }
 
     java {
@@ -205,8 +206,11 @@ configure(kotlinProjects) {
         implementation(group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk8", version = Versions.kotlin)
         implementation(group = "org.jetbrains.kotlin", name = "kotlin-reflect", version = Versions.kotlin)
         implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = Versions.kotlinCoroutines)
-
         implementation(group = "io.github.microutils", name = "kotlin-logging", version = Versions.kotlinLogging)
+
+        testFixturesImplementation(group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk8", version = Versions.kotlin)
+        testFixturesImplementation(group = "org.jetbrains.kotlin", name = "kotlin-reflect", version = Versions.kotlin)
+        testFixturesImplementation(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = Versions.kotlinCoroutines)
     }
 
     tasks.withType<KotlinCompile> {
@@ -220,6 +224,8 @@ configure(kotlinProjects) {
         kotlin {
             ktlint(Versions.ktlint)
             licenseHeaderFile(rootProject.rootDir.toPath().resolve("config").resolve("spotless").resolve("license.txt"))
+            // Generated proto sources
+            targetExclude(project(":proto").buildDir.walkTopDown().toList())
         }
     }
 

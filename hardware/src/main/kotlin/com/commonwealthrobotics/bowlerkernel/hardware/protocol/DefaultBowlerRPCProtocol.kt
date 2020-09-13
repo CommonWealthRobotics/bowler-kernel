@@ -178,7 +178,13 @@ open class DefaultBowlerRPCProtocol(
     ) = sendGeneralDiscoveryPacket(
         OPERATION_GROUP_MEMBER_DISCOVERY_ID,
         byteArrayOf(
-            groupId, sendStart, sendEnd, receiveStart, receiveEnd, resource, attachment
+            groupId,
+            sendStart,
+            sendEnd,
+            receiveStart,
+            receiveEnd,
+            resource,
+            attachment
         ) + attachmentData
     )
 
@@ -204,7 +210,10 @@ open class DefaultBowlerRPCProtocol(
             """
             |Adding group:
             |resourceIds:
-            |${resourceIds.joinToString(separator = "\n\t", prefix = "\t")}
+            |${resourceIds.joinToString(
+                separator = "\n\t",
+                prefix = "\t"
+            )}
             """.trimMargin()
         }
 
