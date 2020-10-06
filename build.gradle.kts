@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     `java-library`
-    id("com.diffplug.gradle.spotless") version Versions.spotlessPlugin
+    id("com.diffplug.spotless") version Versions.spotlessPlugin
     id("com.adarshr.test-logger") version Versions.testLoggerPlugin
     jacoco
     kotlin("jvm") version Versions.kotlin
@@ -33,7 +33,7 @@ val kotlinProjects = listOf(
 
 allprojects {
     apply {
-        plugin("com.diffplug.gradle.spotless")
+        plugin("com.diffplug.spotless")
         plugin("com.adarshr.test-logger")
     }
 
@@ -78,6 +78,7 @@ allprojects {
             targetExclude(project(":translator:bowler-script-kernel").projectDir.walkTopDown().toList())
         }
         freshmark {
+            target("src/**/*.md")
             trimTrailingWhitespace()
             indentWithSpaces(2)
             endWithNewline()
