@@ -40,7 +40,8 @@ interface ScriptExecutionEnvironment {
      *
      * @param fileSpec The script to run.
      * @param scriptEnvironment The environment to pass to the script.
-     * @return A runnable script.
+     * @param args The arguments to pass to the script.
+     * @return A started script.
      */
-    fun resolveAndLoad(fileSpec: FileSpec, scriptEnvironment: Map<String, String>): Script
+    fun startChildScript(fileSpec: FileSpec, scriptEnvironment: Map<String, String>, args: List<Any?>): Script
 }

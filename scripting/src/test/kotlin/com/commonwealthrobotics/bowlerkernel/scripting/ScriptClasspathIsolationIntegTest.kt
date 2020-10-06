@@ -16,6 +16,7 @@
  */
 package com.commonwealthrobotics.bowlerkernel.scripting
 
+import arrow.core.Either
 import com.commonwealthrobotics.proto.gitfs.FileSpec
 import com.google.protobuf.ByteString
 import io.kotest.assertions.arrow.either.shouldBeLeft
@@ -23,6 +24,7 @@ import io.kotest.assertions.arrow.either.shouldBeRight
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
@@ -34,12 +36,11 @@ import java.util.concurrent.TimeUnit
 /**
  * This class is meant to test classpath isolation between scripts. There are two primary requirements:
  * 1. A dependency of one script (added via Grapes) must not be visible to other scripts. This means that if a script A
- *      has a dependency on class Foo, another script B, that is not a child of A, must not be able to load class Foo
- *      without also declaring a dependency on it.
+ *      has a dependency on class Foo, another script B must not be able to load class Foo without also declaring a
+ *      dependency on it.
  * 2. Following from (1), two scripts must be able to declare different versions of the same dependency without
- *      conflict. This means that if a script A has a dependency on version 1.0 of class Foo, another script B, that is
- *      not a child of A, must be able to declare a dependency on a different version of Foo and load that version (not
- *      A's version of Foo).
+ *      conflict. This means that if a script A has a dependency on version 1.0 of class Foo, another script B must be
+ *      able to declare a dependency on a different version of Foo and load that version (not A's version of Foo).
  */
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class ScriptClasspathIsolationIntegTest {
@@ -90,8 +91,8 @@ internal class ScriptClasspathIsolationIntegTest {
         val scriptWithDep = loader.resolveAndLoad(scriptWithDepFS, listOf(), mapOf())
         val scriptWithoutDep = loader.resolveAndLoad(scriptWithoutDepFS, listOf(), mapOf())
 
-        scriptWithDep.start(listOf(tempDir), null)
-        scriptWithoutDep.start(listOf(tempDir), null)
+        scriptWithDep.start(listOf(), null)
+        scriptWithoutDep.start(listOf(), null)
 
         // The script that declared the dependency must have access to it.
         scriptWithDep.join().shouldBeRight {
@@ -102,6 +103,59 @@ internal class ScriptClasspathIsolationIntegTest {
         // The script that did not declare the dependency must not have access to it.
         scriptWithoutDep.join().shouldBeLeft {
             it.message.shouldContain("unable to resolve class org.apache.commons.cli.Options")
+        }
+    }
+
+    @Test
+    fun `transitivity of requirement 1`(@TempDir tempDir: File) {
+        // We create a parent script that loads a dep and starts a child script
+        val parentScriptFile = createTempFile(suffix = ".groovy", directory = tempDir)
+        parentScriptFile.writeText(
+            """
+            @Grapes(@Grab(group = 'commons-cli', module = 'commons-cli', version = '1.4'))
+            import com.commonwealthrobotics.bowlerkernel.scripting.ScriptExecutionEnvironment;
+            
+            return scriptExecutionEnvironment.startChildScript(args[0], [:], []).join()
+            """.trimIndent()
+        )
+
+        val parentScriptFS = FileSpec.newBuilder().apply {
+            projectBuilder.repoRemote = "https://github.com/a/b.git"
+            projectBuilder.revision = "master"
+            projectBuilder.patchBuilder.patch = ByteString.copyFrom(byteArrayOf())
+            path = "parentScript.groovy"
+        }.build()
+
+        // We create a child script that loads the same dep without grabbing it first
+        val childScriptFile = createTempFile(suffix = ".groovy", directory = tempDir)
+        childScriptFile.writeText(
+            """
+            import org.apache.commons.cli.Options;
+            return new Options()
+            """.trimIndent()
+        )
+
+        val childScriptFS = FileSpec.newBuilder().apply {
+            projectBuilder.repoRemote = "https://github.com/a/b.git"
+            projectBuilder.revision = "master"
+            projectBuilder.patchBuilder.patch = ByteString.copyFrom(byteArrayOf())
+            path = "childScript.groovy"
+        }.build()
+
+        val loader = DefaultScriptLoader(
+            mockk(relaxUnitFun = true) {
+                every { resolve(parentScriptFS) } returns parentScriptFile
+                every { resolve(childScriptFS) } returns childScriptFile
+            }
+        )
+
+        val parentScript = loader.resolveAndLoad(parentScriptFS, listOf(), mapOf())
+        parentScript.start(listOf(childScriptFS), null)
+
+        // The child script must not have access to the dependency from the parent script.
+        parentScript.join().shouldBeRight {
+            it.shouldBeInstanceOf<Either.Left<Throwable>>()
+            it.a.message.shouldContain("unable to resolve class org.apache.commons.cli.Options")
         }
     }
 
@@ -154,8 +208,8 @@ internal class ScriptClasspathIsolationIntegTest {
         val scriptWithNewerDep = loader.resolveAndLoad(scriptWithNewerDepFS, listOf(), mapOf())
         val scriptWithOlderDep = loader.resolveAndLoad(scriptWithOlderDepFS, listOf(), mapOf())
 
-        scriptWithNewerDep.start(listOf(tempDir), null)
-        scriptWithOlderDep.start(listOf(tempDir), null)
+        scriptWithNewerDep.start(listOf(), null)
+        scriptWithOlderDep.start(listOf(), null)
 
         // The script that declared the newer dependency must succeed
         scriptWithNewerDep.join().shouldBeRight { it.shouldNotBeNull() }
