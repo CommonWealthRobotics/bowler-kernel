@@ -66,6 +66,8 @@ class DefaultScript(
         returnValue = executor.submit(scriptClosure.partially1(args).partially1(this))
     }
 
+    override fun join() = join(0, 1000, TimeUnit.MILLISECONDS)
+
     override fun join(scriptTimeout: Long, threadTimeout: Long, timeUnit: TimeUnit): Either<Throwable, Any?> {
         // Get the result. `get` will throw an ExecutionException if the script threw an exception.
         // This suppression is fine because we treat the exception carefully and propagate it to the user.
@@ -109,6 +111,6 @@ class DefaultScript(
         threads.add(thread)
     }
 
-    override fun resolveAndLoad(fileSpec: FileSpec, scriptEnvironment: Map<String, String>) =
-        scriptLoader.resolveAndLoad(fileSpec, listOf(), scriptEnvironment)
+    override fun startChildScript(fileSpec: FileSpec, scriptEnvironment: Map<String, String>, args: List<Any?>) =
+        scriptLoader.resolveAndLoad(fileSpec, listOf(), scriptEnvironment).also { it.start(args, this) }
 }

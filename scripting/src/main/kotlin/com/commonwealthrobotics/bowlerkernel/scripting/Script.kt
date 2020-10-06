@@ -42,6 +42,15 @@ interface Script {
 
     /**
      * Wait for this script to finish and return its result as an [Either.Right]. If the script threw a non-fatal
+     * exception, that exception is returned as an [Either.Left] instead. See the [join] docs for more comprehensive
+     * documentation.
+     *
+     * @return The result of the script or an error.
+     */
+    fun join(): Either<Throwable, Any?>
+
+    /**
+     * Wait for this script to finish and return its result as an [Either.Right]. If the script threw a non-fatal
      * exception, that exception is returned as an [Either.Left] instead.
      *
      * A script is finished when its thread and all of its child threads have been joined. After a script has been
@@ -51,14 +60,15 @@ interface Script {
      * out and interrupted after the [threadTimeout].
      *
      * @param scriptTimeout The maximum amount of time the script can run for. A value of zero means to wait forever.
+     * Zero by default.
      * @param threadTimeout The maximum amount of time the script's child threads can each run for. A value of zero
-     * means to wait forever.
-     * @param timeUnit The unit of the timeouts.
+     * means to wait forever. 1000 by default.
+     * @param timeUnit The unit of the timeouts. [TimeUnit.MILLISECONDS] by default.
      * @return The result of the script or an error.
      */
     fun join(
-        scriptTimeout: Long = 0,
-        threadTimeout: Long = 1000,
-        timeUnit: TimeUnit = TimeUnit.MILLISECONDS
+        scriptTimeout: Long,
+        threadTimeout: Long,
+        timeUnit: TimeUnit
     ): Either<Throwable, Any?>
 }

@@ -104,7 +104,7 @@ internal class DefaultScriptTest {
     }
 
     @Test
-    fun `resolve and load a script inside a script`() {
+    fun `start a child script`() {
         val fileSpec1 = FileSpec.newBuilder().apply {
             projectBuilder.repoRemote = "git@github.com:user/repo1.git"
             projectBuilder.revision = "master"
@@ -112,16 +112,21 @@ internal class DefaultScriptTest {
             path = "file1.groovy"
         }.build()
 
+        val childScript = mockk<Script>(relaxUnitFun = true) { }
         val scriptLoader = mockk<ScriptLoader> {
-            every { resolveAndLoad(any(), any(), any()) } returns mockk()
+            every { resolveAndLoad(any(), any(), any()) } returns childScript
         }
 
         val scriptEnvironment = mapOf("key" to "value")
-        val script = DefaultScript({ _, exec -> exec.resolveAndLoad(fileSpec1, scriptEnvironment) }, scriptLoader)
+        val script = DefaultScript(
+            { _, exec -> exec.startChildScript(fileSpec1, scriptEnvironment, listOf(1)) },
+            scriptLoader
+        )
         runScript(script, listOf()).shouldBeRight()
 
         verifyOrder {
             scriptLoader.resolveAndLoad(fileSpec1, listOf(), scriptEnvironment)
+            childScript.start(listOf(1), script)
         }
     }
 }
