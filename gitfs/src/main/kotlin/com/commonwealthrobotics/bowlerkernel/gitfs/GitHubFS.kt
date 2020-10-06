@@ -18,8 +18,10 @@
 
 package com.commonwealthrobotics.bowlerkernel.gitfs
 
-import arrow.core.Option
+import arrow.core.Either
+import arrow.core.Left
 import arrow.core.extensions.option.applicative.just
+import arrow.core.right
 import arrow.fx.IO
 import arrow.fx.handleErrorWith
 import com.commonwealthrobotics.bowlerkernel.authservice.Credentials
@@ -260,17 +262,17 @@ class GitHubFS(
          * @param gitUrl The Git URL.
          * @return The [GitHubRepo] representation.
          */
-        internal fun parseRepo(gitUrl: String): Option<GitHubRepo> {
+        internal fun parseRepo(gitUrl: String): Either<Unit, GitHubRepo> {
             return when {
                 isRepoUrl(gitUrl) -> {
                     val repoFullName = stripUrlCharactersFromGitUrl(gitUrl)
                     val (owner, repoName) = repoFullName.split("/")
-                    GitHubRepo.Repository(owner, repoName).just()
+                    GitHubRepo.Repository(owner, repoName).right()
                 }
 
-                isGistUrl(gitUrl) -> GitHubRepo.Gist(stripUrlCharactersFromGitUrl(gitUrl)).just()
+                isGistUrl(gitUrl) -> GitHubRepo.Gist(stripUrlCharactersFromGitUrl(gitUrl)).right()
 
-                else -> Option.empty()
+                else -> Left(Unit)
             }
         }
 

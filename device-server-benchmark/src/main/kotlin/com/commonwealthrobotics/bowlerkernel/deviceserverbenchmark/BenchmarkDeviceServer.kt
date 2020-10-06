@@ -76,8 +76,8 @@ fun benchmarkDeviceServer(
     |Mean:    ${meanTime.nsToMs()}
     |Median:  ${medianTime.nsToMs()}
     |Std Dev: ${stdDev.nsToMs()}
-    |Best:    ${roundTripTimes.min()?.nsToMs()}
-    |Worst:   ${roundTripTimes.max()?.nsToMs()}
+    |Best:    ${roundTripTimes.minOrNull()?.nsToMs()}
+    |Worst:   ${roundTripTimes.maxOrNull()?.nsToMs()}
     """.trimMargin()
 }
 

@@ -17,7 +17,8 @@
 package com.commonwealthrobotics.bowlerkernel.gitfs
 
 import arrow.core.Either
-import arrow.core.Option
+import arrow.core.Left
+import arrow.core.Right
 import com.commonwealthrobotics.bowlerkernel.authservice.AnonymousCredentialsProvider
 import io.kotest.assertions.arrow.either.shouldBeRight
 import io.kotest.matchers.collections.shouldContainAll
@@ -170,7 +171,7 @@ internal class GitHubFSTest {
 
     @ParameterizedTest
     @MethodSource("parseRepoSource")
-    fun `test parseRepo`(input: String, expected: Option<GitHubRepo>) {
+    fun `test parseRepo`(input: String, expected: Either<Unit, GitHubRepo>) {
         assertEquals(expected, GitHubFS.parseRepo(input))
     }
 
@@ -234,16 +235,13 @@ internal class GitHubFSTest {
         fun parseRepoSource() = listOf(
             Arguments.of(
                 "https://github.com/CommonWealthRobotics/BowlerBuilder.git",
-                Option.just(GitHubRepo.Repository("CommonWealthRobotics", "BowlerBuilder"))
+                Right(GitHubRepo.Repository("CommonWealthRobotics", "BowlerBuilder"))
             ),
             Arguments.of(
                 "https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git",
-                Option.just(GitHubRepo.Gist("5681d11165708c3aec1ed5cf8cf38238"))
+                Right(GitHubRepo.Gist("5681d11165708c3aec1ed5cf8cf38238"))
             ),
-            Arguments.of(
-                "invalidUrl",
-                Option.empty<GitHubRepo>()
-            )
+            Arguments.of("invalidUrl", Left(Unit))
         )
     }
 }

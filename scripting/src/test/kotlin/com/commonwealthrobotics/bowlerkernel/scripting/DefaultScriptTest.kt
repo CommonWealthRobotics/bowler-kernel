@@ -46,9 +46,8 @@ internal class DefaultScriptTest {
     fun `throw an inside exception the script`() {
         val script = DefaultScript({ _, _ -> error("Boom!") }, mockk())
         runScript(script, listOf()).shouldBeLeft {
-            it.shouldBeInstanceOf<IllegalStateException> {
-                it.message.shouldBe("Boom!")
-            }
+            it.shouldBeInstanceOf<IllegalStateException>()
+            it.message.shouldBe("Boom!")
         }
     }
 
