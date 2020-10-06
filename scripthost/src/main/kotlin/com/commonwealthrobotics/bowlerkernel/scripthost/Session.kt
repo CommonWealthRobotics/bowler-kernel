@@ -49,6 +49,7 @@ import kotlinx.coroutines.selects.select
 import mu.KotlinLogging
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.coroutines.coroutineContext
 import kotlin.time.ExperimentalTime
@@ -230,7 +231,7 @@ class Session(
         ) {
             logger.debug { "requestId=${runRequest.requestId} Starting script." }
             script.start(emptyList(), null)
-            val scriptResult = script.join()
+            val scriptResult = script.join(0, 1000, TimeUnit.MILLISECONDS)
             logger.info { "requestId=${runRequest.requestId} Script returned:\n$scriptResult" }
             when (scriptResult) {
                 // Throw when the script errored so that the task and request fail
