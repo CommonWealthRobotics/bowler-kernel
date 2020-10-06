@@ -23,6 +23,11 @@ import com.commonwealthrobotics.proto.gitfs.FileSpec
  * This "execution environment" provides all the facilities a script needs to interact with the Bowler stack. Scripts
  * should not interact with any other part of the Bowler stack directly; all interaction should go through this
  * interface.
+ *
+ * There are three injected variables in Groovy scripts:
+ * 1. `args`: The argument passes to the script.
+ * 2. `scriptEnvironment`: The script environment map.
+ * 3. `scriptExecutionEnvironment`: The script-local execution environment.
  */
 interface ScriptExecutionEnvironment {
 
