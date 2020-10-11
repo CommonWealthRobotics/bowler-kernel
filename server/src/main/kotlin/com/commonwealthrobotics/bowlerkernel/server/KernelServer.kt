@@ -16,7 +16,6 @@
  */
 package com.commonwealthrobotics.bowlerkernel.server
 
-import com.commonwealthrobotics.bowlerkernel.di.BowlerKernelKoinContext
 import com.commonwealthrobotics.bowlerkernel.di.GITHUB_CACHE_DIRECTORY_KOIN_NAME
 import com.commonwealthrobotics.bowlerkernel.gitfs.DefaultDependencyResolver
 import com.commonwealthrobotics.bowlerkernel.gitfs.DependencyResolver
@@ -29,6 +28,7 @@ import io.grpc.netty.NettyServerBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import mu.KotlinLogging
+import org.koin.core.KoinComponent
 import org.koin.core.qualifier.named
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
@@ -37,23 +37,28 @@ import java.nio.file.Path
 class KernelServer {
 
     private lateinit var server: Server
+    internal lateinit var koinComponent: KoinComponent
 
     fun start(gitHubCacheDirectory: Path = getFullPathToGitHubCacheDirectory()) {
-        BowlerKernelKoinContext.koinApp = koinApplication {
-            modules(
-                module {
-                    single(named(GITHUB_CACHE_DIRECTORY_KOIN_NAME)) { gitHubCacheDirectory }
-                    factory<DependencyResolver> { DefaultDependencyResolver(get()) }
-                    factory<ScriptLoader> { DefaultScriptLoader(get()) }
-                }
-            )
+        koinComponent = object : KoinComponent {
+            private val koinApp = koinApplication {
+                modules(
+                    module {
+                        single(named(GITHUB_CACHE_DIRECTORY_KOIN_NAME)) { gitHubCacheDirectory }
+                        factory<DependencyResolver> { DefaultDependencyResolver(get()) }
+                        factory<ScriptLoader> { DefaultScriptLoader(get()) }
+                    }
+                )
+            }
+
+            override fun getKoin() = koinApp.koin
         }
 
         // TODO: Include the port number in the name server
         // TODO: Support setting the port number via a cmdline option
         server = NettyServerBuilder.forPort(0).apply {
             // TODO: Support SSL
-            addService(ScriptHost(CoroutineScope(Dispatchers.Default)))
+            addService(ScriptHost(CoroutineScope(Dispatchers.Default), koinComponent))
         }.build()
         server.start()
         logger.info { "Server running on port ${server.port}" }

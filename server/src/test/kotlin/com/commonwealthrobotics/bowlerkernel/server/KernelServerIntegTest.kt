@@ -41,7 +41,7 @@ internal class KernelServerIntegTest {
 
         val received = mutableListOf<SessionServerMessage>()
         val latch = CountDownLatch(4)
-        runSession { serverFlow ->
+        runSession(server.koinComponent) { serverFlow ->
             send(
                 sessionClientMessage {
                     runRequestBuilder.requestId = 1
