@@ -16,232 +16,65 @@
  */
 package com.commonwealthrobotics.bowlerkernel.gitfs
 
-import arrow.core.Either
-import arrow.core.Left
-import arrow.core.Right
 import com.commonwealthrobotics.bowlerkernel.authservice.AnonymousCredentialsProvider
-import io.kotest.assertions.arrow.either.shouldBeRight
-import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.assertions.arrow.either.shouldBeLeft
 import io.kotest.matchers.shouldBe
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Nested
+import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
-import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.io.File
-import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class GitHubFSTest {
 
-    private val testRepoUrl = "https://github.com/CommonWealthRobotics/bowler-kernel-test-repo.git"
-
-    @ParameterizedTest
-    @MethodSource("isRepoUrlSource")
-    fun `test isRepoUrl`(data: Pair<String, Boolean>) {
-        GitHubFS.isRepoUrl(data.first) shouldBe data.second
-    }
-
-    @ParameterizedTest
-    @MethodSource("isGistUrlSource")
-    fun `test isGistUrl`(data: Pair<String, Boolean>) {
-        GitHubFS.isGistUrl(data.first) shouldBe data.second
-    }
-
     @ParameterizedTest
     @MethodSource("stripUrlCharactersFromGitUrlSource")
-    fun `test stripUrlCharactersFromGitUrl`(data: Pair<String, String>) {
-        GitHubFS.stripUrlCharactersFromGitUrl(data.first) shouldBe data.second
-    }
-
-    @Nested
-    inner class UsingTestRepo {
-
-        private val orgName = "CommonWealthRobotics"
-        private val repoName = "bowler-kernel-test-repo"
-
-        @Test
-        fun `test gitUrlToDirectory with git repo`(@TempDir tempDir: File) {
-            val expected = Paths.get(tempDir.absolutePath, orgName, repoName)
-
-            val actual = GitHubFS.gitUrlToDirectory(
-                tempDir.toPath(),
-                testRepoUrl
-            )
-
-            expected.toString().shouldBe(actual.absolutePath)
-        }
-
-        @Test
-        fun `test cloning test repo`() {
-            // Don't use a TempDir because jgit leaves something open so Windows builds fail
-            val tmpCachePath = getRandomTempFile()
-
-            val fs = GitHubFS(AnonymousCredentialsProvider, tmpCachePath)
-            val repoPath = fs.gitHubCacheDirectory.resolve(orgName).resolve(repoName)
-
-            val files = fs.cloneRepo(testRepoUrl)
-                .flatMap { fs.getFilesInRepo(it) }
-                .map { files -> files.map { it.toString() }.toSet() }
-                .attempt()
-                .unsafeRunSync()
-
-            files.shouldBeRight {
-                it.shouldContainAll(
-                    Paths.get(repoPath.toString(), "fileA.txt").toString(),
-                    Paths.get(repoPath.toString(), "dirA").toString(),
-                    Paths.get(repoPath.toString(), "dirA", "fileB.txt").toString()
-                )
-            }
-        }
-
-        @Test
-        fun `test cloning with corrupted git folder`() {
-            // Don't use a TempDir because jgit leaves something open so Windows builds fail
-            val tmpCachePath = getRandomTempFile()
-            val fs = GitHubFS(AnonymousCredentialsProvider, tmpCachePath)
-
-            val repoPath = fs.gitHubCacheDirectory.resolve(orgName).resolve(repoName)
-
-            // Make an empty .git directory so it appears corrupted
-            repoPath.toFile().apply { mkdirs() }
-            Paths.get(repoPath.toString(), ".git").toFile().apply { mkdirs() }
-
-            val files = fs.cloneRepo(testRepoUrl)
-                .flatMap { fs.getFilesInRepo(it) }
-                .map { files -> files.map { it.toString() }.toSet() }
-                .attempt()
-                .unsafeRunSync()
-
-            files.shouldBeRight {
-                it.shouldContainAll(
-                    Paths.get(repoPath.toString(), "fileA.txt").toString(),
-                    Paths.get(repoPath.toString(), "dirA").toString(),
-                    Paths.get(repoPath.toString(), "dirA", "fileB.txt").toString()
-                )
-            }
-        }
-
-        @Test
-        fun `test deleteCache`(@TempDir tempDir: File) {
-            val fs = GitHubFS(AnonymousCredentialsProvider, tempDir.toPath())
-
-            val repoPath = Paths.get(tempDir.absolutePath, orgName, repoName)
-
-            val repo = repoPath.toFile().apply { mkdirs() }
-            val fileInRepo = Paths.get(repoPath.toString(), "fileA.txt").toFile().apply {
-                writeText("")
-            }
-
-            assertTrue(fileInRepo.exists())
-
-            fs.deleteCache().unsafeRunSync()
-
-            assertAll(
-                { assertFalse(fileInRepo.exists()) },
-                { assertFalse(repo.exists()) }
-            )
-        }
-
-        private fun getRandomTempFile() = Paths.get(
-            System.getProperty("java.io.tmpdir"),
-            Random.nextBytes(15).joinToString(separator = "").replace("-", "")
-        )
+    fun `test stripUrlCharactersFromGitUrl`(url: String, expected: String) {
+        GitHubFS.stripUrlCharactersFromGitUrl(url) shouldBe expected
     }
 
     @Test
     fun `test cloning from invalid git url`(@TempDir tempDir: File) {
         val fs = GitHubFS(AnonymousCredentialsProvider, tempDir.toPath())
-
         val actual = fs.cloneRepo("invalidGitRepo").attempt().unsafeRunSync()
-
-        assertTrue(actual is Either.Left)
-        actual as Either.Left
-
-        assertTrue(actual.a is IllegalArgumentException)
+        actual.shouldBeLeft {
+            it.shouldBeInstanceOf<IllegalArgumentException>()
+        }
     }
 
-    @ParameterizedTest
-    @MethodSource("parseRepoSource")
-    fun `test parseRepo`(input: String, expected: Either<Unit, GitHubRepo>) {
-        assertEquals(expected, GitHubFS.parseRepo(input))
+    @Test
+    fun `test cloning over http`(@TempDir tempDir: File) {
+        val fs = GitHubFS(AnonymousCredentialsProvider, tempDir.toPath())
+        val actual = fs.cloneRepo("http://github.com/CommonWealthRobotics/BowlerBuilder.git").attempt().unsafeRunSync()
+        actual.shouldBeLeft {
+            it.shouldBeInstanceOf<UnsupportedOperationException>()
+        }
     }
 
     companion object {
 
         @Suppress("unused")
         @JvmStatic
-        fun isRepoUrlSource() = listOf(
-            "" to false,
-            "https://github.com/CommonWealthRobotics/BowlerBuilder.git" to true,
-            "http://github.com/CommonWealthRobotics/BowlerBuilder.git" to true,
-            "https://github.com/CommonWealthRobotics/BowlerBuilder.git/" to true,
-            "http://github.com/CommonWealthRobotics/BowlerBuilder.git/" to true,
-            "https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git" to false,
-            "http://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git" to false,
-            "https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git/" to false,
-            "http://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git/" to false
-        )
-
-        @Suppress("unused")
-        @JvmStatic
-        fun isGistUrlSource() = listOf(
-            "" to false,
-            "https://github.com/CommonWealthRobotics/BowlerBuilder.git" to false,
-            "http://github.com/CommonWealthRobotics/BowlerBuilder.git" to false,
-            "https://github.com/CommonWealthRobotics/BowlerBuilder.git/" to false,
-            "http://github.com/CommonWealthRobotics/BowlerBuilder.git/" to false,
-            "https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git" to true,
-            "http://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git" to true,
-            "https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git/" to true,
-            "http://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git/" to true
-        )
-
-        @Suppress("unused")
-        @JvmStatic
-        fun stripUrlCharactersFromGitUrlSource(): List<Pair<String, String>> {
+        fun stripUrlCharactersFromGitUrlSource(): List<Arguments> {
             val repoOwnerAndName = "CommonWealthRobotics/BowlerBuilder"
             val gistId = "5681d11165708c3aec1ed5cf8cf38238"
             return listOf(
-                "https://github.com/CommonWealthRobotics/BowlerBuilder.git" to
-                    repoOwnerAndName,
-                "http://github.com/CommonWealthRobotics/BowlerBuilder.git" to
-                    repoOwnerAndName,
-                "https://github.com/CommonWealthRobotics/BowlerBuilder.git/" to
-                    repoOwnerAndName,
-                "http://github.com/CommonWealthRobotics/BowlerBuilder.git/" to
-                    repoOwnerAndName,
-                "https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git" to
-                    gistId,
-                "http://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git" to
-                    gistId,
-                "https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git/" to
-                    gistId,
-                "http://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git/" to
-                    gistId
+                Arguments.of("https://github.com/CommonWealthRobotics/BowlerBuilder.git", repoOwnerAndName),
+                Arguments.of("http://github.com/CommonWealthRobotics/BowlerBuilder.git", repoOwnerAndName),
+                Arguments.of("https://github.com/CommonWealthRobotics/BowlerBuilder.git/", repoOwnerAndName),
+                Arguments.of("http://github.com/CommonWealthRobotics/BowlerBuilder.git/", repoOwnerAndName),
+                Arguments.of("git@github.com:CommonWealthRobotics/BowlerBuilder.git", repoOwnerAndName),
+                Arguments.of("git@github.com:CommonWealthRobotics/BowlerBuilder.git/", repoOwnerAndName),
+                Arguments.of("https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git", gistId),
+                Arguments.of("http://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git", gistId),
+                Arguments.of("https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git/", gistId),
+                Arguments.of("http://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git/", gistId),
             )
         }
-
-        @Suppress("unused")
-        @JvmStatic
-        fun parseRepoSource() = listOf(
-            Arguments.of(
-                "https://github.com/CommonWealthRobotics/BowlerBuilder.git",
-                Right(GitHubRepo.Repository("CommonWealthRobotics", "BowlerBuilder"))
-            ),
-            Arguments.of(
-                "https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git",
-                Right(GitHubRepo.Gist("5681d11165708c3aec1ed5cf8cf38238"))
-            ),
-            Arguments.of("invalidUrl", Left(Unit))
-        )
     }
 }

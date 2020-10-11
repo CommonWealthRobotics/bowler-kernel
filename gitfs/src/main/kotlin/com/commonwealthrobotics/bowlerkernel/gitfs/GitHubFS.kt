@@ -18,10 +18,6 @@
 
 package com.commonwealthrobotics.bowlerkernel.gitfs
 
-import arrow.core.Either
-import arrow.core.Left
-import arrow.core.extensions.option.applicative.just
-import arrow.core.right
 import arrow.fx.IO
 import arrow.fx.handleErrorWith
 import com.commonwealthrobotics.bowlerkernel.authservice.Credentials
@@ -120,20 +116,13 @@ class GitHubFS(
             """.trimMargin()
         }
 
-        return if (isValidHttpGitURL(gitUrl)) {
-            val directory = gitUrlToDirectory(gitHubCacheDirectory, gitUrl)
-            if (directory.mkdirs()) {
-                IO { cloneRepository(gitUrl, branch, directory) }.map { directory }
-            } else {
-                IO.raiseError(IllegalStateException("Directory $directory already exists."))
-            }
+        val directory = gitUrlToDirectory(gitHubCacheDirectory, gitUrl)
+        return if (directory.mkdirs()) {
+            IO { cloneRepository(gitUrl, branch, directory) }.map { directory }
         } else {
             IO.raiseError(
-                IllegalArgumentException(
-                    """
-                    |Invalid git URL:
-                    |$gitUrl
-                    """.trimMargin()
+                IllegalStateException(
+                    "Directory $directory already exists. This is probably the result of a kernel bug."
                 )
             )
         }
@@ -144,6 +133,12 @@ class GitHubFS(
         branch: String,
         directory: File
     ) {
+        if (gitUrl.startsWith("http://")) {
+            throw UnsupportedOperationException(
+                "Will not clone using bare HTTP (URL $gitUrl). Use HTTPS instead."
+            )
+        }
+
         val jGitCredentialsProvider = getJGitCredentialsProvider(gitUrl)
         fsLock.withLock {
             // Try to clone without credentials first. If we can't, then request credentials.
@@ -204,35 +199,6 @@ class GitHubFS(
         private val logger = KotlinLogging.logger { }
 
         /**
-         * Returns whether the [url] is a valid GitHub repository Git URL.
-         *
-         * @param url The URL to validate.
-         * @return Whether the [url] is a valid GitHub repository Git URL.
-         */
-        fun isRepoUrl(url: String) =
-            url.run {
-                (startsWith("http://github.com/") || startsWith("https://github.com/")) &&
-                    (endsWith(".git/") || endsWith(".git")) &&
-                    isValidHttpGitURL(url)
-            }
-
-        /**
-         * Returns whether the [url] is a valid GitHub Gist Git URL.
-         *
-         * @param url The URL to validate.
-         * @return Whether the [url] is a valid GitHub Gist Git URL.
-         */
-        fun isGistUrl(url: String) =
-            url.run {
-                (
-                    startsWith("http://gist.github.com/") ||
-                        startsWith("https://gist.github.com/")
-                    ) &&
-                    (endsWith(".git/") || endsWith(".git")) &&
-                    isValidHttpGitURL(url)
-            }
-
-        /**
          * Removes all the characters from [gitUrl] which are not part of the Gist id or
          * repository owner and name.
          *
@@ -248,35 +214,6 @@ class GitHubFS(
                 .removeSuffix(".git")
 
         /**
-         * Returns whether the [url] is a valid HTTP Git URL.
-         *
-         * @param url The URL to validate.
-         * @return Whether the [url] is a valid HTTP Git URL.
-         */
-        private fun isValidHttpGitURL(url: String) =
-            url.matches("(http(s)?)(:(//)?)([\\w.@:/\\-~]+)(\\.git)(/)?".toRegex())
-
-        /**
-         * Maps a Git URL to a [GitHubRepo].
-         *
-         * @param gitUrl The Git URL.
-         * @return The [GitHubRepo] representation.
-         */
-        internal fun parseRepo(gitUrl: String): Either<Unit, GitHubRepo> {
-            return when {
-                isRepoUrl(gitUrl) -> {
-                    val repoFullName = stripUrlCharactersFromGitUrl(gitUrl)
-                    val (owner, repoName) = repoFullName.split("/")
-                    GitHubRepo.Repository(owner, repoName).right()
-                }
-
-                isGistUrl(gitUrl) -> GitHubRepo.Gist(stripUrlCharactersFromGitUrl(gitUrl)).right()
-
-                else -> Left(Unit)
-            }
-        }
-
-        /**
          * Maps a [gitUrl] to its directory on disk. The directory does not necessarily exist.
          *
          * @param gitHubCacheDirectory The directory path GitHub files are cached in.
@@ -286,10 +223,6 @@ class GitHubFS(
          */
         @SuppressWarnings("SpreadOperator")
         internal fun gitUrlToDirectory(gitHubCacheDirectory: Path, gitUrl: String): File {
-            require(isRepoUrl(gitUrl) || isGistUrl(gitUrl)) {
-                "The supplied Git URL ($gitUrl) was not a valid repository or Gist URL."
-            }
-
             val subDirs = stripUrlCharactersFromGitUrl(gitUrl)
                 .split(FileSystems.getDefault().separator)
 
