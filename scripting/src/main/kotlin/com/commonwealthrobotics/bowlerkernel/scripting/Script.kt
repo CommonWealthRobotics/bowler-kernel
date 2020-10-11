@@ -71,4 +71,18 @@ interface Script {
         threadTimeout: Long,
         timeUnit: TimeUnit
     ): Either<Throwable, Any?>
+
+    /**
+     * Interrupt this script so that it stops immediately.
+     */
+    fun interrupt()
+
+    /**
+     * Interrupt this script so that it stops immediately.
+     *
+     * @param threadTimeout The maximum amount of time the script's child threads can each run for. A value of zero
+     * means to wait forever. 1000 by default.
+     * @param timeUnit The unit of the timeouts. [TimeUnit.MILLISECONDS] by default.
+     */
+    fun interrupt(threadTimeout: Long, timeUnit: TimeUnit)
 }

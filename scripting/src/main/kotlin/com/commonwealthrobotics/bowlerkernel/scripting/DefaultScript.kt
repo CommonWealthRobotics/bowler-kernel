@@ -83,6 +83,19 @@ class DefaultScript(
             (ex as? ExecutionException)?.cause?.left() ?: ex.nonFatalOrThrow().left()
         }
 
+        stopAndCleanUp(threadTimeout, timeUnit)
+
+        return result
+    }
+
+    override fun interrupt() = interrupt(1000, TimeUnit.MILLISECONDS)
+
+    override fun interrupt(threadTimeout: Long, timeUnit: TimeUnit) {
+        returnValue.cancel(true)
+        stopAndCleanUp(threadTimeout, timeUnit)
+    }
+
+    private fun stopAndCleanUp(threadTimeout: Long, timeUnit: TimeUnit) {
         returnValue = FutureTask { Unit }
 
         // Join all the child threads this script started.
@@ -104,7 +117,6 @@ class DefaultScript(
         // Reset this script so it can be run again.
         threads.clear()
         internalIsRunning.set(false)
-        return result
     }
 
     override fun addThread(thread: Thread) {

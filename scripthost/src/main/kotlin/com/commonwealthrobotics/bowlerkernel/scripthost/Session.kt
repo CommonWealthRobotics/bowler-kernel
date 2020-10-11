@@ -42,6 +42,7 @@ import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
@@ -171,14 +172,14 @@ class Session(
         } catch (t: Throwable) {
             logger.error(t) { "Unhandled error in session" }
             throw t
-        } finally {
-            logger.debug { "Joining all Jobs. ${jobs.size} remaining." }
-            jobs.joinAll()
-            logger.debug { "Unloading Koin modules." }
-            getKoin().unloadModules(modules)
-            logger.debug { "Session ended." }
         }
-    }.consumeAsFlow()
+    }.consumeAsFlow().onCompletion {
+        logger.debug { "Joining all Jobs. ${jobs.size} remaining." }
+        jobs.joinAll()
+        logger.debug { "Unloading Koin modules." }
+        getKoin().unloadModules(modules)
+        logger.debug { "Session ended." }
+    }
 
     init {
         require(coroutineScope != GlobalScope) {
