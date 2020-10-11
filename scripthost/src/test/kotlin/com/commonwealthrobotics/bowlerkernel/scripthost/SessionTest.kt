@@ -84,14 +84,14 @@ internal class SessionTest : KoinTestFixture() {
             every { resolveAndLoad(any(), any(), any()) } returns script
         }
 
-        testKoin(
+        initKoin(
             module {
                 factory { scriptLoader }
             }
         )
 
         val client = flowOf(runScriptMsg)
-        val session = Session(CoroutineScope(Dispatchers.Default), client)
+        val session = Session(CoroutineScope(Dispatchers.Default), client, testLocalKoin)
         val responses = runBlocking { session.server.toList() }
 
         // Order should not be important because the task ID can be used by the client to determine ordering
@@ -142,14 +142,14 @@ internal class SessionTest : KoinTestFixture() {
             every { resolveAndLoad(any(), any(), any()) } returns script
         }
 
-        testKoin(
+        initKoin(
             module {
                 factory { scriptLoader }
             }
         )
 
         val client = flowOf(runScriptMsg)
-        val session = Session(CoroutineScope(Dispatchers.Default), client)
+        val session = Session(CoroutineScope(Dispatchers.Default), client, testLocalKoin)
         val responses = runBlocking { session.server.toList() }
 
         // Order should not be important because the task ID can be used by the client to determine ordering
@@ -196,8 +196,8 @@ internal class SessionTest : KoinTestFixture() {
 
     @Test
     fun `request credentials`() {
-        testKoin(module {})
-        val session = runSession { server ->
+        initKoin(module { })
+        val session = runSession(testLocalKoin) { server ->
             send(
                 sessionClientMessage {
                     credentialsResponseBuilder.requestId = server.receive().credentialsRequest.requestId
@@ -211,8 +211,8 @@ internal class SessionTest : KoinTestFixture() {
 
     @Test
     fun `error during credentials request`() {
-        testKoin(module {})
-        val session = runSession { server ->
+        initKoin(module { })
+        val session = runSession(testLocalKoin) { server ->
             send(
                 sessionClientMessage {
                     errorBuilder.requestId = server.receive().credentialsRequest.requestId
@@ -225,9 +225,9 @@ internal class SessionTest : KoinTestFixture() {
 
     @Test
     fun `request credentials during script resolution race condition`() {
-        testKoin(module {})
+        initKoin(module { })
         val latch = KCountDownLatch(1)
-        val session = runSession { server ->
+        val session = runSession(testLocalKoin) { server ->
             val id1 = server.receive().run {
                 hasCredentialsRequest() shouldBe true
                 credentialsRequest.remote shouldBe remote1
@@ -272,9 +272,9 @@ internal class SessionTest : KoinTestFixture() {
 
     @Test
     fun `starting a session in GlobalScope is an error`() {
-        testKoin(module {})
+        initKoin(module { })
         shouldThrow<IllegalArgumentException> {
-            Session(GlobalScope, flowOf())
+            Session(GlobalScope, flowOf(), testLocalKoin)
         }
     }
 
@@ -316,13 +316,13 @@ internal class SessionTest : KoinTestFixture() {
             every { resolveAndLoad(runScript2.runRequest.file, any(), any()) } returns script2
         }
 
-        testKoin(
+        initKoin(
             module {
                 factory { scriptLoader }
             }
         )
 
-        val session = Session(CoroutineScope(Dispatchers.Default), client)
+        val session = Session(CoroutineScope(Dispatchers.Default), client, testLocalKoin)
         runBlocking { session.server.collect() }
         scriptLatch.await()
     }

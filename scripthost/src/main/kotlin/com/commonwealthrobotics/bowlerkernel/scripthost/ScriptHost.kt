@@ -24,9 +24,13 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onCompletion
 import mu.KotlinLogging
+import org.koin.core.KoinComponent
 import java.util.concurrent.atomic.AtomicInteger
 
-class ScriptHost(private val scope: CoroutineScope) : ScriptHostGrpcKt.ScriptHostCoroutineImplBase() {
+class ScriptHost(
+    private val scope: CoroutineScope,
+    private val koinComponent: KoinComponent
+) : ScriptHostGrpcKt.ScriptHostCoroutineImplBase() {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun session(requests: Flow<SessionClientMessage>): Flow<SessionServerMessage> {
@@ -37,7 +41,7 @@ class ScriptHost(private val scope: CoroutineScope) : ScriptHostGrpcKt.ScriptHos
             )
         }
 
-        return Session(scope, requests).server.onCompletion { concurrentSessionCount.decrementAndGet() }
+        return Session(scope, requests, koinComponent).server.onCompletion { concurrentSessionCount.decrementAndGet() }
     }
 
     companion object {

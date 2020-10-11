@@ -21,7 +21,6 @@ import arrow.fx.IO
 import arrow.fx.extensions.io.monad.flatten
 import com.commonwealthrobotics.bowlerkernel.authservice.Credentials
 import com.commonwealthrobotics.bowlerkernel.authservice.CredentialsProvider
-import com.commonwealthrobotics.bowlerkernel.di.BowlerKernelKoinComponent
 import com.commonwealthrobotics.bowlerkernel.di.GITHUB_CACHE_DIRECTORY_KOIN_NAME
 import com.commonwealthrobotics.bowlerkernel.gitfs.GitFS
 import com.commonwealthrobotics.bowlerkernel.gitfs.GitHubFS
@@ -47,11 +46,11 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import mu.KotlinLogging
+import org.koin.core.KoinComponent
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
-import kotlin.coroutines.coroutineContext
 import kotlin.time.ExperimentalTime
 
 /**
@@ -62,8 +61,9 @@ import kotlin.time.ExperimentalTime
  */
 class Session(
     private val coroutineScope: CoroutineScope,
-    private val client: Flow<SessionClientMessage>
-) : CredentialsProvider, BowlerKernelKoinComponent {
+    private val client: Flow<SessionClientMessage>,
+    private val koinComponent: KoinComponent
+) : CredentialsProvider, KoinComponent by koinComponent {
 
     // Bind a GitFS using this session so that credentials requests will go through this session
     private val modules by lazy {

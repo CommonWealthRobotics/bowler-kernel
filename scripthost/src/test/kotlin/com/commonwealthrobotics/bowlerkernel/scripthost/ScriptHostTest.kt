@@ -30,8 +30,8 @@ internal class ScriptHostTest : KoinTestFixture() {
 
     @Test
     fun `starting multiple concurrent sessions is an error`() {
-        testKoin(module {})
-        val host = ScriptHost(CoroutineScope(Dispatchers.Default))
+        initKoin(module { })
+        val host = ScriptHost(CoroutineScope(Dispatchers.Default), testLocalKoin)
         host.session(flowOf())
         shouldThrow<IllegalStateException> {
             host.session(flowOf())
@@ -40,8 +40,8 @@ internal class ScriptHostTest : KoinTestFixture() {
 
     @Test
     fun `starting one session after another sequentially is okay`() {
-        testKoin(module {})
-        val host = ScriptHost(CoroutineScope(Dispatchers.Default))
+        initKoin(module { })
+        val host = ScriptHost(CoroutineScope(Dispatchers.Default), testLocalKoin)
         val session1 = host.session(flowOf())
         runBlocking { session1.collect() }
         val session2 = host.session(flowOf())

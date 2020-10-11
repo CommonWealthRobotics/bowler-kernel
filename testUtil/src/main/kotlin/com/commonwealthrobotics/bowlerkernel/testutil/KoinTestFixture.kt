@@ -16,16 +16,33 @@
  */
 package com.commonwealthrobotics.bowlerkernel.testutil
 
-import com.commonwealthrobotics.bowlerkernel.di.BowlerKernelKoinContext
 import org.junit.jupiter.api.AfterEach
+import org.koin.core.Koin
+import org.koin.core.KoinComponent
 import org.koin.core.context.stopKoin
 import org.koin.core.module.Module
 import org.koin.dsl.koinApplication
-import org.koin.test.KoinTest
 
-open class KoinTestFixture : KoinTest {
+open class KoinTestFixture {
 
     private var additionalAfterEach: () -> Unit = {}
+    lateinit var testLocalKoin: KoinComponent
+        private set
+
+    /**
+     * Sets the [testLocalKoin] instance to a new instance using the given modules.
+     *
+     * @param module The module(s) to start the instance with.
+     */
+    fun initKoin(vararg module: Module) {
+        testLocalKoin = object : KoinComponent {
+            val koinApp = koinApplication {
+                modules(module.toList())
+            }
+
+            override fun getKoin(): Koin = koinApp.koin
+        }
+    }
 
     @AfterEach
     fun afterEach() {
@@ -33,16 +50,10 @@ open class KoinTestFixture : KoinTest {
         stopKoin()
     }
 
+    /**
+     * Sets an [AfterEach] thunk that runs before Koin is stopped in the default implementation ([afterEach]).
+     */
     fun additionalAfterEach(configure: () -> Unit) {
         additionalAfterEach = configure
-    }
-
-    companion object {
-
-        fun testKoin(vararg module: Module) {
-            BowlerKernelKoinContext.koinApp = koinApplication {
-                modules(module.toList())
-            }
-        }
     }
 }

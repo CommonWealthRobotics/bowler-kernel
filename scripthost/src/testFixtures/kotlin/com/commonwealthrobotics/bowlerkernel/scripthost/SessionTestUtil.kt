@@ -29,6 +29,7 @@ import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.runBlocking
+import org.koin.core.KoinComponent
 
 /**
  * Runs a [Session] in a structured manner.
@@ -39,6 +40,7 @@ import kotlinx.coroutines.runBlocking
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 fun runSession(
+    koinComponent: KoinComponent,
     client: suspend SendChannel<SessionClientMessage>.(ReceiveChannel<SessionServerMessage>) -> Unit
 ): Session {
     val channel = Channel<Flow<SessionServerMessage>>()
@@ -49,7 +51,7 @@ fun runSession(
         client(serverFlow.toChannel(scope))
     }.consumeAsFlow()
 
-    val session = Session(scope, clientFlow)
+    val session = Session(scope, clientFlow, koinComponent)
     runBlocking { channel.send(session.server) }
     return session
 }
