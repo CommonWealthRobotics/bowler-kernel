@@ -21,6 +21,7 @@ import com.google.protobuf.ByteString
 import io.kotest.assertions.arrow.either.shouldBeLeft
 import io.kotest.assertions.arrow.either.shouldBeRight
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -127,5 +128,43 @@ internal class DefaultScriptTest {
             scriptLoader.resolveAndLoad(fileSpec1, listOf(), scriptEnvironment)
             childScript.start(listOf(1), script)
         }
+    }
+
+    @Test
+    fun `interrupt and restart a running script`() {
+        var startedLatch = CountDownLatch(1)
+        var interruptedLatch = CountDownLatch(1)
+        val script = DefaultScript(
+            { _, _ ->
+                startedLatch.countDown()
+                try {
+                    Thread.sleep(1000)
+                } catch (ex: InterruptedException) {
+                    interruptedLatch.countDown()
+                }
+            },
+            mockk()
+        )
+
+        fun startAndInterrupt() {
+            startedLatch = CountDownLatch(1)
+            interruptedLatch = CountDownLatch(1)
+
+            script.isRunning.shouldBeFalse()
+            script.start(listOf(), null)
+
+            // Wait for the script to start running and then interrupt it
+            startedLatch.await()
+            script.isRunning.shouldBeTrue()
+            script.interrupt()
+            interruptedLatch.await()
+
+            script.isRunning.shouldBeFalse()
+        }
+
+        startAndInterrupt()
+
+        // Should be able to restart the script
+        startAndInterrupt()
     }
 }
