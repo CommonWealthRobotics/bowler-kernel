@@ -25,7 +25,7 @@ dependencies {
         version = Versions.ktGuavaCore
     )
 
-    implementation(project(":logging"))
-
     testImplementation(project(":testUtil"))
+
+    runtimeOnly(project(":logging"))
 }

@@ -20,7 +20,7 @@
  * blocks.
  */
 object Versions {
-    const val bowlerKernel = "0.3.33"
+    const val bowlerKernel = "0.3.34"
 
     const val spotlessPlugin = "5.6.1"
     const val testLoggerPlugin = "2.1.0"
