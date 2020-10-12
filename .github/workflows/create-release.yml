@@ -1,0 +1,35 @@
+name: CreateRelease
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  CreateRelease:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - uses: gradle/wrapper-validation-action@v1
+
+      - name: Generate changelog
+        uses: heinrichreimer/github-changelog-generator-action@v2
+        id: generate-changelog
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          body: ${{ steps.generate-changelog.outputs.changelog }}
+          draft: false
+          prerelease: ${{ startsWith(github.ref, "v0") }}

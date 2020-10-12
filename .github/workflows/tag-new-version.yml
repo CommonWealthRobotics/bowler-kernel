@@ -1,0 +1,37 @@
+name: TagNewVersion
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "buildSrc/src/main/kotlin/Versions.kt"
+
+jobs:
+  TagNewVersion:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - uses: gradle/wrapper-validation-action@v1
+
+      - name: Configure Git user
+        run: |
+          git config --local user.email "bowlerbot@commonwealthrobotics.com"
+          git config --local user.name "BowlerBot"
+
+      - name: Parse this tag
+        run: export THIS_TAG="$(grep 'bowlerKernel' 'buildSrc/src/main/kotlin/Versions.kt' | awk '{ print $5 }' | tr -d \")"
+
+      - name: Continue if there is a new version
+        run: ! git rev-parse $THIS_TAG >/dev/null 2>&1
+
+      - name: Tag new version
+        run: git tag -s -m "$THIS_TAG" $THIS_TAG
+
+      - name: Push new tag
+        run: git push --tags

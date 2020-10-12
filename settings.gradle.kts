@@ -1,3 +1,10 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        jcenter()
+    }
+}
+
 plugins {
     id("com.gradle.enterprise") version "3.3.1"
 }

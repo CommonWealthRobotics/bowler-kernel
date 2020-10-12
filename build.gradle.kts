@@ -1,6 +1,7 @@
 import com.adarshr.gradle.testlogger.theme.ThemeType
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -12,6 +13,9 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version Versions.ktlintPlugin
     id("io.gitlab.arturbosch.detekt") version Versions.detektPlugin
     `java-test-fixtures`
+    id("org.jetbrains.dokka") version Versions.dokkaPlugin
+    id("com.jfrog.bintray") version Versions.bintrayPlugin
+    `maven-publish`
 }
 
 val kotlinProjects = listOf(
@@ -30,6 +34,8 @@ val kotlinProjects = listOf(
     project(":translator"),
     project(":util")
 )
+
+val publishedProjects = kotlinProjects
 
 allprojects {
     apply {
@@ -250,6 +256,63 @@ configure(kotlinProjects) {
         input = files("src/main/kotlin", "src/test/kotlin")
         parallel = true
         config = files(rootProject.rootDir.toPath().resolve("config").resolve("detekt").resolve("config.yml"))
+    }
+}
+
+configure(publishedProjects) {
+    apply {
+        plugin("com.jfrog.bintray")
+        plugin("maven-publish")
+    }
+
+    val projectName = "bowler-kernel"
+
+    task<Jar>("sourcesJar") {
+        archiveClassifier.set("sources")
+        archiveBaseName.set("$projectName-${this@configure.name.toLowerCase()}")
+        from(sourceSets.main.get().allSource)
+    }
+
+    val dokkaJar by tasks.creating(Jar::class) {
+        group = JavaBasePlugin.DOCUMENTATION_GROUP
+        description = "Assembles Kotlin docs with Dokka"
+        archiveClassifier.set("javadoc")
+        archiveBaseName.set("$projectName-${this@configure.name.toLowerCase()}")
+        from(tasks.withType<DokkaTask>())
+    }
+
+    val publicationName = "publication-$projectName-${name.toLowerCase()}"
+
+    publishing {
+        publications {
+            create<MavenPublication>(publicationName) {
+                artifactId = "$projectName-${this@configure.name.toLowerCase()}"
+                from(components["java"])
+                artifact(tasks["sourcesJar"])
+                artifact(dokkaJar)
+            }
+        }
+    }
+
+    bintray {
+        val bintrayApiUser = properties["bintray.api.user"] ?: System.getenv("BINTRAY_USER")
+        val bintrayApiKey = properties["bintray.api.key"] ?: System.getenv("BINTRAY_API_KEY")
+        user = bintrayApiUser as String?
+        key = bintrayApiKey as String?
+        setPublications(publicationName)
+        with(pkg) {
+            repo = "maven-artifacts"
+            name = projectName
+            userOrg = "commonwealthrobotics"
+            publish = true
+            setLicenses("LGPL-3.0")
+            vcsUrl = "https://github.com/CommonWealthRobotics/bowler-kernel.git"
+            githubRepo = "https://github.com/CommonWealthRobotics/bowler-kernel"
+            with(version) {
+                name = Versions.bowlerKernel
+                desc = "The heart of the Bowler stack."
+            }
+        }
     }
 }
 
