@@ -16,7 +16,7 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
-          persist_credentials: false
+          persist-credentials: false
 
       - uses: gradle/wrapper-validation-action@v1
 
