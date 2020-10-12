@@ -46,6 +46,4 @@ jobs:
           THIS_TAG: ${{ steps.parse-tag.outputs.tag }}
 
       - name: Push new tag
-        uses: ad-m/github-push-action@v0.6.0
-        with:
-          tags: true
+        run: git push --tags
