@@ -24,34 +24,18 @@ jobs:
           git config --local user.email "bowlerbot@commonwealthrobotics.com"
           git config --local user.name "BowlerBot"
 
-      - name: Print PWD
-        run: echo "$(pwd)"
-
-      - name: Print grep result
-        run: echo "$(grep 'bowlerKernel' 'buildSrc/src/main/kotlin/Versions.kt')"
-
-      - name: Print awk result
-        run: echo "$(grep 'bowlerKernel' 'buildSrc/src/main/kotlin/Versions.kt' | awk '{ print $5 }')"
-
-      - name: Print tr result
-        run: echo "$(grep 'bowlerKernel' 'buildSrc/src/main/kotlin/Versions.kt' | awk '{ print $5 }' | tr -d \")"
-
-      - name: Print tr result 2
-        run: |
-          echo "$(grep 'bowlerKernel' 'buildSrc/src/main/kotlin/Versions.kt' | awk '{ print $5 }' | tr -d \")"
-
       - name: Parse this tag
-        run: export THIS_TAG="$(grep 'bowlerKernel' 'buildSrc/src/main/kotlin/Versions.kt' | awk '{ print $5 }' | tr -d \")"
-
-      - name: Print tag
-        run: echo $THIS_TAG
+        id: parse-tag
+        run: |
+          export THIS_TAG="$(grep 'bowlerKernel' 'buildSrc/src/main/kotlin/Versions.kt' | awk '{ print $5 }' | tr -d \")"
+          echo "::set-output name=tag::$(echo $THIS_TAG)"
 
       - name: Continue if there is a new version
         run: |
-          ! git rev-parse $THIS_TAG >/dev/null 2>&1
+          ! git rev-parse ${ steps.parse-tag.outputs.tag } >/dev/null 2>&1
 
       - name: Tag new version
-        run: git tag -s -m "$THIS_TAG" $THIS_TAG
+        run: git tag -s -m "${ steps.parse-tag.outputs.tag }" ${ steps.parse-tag.outputs.tag }
 
       - name: Push new tag
         run: git push --tags
