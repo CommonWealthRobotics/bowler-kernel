@@ -25,6 +25,7 @@ val kotlinProjects = listOf(
     project(":di"),
     project(":gitfs"),
     project(":hardware"),
+    project(":logging"),
     project(":proto"),
     project(":protoutil"),
     project(":scripthost"),
