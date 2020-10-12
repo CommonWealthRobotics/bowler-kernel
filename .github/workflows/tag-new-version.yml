@@ -35,7 +35,7 @@ jobs:
 
       - name: Continue if there is a new version
         run: |
-          ! git rev-parse $THIS_TAG >/dev/null 2>&1
+          ! git rev-parse v$THIS_TAG >/dev/null 2>&1
         env:
           THIS_TAG: ${{ steps.parse-tag.outputs.tag }}
 
