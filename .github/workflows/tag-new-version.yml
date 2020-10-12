@@ -24,18 +24,28 @@ jobs:
           git config --local user.email "bowlerbot@commonwealthrobotics.com"
           git config --local user.name "BowlerBot"
 
+      - name: Install SSH
+        uses: webfactory/ssh-agent@v0.2.0
+        with:
+          ssh-private-key: ${{ secrets.BOWLERBOT_SSH_KEY }}
+          ssh-auth-sock: /tmp/ssh-auth-${{ github.run_id }}.sock
+
       - name: Parse this tag
         id: parse-tag
         run: |
           THIS_TAG="$(grep 'bowlerKernel' 'buildSrc/src/main/kotlin/Versions.kt' | awk '{ print $5 }' | tr -d \")"
-          echo "THIS_TAG=$THIS_TAG" >> $GITHUB_ENV
+          echo "::set-output name=tag::$(echo $THIS_TAG)"
 
       - name: Continue if there is a new version
         run: |
           ! git rev-parse $THIS_TAG >/dev/null 2>&1
+        env:
+          THIS_TAG: ${{ steps.parse-tag.outputs.tag }}
 
       - name: Tag new version
         run: git tag -s -m "$THIS_TAG" $THIS_TAG
+        env:
+          THIS_TAG: ${{ steps.parse-tag.outputs.tag }}
 
       - name: Push new tag
         run: git push --tags
