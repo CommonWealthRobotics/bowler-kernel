@@ -24,6 +24,9 @@ jobs:
           git config --local user.email "bowlerbot@commonwealthrobotics.com"
           git config --local user.name "BowlerBot"
 
+      - name: Print PWD
+        run: echo "$(pwd)"
+
       - name: Parse this tag
         run: export THIS_TAG="$(grep 'bowlerKernel' 'buildSrc/src/main/kotlin/Versions.kt' | awk '{ print $5 }' | tr -d \")"
 
