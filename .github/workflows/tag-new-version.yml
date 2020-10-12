@@ -27,6 +27,9 @@ jobs:
       - name: Parse this tag
         run: export THIS_TAG="$(grep 'bowlerKernel' 'buildSrc/src/main/kotlin/Versions.kt' | awk '{ print $5 }' | tr -d \")"
 
+      - name: Print tag
+        run: echo $THIS_TAG
+
       - name: Continue if there is a new version
         run: |
           ! git rev-parse $THIS_TAG >/dev/null 2>&1
