@@ -28,8 +28,11 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
 
+      - name: Build Artifacts
+        run: ./gradlew assemble --info --stacktrace
+
       - name: Build and Upload
-        run: ./gradlew bintrayUpload
+        run: ./gradlew bintrayUpload --info --stacktrace
         env:
           BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
           BINTRAY_API_KEY: ${{ secrets.BINTRAY_API_KEY }}
