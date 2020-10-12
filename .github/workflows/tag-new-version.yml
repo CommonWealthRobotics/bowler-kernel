@@ -36,17 +36,16 @@ jobs:
 
       - name: Continue if there is a new version
         run: |
-          ! git rev-parse v$THIS_TAG >/dev/null 2>&1
+          ! git rev-parse $THIS_TAG >/dev/null 2>&1
         env:
           THIS_TAG: ${{ steps.parse-tag.outputs.tag }}
 
       - name: Tag new version
-        run: git tag -s -m "v$THIS_TAG" v$THIS_TAG
+        run: git tag -s -m "$THIS_TAG" $THIS_TAG
         env:
           THIS_TAG: ${{ steps.parse-tag.outputs.tag }}
 
       - name: Push new tag
         uses: ad-m/github-push-action@v0.6.0
         with:
-          github_token: ${{ secrets.BOWLERBOT_PAT }}
           tags: true

@@ -3,7 +3,7 @@ name: CreateRelease
 on:
   push:
     tags:
-      - 'v*'
+      - '[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   CreateRelease:
@@ -33,4 +33,4 @@ jobs:
           release_name: ${{ github.ref }}
           body: ${{ steps.generate-changelog.outputs.changelog }}
           draft: false
-          prerelease: ${{ startsWith(github.ref, 'v0') }}
+          prerelease: ${{ startsWith(github.ref, '0') }}
