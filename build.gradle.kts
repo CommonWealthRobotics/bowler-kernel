@@ -259,17 +259,18 @@ configure(kotlinProjects) {
     }
 }
 
+// Need to configure the root project or else the task bintrayUpload will throw a NPE
+configureBintrayPkg(null)
+
 configure(publishedProjects) {
     apply {
         plugin("com.jfrog.bintray")
         plugin("maven-publish")
     }
 
-    val projectName = "bowler-kernel"
-
     task<Jar>("sourcesJar") {
         archiveClassifier.set("sources")
-        archiveBaseName.set("$projectName-${this@configure.name.toLowerCase()}")
+        archiveBaseName.set("${Metadata.projectName}-${this@configure.name.toLowerCase()}")
         from(sourceSets.main.get().allSource)
     }
 
@@ -277,16 +278,16 @@ configure(publishedProjects) {
         group = JavaBasePlugin.DOCUMENTATION_GROUP
         description = "Assembles Kotlin docs with Dokka"
         archiveClassifier.set("javadoc")
-        archiveBaseName.set("$projectName-${this@configure.name.toLowerCase()}")
+        archiveBaseName.set("${Metadata.projectName}-${this@configure.name.toLowerCase()}")
         from(tasks.withType<DokkaTask>())
     }
 
-    val publicationName = "publication-$projectName-${name.toLowerCase()}"
+    val publicationName = "publication-${Metadata.projectName}-${name.toLowerCase()}"
 
     publishing {
         publications {
             create<MavenPublication>(publicationName) {
-                artifactId = "$projectName-${this@configure.name.toLowerCase()}"
+                artifactId = "${Metadata.projectName}-${this@configure.name.toLowerCase()}"
                 from(components["java"])
                 artifact(tasks["sourcesJar"])
                 artifact(dokkaJar)
@@ -294,26 +295,7 @@ configure(publishedProjects) {
         }
     }
 
-    bintray {
-        val bintrayApiUser = properties["bintray.api.user"] ?: System.getenv("BINTRAY_USER")
-        val bintrayApiKey = properties["bintray.api.key"] ?: System.getenv("BINTRAY_API_KEY")
-        user = bintrayApiUser as String?
-        key = bintrayApiKey as String?
-        setPublications(publicationName)
-        with(pkg) {
-            repo = "maven-artifacts"
-            name = projectName
-            userOrg = "commonwealthrobotics"
-            publish = true
-            setLicenses("LGPL-3.0")
-            vcsUrl = "https://github.com/CommonWealthRobotics/bowler-kernel.git"
-            githubRepo = "https://github.com/CommonWealthRobotics/bowler-kernel"
-            with(version) {
-                name = Versions.bowlerKernel
-                desc = "The heart of the Bowler stack."
-            }
-        }
-    }
+    configureBintrayPkg(publicationName)
 }
 
 val jacocoRootReport by tasks.creating(JacocoReport::class) {
@@ -347,4 +329,29 @@ val jacocoRootReport by tasks.creating(JacocoReport::class) {
 tasks.wrapper {
     distributionType = Wrapper.DistributionType.ALL
     gradleVersion = Versions.gradleWrapper
+}
+
+fun Project.configureBintrayPkg(publicationName: String?) {
+    bintray {
+        val bintrayApiUser = properties["bintray.api.user"] ?: System.getenv("BINTRAY_USER")
+        val bintrayApiKey = properties["bintray.api.key"] ?: System.getenv("BINTRAY_API_KEY")
+        user = bintrayApiUser as String?
+        key = bintrayApiKey as String?
+
+        publicationName?.let { setPublications(it) }
+
+        with(pkg) {
+            repo = Metadata.Bintray.repo
+            name = Metadata.projectName
+            userOrg = Metadata.organization
+            publish = true
+            setLicenses(Metadata.license)
+            vcsUrl = Metadata.Bintray.vcsUrl
+            githubRepo = Metadata.Bintray.githubRepo
+            with(version) {
+                name = Versions.bowlerKernel
+                desc = Metadata.projectDescription
+            }
+        }
+    }
 }
