@@ -31,7 +31,8 @@ jobs:
           echo "THIS_TAG=$THIS_TAG" >> $GITHUB_ENV
 
       - name: Continue if there is a new version
-        run: ! git rev-parse $THIS_TAG >/dev/null 2>&1
+        run: |
+          ! git rev-parse $THIS_TAG >/dev/null 2>&1
 
       - name: Tag new version
         run: git tag -s -m "$THIS_TAG" $THIS_TAG
