@@ -31,5 +31,5 @@ jobs:
       - name: Build and Upload
         run: ./gradlew bintrayUpload
         env:
-          BINTRAY_USER: ${{ BINTRAY_USER }}
-          BINTRAY_API_KEY: ${{ BINTRAY_API_KEY }}
+          BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
+          BINTRAY_API_KEY: ${{ secrets.BINTRAY_API_KEY }}

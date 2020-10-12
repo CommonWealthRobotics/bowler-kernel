@@ -33,4 +33,4 @@ jobs:
           release_name: ${{ github.ref }}
           body: ${{ steps.generate-changelog.outputs.changelog }}
           draft: false
-          prerelease: ${{ startsWith(github.ref, '0') }}
+          prerelease: ${{ startsWith(github.ref, 'refs/tags/0') }}
