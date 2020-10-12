@@ -68,8 +68,6 @@ internal class GitHubFSTest {
                 Arguments.of("http://github.com/CommonWealthRobotics/BowlerBuilder.git", repoOwnerAndName),
                 Arguments.of("https://github.com/CommonWealthRobotics/BowlerBuilder.git/", repoOwnerAndName),
                 Arguments.of("http://github.com/CommonWealthRobotics/BowlerBuilder.git/", repoOwnerAndName),
-                Arguments.of("git@github.com:CommonWealthRobotics/BowlerBuilder.git", repoOwnerAndName),
-                Arguments.of("git@github.com:CommonWealthRobotics/BowlerBuilder.git/", repoOwnerAndName),
                 Arguments.of("https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git", gistId),
                 Arguments.of("http://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git", gistId),
                 Arguments.of("https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git/", gistId),
