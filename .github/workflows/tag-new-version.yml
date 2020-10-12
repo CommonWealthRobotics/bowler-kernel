@@ -19,16 +19,13 @@ jobs:
 
       - uses: gradle/wrapper-validation-action@v1
 
-      - name: Configure Git user
-        run: |
-          git config --local user.email "bowlerbot@commonwealthrobotics.com"
-          git config --local user.name "BowlerBot"
-
-      - name: Install SSH
-        uses: webfactory/ssh-agent@v0.2.0
-        with:
-          ssh-private-key: ${{ secrets.BOWLERBOT_SSH_KEY }}
-          ssh-auth-sock: /tmp/ssh-auth-${{ github.run_id }}.sock
+      - name: Import GPG Key
+        uses: crazy-max/ghaction-import-gpg@v3
+        env:
+          gpg-private-key: ${{ BOWLERBOT_GPG_KEY }}
+          passphrase: ${{ BOWLERBOT_GPG_KEY_PASSPHRASE }}
+          git-user-signingkey: true
+          git-commit-gpgsign: true
 
       - name: Parse this tag
         id: parse-tag
