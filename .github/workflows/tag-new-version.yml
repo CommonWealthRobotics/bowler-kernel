@@ -16,7 +16,7 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
-          persist-credentials: false
+          ssh-key: ${{ secrets.BOWLERBOT_SSH_KEY }}
 
       - uses: gradle/wrapper-validation-action@v1
 
