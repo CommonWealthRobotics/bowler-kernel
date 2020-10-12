@@ -22,8 +22,8 @@ jobs:
       - name: Import GPG Key
         uses: crazy-max/ghaction-import-gpg@v3
         env:
-          gpg-private-key: ${{ BOWLERBOT_GPG_KEY }}
-          passphrase: ${{ BOWLERBOT_GPG_KEY_PASSPHRASE }}
+          gpg-private-key: ${{ secrets.BOWLERBOT_GPG_KEY }}
+          passphrase: ${{ secrets.BOWLERBOT_GPG_KEY_PASSPHRASE }}
           git-user-signingkey: true
           git-commit-gpgsign: true
 
