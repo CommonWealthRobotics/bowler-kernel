@@ -27,6 +27,12 @@ jobs:
       - name: Print PWD
         run: echo "$(pwd)"
 
+      - name: Print grep result
+        run: echo "$(grep 'bowlerKernel' 'buildSrc/src/main/kotlin/Versions.kt')"
+
+      - name: Print awk result
+        run: echo "$(grep 'bowlerKernel' 'buildSrc/src/main/kotlin/Versions.kt' | awk '{ print $5 }')"
+
       - name: Parse this tag
         run: export THIS_TAG="$(grep 'bowlerKernel' 'buildSrc/src/main/kotlin/Versions.kt' | awk '{ print $5 }' | tr -d \")"
 
