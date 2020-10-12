@@ -27,15 +27,14 @@ jobs:
       - name: Parse this tag
         id: parse-tag
         run: |
-          export THIS_TAG="$(grep 'bowlerKernel' 'buildSrc/src/main/kotlin/Versions.kt' | awk '{ print $5 }' | tr -d \")"
-          echo "::set-output name=tag::$(echo $THIS_TAG)"
+          THIS_TAG="$(grep 'bowlerKernel' 'buildSrc/src/main/kotlin/Versions.kt' | awk '{ print $5 }' | tr -d \")"
+          echo "THIS_TAG=$THIS_TAG" >> $GITHUB_ENV
 
       - name: Continue if there is a new version
-        run: |
-          ! git rev-parse ${ steps.parse-tag.outputs.tag } >/dev/null 2>&1
+        run: ! git rev-parse $THIS_TAG >/dev/null 2>&1
 
       - name: Tag new version
-        run: git tag -s -m "${ steps.parse-tag.outputs.tag }" ${ steps.parse-tag.outputs.tag }
+        run: git tag -s -m "$THIS_TAG" $THIS_TAG
 
       - name: Push new tag
         run: git push --tags
