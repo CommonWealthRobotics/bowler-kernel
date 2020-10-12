@@ -14,19 +14,21 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
+          persist-credentials: false
+          token: ${{ secrets.BOWLERBOT_PAT }}
 
       - uses: gradle/wrapper-validation-action@v1
 
-      - name: Generate changelog
-        uses: heinrichreimer/github-changelog-generator-action@v2
-        id: generate-changelog
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Generate changelog
+#        uses: heinrichreimer/github-changelog-generator-action@v2
+#        id: generate-changelog
+#        with:
+#          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOWLERBOT_PAT }}
         with:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
