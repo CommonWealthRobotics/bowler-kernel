@@ -40,7 +40,7 @@ jobs:
           THIS_TAG: ${{ steps.parse-tag.outputs.tag }}
 
       - name: Tag new version
-        run: git tag -s -m "$THIS_TAG" $THIS_TAG
+        run: git tag -s -m "v$THIS_TAG" v$THIS_TAG
         env:
           THIS_TAG: ${{ steps.parse-tag.outputs.tag }}
 
