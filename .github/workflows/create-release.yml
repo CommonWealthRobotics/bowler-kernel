@@ -14,7 +14,6 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
-          persist-credentials: false
           token: ${{ secrets.BOWLERBOT_PAT }}
 
       - uses: gradle/wrapper-validation-action@v1
