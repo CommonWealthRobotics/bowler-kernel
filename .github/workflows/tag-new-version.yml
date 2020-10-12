@@ -45,4 +45,7 @@ jobs:
           THIS_TAG: ${{ steps.parse-tag.outputs.tag }}
 
       - name: Push new tag
-        run: git push --tags
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.BOWELRBOT_PAT }}
+          tags: true
