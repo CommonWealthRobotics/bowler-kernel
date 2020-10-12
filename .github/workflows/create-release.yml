@@ -3,7 +3,7 @@ name: CreateRelease
 on:
   push:
     tags:
-      - "v*.*.*"
+      - "v**"
 
 jobs:
   CreateRelease:
