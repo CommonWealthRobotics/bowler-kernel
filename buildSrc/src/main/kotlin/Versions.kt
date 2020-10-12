@@ -20,13 +20,15 @@
  * blocks.
  */
 object Versions {
-    const val bowlerKernel = "0.1.0"
+    const val bowlerKernel = "0.3.0"
 
     const val spotlessPlugin = "5.6.1"
     const val testLoggerPlugin = "2.1.0"
     const val ktlintPlugin = "9.4.1"
     const val detektPlugin = "1.14.1"
     const val protobufPlugin = "0.8.13"
+    const val dokkaPlugin = "1.4.10"
+    const val bintrayPlugin = "1.8.5"
 
     const val kotlin = "1.4.10"
     const val kotlinCoroutines = "1.3.9"
