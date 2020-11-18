@@ -20,6 +20,7 @@ plugins {
 
 val kotlinProjects = listOf(
     project(":auth"),
+    project(":cli"),
     project(":device-server"),
     project(":device-server-benchmark"),
     project(":di"),
@@ -265,6 +266,10 @@ configure(publishedProjects) {
                 artifactId = "${Metadata.projectName}-${this@configure.name.toLowerCase()}"
                 from(components["java"])
                 artifact(tasks["sourcesJar"])
+                try {
+                    artifact(tasks.named("shadowJar"))
+                } catch (ex: UnknownTaskException) {
+                }
                 artifact(dokkaJar)
             }
         }

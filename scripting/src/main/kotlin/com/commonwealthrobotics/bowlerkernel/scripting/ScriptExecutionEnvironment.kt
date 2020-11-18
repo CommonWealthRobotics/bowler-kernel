@@ -18,6 +18,7 @@ package com.commonwealthrobotics.bowlerkernel.scripting
 
 import com.commonwealthrobotics.bowlerkernel.gitfs.DependencyResolver
 import com.commonwealthrobotics.proto.gitfs.FileSpec
+import com.commonwealthrobotics.proto.script_host.ScriptOutput
 
 /**
  * This "execution environment" provides all the facilities a script needs to interact with the Bowler stack. Scripts
@@ -28,11 +29,15 @@ import com.commonwealthrobotics.proto.gitfs.FileSpec
  * 1. `args`: The argument passes to the script.
  * 2. `scriptEnvironment`: The script environment map.
  * 3. `scriptExecutionEnvironment`: The script-local execution environment.
+ *
+ * TODO: Need to add a way for the script to get its output directory. Any files written into this directory will be
+ *  synced to the client when the script finishes using [ScriptOutput].
  */
 interface ScriptExecutionEnvironment {
 
     /**
-     * Adds a thread to the list of threads this script tracks.
+     * Adds a thread to the list of threads this script tracks. All threads a script starts must be tracked using this
+     * method. Starting a thread but not passing it to this method is undefined behavior.
      *
      * @param thread The thread to add.
      */

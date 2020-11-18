@@ -1,9 +1,9 @@
 description = "Benchmarks the DeviceServer."
 
 dependencies {
-    implementation(project(":device-server"))
+    api(project(":device-server"))
 
-    implementation(
+    api(
         group = "org.apache.commons",
         name = "commons-math3",
         version = Versions.commonsMath3

@@ -12,6 +12,7 @@ plugins {
 rootProject.name = "bowler-kernel"
 
 include(":auth")
+include(":cli")
 include(":device-server")
 include(":device-server-benchmark")
 include(":di")

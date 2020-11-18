@@ -59,7 +59,7 @@ class KernelServer {
 
         // TODO: Include the port number in the name server
         // TODO: Support setting the port number via a cmdline option
-        server = NettyServerBuilder.forPort(0).apply {
+        server = NettyServerBuilder.forPort(port).apply {
             // TODO: Support SSL
             addService(ScriptHost(CoroutineScope(Dispatchers.Default), koinComponent))
         }.build()
@@ -67,7 +67,10 @@ class KernelServer {
         logger.info { "Server running on port ${server.port}" }
     }
 
-    fun stop(): Unit = server.shutdown().awaitTermination()
+    fun stop() {
+        // TODO: Don't explode when stopping a server that was never started
+        server.shutdown().awaitTermination()
+    }
 
     companion object {
         private val logger = KotlinLogging.logger { }
