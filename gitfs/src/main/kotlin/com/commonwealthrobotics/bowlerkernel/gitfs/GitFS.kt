@@ -21,11 +21,15 @@ import java.io.File
 
 /**
  * An interface to a Git-based file system, typically hosted remotely.
+ *
+ * Important note: the kernel's dependency cache is just that (a cache). The kernel is free to evict cache entries at
+ * any time that would not cause a running program to break. Don't store important changes in the cache.
  */
 interface GitFS {
 
     /**
-     * Clones a repository to the local cache.
+     * Clones a repository to the local cache. The cached copy of the repository will be consistent with the remote
+     * after this method returns. Namely, any local changes will be reset.
      *
      * @param gitUrl The `.git` URL to clone from, i.e.
      * `https://github.com/CommonWealthRobotics/BowlerBuilder.git` or
