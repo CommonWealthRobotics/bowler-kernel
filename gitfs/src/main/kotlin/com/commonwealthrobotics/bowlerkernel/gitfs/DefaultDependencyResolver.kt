@@ -37,6 +37,7 @@ class DefaultDependencyResolver(
 
             val patch = fileSpec.project.patch.patch
             if (!patch.isEmpty) {
+                // TODO: Apply the patch using jgit
                 val proc = ProcessBuilder("git", "apply", "-").directory(repoDir).start()
                 proc.outputStream.write(patch.toByteArray())
                 proc.outputStream.close()
