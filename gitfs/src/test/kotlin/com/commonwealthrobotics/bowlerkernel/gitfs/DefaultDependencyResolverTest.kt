@@ -69,17 +69,19 @@ internal class DefaultDependencyResolverTest {
         fileToResolve.writeText("1")
 
         // Init a git repo, add all files, and commit
-        ProcessBuilder("git", "init", ".").directory(tempDir).start().waitFor()
-        ProcessBuilder("git", "add", ".").directory(tempDir).start().waitFor()
-        ProcessBuilder("git", "commit", "-m", "a").directory(tempDir).start().waitFor()
+        ProcessBuilder("git", "init", ".").directory(tempDir).start().waitFor().shouldBeZero()
+        ProcessBuilder("git", "add", ".").directory(tempDir).start().waitFor().shouldBeZero()
+        ProcessBuilder("git", "commit", "-m", "a").directory(tempDir).start().waitFor().shouldBeZero()
 
         // Write 2 into that file and generate that diff
         fileToResolve.writeText("2")
 
         val diff = ProcessBuilder("git", "diff", "HEAD").directory(tempDir).start().let {
-            it.waitFor()
+            it.waitFor().shouldBeZero()
             it.inputStream.readAllBytes()
         }
+        diff.isNotEmpty().shouldBeTrue() // Sanity check the diff is not empty
+
         // Reset the file back to its old contents so that we can check the diff is applied
         fileToResolve.writeText("1")
 
@@ -109,9 +111,9 @@ internal class DefaultDependencyResolverTest {
     @Test
     fun `resolve a file added in a patch`(@TempDir tempDir: File) {
         // Init a git repo, add all files, and commit
-        ProcessBuilder("git", "init", ".").directory(tempDir).start().waitFor()
-        ProcessBuilder("git", "add", ".").directory(tempDir).start().waitFor()
-        ProcessBuilder("git", "commit", "-m", "a", "--allow-empty").directory(tempDir).start().waitFor()
+        ProcessBuilder("git", "init", ".").directory(tempDir).start().waitFor().shouldBeZero()
+        ProcessBuilder("git", "add", ".").directory(tempDir).start().waitFor().shouldBeZero()
+        ProcessBuilder("git", "commit", "-m", "a", "--allow-empty").directory(tempDir).start().waitFor().shouldBeZero()
 
         // Create a new file
         val aNewFile = createTempFile(suffix = ".groovy", directory = tempDir)
