@@ -19,6 +19,8 @@ package com.commonwealthrobotics.bowlerkernel.gitfs
 import arrow.fx.IO
 import com.commonwealthrobotics.proto.gitfs.FileSpec
 import com.google.protobuf.ByteString
+import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.ints.shouldBeZero
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -53,6 +55,96 @@ internal class DefaultDependencyResolverTest {
         val resolver = DefaultDependencyResolver(gitFS)
         val resolvedFile = resolver.resolve(file)
         resolvedFile.shouldBe(fileToResolve)
+
+        verifyOrder {
+            gitFS.cloneRepo(file.project.repoRemote, file.project.revision)
+            gitFS.getFilesInRepo(tempDir)
+        }
+    }
+
+    @Test
+    fun `resolve a script with a patch and no devs`(@TempDir tempDir: File) {
+        // Make a file and write 1 into it
+        val fileToResolve = createTempFile(suffix = ".groovy", directory = tempDir)
+        fileToResolve.writeText("1")
+
+        // Init a git repo, add all files, and commit
+        ProcessBuilder("git", "init", ".").directory(tempDir).start().waitFor()
+        ProcessBuilder("git", "add", ".").directory(tempDir).start().waitFor()
+        ProcessBuilder("git", "commit", "-m", "a").directory(tempDir).start().waitFor()
+
+        // Write 2 into that file and generate that diff
+        fileToResolve.writeText("2")
+
+        val diff = ProcessBuilder("git", "diff", "HEAD").directory(tempDir).start().let {
+            it.waitFor()
+            it.inputStream.readAllBytes()
+        }
+        // Reset the file back to its old contents so that we can check the diff is applied
+        fileToResolve.writeText("1")
+
+        val file = FileSpec.newBuilder().apply {
+            projectBuilder.repoRemote = "git@github.com:user/repo1.git"
+            projectBuilder.revision = "master"
+            projectBuilder.patchBuilder.patch = ByteString.copyFrom(diff)
+            path = fileToResolve.name
+        }.build()
+
+        val gitFS = mockk<GitFS> {
+            every { cloneRepo(file.project.repoRemote, file.project.revision) } returns IO.just(tempDir)
+            every { getFilesInRepo(tempDir) } returns IO.just(setOf(fileToResolve))
+        }
+
+        val resolver = DefaultDependencyResolver(gitFS)
+        val resolvedFile = resolver.resolve(file)
+        resolvedFile.shouldBe(fileToResolve)
+        resolvedFile.readText().shouldBe("2")
+
+        verifyOrder {
+            gitFS.cloneRepo(file.project.repoRemote, file.project.revision)
+            gitFS.getFilesInRepo(tempDir)
+        }
+    }
+
+    @Test
+    fun `resolve a file added in a patch`(@TempDir tempDir: File) {
+        // Init a git repo, add all files, and commit
+        ProcessBuilder("git", "init", ".").directory(tempDir).start().waitFor()
+        ProcessBuilder("git", "add", ".").directory(tempDir).start().waitFor()
+        ProcessBuilder("git", "commit", "-m", "a", "--allow-empty").directory(tempDir).start().waitFor()
+
+        // Create a new file
+        val aNewFile = createTempFile(suffix = ".groovy", directory = tempDir)
+        aNewFile.writeText("1")
+
+        ProcessBuilder("git", "add", aNewFile.name).directory(tempDir).start().waitFor().shouldBeZero()
+        val diff = ProcessBuilder("git", "diff", "--cached").directory(tempDir).start().let {
+            it.waitFor().shouldBeZero()
+            it.inputStream.readAllBytes()
+        }
+        diff.isNotEmpty().shouldBeTrue() // Sanity check the diff is not empty
+
+        // Delete the file so we can check the diff is applied
+        aNewFile.delete().shouldBeTrue()
+
+        val file = FileSpec.newBuilder().apply {
+            projectBuilder.repoRemote = "git@github.com:user/repo1.git"
+            projectBuilder.revision = "master"
+            projectBuilder.patchBuilder.patch = ByteString.copyFrom(diff)
+            path = aNewFile.name // Try to resolve that new file
+        }.build()
+
+        val gitFS = mockk<GitFS> {
+            every { cloneRepo(file.project.repoRemote, file.project.revision) } returns IO.just(tempDir)
+
+            // Simulate the diff being applied correctly by returning the new file. We check the diff worked later.
+            every { getFilesInRepo(tempDir) } returns IO.just(setOf(File(aNewFile.path)))
+        }
+
+        val resolver = DefaultDependencyResolver(gitFS)
+        val resolvedFile = resolver.resolve(file)
+        resolvedFile.shouldBe(aNewFile)
+        resolvedFile.readText().shouldBe("1") // Read from the new file to assert it was created properly
 
         verifyOrder {
             gitFS.cloneRepo(file.project.repoRemote, file.project.revision)

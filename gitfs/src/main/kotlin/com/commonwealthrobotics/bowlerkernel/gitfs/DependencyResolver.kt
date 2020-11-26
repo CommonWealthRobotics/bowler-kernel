@@ -22,11 +22,16 @@ import java.io.File
 
 /**
  * Resolves the dependencies needed by scripts.
+ *
+ * Important note: the kernel's dependency cache is just that (a cache). The kernel is free to evict cache entries at
+ * any time that would not cause a running program to break. Don't store important changes in the cache.
  */
 interface DependencyResolver {
 
     /**
-     * Resolve a local [File] from a [FileSpec]. Dependency resolution works as follows:
+     * Resolve a local [File] from a [FileSpec].
+     *
+     * Dependency resolution works as follows:
      * 1. Scripts may import scripts from the same project. These dependencies are resolved to the relevant files
      * in that project.
      *
@@ -37,6 +42,9 @@ interface DependencyResolver {
      *
      *     b) If the script being imported is dev'd, that script is resolved to the local (local to the client) version
      *     of that script.
+     *
+     * Patches work as follows. The local copy of the project will be made consistent with the patch. Any previously
+     * applied patch is discarded and overwritten by the new patch.
      */
     fun resolve(fileSpec: FileSpec): File
 

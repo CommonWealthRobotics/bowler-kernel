@@ -26,6 +26,7 @@ import com.commonwealthrobotics.bowlerkernel.util.getFullPathToGitHubCacheDirect
 import mu.KotlinLogging
 import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.api.ResetCommand
 import org.eclipse.jgit.errors.RepositoryNotFoundException
 import org.eclipse.jgit.errors.TransportException
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
@@ -60,7 +61,10 @@ class GitHubFS(
             logger.info { "Pulling repository in directory $directory" }
             @Suppress("BlockingMethodInNonBlockingContext")
             fsLock.withLock {
-                Git.open(directory).use { it.pull().call() }
+                Git.open(directory).use {
+                    it.reset().setMode(ResetCommand.ResetType.HARD).setRef("HEAD").call()
+                    it.pull().call()
+                }
             }
         }.handleErrorWith {
             if (it is RepositoryNotFoundException) {

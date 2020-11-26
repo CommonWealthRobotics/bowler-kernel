@@ -17,6 +17,7 @@
 package com.commonwealthrobotics.bowlerkernel.gitfs
 
 import arrow.fx.IO
+import arrow.fx.extensions.fx
 import com.commonwealthrobotics.proto.gitfs.FileSpec
 import com.commonwealthrobotics.proto.gitfs.ProjectSpec
 import java.io.File
@@ -29,11 +30,25 @@ class DefaultDependencyResolver(
 ) : DependencyResolver {
 
     override fun resolve(fileSpec: FileSpec): File {
-        return gitFS.cloneRepo(fileSpec.project.repoRemote, fileSpec.project.revision).flatMap { repoDir ->
-            gitFS.getFilesInRepo(repoDir).flatMap { files ->
+        return IO.fx {
+            // After cloneRepo, the cached copy of the repo is consistent with the remote, so there should be no need
+            // to reset any possibly previously applied patch.
+            val repoDir = gitFS.cloneRepo(fileSpec.project.repoRemote, fileSpec.project.revision).bind()
+
+            val patch = fileSpec.project.patch.patch
+            if (!patch.isEmpty) {
+                val proc = ProcessBuilder("git", "apply", "-").directory(repoDir).start()
+                proc.outputStream.write(patch.toByteArray())
+                proc.outputStream.close()
+                proc.waitFor()
+            }
+
+            val file = gitFS.getFilesInRepo(repoDir).flatMap { files ->
                 val file = files.firstOrNull { it.relativeTo(repoDir).path == fileSpec.path }
                 file?.let { IO.just(it) } ?: IO.raiseError(IllegalStateException("Cannot resolve $fileSpec"))
-            }
+            }.bind()
+
+            file
         }.unsafeRunSync()
     }
 

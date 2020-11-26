@@ -57,6 +57,12 @@ import kotlin.time.ExperimentalTime
 /**
  * Implements the bidirectional session RPC.
  *
+ * Notes to the client:
+ * - Multiple concurrent requests are supported, with some limitations:
+ *      - The Git cache is shared between all requests. This means that you should take care not to send requests that
+ *      cause a later request to overwrite a cache entry that an earlier request is using. For example, resolving two
+ *      FileSpecs that point to the same file.
+ *
  * @param coroutineScope The scope used to process messages from the client flow. Cannot be GlobalScope.
  * @param client The client flow.
  */
