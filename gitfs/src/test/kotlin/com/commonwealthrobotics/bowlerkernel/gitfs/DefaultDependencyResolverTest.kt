@@ -25,6 +25,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyOrder
+import mu.KotlinLogging
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -69,17 +70,14 @@ internal class DefaultDependencyResolverTest {
         fileToResolve.writeText("1")
 
         // Init a git repo, add all files, and commit
-        ProcessBuilder("git", "init", ".").directory(tempDir).start().waitFor().shouldBeZero()
-        ProcessBuilder("git", "add", ".").directory(tempDir).start().waitFor().shouldBeZero()
-        ProcessBuilder("git", "commit", "-m", "a").directory(tempDir).start().waitFor().shouldBeZero()
+        runAndPrintOutput(tempDir, "git", "init", ".")
+        runAndPrintOutput(tempDir, "git", "add", ".")
+        runAndPrintOutput(tempDir, "git", "commit", "-m", "a")
 
         // Write 2 into that file and generate that diff
         fileToResolve.writeText("2")
 
-        val diff = ProcessBuilder("git", "diff", "HEAD").directory(tempDir).start().let {
-            it.waitFor().shouldBeZero()
-            it.inputStream.readAllBytes()
-        }
+        val diff = run(tempDir, "git", "diff", "HEAD").inputStream.readAllBytes()
         diff.isNotEmpty().shouldBeTrue() // Sanity check the diff is not empty
 
         // Reset the file back to its old contents so that we can check the diff is applied
@@ -111,19 +109,16 @@ internal class DefaultDependencyResolverTest {
     @Test
     fun `resolve a file added in a patch`(@TempDir tempDir: File) {
         // Init a git repo, add all files, and commit
-        ProcessBuilder("git", "init", ".").directory(tempDir).start().waitFor().shouldBeZero()
-        ProcessBuilder("git", "add", ".").directory(tempDir).start().waitFor().shouldBeZero()
-        ProcessBuilder("git", "commit", "-m", "a", "--allow-empty").directory(tempDir).start().waitFor().shouldBeZero()
+        runAndPrintOutput(tempDir, "git", "init", ".")
+        runAndPrintOutput(tempDir, "git", "add", ".")
+        runAndPrintOutput(tempDir, "git", "commit", "-m", "a", "--allow-empty")
 
         // Create a new file
         val aNewFile = createTempFile(suffix = ".groovy", directory = tempDir)
         aNewFile.writeText("1")
 
-        ProcessBuilder("git", "add", aNewFile.name).directory(tempDir).start().waitFor().shouldBeZero()
-        val diff = ProcessBuilder("git", "diff", "--cached").directory(tempDir).start().let {
-            it.waitFor().shouldBeZero()
-            it.inputStream.readAllBytes()
-        }
+        runAndPrintOutput(tempDir, "git", "add", aNewFile.name)
+        val diff = run(tempDir, "git", "diff", "--cached").inputStream.readAllBytes()
         diff.isNotEmpty().shouldBeTrue() // Sanity check the diff is not empty
 
         // Delete the file so we can check the diff is applied
@@ -152,5 +147,21 @@ internal class DefaultDependencyResolverTest {
             gitFS.cloneRepo(file.project.repoRemote, file.project.revision)
             gitFS.getFilesInRepo(tempDir)
         }
+    }
+
+    private fun run(dir: File, vararg cmd: String): Process =
+        ProcessBuilder(*cmd).directory(dir).start().also {
+            it.waitFor().shouldBeZero()
+        }
+
+    private fun runAndPrintOutput(dir: File, vararg cmd: String): Process =
+        ProcessBuilder(*cmd).directory(dir).start().also {
+            logger.debug { it.inputStream.readAllBytes().decodeToString() }
+            logger.debug { it.errorStream.readAllBytes().decodeToString() }
+            it.waitFor().shouldBeZero()
+        }
+
+    companion object {
+        private val logger = KotlinLogging.logger { }
     }
 }
