@@ -41,7 +41,10 @@ class DefaultDependencyResolver(
                 val proc = ProcessBuilder("git", "apply", "-").directory(repoDir).start()
                 proc.outputStream.write(patch.toByteArray())
                 proc.outputStream.close()
-                proc.waitFor()
+                val exitCode = proc.waitFor()
+                check(exitCode == 0) {
+                    "Failed to apply the patch (exit code $exitCode) when resolving $fileSpec"
+                }
             }
 
             val file = gitFS.getFilesInRepo(repoDir).flatMap { files ->
