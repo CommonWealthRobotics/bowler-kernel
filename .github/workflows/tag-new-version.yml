@@ -31,7 +31,7 @@ jobs:
       - name: Parse this tag
         id: parse-tag
         run: |
-          THIS_TAG="$(grep 'bowlerKernel' 'buildSrc/src/main/kotlin/Versions.kt' | awk '{ print $5 }' | tr -d \")"
+          THIS_TAG="$(grep 'projectVersion' 'buildSrc/src/main/kotlin/Versions.kt' | awk '{ print $5 }' | tr -d \")"
           echo "::set-output name=tag::$(echo $THIS_TAG)"
 
       - name: Continue if there is a new version
