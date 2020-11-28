@@ -17,15 +17,15 @@
 package com.commonwealthrobotics.bowlerkernel.gitfs
 
 import arrow.fx.IO
+import com.commonwealthrobotics.bowlerkernel.util.run
+import com.commonwealthrobotics.bowlerkernel.util.runAndPrintOutput
 import com.commonwealthrobotics.proto.gitfs.FileSpec
 import com.google.protobuf.ByteString
 import io.kotest.matchers.booleans.shouldBeTrue
-import io.kotest.matchers.ints.shouldBeZero
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyOrder
-import mu.KotlinLogging
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -147,21 +147,5 @@ internal class DefaultDependencyResolverTest {
             gitFS.cloneRepo(file.project.repoRemote, file.project.revision)
             gitFS.getFilesInRepo(tempDir)
         }
-    }
-
-    private fun run(dir: File, vararg cmd: String): Process =
-        ProcessBuilder(*cmd).directory(dir).start().also {
-            it.waitFor().shouldBeZero()
-        }
-
-    private fun runAndPrintOutput(dir: File, vararg cmd: String): Process =
-        ProcessBuilder(*cmd).directory(dir).start().also {
-            logger.debug { it.inputStream.readAllBytes().decodeToString() }
-            logger.debug { it.errorStream.readAllBytes().decodeToString() }
-            it.waitFor().shouldBeZero()
-        }
-
-    companion object {
-        private val logger = KotlinLogging.logger { }
     }
 }

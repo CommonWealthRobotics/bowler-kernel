@@ -18,6 +18,7 @@ package com.commonwealthrobotics.bowlerkernel.gitfs
 
 import arrow.core.Either
 import com.commonwealthrobotics.bowlerkernel.authservice.AnonymousCredentialsProvider
+import com.commonwealthrobotics.bowlerkernel.util.runAndPrintOutput
 import io.kotest.assertions.arrow.either.shouldBeLeft
 import io.kotest.assertions.arrow.either.shouldBeRight
 import io.kotest.matchers.collections.shouldContainAll
@@ -57,7 +58,7 @@ class GitHubFSIntegTest {
         val tmpCachePath = getRandomTempFile()
 
         val fs = GitHubFS(AnonymousCredentialsProvider, tmpCachePath)
-        fs.cloneRepo(testRepoUrlHTTP).attempt().unsafeRunSync().shouldBeLeft()
+        fs.cloneRepo(testRepoUrlHTTP, "HEAD").attempt().unsafeRunSync().shouldBeLeft()
     }
 
     @Test
@@ -101,7 +102,7 @@ class GitHubFSIntegTest {
         assertTestRepoContents(files, repoPath)
 
         // Reset the test repo back one commit so that there is something to pull
-        ProcessBuilder("git", "reset", "--hard", "HEAD^").directory(repoPath.toFile()).start().waitFor()
+        runAndPrintOutput(repoPath.toFile(), "git", "reset", "--hard", "HEAD^")
 
         // Make some changes that will need to be reset
         fs.getFilesInRepo(repoPath.toFile()).unsafeRunSync().forEach { it.deleteRecursively() }
@@ -111,6 +112,31 @@ class GitHubFSIntegTest {
         // correct GitFS implementation will reset the repo.
         files = cloneAndGetFileSet(fs, testRepoUrlHTTPS)
         assertTestRepoContents(files, repoPath)
+    }
+
+    @Test
+    fun `test cloning a different branch than the currently checked out branch`() {
+        // Don't use a TempDir because jgit leaves something open so Windows builds fail
+        val tmpCachePath = getRandomTempFile()
+
+        val fs = GitHubFS(AnonymousCredentialsProvider, tmpCachePath)
+        val repoPath = fs.gitHubCacheDirectory.resolve(orgName).resolve(repoName)
+        val repoFile = repoPath.toFile()
+
+        fs.cloneRepo(testRepoUrlHTTPS, "master").unsafeRunSync()
+
+        // Checkout a new branch and make some changes
+        runAndPrintOutput(repoFile, "git", "checkout", "-b", "new_branch")
+        val file1 = repoPath.resolve("fileA.groovy").toFile()
+        file1.writeText("2")
+        runAndPrintOutput(repoFile, "git", "add", file1.path)
+        runAndPrintOutput(repoFile, "git", "commit", "-m", "a")
+
+        // Clone the repo on master again
+        fs.cloneRepo(testRepoUrlHTTPS, "master").unsafeRunSync()
+
+        // Ensure that file does not exist
+        file1.shouldNotExist()
     }
 
     @Test
@@ -133,7 +159,7 @@ class GitHubFSIntegTest {
     }
 
     private fun cloneAndGetFileSet(fs: GitHubFS, repoURL: String): Either<Throwable, Set<String>> {
-        return fs.cloneRepo(repoURL)
+        return fs.cloneRepo(repoURL, "master")
             .flatMap { fs.getFilesInRepo(it) }
             .map { files -> files.map { it.toString() }.toSet() }
             .attempt()

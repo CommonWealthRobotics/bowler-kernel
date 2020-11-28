@@ -47,12 +47,16 @@ class DefaultDependencyResolver(
                 }
             }
 
-            val file = gitFS.getFilesInRepo(repoDir).flatMap { files ->
-                val file = files.firstOrNull { it.relativeTo(repoDir).path == fileSpec.path }
-                file?.let { IO.just(it) } ?: IO.raiseError(IllegalStateException("Cannot resolve $fileSpec"))
-            }.bind()
-
-            file
+            val filesInRepo = gitFS.getFilesInRepo(repoDir).bind()
+            val filesString = filesInRepo.joinToString("\n") { "\t$it" }
+            filesInRepo.firstOrNull { it.relativeTo(repoDir).path == fileSpec.path }
+                ?: throw IllegalStateException(
+                    """
+                    |Cannot resolve $fileSpec
+                    |Contents of $repoDir:
+                    |$filesString
+                    """.trimMargin()
+                )
         }.unsafeRunSync()
     }
 

@@ -41,7 +41,7 @@ internal class GitHubFSTest {
     @Test
     fun `test cloning from invalid git url`(@TempDir tempDir: File) {
         val fs = GitHubFS(AnonymousCredentialsProvider, tempDir.toPath())
-        val actual = fs.cloneRepo("invalidGitRepo").attempt().unsafeRunSync()
+        val actual = fs.cloneRepo("invalidGitRepo", "HEAD").attempt().unsafeRunSync()
         actual.shouldBeLeft {
             it.shouldBeInstanceOf<IllegalArgumentException>()
         }
@@ -50,7 +50,9 @@ internal class GitHubFSTest {
     @Test
     fun `test cloning over http`(@TempDir tempDir: File) {
         val fs = GitHubFS(AnonymousCredentialsProvider, tempDir.toPath())
-        val actual = fs.cloneRepo("http://github.com/CommonWealthRobotics/BowlerBuilder.git").attempt().unsafeRunSync()
+        val actual = fs.cloneRepo("http://github.com/CommonWealthRobotics/BowlerBuilder.git", "HEAD")
+            .attempt()
+            .unsafeRunSync()
         actual.shouldBeLeft {
             it.shouldBeInstanceOf<UnsupportedOperationException>()
         }
