@@ -2,6 +2,3 @@
 	path = proto/bowler-proto
 	url = git@github.com:CommonWealthRobotics/bowler-proto.git
 	branch = v0.5.0
-[submodule "translator/bowler-script-kernel"]
-	path = translator/bowler-script-kernel
-	url = git@github.com:CommonWealthRobotics/bowler-script-kernel.git

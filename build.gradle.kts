@@ -32,7 +32,6 @@ val kotlinProjects = listOf(
     project(":scripting"),
     project(":server"),
     project(":testUtil"),
-    project(":translator"),
     project(":util")
 )
 
@@ -82,47 +81,23 @@ allprojects {
         kotlinGradle {
             ktlint(Versions.ktlint)
             trimTrailingWhitespace()
-            targetExclude(project(":translator:bowler-script-kernel").projectDir.walkTopDown().toList())
         }
         freshmark {
             target("src/**/*.md")
             trimTrailingWhitespace()
             indentWithSpaces(2)
             endWithNewline()
-            targetExclude(project(":translator:bowler-script-kernel").projectDir.walkTopDown().toList())
         }
         format("extraneous") {
             target("src/**/*.fxml")
             trimTrailingWhitespace()
             indentWithSpaces(2)
             endWithNewline()
-            targetExclude(project(":translator:bowler-script-kernel").projectDir.walkTopDown().toList())
         }
     }
 }
 
-project(":translator:bowler-script-kernel") {
-    apply {
-        plugin("java-library")
-    }
-
-    java {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-
-    tasks.withType<JavaCompile> {
-        options.encoding = "UTF-8"
-        options.isIncremental = true
-    }
-}
-
 subprojects {
-    if (this in listOf(project(":translator:bowler-script-kernel"), project(":translator:bowler-script-kernel:java-bowler"), project(":translator:bowler-script-kernel:JCSG"))
-    ) {
-        return@subprojects
-    }
-
     apply {
         plugin("java-library")
         plugin("jacoco")
@@ -191,7 +166,6 @@ subprojects {
             trimTrailingWhitespace()
             endWithNewline()
             licenseHeaderFile(rootProject.rootDir.toPath().resolve("config").resolve("spotless").resolve("license.txt"))
-            targetExclude(project(":translator:bowler-script-kernel").projectDir.walkTopDown().toList())
         }
     }
 }
@@ -301,11 +275,7 @@ configure(publishedProjects) {
 
 val jacocoRootReport by tasks.creating(JacocoReport::class) {
     group = "verification"
-    val excludedProjects = listOf(
-        project(":translator:bowler-script-kernel"),
-        project(":translator:bowler-script-kernel:java-bowler"),
-        project(":translator:bowler-script-kernel:JCSG")
-    )
+    val excludedProjects = listOf<Project>()
     val includedProjects = subprojects.filter { it !in excludedProjects }
 
     dependsOn(includedProjects.flatMap { it.tasks.withType(JacocoReport::class) } - this)
