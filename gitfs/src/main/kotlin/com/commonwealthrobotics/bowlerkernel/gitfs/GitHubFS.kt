@@ -23,12 +23,10 @@ import arrow.fx.handleErrorWith
 import com.commonwealthrobotics.bowlerkernel.authservice.Credentials
 import com.commonwealthrobotics.bowlerkernel.authservice.CredentialsProvider
 import com.commonwealthrobotics.bowlerkernel.util.getFullPathToGitHubCacheDirectory
+import com.commonwealthrobotics.bowlerkernel.util.run
 import mu.KotlinLogging
 import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.Git
-import org.eclipse.jgit.api.ResetCommand
-import org.eclipse.jgit.errors.RepositoryNotFoundException
-import org.eclipse.jgit.errors.TransportException
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import java.io.File
 import java.nio.file.FileSystems
@@ -52,22 +50,22 @@ class GitHubFS(
 
     override fun cloneRepo(
         gitUrl: String,
-        branch: String
-    ) = freshClone(gitUrl, branch).handleErrorWith {
-        val directory = gitUrlToDirectory(gitHubCacheDirectory, gitUrl)
+        revision: String
+    ): IO<File> {
+        return freshClone(gitUrl, revision).handleErrorWith {
+            val directory = gitUrlToDirectory(gitHubCacheDirectory, gitUrl)
 
-        IO {
-            // The repo was already on disk, so directory exists, so pull
-            logger.info { "Pulling repository in directory $directory" }
-            @Suppress("BlockingMethodInNonBlockingContext")
-            fsLock.withLock {
-                Git.open(directory).use {
-                    it.reset().setMode(ResetCommand.ResetType.HARD).setRef("HEAD").call()
-                    it.pull().call()
+            IO {
+                // The repo was already on disk, so directory exists, so pull
+                logger.info { "Pulling repository in directory $directory" }
+                @Suppress("BlockingMethodInNonBlockingContext")
+                fsLock.withLock {
+                    // TODO: Use JGit instead
+                    run(directory, "git", "reset", "--hard", "HEAD")
+                    run(directory, "git", "fetch")
+                    run(directory, "git", "checkout", revision)
                 }
-            }
-        }.handleErrorWith {
-            if (it is RepositoryNotFoundException) {
+            }.handleErrorWith {
                 IO.defer {
                     // The directory was not a valid repo
                     logger.catching(it)
@@ -82,13 +80,11 @@ class GitHubFS(
                         }
 
                         // After deleting the directory, try to clone again
-                        freshClone(gitUrl, branch)
+                        freshClone(gitUrl, revision)
                     }
                 }
-            } else {
-                IO.raiseError(it)
-            }
-        }.map { directory }
+            }.map { directory }
+        }
     }
 
     override fun getFilesInRepo(repoDir: File): IO<Set<File>> = mapToRepoFiles(IO.just(repoDir))
@@ -101,40 +97,30 @@ class GitHubFS(
     /**
      * Tries to clone the repo assuming it is not on disk. Fails if any part of the repo is on
      * disk.
-     *
-     * @param gitUrl The `.git` URL to clone from, i.e.
-     * `https://github.com/CommonWealthRobotics/BowlerBuilder.git` or
-     * `https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git`.
-     * @param branch The branch to checkout.
-     * @return The directory of the cloned repository.
      */
     private fun freshClone(
         gitUrl: String,
-        branch: String
+        revision: String
     ): IO<File> {
         logger.info {
             """
             |Cloning repository:
             |gitUrl: $gitUrl
-            |branch: $branch
+            |revision: $revision
             """.trimMargin()
         }
 
         val directory = gitUrlToDirectory(gitHubCacheDirectory, gitUrl)
         return if (directory.mkdirs()) {
-            IO { cloneRepository(gitUrl, branch, directory) }.map { directory }
+            IO { cloneRepository(gitUrl, revision, directory) }.map { directory }
         } else {
-            IO.raiseError(
-                IllegalStateException(
-                    "Directory $directory already exists. This is probably the result of a kernel bug."
-                )
-            )
+            IO.raiseError(IllegalStateException("Directory $directory already exists."))
         }
     }
 
     private suspend fun cloneRepository(
         gitUrl: String,
-        branch: String,
+        revision: String,
         directory: File
     ) {
         if (gitUrl.startsWith("http://")) {
@@ -146,28 +132,16 @@ class GitHubFS(
         val jGitCredentialsProvider = getJGitCredentialsProvider(gitUrl)
         fsLock.withLock {
             // Try to clone without credentials first. If we can't, then request credentials.
-            val git = try {
-                Git.cloneRepository()
-                    .setURI(gitUrl)
-                    .setBranch(branch)
-                    .setDirectory(directory)
-                    .call()
-            } catch (ex: Exception) {
-                when (ex) {
-                    is TransportException -> {
-                        Git.cloneRepository()
-                            .setURI(gitUrl)
-                            .setBranch(branch)
-                            .setDirectory(directory)
-                            .setCredentialsProvider(jGitCredentialsProvider)
-                            .call()
-                    }
-                    else -> throw ex
-                }
-            }
+            val git = Git.cloneRepository()
+                .setURI(gitUrl)
+                .setDirectory(directory)
+                .setCredentialsProvider(jGitCredentialsProvider)
+                .call()
 
             git.use {
                 Git.wrap(it.repository).use {
+                    it.fetch().call()
+                    it.checkout().setName(revision).call()
                     it.submoduleInit().call()
                     it.submoduleUpdate().call()
                 }

@@ -34,10 +34,10 @@ interface GitFS {
      * @param gitUrl The `.git` URL to clone from, i.e.
      * `https://github.com/CommonWealthRobotics/BowlerBuilder.git` or
      * `https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git`.
-     * @param branch The branch to checkout.
+     * @param revision The revision to checkout (a commit hash).
      * @return The directory of the cloned repository.
      */
-    fun cloneRepo(gitUrl: String, branch: String = "HEAD"): IO<File>
+    fun cloneRepo(gitUrl: String, revision: String): IO<File>
 
     /**
      * Gets the files in the repo, excluding the files inside `.git`.
