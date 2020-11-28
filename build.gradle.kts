@@ -44,7 +44,7 @@ allprojects {
     }
 
     group = "com.commonwealthrobotics"
-    version = Versions.bowlerKernel
+    version = Versions.projectVersion
 
     repositories {
         mavenCentral()
@@ -320,7 +320,7 @@ fun Project.configureBintrayPkg(publicationName: String?) {
             vcsUrl = Metadata.Bintray.vcsUrl
             githubRepo = Metadata.Bintray.githubRepo
             with(version) {
-                name = Versions.bowlerKernel
+                name = Versions.projectVersion
                 desc = Metadata.projectDescription
             }
         }
