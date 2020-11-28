@@ -39,6 +39,9 @@ class KernelServer {
     private lateinit var server: Server
     internal lateinit var koinComponent: KoinComponent
 
+    val port: Int
+        get() = server.port
+
     fun start(gitHubCacheDirectory: Path = getFullPathToGitHubCacheDirectory()) {
         koinComponent = object : KoinComponent {
             private val koinApp = koinApplication {
