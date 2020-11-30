@@ -45,12 +45,11 @@ internal data class Command(
     internal fun helpMessage(): String = if (children.isEmpty()) {
         help
     } else {
+        val childrenHelp = children.joinToString("\n") { "${it.name}: ${it.helpMessage()}" }.prependIndent("  ")
         """
         |$help
         |Available sub-commands:
-        |${children.joinToString("\n") { "${it.name}: ${it.helpMessage()}" }.prependIndent(
-            "  "
-        )}
+        |$childrenHelp
         """.trimMargin()
     }
 }

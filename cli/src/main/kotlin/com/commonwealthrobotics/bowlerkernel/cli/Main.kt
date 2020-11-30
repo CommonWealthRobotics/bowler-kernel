@@ -81,8 +81,7 @@ class Main {
                         },
                         Command(
                             name = "port",
-                            help = "Gets the port number the kernel server is listening on. " +
-                                "Returns -1 if the server is not running."
+                            help = "Gets the port number the kernel server is listening on."
                         ) {
                             val port = kernelServer.port
                             if (port == -1) {
