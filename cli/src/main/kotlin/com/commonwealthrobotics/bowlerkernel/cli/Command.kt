@@ -18,18 +18,39 @@ package com.commonwealthrobotics.bowlerkernel.cli
 
 import org.jline.builtins.Completers
 
+/**
+ * @param name The name of the command that the user types to run the command.
+ * @param help A help message explaining what the command does.
+ * @param children Any sub-commands that will control the behavior of this command.
+ * @param lambda If there are sub-commands, leave this empty. Otherwise, this lambda is called when the command runs.
+ * Its output is printed to the console.
+ */
 internal data class Command(
     val name: String,
-    val help: String = "",
-    val children: List<Command> = emptyList(),
-    val lambda: (List<String>) -> String = if (children.isEmpty()) { _ -> "" }
+    private val help: String = "",
+    private val children: List<Command> = emptyList(),
+    private val lambda: (List<String>) -> String = if (children.isEmpty()) { _ -> "" }
     else { args ->
         Main.dispatch(args.joinToString(" "), children)
     },
 ) {
+
     internal operator fun invoke(args: List<String>) = lambda(args).prependIndent("  ")
+
     internal fun node(): Completers.TreeCompleter.Node = Completers.TreeCompleter.node(
         name,
         *children.map(Command::node).toTypedArray()
     )
+
+    internal fun helpMessage(): String = if (children.isEmpty()) {
+        help
+    } else {
+        """
+        |$help
+        |Available sub-commands:
+        |${children.joinToString("\n") { "${it.name}: ${it.helpMessage()}" }.prependIndent(
+            "  "
+        )}
+        """.trimMargin()
+    }
 }

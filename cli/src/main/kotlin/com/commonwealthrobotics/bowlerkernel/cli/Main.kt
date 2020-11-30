@@ -40,7 +40,7 @@ class Main {
                     return ""
                 }
 
-                return commands.firstOrNull { it.name == primaryCommandStringWithoutPrefix }?.help
+                return commands.firstOrNull { it.name == primaryCommandStringWithoutPrefix }?.helpMessage()
                     ?: getCommandNotFound(primaryCommandStringWithoutPrefix, commands)
             }
 
@@ -49,8 +49,7 @@ class Main {
             }?.invoke(substrings.subList(1, substrings.size)) ?: getCommandNotFound(primaryCommandString, commands)
         }
 
-        private fun buildCompleter(commands: List<Command>) =
-            Completers.TreeCompleter(commands.map(Command::node))
+        private fun buildCompleter(commands: List<Command>) = Completers.TreeCompleter(commands.map(Command::node))
 
         private fun getCommandNotFound(primaryCommand: String, commands: List<Command>) = """
             The command $primaryCommand is not recognized. Available commands are:
@@ -113,7 +112,8 @@ class Main {
                     return
                 }
 
-                terminal.writer().println(dispatch(line, commands))
+                terminal.writer().println(dispatch(line, commands).trimIndent())
+                terminal.writer().println()
             }
         }
     }
