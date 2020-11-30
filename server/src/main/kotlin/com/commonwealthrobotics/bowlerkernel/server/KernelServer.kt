@@ -36,40 +36,65 @@ import java.nio.file.Path
 
 class KernelServer {
 
-    private lateinit var server: Server
+    private var server: Server? = null
     internal lateinit var koinComponent: KoinComponent
 
+    /**
+     * The port number the server is listening on. `-1` if the server is not running.
+     */
     val port: Int
-        get() = server.port
-
-    fun start(gitHubCacheDirectory: Path = getFullPathToGitHubCacheDirectory()) {
-        koinComponent = object : KoinComponent {
-            private val koinApp = koinApplication {
-                modules(
-                    module {
-                        single(named(GITHUB_CACHE_DIRECTORY_KOIN_NAME)) { gitHubCacheDirectory }
-                        factory<DependencyResolver> { DefaultDependencyResolver(get()) }
-                        factory<ScriptLoader> { DefaultScriptLoader(get()) }
-                    }
-                )
-            }
-
-            override fun getKoin() = koinApp.koin
+        get() = try {
+            server?.port ?: -1
+        } catch (ex: IllegalStateException) {
+            -1
         }
 
-        // TODO: Include the port number in the name server
-        // TODO: Support setting the port number via a cmdline option
-        server = NettyServerBuilder.forPort(port).apply {
-            // TODO: Support SSL
-            addService(ScriptHost(CoroutineScope(Dispatchers.Default), koinComponent))
-        }.build()
-        server.start()
-        logger.info { "Server running on port ${server.port}" }
+    /**
+     * Starts the server if it is not running. Does nothing if the server is running.
+     *
+     * @param gitHubCacheDirectory The path under which the kernel's GitFS should cache GitHub assets.
+     */
+    fun ensureStarted(gitHubCacheDirectory: Path = getFullPathToGitHubCacheDirectory()) {
+        synchronized(this) {
+            if (server != null) {
+                // Do nothing if the server is already started
+                return
+            }
+
+            koinComponent = object : KoinComponent {
+                private val koinApp = koinApplication {
+                    modules(
+                        module {
+                            single(named(GITHUB_CACHE_DIRECTORY_KOIN_NAME)) { gitHubCacheDirectory }
+                            factory<DependencyResolver> { DefaultDependencyResolver(get()) }
+                            factory<ScriptLoader> { DefaultScriptLoader(get()) }
+                        }
+                    )
+                }
+
+                override fun getKoin() = koinApp.koin
+            }
+
+            // TODO: Include the port number in the name server
+            // TODO: Support setting the port number via a cmdline option
+            server = NettyServerBuilder.forPort(0).apply {
+                // TODO: Support SSL
+                addService(ScriptHost(CoroutineScope(Dispatchers.Default), koinComponent))
+            }.build().also {
+                it.start()
+                logger.info { "Server running on port ${it.port}" }
+            }
+        }
     }
 
-    fun stop() {
-        // TODO: Don't explode when stopping a server that was never started
-        server.shutdown().awaitTermination()
+    /**
+     * Stops the server if it is running. Does nothing if the server is not running.
+     */
+    fun ensureStopped() {
+        synchronized(this) {
+            server?.shutdown()?.awaitTermination()
+            server = null
+        }
     }
 
     companion object {

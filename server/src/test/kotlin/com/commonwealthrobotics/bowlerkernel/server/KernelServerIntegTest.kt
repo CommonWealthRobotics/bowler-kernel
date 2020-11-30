@@ -37,7 +37,7 @@ internal class KernelServerIntegTest {
     @Test
     fun `run test script`(@TempDir tempDir: File) {
         val server = KernelServer()
-        server.start(gitHubCacheDirectory = tempDir.toPath())
+        server.ensureStarted(gitHubCacheDirectory = tempDir.toPath())
 
         val received = mutableListOf<SessionServerMessage>()
         val latch = CountDownLatch(4)
@@ -75,6 +75,6 @@ internal class KernelServerIntegTest {
         received.shouldExist { it.hasNewTask() && it.newTask.description == "Running scriptA.groovy" }
         received.shouldExist { it.hasTaskEnd() && it.taskEnd.cause == TaskEndCause.TASK_COMPLETED }
 
-        server.stop()
+        server.ensureStopped()
     }
 }

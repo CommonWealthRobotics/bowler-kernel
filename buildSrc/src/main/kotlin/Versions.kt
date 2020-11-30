@@ -51,7 +51,7 @@ object Versions {
     const val groovy = "3.0.+"
     const val ivy = "2.5.+"
     const val koin = "2.1.+"
-    const val clikt = "3.0.+"
+    const val jline = "3.17.1"
 
     const val jacocoTool = "0.8.5"
     const val gradleWrapper = "6.6.1"

@@ -1,7 +1,4 @@
-//import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-
 plugins {
-//    id("com.github.johnrengelman.shadow") version Versions.shadowPlugin
     application
 }
 
@@ -9,10 +6,14 @@ description = "The CLI used to manage the kernel server."
 
 dependencies {
     api(project(":server"))
-    api(group = "com.github.ajalt.clikt", name = "clikt", version = Versions.clikt)
-}
 
-//tasks.withType<ShadowJar> { }
+    implementation(group = "org.jline", name = "jline-terminal", version = Versions.jline)
+    implementation(group = "org.jline", name = "jline-terminal-jansi", version = Versions.jline)
+    implementation(group = "org.jline", name = "jline-terminal-jna", version = Versions.jline)
+    implementation(group = "org.jline", name = "jline-reader", version = Versions.jline)
+    implementation(group = "org.jline", name = "jline-style", version = Versions.jline)
+    implementation(group = "org.jline", name = "jline-console", version = Versions.jline)
+}
 
 application {
     mainClassName = "com.commonwealthrobotics.bowlerkernel.cli.Main"
