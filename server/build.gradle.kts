@@ -1,3 +1,9 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+plugins {
+    id("com.github.johnrengelman.shadow") version Versions.shadowPlugin
+}
+
 description = "The gRPC server."
 
 dependencies {
@@ -10,3 +16,5 @@ dependencies {
     testImplementation(project(":testUtil"))
     testImplementation(testFixtures(project(":scripthost")))
 }
+
+tasks.withType<ShadowJar> { }

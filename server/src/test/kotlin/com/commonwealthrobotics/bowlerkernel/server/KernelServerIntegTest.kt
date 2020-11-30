@@ -22,6 +22,8 @@ import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
 import com.google.protobuf.ByteString
 import io.kotest.matchers.collections.shouldExist
+import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
 import org.junit.jupiter.api.Test
@@ -37,7 +39,9 @@ internal class KernelServerIntegTest {
     @Test
     fun `run test script`(@TempDir tempDir: File) {
         val server = KernelServer()
-        server.start(gitHubCacheDirectory = tempDir.toPath())
+        server.port.shouldBe(-1)
+        server.ensureStarted(gitHubCacheDirectory = tempDir.toPath())
+        server.port.shouldBeGreaterThanOrEqual(0)
 
         val received = mutableListOf<SessionServerMessage>()
         val latch = CountDownLatch(4)
@@ -75,6 +79,7 @@ internal class KernelServerIntegTest {
         received.shouldExist { it.hasNewTask() && it.newTask.description == "Running scriptA.groovy" }
         received.shouldExist { it.hasTaskEnd() && it.taskEnd.cause == TaskEndCause.TASK_COMPLETED }
 
-        server.stop()
+        server.ensureStopped()
+        server.port.shouldBe(-1)
     }
 }
