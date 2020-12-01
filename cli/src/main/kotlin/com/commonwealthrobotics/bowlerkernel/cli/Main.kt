@@ -172,9 +172,9 @@ object Main {
                         grpcPort.attempt().unsafeRunSync().fold(
                             {
                                 """
-                                    |Encountered exception while requesting the kernel server's port number:
-                                    |${it.localizedMessage}
-                                    """.trimMargin()
+                                |Encountered exception while requesting the kernel server's port number:
+                                |${it.localizedMessage}
+                                """.trimMargin()
                             },
                             { "Kernel server at $address is running on port $it" }
                         )
