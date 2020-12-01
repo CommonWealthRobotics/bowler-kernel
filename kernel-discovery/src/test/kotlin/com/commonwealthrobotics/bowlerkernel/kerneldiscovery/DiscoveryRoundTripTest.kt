@@ -20,6 +20,7 @@ import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.comparables.shouldNotBeEqualComparingTo
+import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
 import org.junit.jupiter.api.Test
 
@@ -36,6 +37,7 @@ internal class DiscoveryRoundTripTest {
 
         val ns = NameServer(name)
         ns.ensureStarted()
+        ns.name.shouldBe(name)
         while (!ns.isRunning.get()) { Thread.sleep(10) }
         NameClient.scan().map { it.a }.shouldContainExactly(name)
 
