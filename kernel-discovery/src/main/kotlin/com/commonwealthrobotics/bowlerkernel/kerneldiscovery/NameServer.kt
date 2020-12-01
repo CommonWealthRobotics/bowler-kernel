@@ -32,8 +32,10 @@ import kotlin.streams.asSequence
  *
  * @param desiredName The name this kernel will respond with. If this name is not unique between all kernels on this
  * network, a suffix will be appended to make it unique.
- * @param multicastGroup The multicast group address this server will join.
- * @param desiredPort The port the server should bind to.
+ * @param multicastGroup The multicast group address this server will join. This should be in the IANA Scoped
+ * Multicast Range for Organization-Local Scope (239.0.0.0-239.255.255.255) specified in RFC5771.
+ * @param desiredPort The port the server should bind to. This should be in the drafted IANA Allocation Guidelines for
+ * TCP and UDP Port Numbers (49152-65535) specified in draft-cotton-tsvwg-iana-ports-00.
  */
 class NameServer(
     private val desiredName: String,
@@ -146,10 +148,24 @@ class NameServer(
         private val logger = KotlinLogging.logger { }
 
         val getNameBytes = "get-name".encodeToByteArray()
+
+        /**
+         * The default multicast group the kernel server joins. This is within the IANA Scoped Multicast Range for
+         * Organization-Local Scope (239.0.0.0-239.255.255.255) specified in RFC5771.
+         */
         val defaultMulticastGroup: InetAddress = InetAddress.getByAddress(
             byteArrayOf(239.toByte(), 255.toByte(), 255.toByte(), 255.toByte())
         )
-        const val defaultPort = 1776
+
+        /**
+         * The default port the kernel server listens on. This is within the drafted IANA Allocation Guidelines for TCP
+         * and UDP Port Numbers (49152-65535) specified in draft-cotton-tsvwg-iana-ports-00.
+         */
+        const val defaultPort = 62657
+
+        /**
+         * The maximum payload size of a reply.
+         */
         const val maxReplyLength = 100
 
         /**
