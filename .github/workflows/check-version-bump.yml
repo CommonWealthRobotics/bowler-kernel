@@ -1,0 +1,39 @@
+name: CheckVersionBump
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  CheckVersionBump:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          fetch-depth: 0
+          ssh-key: ${{ secrets.BOWLERBOT_SSH_KEY }}
+
+      - uses: gradle/wrapper-validation-action@v1
+
+      - name: Import GPG Key
+        uses: crazy-max/ghaction-import-gpg@v3
+        with:
+          gpg-private-key: ${{ secrets.BOWLERBOT_GPG_KEY }}
+          passphrase: ${{ secrets.BOWLERBOT_GPG_KEY_PASSPHRASE }}
+          git-user-signingkey: true
+          git-commit-gpgsign: true
+
+      - name: Parse this tag
+        id: parse-tag
+        run: |
+          THIS_TAG="$(grep 'projectVersion' 'buildSrc/src/main/kotlin/Versions.kt' | awk '{ print $5 }' | tr -d \")"
+          echo "::set-output name=tag::$(echo $THIS_TAG)"
+
+      - name: Requre a new version
+        run: |
+          ! git rev-parse $THIS_TAG >/dev/null 2>&1
+        env:
+          THIS_TAG: ${{ steps.parse-tag.outputs.tag }}
