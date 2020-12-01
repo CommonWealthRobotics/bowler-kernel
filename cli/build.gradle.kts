@@ -15,6 +15,8 @@ dependencies {
     implementation(group = "org.jline", name = "jline-reader", version = Versions.jline)
     implementation(group = "org.jline", name = "jline-style", version = Versions.jline)
     implementation(group = "org.jline", name = "jline-console", version = Versions.jline)
+
+    testImplementation(project(":testUtil"))
 }
 
 application {

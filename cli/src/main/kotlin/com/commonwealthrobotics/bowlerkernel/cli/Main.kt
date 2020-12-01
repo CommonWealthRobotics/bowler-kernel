@@ -262,11 +262,11 @@ object Main {
  * Gets the value of a required option.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <T> List<Tuple2<Option, *>>.option(long: String): T = first { it.a.long == long }.b as T
+internal fun <T> List<Tuple2<Option, *>>.option(long: String): T = first { it.a.long == long }.b as T
 
 /**
  * Gets the value of a non-required option or a default value if the option was not set.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <T> List<Tuple2<Option, *>>.option(long: String, default: T): T =
+internal fun <T> List<Tuple2<Option, *>>.option(long: String, default: T): T =
     firstOrNull { it.a.long == long }?.b as T? ?: default
