@@ -39,7 +39,7 @@ internal class Command private constructor(
      * @param children Any sub-commands that will control the behavior of this command.
      * @param help A help message explaining what the command does.
      */
-    constructor(name: String, children: List<Command>, help: String = "") :
+    constructor(name: String, children: List<Command>, help: String) :
         this(
             name = name,
             help = help,
@@ -58,7 +58,7 @@ internal class Command private constructor(
      */
     constructor(
         name: String,
-        help: String = "",
+        help: String,
         options: List<Option> = emptyList(),
         lambda: (List<Tuple2<Option, *>>) -> String
     ) : this(
