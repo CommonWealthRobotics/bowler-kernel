@@ -19,6 +19,8 @@ package com.commonwealthrobotics.bowlerkernel.kerneldiscovery
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.comparables.shouldNotBeEqualComparingTo
+import io.kotest.matchers.string.shouldStartWith
 import org.junit.jupiter.api.Test
 
 internal class DiscoveryRoundTripTest {
@@ -34,11 +36,18 @@ internal class DiscoveryRoundTripTest {
 
         val ns = NameServer(name)
         ns.ensureStarted()
-
         while (!ns.isRunning.get()) { Thread.sleep(10) }
         NameClient.scan().shouldContainExactly(name)
 
         ns.ensureStopped()
         ns.isRunning.get().shouldBeFalse()
+    }
+
+    @Test
+    fun `determine unique name`() {
+        val name = "kernel"
+        val uniqueName = NameServer.determineUniqueName(name, listOf(name))
+        uniqueName.shouldStartWith(name)
+        uniqueName.shouldNotBeEqualComparingTo(name)
     }
 }

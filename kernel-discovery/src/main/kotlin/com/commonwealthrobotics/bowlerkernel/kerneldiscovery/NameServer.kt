@@ -20,26 +20,36 @@ import mu.KotlinLogging
 import java.net.DatagramPacket
 import java.net.InetAddress
 import java.net.MulticastSocket
+import java.net.NetworkInterface
 import java.net.SocketTimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
+import kotlin.random.Random
+import kotlin.streams.asSequence
 
 /**
  * A name server used by clients to discover kernels on the network.
  *
- * @param name The name this kernel will respond with.
+ * @param desiredName The name this kernel will respond with. If this name is not unique between all kernels on this
+ * network, a suffix will be appended to make it unique.
  * @param multicastGroup The multicast group address this server will join.
  * @param desiredPort The port the server should bind to.
  */
 class NameServer(
-    private val name: String,
+    private val desiredName: String,
     private val multicastGroup: InetAddress = defaultMulticastGroup,
     private val desiredPort: Int = defaultPort
 ) {
 
+    private val uniqueName: String
+
     init {
-        // Check the name will fit in the payload (1 byte header)
-        require(name.length < maxReplyLength + 1)
+        // Check the name will fit in the payload, even if we need to make it unique (1 byte header, 24 byte suffix)
+        require(desiredName.length + 24 < maxReplyLength + 1)
+        uniqueName = determineUniqueName(desiredName, NameClient.scan(multicastGroup, desiredPort))
+
+        // Check the unique name will fit in the payload
+        check(uniqueName.length < maxReplyLength + 1)
     }
 
     /**
@@ -103,7 +113,7 @@ class NameServer(
         try {
             val packetBuf = ByteArray(8)
             val packet = DatagramPacket(packetBuf, packetBuf.size)
-            val nameBytes = name.encodeToByteArray()
+            val nameBytes = uniqueName.encodeToByteArray()
             val payload = byteArrayOf(nameBytes.size.toByte(), *nameBytes)
 
             while (!Thread.interrupted()) {
@@ -140,6 +150,29 @@ class NameServer(
             byteArrayOf(239.toByte(), 255.toByte(), 255.toByte(), 255.toByte())
         )
         const val defaultPort = 1776
-        const val maxReplyLength = 10
+        const val maxReplyLength = 100
+
+        /**
+         * Returns a name that is unique between all the names in [allNames]
+         *
+         * @param name The desired name.
+         * @param allNames The names on the network.
+         * @return A unique name.
+         */
+        @OptIn(ExperimentalUnsignedTypes::class)
+        internal fun determineUniqueName(name: String, allNames: List<String>): String = if (name in allNames) {
+            // The name is not unique so we need to add something to make it unique. Try a MAC address first. Then
+            // try random numbers.
+            val newName = NetworkInterface.networkInterfaces().asSequence()
+                .filter { !it.isVirtual && it.isUp && !it.name.startsWith("vir") && !it.name.startsWith("lo") }
+                .map { name + "-" + it.hardwareAddress.asUByteArray().joinToString(":") }
+                .firstOrNull { it !in allNames }
+                ?: sequence<String> { name + "-" + Random.nextInt() }.first { it !in allNames }
+            logger.debug { "The name $name was not unique on this network. Renaming to $newName" }
+            newName
+        } else {
+            // The name was unique, we are done
+            name
+        }
     }
 }

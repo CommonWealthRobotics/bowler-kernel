@@ -4,7 +4,7 @@
 
 ### Startup Sequence
 
-When the kernel starts, it is given a name via a cmdline argument. It uses UDP to ask for other kernels on the local network to respond with their names. If any kernel has the same name as this kernel, then this kernel will add a suffix to its name to make it unique (the kernel must then re-verify its name is unique and try a new suffix if it is not unique; there must be a limit of 10 attempts to prevent abuse). The kernel then starts a name server and a gRPC server.
+When the kernel starts, it is given a name via a cmdline argument. It uses UDP to ask for other kernels on the local network to respond with their names. If any kernel has the same name as this kernel, then this kernel will add a suffix to its name to make it unique. The kernel then starts a name server and a gRPC server.
 
 ### gRPC Server
 
