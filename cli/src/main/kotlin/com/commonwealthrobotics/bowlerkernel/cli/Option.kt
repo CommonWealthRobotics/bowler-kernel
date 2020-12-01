@@ -49,7 +49,7 @@ data class Option(
             null
         } ?: return null
 
-        val value = parse(argValue)
+        val value = parse(clazz, argValue)
         if (value != null) {
             args.removeAt(argIndex) // Remove the option
             args.removeAt(argIndex) // Remove its value
@@ -57,26 +57,28 @@ data class Option(
         return value
     }
 
-    @OptIn(ExperimentalUnsignedTypes::class)
-    private fun parse(value: String): Any? {
-        return when (clazz) {
-            Byte::class -> value.toByte()
-            Short::class -> value.toShort()
-            Int::class -> value.toInt()
-            Long::class -> value.toLong()
-            Float::class -> value.toFloat()
-            Double::class -> value.toDouble()
+    companion object {
+        @OptIn(ExperimentalUnsignedTypes::class)
+        internal fun parse(clazz: KClass<*>, value: String): Any? {
+            return when (clazz) {
+                Byte::class -> value.toByte()
+                Short::class -> value.toShort()
+                Int::class -> value.toInt()
+                Long::class -> value.toLong()
+                Float::class -> value.toFloat()
+                Double::class -> value.toDouble()
 
-            String::class -> value
+                String::class -> value
 
-            InetAddress::class ->
-                try {
-                    InetAddress.getByAddress(value.split('.').map { it.toInt().toByte() }.toByteArray())
-                } catch (ex: UnknownHostException) {
-                    null
-                }
+                InetAddress::class ->
+                    try {
+                        InetAddress.getByAddress(value.split('.').map { it.toInt().toByte() }.toByteArray())
+                    } catch (ex: UnknownHostException) {
+                        null
+                    }
 
-            else -> null
+                else -> null
+            }
         }
     }
 }
@@ -92,9 +94,9 @@ data class Option(
  */
 @Suppress("UNCHECKED_CAST")
 inline fun <reified T : Any> option(
-    short: String = "",
-    long: String = "",
-    help: String = "",
+    short: String,
+    long: String,
+    help: String,
     required: Boolean = false,
     noinline validator: (T) -> Boolean = { true }
 ) = Option(T::class, short, long, help, required, validator as (Any) -> Boolean)

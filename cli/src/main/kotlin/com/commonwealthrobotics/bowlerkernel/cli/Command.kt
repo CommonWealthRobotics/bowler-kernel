@@ -17,6 +17,7 @@
 package com.commonwealthrobotics.bowlerkernel.cli
 
 import arrow.core.Tuple2
+import arrow.fx.IO
 import org.jline.builtins.Completers
 
 internal class Command private constructor(
@@ -70,12 +71,28 @@ internal class Command private constructor(
         options = options,
     )
 
+    /**
+     * Runs this command.
+     *
+     * @param args The arguments to this command (not including this command itself).
+     * @return The output of the command, to be echoed to the terminal.
+     */
     operator fun invoke(args: List<String>): String {
         return if (type == Type.Terminal) {
             val matchedArgs = ArrayList(args)
-            val matchedOptions = options.map { Tuple2(it, it.matchAndRemove(matchedArgs)) }
+            val matchedOptions = options.map {
+                Tuple2(it, IO { it.matchAndRemove(matchedArgs) }.attempt().unsafeRunSync())
+            }
 
-            val requiredButNotMatchedOptions = matchedOptions.filter { it.a.required && it.b == null }
+            val matchedButNotParsedOptions = matchedOptions.filter { it.b.isLeft() }
+            if (matchedButNotParsedOptions.isNotEmpty()) {
+                // These matched but resulted in parse errors
+                return invalidOptions(matchedButNotParsedOptions)
+            }
+
+            val matchedAndParsedOptions = matchedOptions.map { it.map { it.fold({ throw it }, { it }) } }
+
+            val requiredButNotMatchedOptions = matchedAndParsedOptions.filter { it.a.required && it.b == null }
             if (requiredButNotMatchedOptions.isNotEmpty()) {
                 // Not all required options matched
                 return missingOptions(requiredButNotMatchedOptions.map { it.a })
@@ -86,14 +103,14 @@ internal class Command private constructor(
                 return unknownOptions(matchedArgs)
             }
 
-            val invalidMatches = matchedOptions.filter { it.b != null }.filter { !it.a.validator(it.b!!) }
+            val invalidMatches = matchedAndParsedOptions.filter { it.b != null }.filter { !it.a.validator(it.b!!) }
             if (invalidMatches.isNotEmpty()) {
                 // Some options have invalid values
                 return invalidOptions(invalidMatches)
             }
 
             // All required options matched
-            lambda2(matchedOptions).prependIndent("  ")
+            lambda2(matchedAndParsedOptions).prependIndent("  ")
         } else {
             lambda1(args).prependIndent("  ")
         }
@@ -133,11 +150,10 @@ internal class Command private constructor(
         if (options.isEmpty()) {
             help
         } else {
-            val optionString = options.joinToString("\n") { it.helpMessage }
+            val optionString = options.joinToString("\n") { it.helpMessage }.prependIndent("    ")
             """
             |$help
-            |
-            |Options:
+            |  Options:
             |$optionString
             """.trimMargin()
         }

@@ -22,6 +22,8 @@ import java.net.InetAddress
 import java.net.MulticastSocket
 import java.net.NetworkInterface
 import java.net.SocketTimeoutException
+import java.nio.ByteBuffer
+import java.util.Arrays
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
 import kotlin.random.Random
@@ -36,11 +38,13 @@ import kotlin.streams.asSequence
  * Multicast Range for Organization-Local Scope (239.0.0.0-239.255.255.255) specified in RFC5771.
  * @param desiredPort The port the server should bind to. This should be in the Dynamic Port Number Range
  * (49152-65535) specified in RFC6335.
+ * @param getGrpcPort A lambda used to get the current kernel server's port number, if a kernel server will be used.
  */
 class NameServer(
     private val desiredName: String,
     private val multicastGroup: InetAddress = defaultMulticastGroup,
-    private val desiredPort: Int = defaultPort
+    private val desiredPort: Int = defaultPort,
+    private val getGrpcPort: () -> Int = { 0 },
 ) {
 
     val name: String
@@ -113,26 +117,31 @@ class NameServer(
         isRunning.set(true)
 
         try {
-            val packetBuf = ByteArray(8)
+            // Payload format:
+            //  - One byte header specifying the number of bytes of data
+            //  - n bytes of data a format dependent on the type of the request. Numbers are big endian. Strings are
+            //    UTF-8.
+            //
+            // Request types:
+            //  - getName: data is the name (string)
+            //  - getGrpcPort: data is the port number (int)
+            val packetBuf = ByteArray(maxRequestLength)
             val packet = DatagramPacket(packetBuf, packetBuf.size)
             val nameBytes = name.encodeToByteArray()
-            val payload = ByteArray(nameBytes.size + 1) {
-                if (it == 0) {
-                    nameBytes.size.toByte()
-                } else {
-                    nameBytes[it - 1]
-                }
-            }
+            val payload = ByteArray(maxReplyLength)
 
             while (!Thread.interrupted()) {
                 try {
                     socket.receive(packet)
-                    if (packet.data.contentEquals(getNameBytes)) {
-                        check(payload.size <= maxReplyLength) {
-                            "Payload size invariant broke: payload.size=${payload.size} maxReplyLength=$maxReplyLength"
-                        }
-                        socket.send(DatagramPacket(payload, payload.size, packet.address, packet.port))
+                    logger.debug { "Got: ${packet.data.joinToString()}" }
+
+                    when {
+                        hasGetNameRequest(packet) -> setPayload(payload, nameBytes)
+                        hasGetKernelServerPortRequest(packet) -> setPayloadToPortNumber(payload, getGrpcPort())
+                        else -> clearPayload(payload)
                     }
+
+                    socket.send(DatagramPacket(payload, payload.size, packet.address, packet.port))
                 } catch (ex: SocketTimeoutException) {
                     // Ignored
                 }
@@ -150,11 +159,43 @@ class NameServer(
         }
     }
 
+    private fun hasGetNameRequest(packet: DatagramPacket) =
+        Arrays.equals(packet.data, 0, getNameBytes.size, getNameBytes, 0, getNameBytes.size)
+
+    private fun hasGetKernelServerPortRequest(packet: DatagramPacket) =
+        Arrays.equals(
+            packet.data,
+            0,
+            getKernelServerPortBytes.size,
+            getKernelServerPortBytes,
+            0,
+            getKernelServerPortBytes.size
+        )
+
+    private fun setPayloadToPortNumber(payload: ByteArray, port: Int) {
+        payload[0] = Int.SIZE_BYTES.toByte()
+        ByteBuffer.allocate(Int.SIZE_BYTES).putInt(port).rewind().get(payload, 1, Int.SIZE_BYTES)
+    }
+
+    private fun setPayload(payload: ByteArray, bytes: ByteArray) {
+        payload[0] = bytes.size.toByte()
+        for (i in 1..bytes.size) {
+            payload[i] = bytes[i - 1]
+        }
+    }
+
+    private fun clearPayload(payload: ByteArray) {
+        for (i in payload.indices) {
+            payload[i] = 0
+        }
+    }
+
     companion object {
 
         private val logger = KotlinLogging.logger { }
 
         val getNameBytes = "get-name".encodeToByteArray()
+        val getKernelServerPortBytes = "get-kernel-server-port".encodeToByteArray()
 
         /**
          * The default multicast group the kernel server joins. This is within the IANA Scoped Multicast Range for
@@ -169,6 +210,11 @@ class NameServer(
          * specified in RFC6335.
          */
         const val defaultPort = 62657
+
+        /**
+         * The maximum payload size of a request.
+         */
+        const val maxRequestLength = 100
 
         /**
          * The maximum payload size of a reply.
