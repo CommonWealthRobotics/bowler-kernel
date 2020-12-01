@@ -93,7 +93,7 @@ internal class Command private constructor(
             }
 
             // All required options matched
-            return lambda2(matchedOptions).prependIndent("  ")
+            lambda2(matchedOptions).prependIndent("  ")
         } else {
             lambda1(args).prependIndent("  ")
         }
@@ -123,6 +123,7 @@ internal class Command private constructor(
         """.trimMargin()
     }
 
+    @SuppressWarnings("SpreadOperator") // node() requires varargs
     fun node(): Completers.TreeCompleter.Node = Completers.TreeCompleter.node(
         name,
         *children.map(Command::node).toTypedArray()

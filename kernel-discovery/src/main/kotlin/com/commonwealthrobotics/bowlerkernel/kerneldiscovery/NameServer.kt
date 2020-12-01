@@ -116,7 +116,13 @@ class NameServer(
             val packetBuf = ByteArray(8)
             val packet = DatagramPacket(packetBuf, packetBuf.size)
             val nameBytes = name.encodeToByteArray()
-            val payload = byteArrayOf(nameBytes.size.toByte(), *nameBytes)
+            val payload = ByteArray(nameBytes.size + 1) {
+                if (it == 0) {
+                    nameBytes.size.toByte()
+                } else {
+                    nameBytes[it - 1]
+                }
+            }
 
             while (!Thread.interrupted()) {
                 try {
@@ -128,6 +134,7 @@ class NameServer(
                         socket.send(DatagramPacket(payload, payload.size, packet.address, packet.port))
                     }
                 } catch (ex: SocketTimeoutException) {
+                    // Ignored
                 }
 
                 try {

@@ -17,6 +17,7 @@
 package com.commonwealthrobotics.bowlerkernel.cli
 
 import java.net.InetAddress
+import java.net.UnknownHostException
 import kotlin.reflect.KClass
 
 data class Option(
@@ -71,7 +72,7 @@ data class Option(
             InetAddress::class ->
                 try {
                     InetAddress.getByAddress(value.split('.').map { it.toInt().toByte() }.toByteArray())
-                } catch (ex: Exception) {
+                } catch (ex: UnknownHostException) {
                     null
                 }
 
