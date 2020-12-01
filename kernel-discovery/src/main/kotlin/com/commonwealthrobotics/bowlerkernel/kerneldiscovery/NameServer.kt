@@ -180,7 +180,13 @@ class NameServer(
             // The name is not unique so we need to add something to make it unique. Try a MAC address first. Then
             // try random numbers.
             val newName = NetworkInterface.networkInterfaces().asSequence()
-                .filter { !it.isVirtual && it.isUp && !it.name.startsWith("vir") && !it.name.startsWith("lo") }
+                .filter {
+                    !it.isVirtual &&
+                        it.isUp &&
+                        !it.name.startsWith("vir") &&
+                        !it.name.startsWith("lo") &&
+                        it.hardwareAddress != null
+                }
                 .map { name + "-" + it.hardwareAddress.asUByteArray().joinToString(":") }
                 .firstOrNull { it !in allNames }
                 ?: sequence<String> { name + "-" + Random.nextInt() }.first { it !in allNames }
