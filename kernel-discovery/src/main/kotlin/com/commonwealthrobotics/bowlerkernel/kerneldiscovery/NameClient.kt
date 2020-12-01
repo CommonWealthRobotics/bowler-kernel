@@ -16,6 +16,7 @@
  */
 package com.commonwealthrobotics.bowlerkernel.kerneldiscovery
 
+import arrow.core.Tuple2
 import mu.KotlinLogging
 import java.net.DatagramPacket
 import java.net.DatagramSocket
@@ -31,29 +32,29 @@ object NameClient {
      * @param port The destination port to send UDP packets to.
      * @param timeout The timeout in milliseconds used when waiting for responses from a candidate name server.
      * If there are no replies within this time period, then the scanning operation finishes.
-     * @return All the discovered names.
+     * @return All the discovered names and their corresponding addresses.
      */
     fun scan(
         multicastGroup: InetAddress = NameServer.defaultMulticastGroup,
         port: Int = NameServer.defaultPort,
         timeout: Int = 1000
-    ): List<String> {
+    ): List<Tuple2<String, InetAddress>> {
         val socket = DatagramSocket()
         socket.soTimeout = timeout
 
         logger.debug { "Sending to $multicastGroup:$port" }
         socket.send(DatagramPacket(NameServer.getNameBytes, NameServer.getNameBytes.size, multicastGroup, port))
 
-        val names = mutableListOf<String>()
+        val names = mutableListOf<Tuple2<String, InetAddress>>()
         while (true) {
             try {
                 val reply = DatagramPacket(ByteArray(NameServer.maxReplyLength), NameServer.maxReplyLength)
                 socket.receive(reply)
-                logger.debug { "Got reply: ${reply.data.joinToString()}" }
+                logger.debug { "From ${reply.address}:${reply.port}: ${reply.data.joinToString()}" }
 
                 val numBytes = reply.data[0].toInt()
                 val name = reply.data.toList().subList(1, numBytes + 1).toByteArray().decodeToString()
-                names.add(name)
+                names.add(Tuple2(name, reply.address))
             } catch (ex: SocketTimeoutException) {
                 break
             }

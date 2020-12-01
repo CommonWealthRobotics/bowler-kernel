@@ -37,7 +37,7 @@ internal class DiscoveryRoundTripTest {
         val ns = NameServer(name)
         ns.ensureStarted()
         while (!ns.isRunning.get()) { Thread.sleep(10) }
-        NameClient.scan().shouldContainExactly(name)
+        NameClient.scan().map { it.a }.shouldContainExactly(name)
 
         ns.ensureStopped()
         ns.isRunning.get().shouldBeFalse()
