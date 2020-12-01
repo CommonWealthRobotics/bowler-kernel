@@ -72,7 +72,10 @@ internal class Command private constructor(
     )
 
     /**
+     * Runs this command.
+     *
      * @param args The arguments to this command (not including this command itself).
+     * @return The output of the command, to be echoed to the terminal.
      */
     operator fun invoke(args: List<String>): String {
         return if (type == Type.Terminal) {
