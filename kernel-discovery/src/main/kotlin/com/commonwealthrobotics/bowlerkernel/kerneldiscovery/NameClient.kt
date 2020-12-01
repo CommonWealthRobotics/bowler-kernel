@@ -17,11 +17,13 @@
 package com.commonwealthrobotics.bowlerkernel.kerneldiscovery
 
 import arrow.core.Tuple2
+import arrow.fx.IO
 import mu.KotlinLogging
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
 import java.net.SocketTimeoutException
+import java.nio.ByteBuffer
 
 object NameClient {
 
@@ -62,6 +64,49 @@ object NameClient {
 
         socket.close()
         return names
+    }
+
+    /**
+     * Requests the kernel server's port number from the name server at the [address] and [port].
+     *
+     * @param address The address to send packets to.
+     * @param port The destination port to send UDP packets to.
+     * @param timeoutMs The timeout in milliseconds used when waiting for a response.
+     * @return The kernel server's port number. Could be `-1` if it is not running.
+     */
+    @Suppress("BlockingMethodInNonBlockingContext")
+    fun getGrpcPort(
+        address: InetAddress,
+        port: Int = NameServer.defaultPort,
+        timeoutMs: Int = 1000,
+        attempts: Int = 10,
+    ): IO<Int> = IO {
+        val socket = DatagramSocket()
+        socket.soTimeout = timeoutMs
+
+        logger.debug { "Sending to $address:$port" }
+        socket.send(DatagramPacket(NameServer.getGrpcPortBytes, NameServer.getGrpcPortBytes.size, address, port))
+
+        val reply = DatagramPacket(ByteArray(NameServer.maxReplyLength), NameServer.maxReplyLength)
+        for (i in 1..attempts) {
+            try {
+                socket.receive(reply)
+                logger.debug { "From ${reply.address}:${reply.port}: ${reply.data.joinToString()}" }
+
+                val numBytes = reply.data[0]
+                check(numBytes == Int.SIZE_BYTES.toByte())
+                val grpcPort = ByteBuffer.allocate(Int.SIZE_BYTES).put(reply.data, 1, Int.SIZE_BYTES).rewind().int
+
+                socket.close()
+                return@IO grpcPort
+            } catch (ex: SocketTimeoutException) {
+                // Ignored
+            }
+        }
+
+        throw IllegalStateException(
+            "Failed to get the kernel server's port number because all $attempts attempts timed out."
+        )
     }
 
     private val logger = KotlinLogging.logger { }

@@ -34,12 +34,17 @@ internal class DiscoveryRoundTripTest {
     @Test
     fun `scan the local host with one server running`() {
         val name = "kernel"
+        val grpcPort = 53929
 
-        val ns = NameServer(name)
+        val ns = NameServer(name, getGrpcPort = { grpcPort })
         ns.ensureStarted()
         ns.name.shouldBe(name)
         while (!ns.isRunning.get()) { Thread.sleep(10) }
-        NameClient.scan().map { it.a }.shouldContainExactly(name)
+
+        val scan = NameClient.scan()
+        scan.map { it.a }.shouldContainExactly(name)
+
+        NameClient.getGrpcPort(scan.first().b).unsafeRunSync().shouldBe(grpcPort)
 
         ns.ensureStopped()
         ns.isRunning.get().shouldBeFalse()
