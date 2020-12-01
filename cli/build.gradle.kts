@@ -7,6 +7,8 @@ description = "The CLI used to manage the kernel server."
 dependencies {
     api(project(":server"))
 
+    implementation(project(":kernel-discovery"))
+
     implementation(group = "org.jline", name = "jline-terminal", version = Versions.jline)
     implementation(group = "org.jline", name = "jline-terminal-jansi", version = Versions.jline)
     implementation(group = "org.jline", name = "jline-terminal-jna", version = Versions.jline)

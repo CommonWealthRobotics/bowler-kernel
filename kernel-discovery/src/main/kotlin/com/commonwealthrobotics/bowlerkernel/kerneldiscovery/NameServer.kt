@@ -34,8 +34,8 @@ import kotlin.streams.asSequence
  * network, a suffix will be appended to make it unique.
  * @param multicastGroup The multicast group address this server will join. This should be in the IANA Scoped
  * Multicast Range for Organization-Local Scope (239.0.0.0-239.255.255.255) specified in RFC5771.
- * @param desiredPort The port the server should bind to. This should be in the drafted IANA Allocation Guidelines for
- * TCP and UDP Port Numbers (49152-65535) specified in draft-cotton-tsvwg-iana-ports-00.
+ * @param desiredPort The port the server should bind to. This should be in the Dynamic Port Number Range
+ * (49152-65535) specified in RFC6335.
  */
 class NameServer(
     private val desiredName: String,
@@ -43,15 +43,15 @@ class NameServer(
     private val desiredPort: Int = defaultPort
 ) {
 
-    private val uniqueName: String
+    val name: String
 
     init {
         // Check the name will fit in the payload, even if we need to make it unique (1 byte header, 24 byte suffix)
         require(desiredName.length + 24 < maxReplyLength + 1)
-        uniqueName = determineUniqueName(desiredName, NameClient.scan(multicastGroup, desiredPort).map { it.a })
+        name = determineUniqueName(desiredName, NameClient.scan(multicastGroup, desiredPort).map { it.a })
 
         // Check the unique name will fit in the payload
-        check(uniqueName.length < maxReplyLength + 1)
+        check(name.length < maxReplyLength + 1)
     }
 
     /**
@@ -115,7 +115,7 @@ class NameServer(
         try {
             val packetBuf = ByteArray(8)
             val packet = DatagramPacket(packetBuf, packetBuf.size)
-            val nameBytes = uniqueName.encodeToByteArray()
+            val nameBytes = name.encodeToByteArray()
             val payload = byteArrayOf(nameBytes.size.toByte(), *nameBytes)
 
             while (!Thread.interrupted()) {
@@ -158,8 +158,8 @@ class NameServer(
         )
 
         /**
-         * The default port the kernel server listens on. This is within the drafted IANA Allocation Guidelines for TCP
-         * and UDP Port Numbers (49152-65535) specified in draft-cotton-tsvwg-iana-ports-00.
+         * The default port the kernel server listens on. This is within the Dynamic Port Number Range (49152-65535)
+         * specified in RFC6335.
          */
         const val defaultPort = 62657
 

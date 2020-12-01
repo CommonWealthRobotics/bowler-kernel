@@ -30,17 +30,17 @@ object NameClient {
      *
      * @param multicastGroup The multicast group address to send packets to.
      * @param port The destination port to send UDP packets to.
-     * @param timeout The timeout in milliseconds used when waiting for responses from a candidate name server.
+     * @param timeoutMs The timeout in milliseconds used when waiting for responses from a candidate name server.
      * If there are no replies within this time period, then the scanning operation finishes.
      * @return All the discovered names and their corresponding addresses.
      */
     fun scan(
         multicastGroup: InetAddress = NameServer.defaultMulticastGroup,
         port: Int = NameServer.defaultPort,
-        timeout: Int = 1000
+        timeoutMs: Int = 1000
     ): List<Tuple2<String, InetAddress>> {
         val socket = DatagramSocket()
-        socket.soTimeout = timeout
+        socket.soTimeout = timeoutMs
 
         logger.debug { "Sending to $multicastGroup:$port" }
         socket.send(DatagramPacket(NameServer.getNameBytes, NameServer.getNameBytes.size, multicastGroup, port))
