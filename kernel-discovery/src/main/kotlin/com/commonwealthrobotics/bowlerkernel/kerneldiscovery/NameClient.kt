@@ -1,0 +1,67 @@
+/*
+ * This file is part of bowler-kernel.
+ *
+ * bowler-kernel is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * bowler-kernel is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
+ */
+package com.commonwealthrobotics.bowlerkernel.kerneldiscovery
+
+import mu.KotlinLogging
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.InetAddress
+import java.net.SocketTimeoutException
+
+object NameClient {
+
+    /**
+     * Scans for name servers. Used by clients to discover kernels on the network.
+     *
+     * @param multicastGroup The multicast group address to send packets to.
+     * @param port The destination port to send UDP packets to.
+     * @param timeout The timeout in milliseconds used when waiting for responses from a candidate name server.
+     * If there are no replies within this time period, then the scanning operation finishes.
+     * @return All the discovered names.
+     */
+    fun scan(
+        multicastGroup: InetAddress = NameServer.defaultMulticastGroup,
+        port: Int = NameServer.defaultPort,
+        timeout: Int = 1000
+    ): List<String> {
+        val socket = DatagramSocket()
+        socket.soTimeout = timeout
+
+        logger.debug { "Sending to $multicastGroup:$port" }
+        socket.send(DatagramPacket(NameServer.getNameBytes, NameServer.getNameBytes.size, multicastGroup, port))
+
+        val names = mutableListOf<String>()
+        while (true) {
+            try {
+                val reply = DatagramPacket(ByteArray(NameServer.maxReplyLength), NameServer.maxReplyLength)
+                socket.receive(reply)
+                logger.debug { "Got reply: ${reply.data.joinToString()}" }
+
+                val numBytes = reply.data[0].toInt()
+                val name = reply.data.toList().subList(1, numBytes + 1).toByteArray().decodeToString()
+                names.add(name)
+            } catch (ex: SocketTimeoutException) {
+                break
+            }
+        }
+
+        socket.close()
+        return names
+    }
+
+    private val logger = KotlinLogging.logger { }
+}
