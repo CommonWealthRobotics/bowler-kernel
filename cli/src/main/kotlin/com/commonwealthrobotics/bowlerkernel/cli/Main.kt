@@ -132,6 +132,54 @@ object Main {
                         }
                     },
                     Command(
+                        name = "get-kernel-server-port",
+                        help = "Requests the kernel server's port number.",
+                        options = listOf(
+                            option<InetAddress>(
+                                short = "a",
+                                long = "address",
+                                required = true,
+                                help = "The address the kernel server is running at."
+                            ),
+                            option<Int>(
+                                short = "p",
+                                long = "port",
+                                help = "The port number the kernel's name server is bound to. " +
+                                    "Int in the range 1..65535.",
+                                validator = { it in 1..65535 },
+                            ),
+                            option<Int>(
+                                short = "t",
+                                long = "timeout",
+                                help = "The UDP socket's receive timeout in milliseconds.",
+                                validator = { it > 0 }
+                            ),
+                            option<Int>(
+                                short = "r",
+                                long = "attempts",
+                                help = "The number of repeat requests to make before failing.",
+                                validator = { it > 0 }
+                            ),
+                        )
+                    ) {
+                        val address = it.option<InetAddress>("address")
+                        val grpcPort = NameClient.getGrpcPort(
+                            address = address,
+                            port = it.option("port", NameServer.defaultPort),
+                            timeoutMs = it.option("timeout", 1000),
+                            attempts = it.option("attempts", 10),
+                        )
+                        grpcPort.attempt().unsafeRunSync().fold(
+                            {
+                                """
+                                    |Encountered exception while requesting the kernel server's port number:
+                                    |${it.localizedMessage}
+                                    """.trimMargin()
+                            },
+                            { "Kernel server at $address is running on port $it" }
+                        )
+                    },
+                    Command(
                         name = "start-server",
                         help = "Starts a name server for kernel discovery.",
                         options = listOf(
@@ -161,6 +209,7 @@ object Main {
                                 desiredName = it.option("name"),
                                 multicastGroup = it.option("multicast-group", NameServer.defaultMulticastGroup),
                                 desiredPort = it.option("port", NameServer.defaultPort),
+                                getGrpcPort = { kernelServer.port }
                             )
                             localNS.ensureStarted()
                             while (!localNS.isRunning.get()) { Thread.sleep(10) }

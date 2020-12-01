@@ -137,7 +137,7 @@ class NameServer(
 
                     when {
                         hasGetNameRequest(packet) -> setPayload(payload, nameBytes)
-                        hasGetGrpcPortRequest(packet) -> setPayloadToPortNumber(payload, getGrpcPort())
+                        hasGetKernelServerPortRequest(packet) -> setPayloadToPortNumber(payload, getGrpcPort())
                         else -> clearPayload(payload)
                     }
 
@@ -162,8 +162,15 @@ class NameServer(
     private fun hasGetNameRequest(packet: DatagramPacket) =
         Arrays.equals(packet.data, 0, getNameBytes.size, getNameBytes, 0, getNameBytes.size)
 
-    private fun hasGetGrpcPortRequest(packet: DatagramPacket) =
-        Arrays.equals(packet.data, 0, getGrpcPortBytes.size, getGrpcPortBytes, 0, getGrpcPortBytes.size)
+    private fun hasGetKernelServerPortRequest(packet: DatagramPacket) =
+        Arrays.equals(
+            packet.data,
+            0,
+            getKernelServerPortBytes.size,
+            getKernelServerPortBytes,
+            0,
+            getKernelServerPortBytes.size
+        )
 
     private fun setPayloadToPortNumber(payload: ByteArray, port: Int) {
         payload[0] = Int.SIZE_BYTES.toByte()
@@ -188,7 +195,7 @@ class NameServer(
         private val logger = KotlinLogging.logger { }
 
         val getNameBytes = "get-name".encodeToByteArray()
-        val getGrpcPortBytes = "get-grpc-port".encodeToByteArray()
+        val getKernelServerPortBytes = "get-kernel-server-port".encodeToByteArray()
 
         /**
          * The default multicast group the kernel server joins. This is within the IANA Scoped Multicast Range for

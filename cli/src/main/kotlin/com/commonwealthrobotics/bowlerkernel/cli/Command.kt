@@ -133,11 +133,10 @@ internal class Command private constructor(
         if (options.isEmpty()) {
             help
         } else {
-            val optionString = options.joinToString("\n") { it.helpMessage }
+            val optionString = options.joinToString("\n") { it.helpMessage }.prependIndent("    ")
             """
             |$help
-            |
-            |Options:
+            |  Options:
             |$optionString
             """.trimMargin()
         }

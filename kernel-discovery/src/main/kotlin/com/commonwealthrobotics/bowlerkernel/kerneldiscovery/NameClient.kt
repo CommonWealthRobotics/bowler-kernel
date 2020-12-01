@@ -85,7 +85,9 @@ object NameClient {
         socket.soTimeout = timeoutMs
 
         logger.debug { "Sending to $address:$port" }
-        socket.send(DatagramPacket(NameServer.getGrpcPortBytes, NameServer.getGrpcPortBytes.size, address, port))
+        socket.send(
+            DatagramPacket(NameServer.getKernelServerPortBytes, NameServer.getKernelServerPortBytes.size, address, port)
+        )
 
         val reply = DatagramPacket(ByteArray(NameServer.maxReplyLength), NameServer.maxReplyLength)
         for (i in 1..attempts) {
