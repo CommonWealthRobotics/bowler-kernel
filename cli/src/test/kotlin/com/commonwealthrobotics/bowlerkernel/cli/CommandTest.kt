@@ -231,6 +231,7 @@ internal class CommandTest {
             val expectedPrintout = "output"
             val cmd = Command(
                 name = "foo",
+                help = "",
                 children = listOf(
                     Command(name = "inner1", help = "") { "" },
                     Command(name = "inner2", help = "") { latch.countDown(); expectedPrintout },

@@ -1,4 +1,4 @@
-name: CheckVersionBump
+name: CheckNewVersion
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
       - master
 
 jobs:
-  CheckVersionBump:
+  CheckNewVersion:
     runs-on: ubuntu-latest
 
     steps:
