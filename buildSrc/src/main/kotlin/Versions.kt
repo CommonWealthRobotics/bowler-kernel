@@ -25,7 +25,7 @@ object Versions {
     const val spotlessPlugin = "5.6.1"
     const val testLoggerPlugin = "2.1.0"
     const val ktlintPlugin = "9.4.1"
-    const val detektPlugin = "1.14.1"
+    const val detektPlugin = "1.14.2"
     const val protobufPlugin = "0.8.13"
     const val dokkaPlugin = "1.4.10"
     const val bintrayPlugin = "1.8.5"
