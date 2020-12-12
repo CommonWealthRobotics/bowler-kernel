@@ -19,6 +19,8 @@ package com.commonwealthrobotics.bowlerkernel.scripthost
 import com.commonwealthrobotics.proto.script_host.ScriptHostGrpcKt
 import com.commonwealthrobotics.proto.script_host.SessionClientMessage
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
+import io.grpc.Status
+import io.grpc.StatusException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -36,9 +38,10 @@ class ScriptHost(
     override fun session(requests: Flow<SessionClientMessage>): Flow<SessionServerMessage> {
         if (concurrentSessionCount.getAndIncrement() != 0) {
             concurrentSessionCount.decrementAndGet()
-            logger.throwing(
-                IllegalStateException("Cannot create a concurrent session. Only one session may operate at a time.")
-            )
+            logger.error {
+                "Cannot create a concurrent session. Only one session may operate at a time. Aborting session."
+            }
+            logger.throwing(StatusException(Status.ABORTED))
         }
 
         return Session(scope, requests, koinComponent).server.onCompletion { concurrentSessionCount.decrementAndGet() }

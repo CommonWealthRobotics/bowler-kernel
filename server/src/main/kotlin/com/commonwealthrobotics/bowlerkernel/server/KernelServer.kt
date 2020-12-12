@@ -27,12 +27,14 @@ import io.grpc.Server
 import io.grpc.netty.NettyServerBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asCoroutineDispatcher
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.qualifier.named
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import java.nio.file.Path
+import java.util.concurrent.Executors
 
 class KernelServer {
 
@@ -75,7 +77,6 @@ class KernelServer {
                 override fun getKoin() = koinApp.koin
             }
 
-            // TODO: Include the port number in the name server
             // TODO: Support setting the port number via a cmdline option
             server = NettyServerBuilder.forPort(0).apply {
                 // TODO: Support SSL

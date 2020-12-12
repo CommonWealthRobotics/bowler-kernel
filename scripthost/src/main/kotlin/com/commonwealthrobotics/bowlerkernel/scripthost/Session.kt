@@ -33,6 +33,7 @@ import com.commonwealthrobotics.bowlerkernel.util.toChannel
 import com.commonwealthrobotics.proto.script_host.RunRequest
 import com.commonwealthrobotics.proto.script_host.SessionClientMessage
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -50,6 +51,7 @@ import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import java.util.Collections
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.time.ExperimentalTime
@@ -84,7 +86,7 @@ class Session(
     // Request-response handling
     private val responseHandlers: MutableMap<Long, (SessionClientMessage) -> Unit> = mutableMapOf()
     private val requests = CallbackLatch<SessionServerMessage.Builder, SessionClientMessage>()
-    private val jobs = mutableListOf<Job>()
+    private val jobs = Collections.synchronizedList(mutableListOf<Job>())
     private val scriptRequestMap = mutableMapOf<Long, Script>()
 
     /**
@@ -151,12 +153,13 @@ class Session(
                                     else -> throw IllegalStateException("Unhandled message type: $msg")
                                 }
 
-                                jobs.add(
-                                    launch {
-                                        val result = resultThunk.attempt().suspended()
-                                        logger.debug { "Result of handling client message: $result" }
+                                val job = coroutineScope.launch {
+                                    logger.debug { "Starting Job." }
+                                    val result = resultThunk.attempt().suspended()
+                                    logger.debug { "Result of handling client message: $result" }
 
-                                        if (result is Either.Left) {
+                                    when (result) {
+                                        is Either.Left -> {
                                             logger.warn(result.a) { "Request failed." }
                                             send(
                                                 sessionServerMessage {
@@ -166,8 +169,32 @@ class Session(
                                                 }
                                             )
                                         }
+
+                                        is Either.Right -> {
+                                            send(
+                                                sessionServerMessage {
+                                                    scriptOutputBuilder.requestId = msg.runRequest.requestId
+                                                    scriptOutputBuilder.output = result.b?.toString() ?: ""
+                                                }
+                                            )
+                                        }
                                     }
-                                )
+
+                                    logger.debug { "Job finished." }
+                                }
+
+                                job.invokeOnCompletion { cause ->
+                                    jobs.remove(job)
+                                    if (cause == null || cause is CancellationException) {
+                                        // This is normal termination
+                                    } else {
+                                        // This is failure
+                                        logger.error(cause) { "Unhandled error in Job." }
+                                        throw cause
+                                    }
+                                }
+
+                                jobs.add(job)
 
                                 true
                             }

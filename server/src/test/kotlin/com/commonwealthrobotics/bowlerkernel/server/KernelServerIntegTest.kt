@@ -21,14 +21,22 @@ import com.commonwealthrobotics.bowlerkernel.scripthost.runSession
 import com.commonwealthrobotics.proto.script_host.SessionServerMessage
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
 import com.google.protobuf.ByteString
+import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldExist
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
+import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.launch
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.io.TempDir
+import org.koin.ext.scope
 import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -44,7 +52,7 @@ internal class KernelServerIntegTest {
         server.port.shouldBeGreaterThanOrEqual(0)
 
         val received = mutableListOf<SessionServerMessage>()
-        val latch = CountDownLatch(4)
+        val latch = CountDownLatch(6)
         runSession(server.koinComponent) { serverFlow ->
             send(
                 sessionClientMessage {
@@ -67,9 +75,15 @@ internal class KernelServerIntegTest {
                             credentialsResponseBuilder
                         }
                     )
-                    it.hasNewTask() || it.hasTaskEnd() -> {
+                    it.hasNewTask() || it.hasTaskEnd() || it.hasScriptOutput() -> {
                         received.add(it)
                         latch.countDown()
+                    }
+                    it.hasError() -> {
+                        received.add(it)
+                        while (latch.count > 0) {
+                            latch.countDown()
+                        }
                     }
                 }
             }
@@ -78,6 +92,9 @@ internal class KernelServerIntegTest {
 
         received.shouldExist { it.hasNewTask() && it.newTask.description == "Running scriptA.groovy" }
         received.shouldExist { it.hasTaskEnd() && it.taskEnd.cause == TaskEndCause.TASK_COMPLETED }
+        received.last().should {
+            it.hasScriptOutput().shouldBeTrue()
+        }
 
         server.ensureStopped()
         server.port.shouldBe(-1)

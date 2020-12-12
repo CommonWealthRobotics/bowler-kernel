@@ -28,9 +28,11 @@ import com.commonwealthrobotics.proto.gitfs.ProjectSpec
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
 import com.google.protobuf.ByteString
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldExist
+import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -40,7 +42,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
@@ -115,8 +119,13 @@ internal class SessionTest : KoinTestFixture() {
             sessionServerMessage {
                 taskEndBuilder.taskId = 2
                 taskEndBuilder.cause = TaskEndCause.TASK_COMPLETED
-            }
+            },
         )
+        responses.last().should {
+            // This signals a successful end of the RunRequest. It must be last.
+            it.hasScriptOutput().shouldBeTrue()
+            it.scriptOutput.requestId.shouldBe(1)
+        }
 
         verifyOrder {
             // Initialize the script
@@ -175,9 +184,11 @@ internal class SessionTest : KoinTestFixture() {
                 taskEndBuilder.cause = TaskEndCause.TASK_FAILED
             }
         )
-        // Error because the script returned an Either.Left
-        responses.shouldExist {
-            it.hasError() && it.error.requestId == 1L
+
+        responses.last().should {
+            // This signals an unsuccessful end of the RunRequest. It must be last.
+            it.hasError().shouldBeTrue()
+            it.error.requestId.shouldBe(1)
         }
 
         verifyOrder {

@@ -65,8 +65,10 @@ class GitHubFS(
                     run(directory, "git", "fetch")
                     run(directory, "git", "checkout", revision)
                 }
+
+                directory
             }.handleErrorWith {
-                IO.defer {
+                IO {
                     // The directory was not a valid repo
                     logger.catching(it)
                     logger.warn {
@@ -78,12 +80,12 @@ class GitHubFS(
                             logger.error { "Failed to delete $directory" }
                             throw IllegalStateException("Failed to delete $directory")
                         }
-
-                        // After deleting the directory, try to clone again
-                        freshClone(gitUrl, revision)
                     }
+                }.flatMap {
+                    // After deleting the directory, try to clone again
+                    freshClone(gitUrl, revision)
                 }
-            }.map { directory }
+            }
         }
     }
 
@@ -101,7 +103,7 @@ class GitHubFS(
     private fun freshClone(
         gitUrl: String,
         revision: String
-    ): IO<File> {
+    ): IO<File> = IO {
         logger.info {
             """
             |Cloning repository:
@@ -110,8 +112,9 @@ class GitHubFS(
             """.trimMargin()
         }
 
-        val directory = gitUrlToDirectory(gitHubCacheDirectory, gitUrl)
-        return if (directory.mkdirs()) {
+        gitUrlToDirectory(gitHubCacheDirectory, gitUrl)
+    }.flatMap { directory ->
+        if (directory.mkdirs()) {
             IO { cloneRepository(gitUrl, revision, directory) }.map { directory }
         } else {
             IO.raiseError(IllegalStateException("Directory $directory already exists."))
@@ -151,6 +154,7 @@ class GitHubFS(
 
     private suspend fun getJGitCredentialsProvider(gitUrl: String): UsernamePasswordCredentialsProvider {
         require(gitUrl.endsWith(".git"))
+        logger.debug { "Requesting credentials for $gitUrl" }
         return when (val credentials = credentialsProvider.getCredentialsFor(gitUrl)) {
             is Credentials.Basic -> UsernamePasswordCredentialsProvider(credentials.username, credentials.password)
             // TODO: Validate this works

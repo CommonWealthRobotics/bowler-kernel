@@ -17,6 +17,7 @@
 package com.commonwealthrobotics.bowlerkernel.scripthost
 
 import com.commonwealthrobotics.bowlerkernel.testutil.KoinTestFixture
+import io.grpc.StatusException
 import io.kotest.assertions.throwables.shouldThrow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,7 +34,7 @@ internal class ScriptHostTest : KoinTestFixture() {
         initKoin(module { })
         val host = ScriptHost(CoroutineScope(Dispatchers.Default), testLocalKoin)
         host.session(flowOf())
-        shouldThrow<IllegalStateException> {
+        shouldThrow<StatusException> {
             host.session(flowOf())
         }
     }
