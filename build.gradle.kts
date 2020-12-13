@@ -28,7 +28,6 @@ val kotlinProjects = listOf(
     project(":hardware"),
     project(":logging"),
     project(":kernel-discovery"),
-    project(":proto"),
     project(":protoutil"),
     project(":scripthost"),
     project(":scripting"),
@@ -55,6 +54,11 @@ allprojects {
         maven("https://dl.bintray.com/s1m0nw1/KtsRunner") {
             content {
                 includeGroup("de.swirtz")
+            }
+        }
+        maven("https://dl.bintray.com/commonwealthrobotics/maven-artifacts") {
+            content {
+                includeGroup("com.commonwealthrobotics")
             }
         }
     }
@@ -208,8 +212,6 @@ configure(kotlinProjects) {
         kotlin {
             ktlint(Versions.ktlint)
             licenseHeaderFile(rootProject.rootDir.toPath().resolve("config").resolve("spotless").resolve("license.txt"))
-            // Generated proto sources
-            targetExclude(project(":proto").buildDir.walkTopDown().toList())
         }
     }
 
