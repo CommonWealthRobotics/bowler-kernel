@@ -20,7 +20,7 @@
  * blocks.
  */
 object Versions {
-    const val projectVersion = "0.9.1"
+    const val projectVersion = "0.9.2"
 
     const val spotlessPlugin = "5.6.1"
     const val testLoggerPlugin = "2.1.0"
@@ -44,14 +44,11 @@ object Versions {
     const val jgit = "5.4.0.201906121030-r"
     const val commonsMath3 = "3.6.+"
     const val ktGuavaCore = "0.2.+"
-    const val protobufJava = "3.12.4"
-    const val grpc = "1.31.0"
-    const val grpcKotlin = "0.1.5"
-    const val javaxAnnotationAPI = "1.3.+"
     const val groovy = "3.0.+"
     const val ivy = "2.5.+"
     const val koin = "2.1.+"
     const val jline = "3.17.1"
+    const val bowlerProtoKotlin = "0.6.9"
 
     const val jacocoTool = "0.8.5"
     const val gradleWrapper = "6.6.1"
