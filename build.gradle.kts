@@ -11,7 +11,6 @@ plugins {
     jacoco
     kotlin("jvm") version Versions.kotlin
     id("org.jlleitschuh.gradle.ktlint") version Versions.ktlintPlugin
-    id("io.gitlab.arturbosch.detekt") version Versions.detektPlugin
     `java-test-fixtures`
     id("org.jetbrains.dokka") version Versions.dokkaPlugin
     id("com.jfrog.bintray") version Versions.bintrayPlugin
@@ -28,6 +27,8 @@ val kotlinProjects = listOf(
     project(":hardware"),
     project(":logging"),
     project(":kernel-discovery"),
+    project(":lifecycle"),
+    project(":policyservice"),
     project(":protoutil"),
     project(":scripthost"),
     project(":scripting"),
@@ -54,11 +55,6 @@ allprojects {
         maven("https://dl.bintray.com/s1m0nw1/KtsRunner") {
             content {
                 includeGroup("de.swirtz")
-            }
-        }
-        maven("https://dl.bintray.com/commonwealthrobotics/maven-artifacts") {
-            content {
-                includeGroup("com.commonwealthrobotics")
             }
         }
     }
@@ -180,7 +176,6 @@ configure(kotlinProjects) {
     apply {
         plugin("kotlin")
         plugin("org.jlleitschuh.gradle.ktlint")
-        plugin("io.gitlab.arturbosch.detekt")
         plugin("kotlin-kapt")
     }
 
@@ -229,12 +224,6 @@ configure(kotlinProjects) {
                 it.file.path.contains("generated/")
             }
         }
-    }
-
-    detekt {
-        input = files("src/main/kotlin", "src/test/kotlin")
-        parallel = true
-        config = files(rootProject.rootDir.toPath().resolve("config").resolve("detekt").resolve("config.yml"))
     }
 }
 

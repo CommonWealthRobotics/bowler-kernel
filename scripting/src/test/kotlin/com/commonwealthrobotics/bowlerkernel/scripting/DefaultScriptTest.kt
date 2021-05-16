@@ -25,9 +25,9 @@ import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import io.mockk.every
+import io.mockk.coEvery
+import io.mockk.coVerifyOrder
 import io.mockk.mockk
-import io.mockk.verifyOrder
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import java.util.concurrent.CountDownLatch
@@ -114,7 +114,7 @@ internal class DefaultScriptTest {
 
         val childScript = mockk<Script>(relaxUnitFun = true) { }
         val scriptLoader = mockk<ScriptLoader> {
-            every { resolveAndLoad(any(), any(), any()) } returns childScript
+            coEvery { resolveAndLoad(any(), any(), any()) } returns childScript
         }
 
         val scriptEnvironment = mapOf("key" to "value")
@@ -124,7 +124,7 @@ internal class DefaultScriptTest {
         )
         runScript(script, listOf()).shouldBeRight()
 
-        verifyOrder {
+        coVerifyOrder {
             scriptLoader.resolveAndLoad(fileSpec1, listOf(), scriptEnvironment)
             childScript.start(listOf(1), script)
         }

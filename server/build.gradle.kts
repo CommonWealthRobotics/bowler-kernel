@@ -12,6 +12,8 @@ dependencies {
     implementation(project(":gitfs"))
     implementation(project(":di"))
     implementation(project(":util"))
+    implementation(project(":policyservice"))
+    implementation(project(":lifecycle"))
 
     testImplementation(project(":testUtil"))
     testImplementation(testFixtures(project(":scripthost")))

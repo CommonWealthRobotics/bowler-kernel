@@ -17,6 +17,7 @@
 package com.commonwealthrobotics.bowlerkernel.scripting
 
 import arrow.core.Either
+import com.commonwealthrobotics.bowlerkernel.util.RedirectionStream
 import java.util.concurrent.TimeUnit
 
 /**
@@ -85,4 +86,24 @@ interface Script {
      * @param timeUnit The unit of the timeouts. [TimeUnit.MILLISECONDS] by default.
      */
     fun interrupt(threadTimeout: Long, timeUnit: TimeUnit)
+
+    /**
+     * Redirects the custom `out` stream to the [readBuffer] lambda. Only one redirection may be used at a time.
+     * Calling this method more than once will disconnect prior redirections.
+     * See [RedirectionStream] for more information.
+     *
+     * @param readBuffer Given to a [RedirectionStream].
+     * @see RedirectionStream
+     */
+    fun redirectOut(readBuffer: (ByteArray) -> Unit)
+
+    /**
+     * Redirects the custom `err` stream to the [readBuffer] lambda. Only one redirection may be used at a time.
+     * Calling this method more than once will disconnect prior redirections.
+     * See [RedirectionStream] for more information.
+     *
+     * @param readBuffer Given to a [RedirectionStream].
+     * @see RedirectionStream
+     */
+    fun redirectErr(readBuffer: (ByteArray) -> Unit)
 }

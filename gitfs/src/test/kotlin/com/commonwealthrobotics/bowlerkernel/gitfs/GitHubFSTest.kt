@@ -17,9 +17,10 @@
 package com.commonwealthrobotics.bowlerkernel.gitfs
 
 import com.commonwealthrobotics.bowlerkernel.authservice.AnonymousCredentialsProvider
-import io.kotest.assertions.arrow.either.shouldBeLeft
+import com.commonwealthrobotics.bowlerkernel.authservice.DeniedCredentialsProvider
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.types.shouldBeInstanceOf
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.io.TempDir
@@ -29,6 +30,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.io.File
 import java.util.concurrent.TimeUnit
 
+@Suppress("HttpUrlsUsage")
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class GitHubFSTest {
 
@@ -39,22 +41,48 @@ internal class GitHubFSTest {
     }
 
     @Test
-    fun `test cloning from invalid git url`(@TempDir tempDir: File) {
+    fun `not allowed to clone from an invalid URL`(@TempDir tempDir: File) {
         val fs = GitHubFS(AnonymousCredentialsProvider, tempDir.toPath())
-        val actual = fs.cloneRepo("invalidGitRepo", "HEAD").attempt().unsafeRunSync()
-        actual.shouldBeLeft {
-            it.shouldBeInstanceOf<IllegalArgumentException>()
+        runBlocking {
+            shouldThrow<IllegalArgumentException> {
+                fs.cloneRepo("invalidGitRepo", "HEAD")
+            }
         }
     }
 
     @Test
-    fun `test cloning over http`(@TempDir tempDir: File) {
+    fun `not allowed to clone using bare HTTP`(@TempDir tempDir: File) {
         val fs = GitHubFS(AnonymousCredentialsProvider, tempDir.toPath())
-        val actual = fs.cloneRepo("http://github.com/CommonWealthRobotics/BowlerBuilder.git", "HEAD")
-            .attempt()
-            .unsafeRunSync()
-        actual.shouldBeLeft {
-            it.shouldBeInstanceOf<UnsupportedOperationException>()
+        runBlocking {
+            shouldThrow<UnsupportedOperationException> {
+                fs.cloneRepo("http://github.com/CommonWealthRobotics/bowler-kernel-test-repo.git", "HEAD")
+            }
+        }
+    }
+
+    @Test
+    fun `not allowed to clone using denied credentials`(@TempDir tempDir: File) {
+        val fs = GitHubFS(DeniedCredentialsProvider, tempDir.toPath())
+        runBlocking {
+            shouldThrow<UnsupportedOperationException> {
+                fs.cloneRepo("https://github.com/CommonWealthRobotics/bowler-kernel-test-repo.git", "HEAD")
+            }
+        }
+    }
+
+    @Test
+    fun `not allowed to clone using denied credentials with a populated cache`(@TempDir tempDir: File) {
+        val fsAnon = GitHubFS(AnonymousCredentialsProvider, tempDir.toPath())
+        runBlocking {
+            // Clone using anonymous credentials to populate the local cache with this repo
+            fsAnon.cloneRepo("https://github.com/CommonWealthRobotics/bowler-kernel-test-repo.git", "HEAD")
+
+            // Even though this repo is in the cache now, cloning must not be allowed if the acting policy document
+            // denies it
+            val fsDenied = GitHubFS(DeniedCredentialsProvider, tempDir.toPath())
+            shouldThrow<UnsupportedOperationException> {
+                fsDenied.cloneRepo("https://github.com/CommonWealthRobotics/bowler-kernel-test-repo.git", "HEAD")
+            }
         }
     }
 
@@ -63,13 +91,13 @@ internal class GitHubFSTest {
         @Suppress("unused")
         @JvmStatic
         fun stripUrlCharactersFromGitUrlSource(): List<Arguments> {
-            val repoOwnerAndName = "CommonWealthRobotics/BowlerBuilder"
+            val repoOwnerAndName = "CommonWealthRobotics/bowler-kernel-test-repo"
             val gistId = "5681d11165708c3aec1ed5cf8cf38238"
             return listOf(
-                Arguments.of("https://github.com/CommonWealthRobotics/BowlerBuilder.git", repoOwnerAndName),
-                Arguments.of("http://github.com/CommonWealthRobotics/BowlerBuilder.git", repoOwnerAndName),
-                Arguments.of("https://github.com/CommonWealthRobotics/BowlerBuilder.git/", repoOwnerAndName),
-                Arguments.of("http://github.com/CommonWealthRobotics/BowlerBuilder.git/", repoOwnerAndName),
+                Arguments.of("https://github.com/CommonWealthRobotics/bowler-kernel-test-repo.git", repoOwnerAndName),
+                Arguments.of("http://github.com/CommonWealthRobotics/bowler-kernel-test-repo.git", repoOwnerAndName),
+                Arguments.of("https://github.com/CommonWealthRobotics/bowler-kernel-test-repo.git/", repoOwnerAndName),
+                Arguments.of("http://github.com/CommonWealthRobotics/bowler-kernel-test-repo.git/", repoOwnerAndName),
                 Arguments.of("https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git", gistId),
                 Arguments.of("http://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git", gistId),
                 Arguments.of("https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git/", gistId),

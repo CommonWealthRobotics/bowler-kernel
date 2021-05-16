@@ -26,7 +26,7 @@ interface CredentialsProvider {
     /**
      * Get the credentials for the [remote] (e.g. `https://github.com/CommonWealthRobotics/BowlerBuilder.git`).
      *
-     * These credentials should never be stored.
+     * These credentials must never be stored on a filesystem.
      *
      * @param remote The remote to ask for.
      * @return The credentials for that remote.

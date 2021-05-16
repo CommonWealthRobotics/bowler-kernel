@@ -45,20 +45,23 @@ interface DependencyResolver {
      *
      * Patches work as follows. The local copy of the project will be made consistent with the patch. Any previously
      * applied patch is discarded and overwritten by the new patch.
+     *
+     * @throws IllegalArgumentException If [GitFS] throws.
+     * @throws UnsupportedOperationException If [GitFS] throws.
      */
-    fun resolve(fileSpec: FileSpec): File
+    suspend fun resolve(fileSpec: FileSpec): File
 
     /**
      * Add a dev to this resolver. See the [resolve] docs for more information.
      *
      * @param dev The project to dev.
      */
-    fun addDev(dev: ProjectSpec)
+    suspend fun addDev(dev: ProjectSpec)
 
     /**
      * Add devs to this resolver. See the [resolve] docs for more information.
      *
      * @param devs The projects to dev.
      */
-    fun addDevs(devs: List<ProjectSpec>)
+    suspend fun addDevs(devs: List<ProjectSpec>)
 }

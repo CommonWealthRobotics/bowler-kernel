@@ -16,25 +16,30 @@
  */
 package com.commonwealthrobotics.bowlerkernel.gitfs
 
-import arrow.fx.IO
 import com.commonwealthrobotics.bowlerkernel.util.run
 import com.commonwealthrobotics.bowlerkernel.util.runAndPrintOutput
 import com.commonwealthrobotics.proto.gitfs.FileSpec
 import com.google.protobuf.ByteString
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
+import io.mockk.coEvery
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verifyOrder
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.createTempFile
 
+@OptIn(ExperimentalPathApi::class)
 internal class DefaultDependencyResolverTest {
 
     @Test
     fun `resolve a script with no patch and no devs`(@TempDir tempDir: File) {
-        val fileToResolve = createTempFile(suffix = ".groovy", directory = tempDir)
+        val fileToResolve = createTempFile(tempDir.toPath(), suffix = ".groovy").toFile()
         val file = FileSpec.newBuilder().apply {
             projectBuilder.repoRemote = "git@github.com:user/repo1.git"
             projectBuilder.revision = "master"
@@ -43,22 +48,52 @@ internal class DefaultDependencyResolverTest {
         }.build()
 
         val gitFS = mockk<GitFS> {
-            every { cloneRepo(file.project.repoRemote, file.project.revision) } returns IO.just(tempDir)
-            every { getFilesInRepo(tempDir) } returns IO.just(
-                setOf(
-                    createTempFile(".groovy", directory = tempDir),
-                    fileToResolve,
-                    createTempFile(".groovy", directory = tempDir)
-                )
+            coEvery { cloneRepo(file.project.repoRemote, file.project.revision) } returns tempDir
+            coEvery { getFilesInRepo(tempDir) } returns setOf(
+                createTempFile(tempDir.toPath(), suffix = ".groovy").toFile(),
+                fileToResolve,
+                createTempFile(tempDir.toPath(), suffix = ".groovy").toFile()
             )
         }
 
-        val resolver = DefaultDependencyResolver(gitFS)
-        val resolvedFile = resolver.resolve(file)
-        resolvedFile.shouldBe(fileToResolve)
+        runBlocking {
+            val resolver = DefaultDependencyResolver(gitFS)
+            val resolvedFile = resolver.resolve(file)
+            resolvedFile.shouldBe(fileToResolve)
+        }
 
-        verifyOrder {
+        coVerifyOrder {
             gitFS.cloneRepo(file.project.repoRemote, file.project.revision)
+            gitFS.getFilesInRepo(tempDir)
+        }
+    }
+
+    @Test
+    fun `fail to resolve because cloning fails`(@TempDir tempDir: File) {
+        val file = FileSpec.newBuilder().apply {
+            projectBuilder.repoRemote = "git@github.com:user/repo1.git"
+            projectBuilder.revision = "master"
+            projectBuilder.patchBuilder.patch = ByteString.copyFrom(byteArrayOf())
+            path = "tmp.groovy"
+        }.build()
+
+        val gitFS = mockk<GitFS> {
+            coEvery {
+                cloneRepo(file.project.repoRemote, file.project.revision)
+            } throws UnsupportedOperationException("Not allowed to authenticate to the remote.")
+        }
+
+        runBlocking {
+            val resolver = DefaultDependencyResolver(gitFS)
+            shouldThrow<UnsupportedOperationException> {
+                resolver.resolve(file)
+            }
+        }
+
+        coVerifyOrder {
+            gitFS.cloneRepo(file.project.repoRemote, file.project.revision)
+        }
+        coVerifyOrder(inverse = true) {
             gitFS.getFilesInRepo(tempDir)
         }
     }
@@ -66,7 +101,7 @@ internal class DefaultDependencyResolverTest {
     @Test
     fun `resolve a script with a patch and no devs`(@TempDir tempDir: File) {
         // Make a file and write 1 into it
-        val fileToResolve = createTempFile(suffix = ".groovy", directory = tempDir)
+        val fileToResolve = createTempFile(tempDir.toPath(), suffix = ".groovy").toFile()
         fileToResolve.writeText("1")
 
         // Init a git repo, add all files, and commit
@@ -91,16 +126,18 @@ internal class DefaultDependencyResolverTest {
         }.build()
 
         val gitFS = mockk<GitFS> {
-            every { cloneRepo(file.project.repoRemote, file.project.revision) } returns IO.just(tempDir)
-            every { getFilesInRepo(tempDir) } returns IO.just(setOf(fileToResolve))
+            coEvery { cloneRepo(file.project.repoRemote, file.project.revision) } returns tempDir
+            every { getFilesInRepo(tempDir) } returns setOf(fileToResolve)
         }
 
-        val resolver = DefaultDependencyResolver(gitFS)
-        val resolvedFile = resolver.resolve(file)
-        resolvedFile.shouldBe(fileToResolve)
-        resolvedFile.readText().shouldBe("2")
+        runBlocking {
+            val resolver = DefaultDependencyResolver(gitFS)
+            val resolvedFile = resolver.resolve(file)
+            resolvedFile.shouldBe(fileToResolve)
+            resolvedFile.readText().shouldBe("2")
+        }
 
-        verifyOrder {
+        coVerifyOrder {
             gitFS.cloneRepo(file.project.repoRemote, file.project.revision)
             gitFS.getFilesInRepo(tempDir)
         }
@@ -114,7 +151,7 @@ internal class DefaultDependencyResolverTest {
         runAndPrintOutput(tempDir, "git", "commit", "-m", "a", "--allow-empty")
 
         // Create a new file
-        val aNewFile = createTempFile(suffix = ".groovy", directory = tempDir)
+        val aNewFile = createTempFile(tempDir.toPath(), suffix = ".groovy").toFile()
         aNewFile.writeText("1")
 
         runAndPrintOutput(tempDir, "git", "add", aNewFile.name)
@@ -132,18 +169,20 @@ internal class DefaultDependencyResolverTest {
         }.build()
 
         val gitFS = mockk<GitFS> {
-            every { cloneRepo(file.project.repoRemote, file.project.revision) } returns IO.just(tempDir)
+            coEvery { cloneRepo(file.project.repoRemote, file.project.revision) } returns tempDir
 
             // Simulate the diff being applied correctly by returning the new file. We check the diff worked later.
-            every { getFilesInRepo(tempDir) } returns IO.just(setOf(File(aNewFile.path)))
+            every { getFilesInRepo(tempDir) } returns setOf(File(aNewFile.path))
         }
 
-        val resolver = DefaultDependencyResolver(gitFS)
-        val resolvedFile = resolver.resolve(file)
-        resolvedFile.shouldBe(aNewFile)
-        resolvedFile.readText().shouldBe("1") // Read from the new file to assert it was created properly
+        runBlocking {
+            val resolver = DefaultDependencyResolver(gitFS)
+            val resolvedFile = resolver.resolve(file)
+            resolvedFile.shouldBe(aNewFile)
+            resolvedFile.readText().shouldBe("1") // Read from the new file to assert it was created properly
+        }
 
-        verifyOrder {
+        coVerifyOrder {
             gitFS.cloneRepo(file.project.repoRemote, file.project.revision)
             gitFS.getFilesInRepo(tempDir)
         }

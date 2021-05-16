@@ -67,6 +67,11 @@ data class Option(
                 Long::class -> value.toLong()
                 Float::class -> value.toFloat()
                 Double::class -> value.toDouble()
+                Boolean::class -> when (value.trim().toLowerCase()) {
+                    "true", "yes", "y" -> true
+                    "false", "no", "n" -> false
+                    else -> null
+                }
 
                 String::class -> value
 

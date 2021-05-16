@@ -16,7 +16,6 @@
  */
 package com.commonwealthrobotics.bowlerkernel.gitfs
 
-import arrow.fx.IO
 import java.io.File
 
 /**
@@ -36,8 +35,10 @@ interface GitFS {
      * `https://gist.github.com/5681d11165708c3aec1ed5cf8cf38238.git`.
      * @param revision The revision to checkout (a commit hash).
      * @return The directory of the cloned repository.
+     * @throws IllegalArgumentException If the [gitUrl] is invalid.
+     * @throws UnsupportedOperationException If the kernel is not allowed to authenticate to the [gitUrl].
      */
-    fun cloneRepo(gitUrl: String, revision: String): IO<File>
+    suspend fun cloneRepo(gitUrl: String, revision: String): File
 
     /**
      * Gets the files in the repo, excluding the files inside `.git`.
@@ -45,10 +46,10 @@ interface GitFS {
      * @param repoDir The directory of the repository root.
      * @return The files in the repository.
      */
-    fun getFilesInRepo(repoDir: File): IO<Set<File>>
+    fun getFilesInRepo(repoDir: File): Set<File>
 
     /**
      * Clears the local Git cache.
      */
-    fun deleteCache(): IO<Unit>
+    fun deleteCache()
 }

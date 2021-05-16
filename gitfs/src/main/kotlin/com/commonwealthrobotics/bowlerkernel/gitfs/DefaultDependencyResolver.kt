@@ -16,10 +16,10 @@
  */
 package com.commonwealthrobotics.bowlerkernel.gitfs
 
-import arrow.fx.IO
-import arrow.fx.extensions.fx
 import com.commonwealthrobotics.proto.gitfs.FileSpec
 import com.commonwealthrobotics.proto.gitfs.ProjectSpec
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 
 /**
@@ -29,42 +29,55 @@ class DefaultDependencyResolver(
     private val gitFS: GitFS
 ) : DependencyResolver {
 
-    override fun resolve(fileSpec: FileSpec): File {
-        return IO.fx {
-            // After cloneRepo, the cached copy of the repo is consistent with the remote, so there should be no need
-            // to reset any possibly previously applied patch.
-            val repoDir = gitFS.cloneRepo(fileSpec.project.repoRemote, fileSpec.project.revision).bind()
+    override suspend fun resolve(fileSpec: FileSpec): File {
+        // After cloneRepo, the cached copy of the repo is consistent with the remote, so there should be no need
+        // to reset any possibly previously applied patch.
+        val repoDir = gitFS.cloneRepo(fileSpec.project.repoRemote, fileSpec.project.revision)
 
-            val patch = fileSpec.project.patch.patch
-            if (!patch.isEmpty) {
+        val patch = fileSpec.project.patch.patch
+        if (!patch.isEmpty) {
+            @Suppress("BlockingMethodInNonBlockingContext") // Not blocking because it's lifted via withContext
+            withContext(Dispatchers.IO) {
                 // TODO: Apply the patch using jgit
                 val proc = ProcessBuilder("git", "apply", "-").directory(repoDir).start()
                 proc.outputStream.write(patch.toByteArray())
                 proc.outputStream.close()
                 val exitCode = proc.waitFor()
+
                 check(exitCode == 0) {
-                    "Failed to apply the patch (exit code $exitCode) when resolving $fileSpec"
+                    """
+                    |Failed to apply the patch (exit code $exitCode) when resolving:
+                    |$fileSpec
+                    |======================
+                    |       stdout:
+                    |======================
+                    |${proc.inputStream.readAllBytes().decodeToString()}
+                    |======================
+                    |       stderr:
+                    |======================
+                    |${proc.errorStream.readAllBytes().decodeToString()}
+                    """.trimMargin()
                 }
             }
+        }
 
-            val filesInRepo = gitFS.getFilesInRepo(repoDir).bind()
-            val filesString = filesInRepo.joinToString("\n") { "\t$it" }
-            filesInRepo.firstOrNull { it.relativeTo(repoDir).path == fileSpec.path }
-                ?: throw IllegalStateException(
-                    """
-                    |Cannot resolve $fileSpec
-                    |Contents of $repoDir:
-                    |$filesString
-                    """.trimMargin()
-                )
-        }.unsafeRunSync()
+        val filesInRepo = gitFS.getFilesInRepo(repoDir)
+        val filesString = filesInRepo.joinToString("\n") { "\t$it" }
+        return filesInRepo.firstOrNull { it.relativeTo(repoDir).path == fileSpec.path }
+            ?: throw IllegalStateException(
+                """
+                |Cannot resolve $fileSpec
+                |Contents of $repoDir:
+                |$filesString
+                """.trimMargin()
+            )
     }
 
-    override fun addDev(dev: ProjectSpec) {
+    override suspend fun addDev(dev: ProjectSpec) {
         // TODO: Implement me
     }
 
-    override fun addDevs(devs: List<ProjectSpec>) {
+    override suspend fun addDevs(devs: List<ProjectSpec>) {
         // TODO: Implement me
     }
 }

@@ -16,95 +16,107 @@
  */
 package com.commonwealthrobotics.bowlerkernel.protoutil
 
-import com.commonwealthrobotics.proto.script_host.SessionServerMessage
+import arrow.core.extensions.set.monoidal.identity
+import com.commonwealthrobotics.proto.script_host.NewTask
+import com.commonwealthrobotics.proto.script_host.TaskEnd
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
-import io.kotest.assertions.arrow.either.shouldBeLeft
-import io.kotest.assertions.arrow.either.shouldBeRight
+import com.google.protobuf.MessageLite
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.coVerifyOrder
 import io.mockk.mockk
-import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class TaskUtilTest {
+
+    private fun <A> identity(a: A) = a
 
     @Test
     fun `run a task that does not throw an exception`() {
-        val responseObserver = mockk<SendChannel<SessionServerMessage>>(relaxUnitFun = true)
+        val responseObserver = mockk<ProducerScope<MessageLite>>(relaxUnitFun = true)
 
-        val result = runBlocking { responseObserver.withTask(1, 1, "desc") { 42 } }
-        result.attempt().unsafeRunSync().shouldBeRight { it.shouldBe(42) }
+        val result = runBlocking { responseObserver.withTask(1, "desc", this@TaskUtilTest::identity) { 42 } }
+        result.shouldBe(42)
 
         coVerifyOrder {
             responseObserver.send(
-                sessionServerMessage {
-                    newTaskBuilder.requestId = 1
-                    newTaskBuilder.description = "desc"
-                    newTaskBuilder.taskBuilder.taskId = 1
-                    newTaskBuilder.taskBuilder.progress = Float.NaN
-                }
+                NewTask.newBuilder().apply {
+                    description = "desc"
+                    taskBuilder.apply {
+                        taskId = 1
+                        progress = Float.NaN
+                    }
+                }.build()
             )
+
             responseObserver.send(
-                sessionServerMessage {
-                    taskEndBuilder.taskId = 1
-                    taskEndBuilder.cause = TaskEndCause.TASK_COMPLETED
-                }
+                TaskEnd.newBuilder().apply {
+                    taskId = 1
+                    cause = TaskEndCause.TASK_COMPLETED
+                }.build()
             )
         }
     }
 
     @Test
     fun `run a task that throws a non-fatal exception`() {
-        val responseObserver = mockk<SendChannel<SessionServerMessage>>(relaxUnitFun = true)
+        val responseObserver = mockk<ProducerScope<MessageLite>>(relaxUnitFun = true)
 
-        val result = runBlocking { responseObserver.withTask(1, 1, "desc") { error("Boom!") } }
-        result.attempt().unsafeRunSync().shouldBeLeft {
-            it.shouldBeInstanceOf<IllegalStateException>()
-            it.message.shouldBe("Boom!")
+        @Suppress("IMPLICIT_NOTHING_TYPE_ARGUMENT_AGAINST_NOT_NOTHING_EXPECTED_TYPE")
+        val ex = shouldThrow<IllegalStateException> {
+            runBlocking { responseObserver.withTask(1, "desc", this@TaskUtilTest::identity) { error("Boom!") } }
         }
+        ex.message.shouldBe("Boom!")
 
         coVerifyOrder {
             responseObserver.send(
-                sessionServerMessage {
-                    newTaskBuilder.requestId = 1
-                    newTaskBuilder.description = "desc"
-                    newTaskBuilder.taskBuilder.taskId = 1
-                    newTaskBuilder.taskBuilder.progress = Float.NaN
-                }
+                NewTask.newBuilder().apply {
+                    description = "desc"
+                    taskBuilder.apply {
+                        taskId = 1
+                        progress = Float.NaN
+                    }
+                }.build()
             )
+
             responseObserver.send(
-                sessionServerMessage {
-                    taskEndBuilder.taskId = 1
-                    taskEndBuilder.cause = TaskEndCause.TASK_FAILED
-                }
-            )
-            responseObserver.send(
-                sessionServerMessage {
-                    errorBuilder.requestId = 1
-                    errorBuilder.description = "Boom!"
-                }
+                TaskEnd.newBuilder().apply {
+                    taskId = 1
+                    cause = TaskEndCause.TASK_FAILED
+                    error = "Boom!"
+                }.build()
             )
         }
     }
 
     @Test
     fun `run a task that throws a fatal exception`() {
-        val responseObserver = mockk<SendChannel<SessionServerMessage>>(relaxUnitFun = true)
+        val responseObserver = mockk<ProducerScope<MessageLite>>(relaxUnitFun = true)
 
-        runBlocking {
-            responseObserver.withTask(1, 1, "desc") { throw OutOfMemoryError() }.attempt().suspended().shouldBeLeft()
+        shouldThrow<OutOfMemoryError> {
+            runBlocking {
+                @Suppress("RemoveExplicitTypeArguments")
+                responseObserver.withTask<Nothing, MessageLite>(
+                    1,
+                    "desc",
+                    this@TaskUtilTest::identity
+                ) { throw OutOfMemoryError() }
+            }
         }
 
         coVerifyOrder {
             responseObserver.send(
-                sessionServerMessage {
-                    newTaskBuilder.requestId = 1
-                    newTaskBuilder.description = "desc"
-                    newTaskBuilder.taskBuilder.taskId = 1
-                    newTaskBuilder.taskBuilder.progress = Float.NaN
-                }
+                NewTask.newBuilder().apply {
+                    description = "desc"
+                    taskBuilder.apply {
+                        taskId = 1
+                        progress = Float.NaN
+                    }
+                }.build()
             )
         }
     }

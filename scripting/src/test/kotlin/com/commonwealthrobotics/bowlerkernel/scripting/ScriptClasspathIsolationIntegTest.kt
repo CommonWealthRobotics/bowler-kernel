@@ -25,8 +25,9 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.io.TempDir
@@ -83,26 +84,28 @@ internal class ScriptClasspathIsolationIntegTest {
 
         val loader = DefaultScriptLoader(
             mockk(relaxUnitFun = true) {
-                every { resolve(scriptWithDepFS) } returns scriptWithDepFile
-                every { resolve(scriptWithoutDepFS) } returns scriptWithoutDepFile
+                coEvery { resolve(scriptWithDepFS) } returns scriptWithDepFile
+                coEvery { resolve(scriptWithoutDepFS) } returns scriptWithoutDepFile
             }
         )
 
-        val scriptWithDep = loader.resolveAndLoad(scriptWithDepFS, listOf(), mapOf())
-        val scriptWithoutDep = loader.resolveAndLoad(scriptWithoutDepFS, listOf(), mapOf())
+        runBlocking {
+            val scriptWithDep = loader.resolveAndLoad(scriptWithDepFS, listOf(), mapOf())
+            val scriptWithoutDep = loader.resolveAndLoad(scriptWithoutDepFS, listOf(), mapOf())
 
-        scriptWithDep.start(listOf(), null)
-        scriptWithoutDep.start(listOf(), null)
+            scriptWithDep.start(listOf(), null)
+            scriptWithoutDep.start(listOf(), null)
 
-        // The script that declared the dependency must have access to it.
-        scriptWithDep.join().shouldBeRight {
-            it.shouldNotBeNull()
-            it::class.java.name.shouldBe("org.apache.commons.cli.Options")
-        }
+            // The script that declared the dependency must have access to it.
+            scriptWithDep.join().shouldBeRight {
+                it.shouldNotBeNull()
+                it::class.java.name.shouldBe("org.apache.commons.cli.Options")
+            }
 
-        // The script that did not declare the dependency must not have access to it.
-        scriptWithoutDep.join().shouldBeLeft {
-            it.message.shouldContain("unable to resolve class org.apache.commons.cli.Options")
+            // The script that did not declare the dependency must not have access to it.
+            scriptWithoutDep.join().shouldBeLeft {
+                it.message.shouldContain("unable to resolve class org.apache.commons.cli.Options")
+            }
         }
     }
 
@@ -144,18 +147,20 @@ internal class ScriptClasspathIsolationIntegTest {
 
         val loader = DefaultScriptLoader(
             mockk(relaxUnitFun = true) {
-                every { resolve(parentScriptFS) } returns parentScriptFile
-                every { resolve(childScriptFS) } returns childScriptFile
+                coEvery { resolve(parentScriptFS) } returns parentScriptFile
+                coEvery { resolve(childScriptFS) } returns childScriptFile
             }
         )
 
-        val parentScript = loader.resolveAndLoad(parentScriptFS, listOf(), mapOf())
-        parentScript.start(listOf(childScriptFS), null)
+        runBlocking {
+            val parentScript = loader.resolveAndLoad(parentScriptFS, listOf(), mapOf())
+            parentScript.start(listOf(childScriptFS), null)
 
-        // The child script must not have access to the dependency from the parent script.
-        parentScript.join().shouldBeRight {
-            it.shouldBeInstanceOf<Either.Left<Throwable>>()
-            it.a.message.shouldContain("unable to resolve class org.apache.commons.cli.Options")
+            // The child script must not have access to the dependency from the parent script.
+            parentScript.join().shouldBeRight {
+                it.shouldBeInstanceOf<Either.Left<Throwable>>()
+                it.a.message.shouldContain("unable to resolve class org.apache.commons.cli.Options")
+            }
         }
     }
 
@@ -200,23 +205,25 @@ internal class ScriptClasspathIsolationIntegTest {
 
         val loader = DefaultScriptLoader(
             mockk(relaxUnitFun = true) {
-                every { resolve(scriptWithNewerDepFS) } returns scriptWithNewerDepFile
-                every { resolve(scriptWithOlderDepFS) } returns scriptWithOlderDepFile
+                coEvery { resolve(scriptWithNewerDepFS) } returns scriptWithNewerDepFile
+                coEvery { resolve(scriptWithOlderDepFS) } returns scriptWithOlderDepFile
             }
         )
 
-        val scriptWithNewerDep = loader.resolveAndLoad(scriptWithNewerDepFS, listOf(), mapOf())
-        val scriptWithOlderDep = loader.resolveAndLoad(scriptWithOlderDepFS, listOf(), mapOf())
+        runBlocking {
+            val scriptWithNewerDep = loader.resolveAndLoad(scriptWithNewerDepFS, listOf(), mapOf())
+            val scriptWithOlderDep = loader.resolveAndLoad(scriptWithOlderDepFS, listOf(), mapOf())
 
-        scriptWithNewerDep.start(listOf(), null)
-        scriptWithOlderDep.start(listOf(), null)
+            scriptWithNewerDep.start(listOf(), null)
+            scriptWithOlderDep.start(listOf(), null)
 
-        // The script that declared the newer dependency must succeed
-        scriptWithNewerDep.join().shouldBeRight { it.shouldNotBeNull() }
+            // The script that declared the newer dependency must succeed
+            scriptWithNewerDep.join().shouldBeRight { it.shouldNotBeNull() }
 
-        // The script that declared the older dependency must fail
-        scriptWithOlderDep.join().shouldBeLeft {
-            it.message.shouldContain("unable to resolve class org.apache.commons.cli.Option.Builder")
+            // The script that declared the older dependency must fail
+            scriptWithOlderDep.join().shouldBeLeft {
+                it.message.shouldContain("unable to resolve class org.apache.commons.cli.Option.Builder")
+            }
         }
     }
 }

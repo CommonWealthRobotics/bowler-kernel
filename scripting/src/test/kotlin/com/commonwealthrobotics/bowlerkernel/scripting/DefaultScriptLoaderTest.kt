@@ -21,9 +21,11 @@ import com.commonwealthrobotics.proto.gitfs.FileSpec
 import com.google.protobuf.ByteString
 import io.kotest.assertions.arrow.either.shouldBeLeft
 import io.kotest.assertions.arrow.either.shouldBeRight
-import io.mockk.every
+import io.kotest.assertions.throwables.shouldThrow
+import io.mockk.coEvery
+import io.mockk.coVerifyOrder
 import io.mockk.mockk
-import io.mockk.verifyOrder
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -41,14 +43,36 @@ internal class DefaultScriptLoaderTest {
     fun `resolveAndLoad a script with no devs and no env that returns a simple value`(@TempDir tempDir: File) {
         val file1 = createTempFile(directory = tempDir).apply { writeText("1") }
         val dependencyResolver = mockk<DependencyResolver>(relaxUnitFun = true) {
-            every { resolve(fileSpec1) } returns file1
+            coEvery { resolve(fileSpec1) } returns file1
         }
 
-        val scriptLoader = DefaultScriptLoader(dependencyResolver)
-        val script = scriptLoader.resolveAndLoad(fileSpec1, listOf(), mapOf())
-        runScript(script, listOf()).shouldBeRight(1)
+        runBlocking {
+            val scriptLoader = DefaultScriptLoader(dependencyResolver)
+            val script = scriptLoader.resolveAndLoad(fileSpec1, listOf(), mapOf())
+            runScript(script, listOf()).shouldBeRight(1)
+        }
 
-        verifyOrder {
+        coVerifyOrder {
+            dependencyResolver.resolve(fileSpec1)
+        }
+    }
+
+    @Test
+    fun `fail to load a script because the dependency resolution fails`(@TempDir tempDir: File) {
+        val dependencyResolver = mockk<DependencyResolver>(relaxUnitFun = true) {
+            coEvery { resolve(fileSpec1) } throws UnsupportedOperationException(
+                "Not allowed to authenticate to the remote."
+            )
+        }
+
+        runBlocking {
+            val scriptLoader = DefaultScriptLoader(dependencyResolver)
+            shouldThrow<UnsupportedOperationException> {
+                scriptLoader.resolveAndLoad(fileSpec1, listOf(), mapOf())
+            }
+        }
+
+        coVerifyOrder {
             dependencyResolver.resolve(fileSpec1)
         }
     }
@@ -57,14 +81,16 @@ internal class DefaultScriptLoaderTest {
     fun `resolveAndLoad a script with a compiler error`(@TempDir tempDir: File) {
         val file1 = createTempFile(directory = tempDir).apply { writeText(" \" ") }
         val dependencyResolver = mockk<DependencyResolver>(relaxUnitFun = true) {
-            every { resolve(fileSpec1) } returns file1
+            coEvery { resolve(fileSpec1) } returns file1
         }
 
-        val scriptLoader = DefaultScriptLoader(dependencyResolver)
-        val script = scriptLoader.resolveAndLoad(fileSpec1, listOf(), mapOf())
-        runScript(script, listOf()).shouldBeLeft()
+        runBlocking {
+            val scriptLoader = DefaultScriptLoader(dependencyResolver)
+            val script = scriptLoader.resolveAndLoad(fileSpec1, listOf(), mapOf())
+            runScript(script, listOf()).shouldBeLeft()
+        }
 
-        verifyOrder {
+        coVerifyOrder {
             dependencyResolver.resolve(fileSpec1)
         }
     }
@@ -81,14 +107,16 @@ internal class DefaultScriptLoaderTest {
             )
         }
         val dependencyResolver = mockk<DependencyResolver>(relaxUnitFun = true) {
-            every { resolve(fileSpec1) } returns file1
+            coEvery { resolve(fileSpec1) } returns file1
         }
 
-        val scriptLoader = DefaultScriptLoader(dependencyResolver)
-        val script = scriptLoader.resolveAndLoad(fileSpec1, listOf(), mapOf("key" to "value"))
-        runScript(script, listOf(1)).shouldBeRight()
+        runBlocking {
+            val scriptLoader = DefaultScriptLoader(dependencyResolver)
+            val script = scriptLoader.resolveAndLoad(fileSpec1, listOf(), mapOf("key" to "value"))
+            runScript(script, listOf(1)).shouldBeRight()
+        }
 
-        verifyOrder {
+        coVerifyOrder {
             dependencyResolver.resolve(fileSpec1)
         }
     }

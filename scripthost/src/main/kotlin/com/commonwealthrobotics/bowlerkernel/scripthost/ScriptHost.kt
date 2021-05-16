@@ -16,39 +16,13 @@
  */
 package com.commonwealthrobotics.bowlerkernel.scripthost
 
+import com.commonwealthrobotics.proto.script_host.RunRequest
 import com.commonwealthrobotics.proto.script_host.ScriptHostGrpcKt
-import com.commonwealthrobotics.proto.script_host.SessionClientMessage
-import com.commonwealthrobotics.proto.script_host.SessionServerMessage
-import io.grpc.Status
-import io.grpc.StatusException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.onCompletion
-import mu.KotlinLogging
 import org.koin.core.KoinComponent
-import java.util.concurrent.atomic.AtomicInteger
 
 class ScriptHost(
-    private val scope: CoroutineScope,
     private val koinComponent: KoinComponent
-) : ScriptHostGrpcKt.ScriptHostCoroutineImplBase() {
+) : ScriptHostGrpcKt.ScriptHostCoroutineImplBase(), KoinComponent by koinComponent {
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override fun session(requests: Flow<SessionClientMessage>): Flow<SessionServerMessage> {
-        if (concurrentSessionCount.getAndIncrement() != 0) {
-            concurrentSessionCount.decrementAndGet()
-            logger.error {
-                "Cannot create a concurrent session. Only one session may operate at a time. Aborting session."
-            }
-            logger.throwing(StatusException(Status.ABORTED))
-        }
-
-        return Session(scope, requests, koinComponent).server.onCompletion { concurrentSessionCount.decrementAndGet() }
-    }
-
-    companion object {
-        private val logger = KotlinLogging.logger { }
-        private val concurrentSessionCount = AtomicInteger(0)
-    }
+    override fun runScript(request: RunRequest) = RunScriptHandler(koinComponent).runScript(request)
 }
