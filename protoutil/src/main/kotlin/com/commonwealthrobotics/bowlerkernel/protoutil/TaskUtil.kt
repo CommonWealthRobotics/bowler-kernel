@@ -17,66 +17,66 @@
 package com.commonwealthrobotics.bowlerkernel.protoutil
 
 import arrow.core.nonFatalOrThrow
-import arrow.fx.IO
-import com.commonwealthrobotics.proto.script_host.SessionServerMessage
+import com.commonwealthrobotics.proto.script_host.NewTask
+import com.commonwealthrobotics.proto.script_host.TaskEnd
 import com.commonwealthrobotics.proto.script_host.TaskEndCause
-import kotlinx.coroutines.channels.SendChannel
+import com.commonwealthrobotics.proto.script_host.TaskUpdate
+import com.google.protobuf.MessageLite
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.ProducerScope
 import mu.KotlinLogging
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 private object TaskUtil {
     val logger = KotlinLogging.logger { }
 }
 
 /**
- * Runs [f] in the context of a new task. The new task responds to the request with id [requestId] and has a
- * [description]. The task will start with an indeterminate progress.
+ * Runs [f] in the context of a new task. The task will start with an indeterminate progress. [f] may emit its own
+ * [TaskUpdate] messages to send progress updates.
  *
- * @param requestId The ID of the request this task was created from.
- * @param taskId The ID of this task.
- * @param description A short description of the task.
- * @param ctx The [CoroutineContext] used to dispatch the returned [IO].
+ * @param newTaskID The ID of this task.
+ * @param taskDescription A short description of the task.
+ * @param createRequest Used to create the flow's request type from [NewTask], [TaskUpdate], and [TaskEnd] messages.
  * @param f The function to execute in the context of the task.
  * @return The return value of [f].
  */
+@ExperimentalCoroutinesApi
 @SuppressWarnings("TooGenericExceptionCaught")
-suspend fun <T> SendChannel<SessionServerMessage>.withTask(
-    requestId: Long,
-    taskId: Long,
-    description: String,
-    ctx: CoroutineContext = EmptyCoroutineContext,
-    f: suspend () -> T
-): IO<T> = IO(ctx) {
+suspend fun <T, O> ProducerScope<O>.withTask(
+    newTaskID: Long,
+    taskDescription: String,
+    createRequest: (MessageLite) -> O,
+    f: suspend ProducerScope<O>.() -> T
+): T {
     send(
-        sessionServerMessage {
-            newTaskBuilder.requestId = requestId
-            newTaskBuilder.description = description
-            newTaskBuilder.taskBuilder.taskId = taskId
-            newTaskBuilder.taskBuilder.progress = Float.NaN
-        }
+        createRequest(
+            NewTask.newBuilder().apply {
+                description = taskDescription
+                taskBuilder.apply {
+                    taskId = newTaskID
+                    progress = Float.NaN
+                }
+            }.build()
+        )
     )
 
     val out = try {
         f()
     } catch (ex: Throwable) {
         TaskUtil.logger.error(ex) {
-            "Error running the script during request $requestId"
+            "Error running the script during request"
         }
 
         // Handle non-fatal exceptions by erroring the request
         val nonFatal = ex.nonFatalOrThrow()
         send(
-            sessionServerMessage {
-                taskEndBuilder.taskId = taskId
-                taskEndBuilder.cause = TaskEndCause.TASK_FAILED
-            }
-        )
-        send(
-            sessionServerMessage {
-                errorBuilder.requestId = requestId
-                errorBuilder.description = nonFatal.message ?: "Unknown exception message."
-            }
+            createRequest(
+                TaskEnd.newBuilder().apply {
+                    taskId = newTaskID
+                    cause = TaskEndCause.TASK_FAILED
+                    error = nonFatal.message ?: "Unknown exception message."
+                }.build()
+            )
         )
 
         // Exit early to avoid sending a TaskEnd in addition to a RequestError
@@ -84,11 +84,13 @@ suspend fun <T> SendChannel<SessionServerMessage>.withTask(
     }
 
     send(
-        sessionServerMessage {
-            taskEndBuilder.taskId = taskId
-            taskEndBuilder.cause = TaskEndCause.TASK_COMPLETED
-        }
+        createRequest(
+            TaskEnd.newBuilder().apply {
+                taskId = newTaskID
+                cause = TaskEndCause.TASK_COMPLETED
+            }.build()
+        )
     )
 
-    out
+    return out
 }

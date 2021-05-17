@@ -75,8 +75,26 @@ object Main {
                 name = "server",
                 help = "Controls the kernel server.",
                 children = listOf(
-                    Command(name = "start", help = "Starts the kernel server.") {
-                        kernelServer.ensureStarted()
+                    Command(
+                        name = "start",
+                        help = "Starts the kernel server.",
+                        options = listOf(
+                            option<Boolean>(
+                                short = "ka",
+                                long = "keepalive",
+                                help = "Whether the keepalive service will be enabled (default false).",
+                            ),
+                            option<Long>(
+                                short = "kt",
+                                long = "keepalive-timeout",
+                                help = "The maximum allowed duration between keepalive pings (ms) (default 5 s).",
+                            ),
+                        )
+                    ) {
+                        kernelServer.ensureStarted(
+                            keepaliveEnabled = it.option("keepalive") ?: false,
+                            keepaliveTimeout = it.option("keepalive-timeout") ?: 5000,
+                        )
                         ""
                     },
                     Command(name = "stop", help = "Stops the kernel server.") {
@@ -212,7 +230,9 @@ object Main {
                                 getGrpcPort = { kernelServer.port }
                             )
                             localNS.ensureStarted()
-                            while (!localNS.isRunning.get()) { Thread.sleep(10) }
+                            while (!localNS.isRunning.get()) {
+                                Thread.sleep(10)
+                            }
 
                             nameServer = localNS
                             "Responding with ${localNS.name} on ${localNS.address}:${localNS.port}"
@@ -226,7 +246,9 @@ object Main {
                     ) {
                         nameServer?.let {
                             it.ensureStopped()
-                            while (it.isRunning.get()) { Thread.sleep(10) }
+                            while (it.isRunning.get()) {
+                                Thread.sleep(10)
+                            }
                             nameServer = null
                             "Stopped the name server."
                         } ?: "A name server was not running."

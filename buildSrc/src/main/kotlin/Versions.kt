@@ -20,22 +20,21 @@
  * blocks.
  */
 object Versions {
-    const val projectVersion = "0.9.2"
+    const val projectVersion = "0.10.0"
 
     const val spotlessPlugin = "5.6.1"
     const val testLoggerPlugin = "2.1.0"
     const val ktlintPlugin = "9.4.1"
-    const val detektPlugin = "1.14.2"
     const val protobufPlugin = "0.8.13"
     const val dokkaPlugin = "1.4.10"
     const val bintrayPlugin = "1.8.5"
     const val shadowPlugin = "6.1.0"
 
-    const val kotlin = "1.4.10"
-    const val kotlinCoroutines = "1.3.9"
+    const val kotlin = "1.4.21"
+    const val kotlinCoroutines = "1.4.2"
     const val ktlint = "0.39.0"
     const val junit = "5.7.+"
-    const val kotest = "4.2.+"
+    const val kotest = "4.4.0"
     const val logback = "1.2.+"
     const val kotlinLogging = "2.0.+"
     const val mockk = "1.10.+"
@@ -48,7 +47,7 @@ object Versions {
     const val ivy = "2.5.+"
     const val koin = "2.1.+"
     const val jline = "3.17.1"
-    const val bowlerProtoKotlin = "0.6.9"
+    const val bowlerProtoKotlin = "0.8.0"
 
     const val jacocoTool = "0.8.5"
     const val gradleWrapper = "6.6.1"

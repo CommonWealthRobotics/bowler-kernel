@@ -30,5 +30,9 @@ interface ScriptLoader {
      * @param scriptEnvironment The script environment.
      * @return A runnable script.
      */
-    fun resolveAndLoad(fileSpec: FileSpec, devs: List<ProjectSpec>, scriptEnvironment: Map<String, String>): Script
+    suspend fun resolveAndLoad(
+        fileSpec: FileSpec,
+        devs: List<ProjectSpec>,
+        scriptEnvironment: Map<String, String>
+    ): Script
 }

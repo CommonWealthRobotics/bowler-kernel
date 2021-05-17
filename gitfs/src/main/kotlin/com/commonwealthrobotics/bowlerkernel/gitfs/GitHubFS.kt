@@ -18,8 +18,6 @@
 
 package com.commonwealthrobotics.bowlerkernel.gitfs
 
-import arrow.fx.IO
-import arrow.fx.handleErrorWith
 import com.commonwealthrobotics.bowlerkernel.authservice.Credentials
 import com.commonwealthrobotics.bowlerkernel.authservice.CredentialsProvider
 import com.commonwealthrobotics.bowlerkernel.util.getFullPathToGitHubCacheDirectory
@@ -29,6 +27,7 @@ import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import java.io.File
+import java.io.IOException
 import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantLock
@@ -48,49 +47,77 @@ class GitHubFS(
 
     private val fsLock = ReentrantLock()
 
-    override fun cloneRepo(
+    override suspend fun cloneRepo(
         gitUrl: String,
         revision: String
-    ): IO<File> {
-        return freshClone(gitUrl, revision).handleErrorWith {
-            val directory = gitUrlToDirectory(gitHubCacheDirectory, gitUrl)
+    ): File {
+        // Check we are allowed to clone from gitUrl
+        validateCredentials(gitUrl)
 
-            IO {
-                // The repo was already on disk, so directory exists, so pull
-                logger.info { "Pulling repository in directory $directory" }
-                @Suppress("BlockingMethodInNonBlockingContext")
+        val directory = gitUrlToDirectory(gitHubCacheDirectory, gitUrl)
+        logger.debug { "Cloning $gitUrl revision $revision into $directory" }
+        if (directory.exists() && directory.isDirectory) {
+            // The repo dir already exists in the cache, so try to reset, fetch, and check out the revision
+            try {
                 fsLock.withLock {
                     // TODO: Use JGit instead
                     run(directory, "git", "reset", "--hard", "HEAD")
                     run(directory, "git", "fetch")
                     run(directory, "git", "checkout", revision)
                 }
-            }.handleErrorWith {
-                IO.defer {
-                    // The directory was not a valid repo
-                    logger.catching(it)
-                    logger.warn {
-                        "Failed to pull from repo in $directory. Deleting directory."
-                    }
 
-                    fsLock.withLock {
-                        if (!directory.deleteRecursively()) {
-                            logger.error { "Failed to delete $directory" }
-                            throw IllegalStateException("Failed to delete $directory")
-                        }
-
-                        // After deleting the directory, try to clone again
-                        freshClone(gitUrl, revision)
-                    }
-                }
-            }.map { directory }
+                return directory
+            } catch (ex: IOException) {
+                logger.debug(ex) { "Failed to pull $gitUrl" }
+                return resetClone(gitUrl, revision, directory)
+            }
+        } else {
+            return resetClone(gitUrl, revision, directory)
         }
     }
 
-    override fun getFilesInRepo(repoDir: File): IO<Set<File>> = mapToRepoFiles(IO.just(repoDir))
+    private suspend fun resetClone(
+        gitUrl: String,
+        revision: String,
+        directory: File
+    ): File {
+        try {
+            return freshClone(gitUrl, revision)
+        } catch (ex: IllegalStateException) {
+            logger.debug(ex) { "Failed to clone; resetting repository in directory $directory" }
 
-    override fun deleteCache(): IO<Unit> = IO {
-        @Suppress("BlockingMethodInNonBlockingContext")
+            try {
+                fsLock.withLock {
+                    // TODO: Use JGit instead
+                    run(directory, "git", "reset", "--hard", "HEAD")
+                    run(directory, "git", "fetch")
+                    run(directory, "git", "checkout", revision)
+                }
+
+                return directory
+            } catch (ex: IOException) {
+                // The directory was not a valid repo
+                logger.catching(ex)
+                logger.warn {
+                    "Failed to pull from repo in $directory. Deleting directory."
+                }
+
+                fsLock.withLock {
+                    if (!directory.deleteRecursively()) {
+                        logger.error { "Failed to delete $directory" }
+                        throw IllegalStateException("Failed to delete $directory")
+                    }
+                }
+
+                // After deleting the directory, try to clone again
+                return freshClone(gitUrl, revision)
+            }
+        }
+    }
+
+    override fun getFilesInRepo(repoDir: File) = mapToRepoFiles(repoDir)
+
+    override fun deleteCache() {
         fsLock.withLock { FileUtils.deleteDirectory(gitHubCacheDirectory.toFile()) }
     }
 
@@ -98,10 +125,7 @@ class GitHubFS(
      * Tries to clone the repo assuming it is not on disk. Fails if any part of the repo is on
      * disk.
      */
-    private fun freshClone(
-        gitUrl: String,
-        revision: String
-    ): IO<File> {
+    private suspend fun freshClone(gitUrl: String, revision: String): File {
         logger.info {
             """
             |Cloning repository:
@@ -111,10 +135,11 @@ class GitHubFS(
         }
 
         val directory = gitUrlToDirectory(gitHubCacheDirectory, gitUrl)
-        return if (directory.mkdirs()) {
-            IO { cloneRepository(gitUrl, revision, directory) }.map { directory }
+        if (directory.mkdirs()) {
+            cloneRepository(gitUrl, revision, directory)
+            return directory
         } else {
-            IO.raiseError(IllegalStateException("Directory $directory already exists."))
+            throw IllegalStateException("Directory $directory already exists.")
         }
     }
 
@@ -123,6 +148,7 @@ class GitHubFS(
         revision: String,
         directory: File
     ) {
+        @Suppress("HttpUrlsUsage")
         if (gitUrl.startsWith("http://")) {
             throw UnsupportedOperationException(
                 "Will not clone using bare HTTP (URL $gitUrl). Use HTTPS instead."
@@ -131,7 +157,6 @@ class GitHubFS(
 
         val jGitCredentialsProvider = getJGitCredentialsProvider(gitUrl)
         fsLock.withLock {
-            // Try to clone without credentials first. If we can't, then request credentials.
             val git = Git.cloneRepository()
                 .setURI(gitUrl)
                 .setDirectory(directory)
@@ -149,28 +174,46 @@ class GitHubFS(
         }
     }
 
+    /**
+     * Validates whether the kernel is allowed to authenticate to [gitUrl].
+     */
+    private suspend fun validateCredentials(gitUrl: String) {
+        if (credentialsProvider.getCredentialsFor(gitUrl) is Credentials.Denied) {
+            unauthorized<Unit>(gitUrl)
+        }
+    }
+
+    /**
+     * Returns a credentials provider for the [gitUrl], if the kernel is allowed to authenticate to it.
+     */
     private suspend fun getJGitCredentialsProvider(gitUrl: String): UsernamePasswordCredentialsProvider {
         require(gitUrl.endsWith(".git"))
+        logger.debug { "Requesting credentials for $gitUrl" }
         return when (val credentials = credentialsProvider.getCredentialsFor(gitUrl)) {
             is Credentials.Basic -> UsernamePasswordCredentialsProvider(credentials.username, credentials.password)
             // TODO: Validate this works
             is Credentials.OAuth -> UsernamePasswordCredentialsProvider(credentials.token, "x-oauth-basic")
             is Credentials.Anonymous -> UsernamePasswordCredentialsProvider("", "")
+            is Credentials.Denied -> unauthorized(gitUrl)
         }
+    }
+
+    private fun <T> unauthorized(gitUrl: String): T {
+        throw UnsupportedOperationException(
+            "Authenticating to `$gitUrl` is denied under the acting policy document."
+        )
     }
 
     /**
      * Maps a repository to its files.
      *
-     * @param repoIO The repository.
+     * @param repoDir The repository root directory.
      * @return The files in the repository, excluding `.git/` files and the receiver file.
      */
-    private fun mapToRepoFiles(repoIO: IO<File>) = repoIO.map { repoFile ->
-        repoFile.walkTopDown()
-            .filter { file -> file.path != repoFile.path }
-            .filter { !it.path.contains(".git") }
-            .toSet()
-    }
+    private fun mapToRepoFiles(repoDir: File): Set<File> = repoDir.walkTopDown()
+        .filter { file -> file.path != repoDir.path }
+        .filter { !it.path.contains(".git") }
+        .toSet()
 
     companion object {
 
@@ -183,6 +226,7 @@ class GitHubFS(
          * @param gitUrl The URL to format.
          * @return The stripped URL.
          */
+        @Suppress("HttpUrlsUsage")
         fun stripUrlCharactersFromGitUrl(gitUrl: String) =
             gitUrl.removePrefix("http://github.com/")
                 .removePrefix("https://github.com/")

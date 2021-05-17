@@ -1,7 +1,8 @@
 description = "Authentication"
 
 dependencies {
-    api(project(":protoutil"))
+    implementation(project(":protoutil"))
+    implementation(project(":policyservice"))
 
     testImplementation(project(":testUtil"))
 }

@@ -18,16 +18,19 @@ package com.commonwealthrobotics.bowlerkernel.util
 
 import mu.KotlinLogging
 import java.io.File
+import java.io.IOException
 
 fun run(dir: File, vararg cmd: String): Process = ProcessBuilder(*cmd).directory(dir).start().also {
     val exitCode = it.waitFor()
-    check(exitCode == 0) {
-        """
+    if (exitCode != 0) {
+        throw IOException(
+            """
             |Process exited with a non-zero exit code.
             |exit code: $exitCode
             |dir: $dir
             |cmd: ${cmd.joinToString()}
             """.trimMargin()
+        )
     }
 }
 
@@ -35,13 +38,15 @@ fun runAndPrintOutput(dir: File, vararg cmd: String): Process = ProcessBuilder(*
     val exitCode = it.waitFor()
     ProcessUtil.logger.debug { it.inputStream.readAllBytes().decodeToString() }
     ProcessUtil.logger.debug { it.errorStream.readAllBytes().decodeToString() }
-    check(exitCode == 0) {
-        """
+    if (exitCode != 0) {
+        throw IOException(
+            """
             |Process exited with a non-zero exit code.
             |exit code: $exitCode
             |dir: $dir
             |cmd: ${cmd.joinToString()}
             """.trimMargin()
+        )
     }
 }
 

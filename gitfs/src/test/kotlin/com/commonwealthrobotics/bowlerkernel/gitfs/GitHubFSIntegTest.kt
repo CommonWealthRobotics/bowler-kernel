@@ -16,15 +16,14 @@
  */
 package com.commonwealthrobotics.bowlerkernel.gitfs
 
-import arrow.core.Either
 import com.commonwealthrobotics.bowlerkernel.authservice.AnonymousCredentialsProvider
 import com.commonwealthrobotics.bowlerkernel.util.runAndPrintOutput
-import io.kotest.assertions.arrow.either.shouldBeLeft
-import io.kotest.assertions.arrow.either.shouldBeRight
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.file.shouldExist
 import io.kotest.matchers.file.shouldNotExist
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.io.TempDir
@@ -54,89 +53,119 @@ class GitHubFSIntegTest {
 
     @Test
     fun `cannot clone over http`() {
-        // Don't use a TempDir because jgit leaves something open so Windows builds fail
-        val tmpCachePath = getRandomTempFile()
+        runBlocking {
+            // Don't use a TempDir because jgit leaves something open so Windows builds fail
+            val tmpCachePath = getRandomTempFile()
 
-        val fs = GitHubFS(AnonymousCredentialsProvider, tmpCachePath)
-        fs.cloneRepo(testRepoUrlHTTP, "HEAD").attempt().unsafeRunSync().shouldBeLeft()
+            val fs = GitHubFS(AnonymousCredentialsProvider, tmpCachePath)
+            shouldThrow<UnsupportedOperationException> {
+                fs.cloneRepo(testRepoUrlHTTP, "HEAD")
+            }
+        }
     }
 
     @Test
     fun `test cloning test repo over https`() {
-        // Don't use a TempDir because jgit leaves something open so Windows builds fail
-        val tmpCachePath = getRandomTempFile()
+        runBlocking {
+            // Don't use a TempDir because jgit leaves something open so Windows builds fail
+            val tmpCachePath = getRandomTempFile()
 
-        val fs = GitHubFS(AnonymousCredentialsProvider, tmpCachePath)
-        val repoPath = fs.gitHubCacheDirectory.resolve(orgName).resolve(repoName)
+            val fs = GitHubFS(AnonymousCredentialsProvider, tmpCachePath)
+            val repoPath = fs.gitHubCacheDirectory.resolve(orgName).resolve(repoName)
 
-        val files = cloneAndGetFileSet(fs, testRepoUrlHTTPS)
-        assertTestRepoContents(files, repoPath)
+            val files = cloneAndGetFileSet(fs, testRepoUrlHTTPS)
+            assertTestRepoContents(files, repoPath)
+        }
+    }
+
+    @Test
+    fun `test pulling in a repo already in the cache`() {
+        runBlocking {
+            // Don't use a TempDir because jgit leaves something open so Windows builds fail
+            val tmpCachePath = getRandomTempFile()
+
+            val fs = GitHubFS(AnonymousCredentialsProvider, tmpCachePath)
+            val repoPath = fs.gitHubCacheDirectory.resolve(orgName).resolve(repoName)
+
+            // Start with a cloned repo
+            val files = cloneAndGetFileSet(fs, testRepoUrlHTTPS)
+            assertTestRepoContents(files, repoPath)
+
+            // Clone again; should pull
+            assertTestRepoContents(cloneAndGetFileSet(fs, testRepoUrlHTTPS), repoPath)
+        }
     }
 
     @Test
     fun `test cloning with corrupted git folder`() {
-        // Don't use a TempDir because jgit leaves something open so Windows builds fail
-        val tmpCachePath = getRandomTempFile()
-        val fs = GitHubFS(AnonymousCredentialsProvider, tmpCachePath)
+        runBlocking {
+            // Don't use a TempDir because jgit leaves something open so Windows builds fail
+            val tmpCachePath = getRandomTempFile()
+            val fs = GitHubFS(AnonymousCredentialsProvider, tmpCachePath)
 
-        val repoPath = fs.gitHubCacheDirectory.resolve(orgName).resolve(repoName)
+            val repoPath = fs.gitHubCacheDirectory.resolve(orgName).resolve(repoName)
 
-        // Make an empty .git directory so it appears corrupted
-        repoPath.toFile().apply { mkdirs() }
-        Paths.get(repoPath.toString(), ".git").toFile().apply { mkdirs() }
+            // Make an empty .git directory so it appears corrupted
+            repoPath.toFile().apply { mkdirs() }
+            Paths.get(repoPath.toString(), ".git").toFile().apply { mkdirs() }
 
-        val files = cloneAndGetFileSet(fs, testRepoUrlHTTPS)
-        assertTestRepoContents(files, repoPath)
+            val files = cloneAndGetFileSet(fs, testRepoUrlHTTPS)
+            assertTestRepoContents(files, repoPath)
+        }
     }
 
     @Test
     fun `test cloning with some local changes`() {
-        // Don't use a TempDir because jgit leaves something open so Windows builds fail
-        val tmpCachePath = getRandomTempFile()
+        runBlocking {
+            // Don't use a TempDir because jgit leaves something open so Windows builds fail
+            val tmpCachePath = getRandomTempFile()
 
-        val fs = GitHubFS(AnonymousCredentialsProvider, tmpCachePath)
-        val repoPath = fs.gitHubCacheDirectory.resolve(orgName).resolve(repoName)
+            val fs = GitHubFS(AnonymousCredentialsProvider, tmpCachePath)
+            val repoPath = fs.gitHubCacheDirectory.resolve(orgName).resolve(repoName)
 
-        // Clone the test repo and make sure it worked -- this is our baseline
-        var files = cloneAndGetFileSet(fs, testRepoUrlHTTPS)
-        assertTestRepoContents(files, repoPath)
+            // Clone the test repo and make sure it worked -- this is our baseline
+            var files = cloneAndGetFileSet(fs, testRepoUrlHTTPS)
+            assertTestRepoContents(files, repoPath)
 
-        // Reset the test repo back one commit so that there is something to pull
-        runAndPrintOutput(repoPath.toFile(), "git", "reset", "--hard", "HEAD^")
+            // Reset the test repo back one commit so that there is something to pull
+            runAndPrintOutput(repoPath.toFile(), "git", "reset", "--hard", "HEAD^")
 
-        // Make some changes that will need to be reset
-        fs.getFilesInRepo(repoPath.toFile()).unsafeRunSync().forEach { it.deleteRecursively() }
+            // Make some changes that will need to be reset
+            fs.getFilesInRepo(repoPath.toFile()).forEach { it.deleteRecursively() }
 
-        // Try to clone again. The repo should be reset and then pulled. Because we deleted all the files in the
-        // previous commit, git may be able to fast-forward this pull; however, those files will still be deleted. A
-        // correct GitFS implementation will reset the repo.
-        files = cloneAndGetFileSet(fs, testRepoUrlHTTPS)
-        assertTestRepoContents(files, repoPath)
+            // Try to clone again. The repo should be reset and then pulled. Because we deleted all the files in the
+            // previous commit, git may be able to fast-forward this pull; however, those files will still be deleted. A
+            // correct GitFS implementation will reset the repo.
+            files = cloneAndGetFileSet(fs, testRepoUrlHTTPS)
+            assertTestRepoContents(files, repoPath)
+        }
     }
 
     @Test
     fun `test cloning a different branch than the currently checked out branch`() {
-        // Don't use a TempDir because jgit leaves something open so Windows builds fail
-        val tmpCachePath = getRandomTempFile()
+        runBlocking {
+            // Don't use a TempDir because jgit leaves something open so Windows builds fail
+            val tmpCachePath = getRandomTempFile()
 
-        val fs = GitHubFS(AnonymousCredentialsProvider, tmpCachePath)
-        val repoPath = fs.gitHubCacheDirectory.resolve(orgName).resolve(repoName)
-        val repoFile = repoPath.toFile()
+            val fs = GitHubFS(AnonymousCredentialsProvider, tmpCachePath)
+            val repoPath = fs.gitHubCacheDirectory.resolve(orgName).resolve(repoName)
+            val repoFile = repoPath.toFile()
 
-        fs.cloneRepo(testRepoUrlHTTPS, "master").unsafeRunSync()
+            fs.cloneRepo(testRepoUrlHTTPS, "master")
 
-        // Checkout a new branch and make some changes
-        runAndPrintOutput(repoFile, "git", "checkout", "-b", "new_branch")
-        val file1 = repoPath.resolve("fileA.groovy").toFile()
-        file1.writeText("2")
-        runAndPrintOutput(repoFile, "git", "add", file1.path)
-        runAndPrintOutput(repoFile, "git", "commit", "-m", "a")
+            // Checkout a new branch and make some changes
+            runAndPrintOutput(repoFile, "git", "checkout", "-b", "new_branch")
+            val file1 = repoPath.resolve("fileA.groovy").toFile()
+            file1.writeText("2")
+            runAndPrintOutput(repoFile, "git", "add", file1.path)
+            runAndPrintOutput(repoFile, "git", "commit", "-m", "a")
 
-        // Clone the repo on master again
-        fs.cloneRepo(testRepoUrlHTTPS, "master").unsafeRunSync()
+            // Clone the repo on master again
+            fs.cloneRepo(testRepoUrlHTTPS, "master")
 
-        // Ensure that file does not exist
-        file1.shouldNotExist()
+            // Ensure that file does not exist
+            file1.shouldNotExist()
+        }
     }
 
     @Test
@@ -152,28 +181,24 @@ class GitHubFSIntegTest {
 
         fileInRepo.shouldExist()
 
-        fs.deleteCache().unsafeRunSync()
+        fs.deleteCache()
 
         fileInRepo.shouldNotExist()
         repo.shouldNotExist()
     }
 
-    private fun cloneAndGetFileSet(fs: GitHubFS, repoURL: String): Either<Throwable, Set<String>> {
-        return fs.cloneRepo(repoURL, "master")
-            .flatMap { fs.getFilesInRepo(it) }
-            .map { files -> files.map { it.toString() }.toSet() }
-            .attempt()
-            .unsafeRunSync()
+    private suspend fun cloneAndGetFileSet(fs: GitHubFS, repoURL: String): Set<String> {
+        return fs.getFilesInRepo(fs.cloneRepo(repoURL, "master"))
+            .map { it.toString() }
+            .toSet()
     }
 
-    private fun assertTestRepoContents(files: Either<Throwable, Set<String>>, repoPath: Path) {
-        files.shouldBeRight {
-            it.shouldContainAll(
-                Paths.get(repoPath.toString(), "fileA.txt").toString(),
-                Paths.get(repoPath.toString(), "dirA").toString(),
-                Paths.get(repoPath.toString(), "dirA", "fileB.txt").toString()
-            )
-        }
+    private fun assertTestRepoContents(files: Set<String>, repoPath: Path) {
+        files.shouldContainAll(
+            Paths.get(repoPath.toString(), "fileA.txt").toString(),
+            Paths.get(repoPath.toString(), "dirA").toString(),
+            Paths.get(repoPath.toString(), "dirA", "fileB.txt").toString()
+        )
     }
 
     private fun getRandomTempFile() = Paths.get(
@@ -183,6 +208,7 @@ class GitHubFSIntegTest {
 
     companion object {
 
+        @Suppress("HttpUrlsUsage")
         private const val testRepoUrlHTTP = "http://github.com/CommonWealthRobotics/bowler-kernel-test-repo.git"
         private const val testRepoUrlHTTPS = "https://github.com/CommonWealthRobotics/bowler-kernel-test-repo.git"
     }

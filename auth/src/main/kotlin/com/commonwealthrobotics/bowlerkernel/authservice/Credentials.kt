@@ -40,4 +40,9 @@ sealed class Credentials {
      * Anonymous authentication.
      */
     object Anonymous : Credentials()
+
+    /**
+     * Authentication is not allowed.
+     */
+    object Denied : Credentials()
 }

@@ -33,7 +33,7 @@ class DefaultScriptLoader(
     private val dependencyResolver: DependencyResolver
 ) : ScriptLoader {
 
-    override fun resolveAndLoad(
+    override suspend fun resolveAndLoad(
         fileSpec: FileSpec,
         devs: List<ProjectSpec>,
         scriptEnvironment: Map<String, String>
@@ -63,7 +63,12 @@ class DefaultScriptLoader(
         return { args: List<Any?>, scriptExecutionEnvironment: ScriptExecutionEnvironment ->
             logger.debug {
                 """
-                |Script running.
+                |Loading Groovy script:
+                |file=${file.path}
+                |env=${scriptEnvironment.entries.joinToString(
+                    prefix = "{",
+                    postfix = "}"
+                ) { "${it.key} => ${it.value}" }}
                 |args=$args
                 |scriptExecutionEnvironment=$scriptExecutionEnvironment
                 """.trimMargin()
@@ -75,6 +80,7 @@ class DefaultScriptLoader(
                     setVariable("args", args)
                     setVariable("scriptEnvironment", scriptEnvironment)
                     setVariable("scriptExecutionEnvironment", scriptExecutionEnvironment)
+                    setVariable("bowler", scriptExecutionEnvironment)
                 },
                 compilerConfiguration
             ).parse(file.readText()) // TODO: Expose Charset

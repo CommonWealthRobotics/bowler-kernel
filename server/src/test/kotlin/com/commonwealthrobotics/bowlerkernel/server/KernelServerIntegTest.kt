@@ -16,21 +16,27 @@
  */
 package com.commonwealthrobotics.bowlerkernel.server
 
-import com.commonwealthrobotics.bowlerkernel.protoutil.sessionClientMessage
-import com.commonwealthrobotics.bowlerkernel.scripthost.runSession
-import com.commonwealthrobotics.proto.script_host.SessionServerMessage
-import com.commonwealthrobotics.proto.script_host.TaskEndCause
+import com.commonwealthrobotics.proto.policy.PolicyContainer
+import com.commonwealthrobotics.proto.policy.PolicyDocument
+import com.commonwealthrobotics.proto.policy.PolicyServiceGrpcKt
+import com.commonwealthrobotics.proto.script_host.RunRequest
+import com.commonwealthrobotics.proto.script_host.RunResponse
+import com.commonwealthrobotics.proto.script_host.ScriptHostGrpcKt
 import com.google.protobuf.ByteString
-import io.kotest.matchers.collections.shouldExist
+import io.grpc.ManagedChannelBuilder
+import io.grpc.StatusException
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.collections.shouldHaveAtLeastSize
+import io.kotest.matchers.collections.shouldHaveSingleElement
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.toCollection
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 @Timeout(value = 5, unit = TimeUnit.MINUTES)
@@ -43,43 +49,99 @@ internal class KernelServerIntegTest {
         server.ensureStarted(gitHubCacheDirectory = tempDir.toPath())
         server.port.shouldBeGreaterThanOrEqual(0)
 
-        val received = mutableListOf<SessionServerMessage>()
-        val latch = CountDownLatch(4)
-        runSession(server.koinComponent) { serverFlow ->
-            send(
-                sessionClientMessage {
-                    runRequestBuilder.requestId = 1
-                    runRequestBuilder.fileBuilder.projectBuilder.repoRemote =
-                        "https://github.com/CommonWealthRobotics/bowler-kernel-test-repo.git"
-                    runRequestBuilder.fileBuilder.projectBuilder.revision = "master"
-                    runRequestBuilder.fileBuilder.projectBuilder.patchBuilder.patch = ByteString.copyFrom(
-                        byteArrayOf()
-                    )
-                    runRequestBuilder.fileBuilder.path = "scriptA.groovy"
-                }
-            )
+        val channel = ManagedChannelBuilder.forAddress("localhost", server.port)
+            .usePlaintext()
+            .build()
+        val policyService = PolicyServiceGrpcKt.PolicyServiceCoroutineStub(channel)
+        val scriptHost = ScriptHostGrpcKt.ScriptHostCoroutineStub(channel)
 
-            serverFlow.consumeAsFlow().collect {
-                when {
-                    it.hasCredentialsRequest() -> send(
-                        sessionClientMessage {
-                            credentialsResponseBuilder.requestId = it.credentialsRequest.requestId
-                            credentialsResponseBuilder
-                        }
-                    )
-                    it.hasNewTask() || it.hasTaskEnd() -> {
-                        received.add(it)
-                        latch.countDown()
-                    }
-                }
+        val policy = PolicyDocument.newBuilder().apply {
+            version = "2021-04-17"
+            addStatements(
+                PolicyContainer.newBuilder().apply {
+                    credentialPolicyBuilder.credentials = "anonymous"
+                    credentialPolicyBuilder.addScopes("github:repo:CommonWealthRobotics/bowler-kernel-test-repo")
+                }.build()
+            )
+        }.build()
+
+        val runRequest = RunRequest.newBuilder().apply {
+            fileBuilder.projectBuilder.repoRemote =
+                "https://github.com/CommonWealthRobotics/bowler-kernel-test-repo.git"
+            fileBuilder.projectBuilder.revision = "master"
+            fileBuilder.projectBuilder.patchBuilder.patch = ByteString.EMPTY
+            fileBuilder.path = "scriptA.groovy"
+        }.build()
+
+        runBlocking {
+            policyService.setPolicyDocument(policy).accepted.shouldBeTrue()
+        }
+
+        repeat(10) {
+            val result = runBlocking {
+                scriptHost.runScript(runRequest).toCollection(mutableListOf())
+            }
+
+            result[0].shouldHaveNewTask(1, Float.NaN)
+            result[1].shouldHaveTaskEnd(1)
+            result[2].shouldHaveNewTask(2, Float.NaN)
+            result.subList(3, result.size).shouldHaveSingleElement {
+                it.hasTaskEnd() && it.taskEnd.taskId == 2L
+            }
+            result.subList(3, result.size).filter { it.hasIntermediateOutput() }.shouldHaveAtLeastSize(1)
+            result.subList(3, result.size).shouldHaveSingleElement {
+                it.hasScriptOutput() && it.scriptOutput.output == "42"
             }
         }
-        latch.await()
-
-        received.shouldExist { it.hasNewTask() && it.newTask.description == "Running scriptA.groovy" }
-        received.shouldExist { it.hasTaskEnd() && it.taskEnd.cause == TaskEndCause.TASK_COMPLETED }
 
         server.ensureStopped()
         server.port.shouldBe(-1)
+    }
+
+    @Test
+    fun `run script that tries to clone without creds`(@TempDir tempDir: File) {
+        val server = KernelServer()
+        server.port.shouldBe(-1)
+        server.ensureStarted(gitHubCacheDirectory = tempDir.toPath())
+        server.port.shouldBeGreaterThanOrEqual(0)
+
+        val channel = ManagedChannelBuilder.forAddress("localhost", server.port)
+            .usePlaintext()
+            .build()
+        val scriptHost = ScriptHostGrpcKt.ScriptHostCoroutineStub(channel)
+
+        val runRequest = RunRequest.newBuilder().apply {
+            fileBuilder.projectBuilder.repoRemote =
+                "https://github.com/CommonWealthRobotics/bowler-kernel-test-repo.git"
+            fileBuilder.projectBuilder.revision = "master"
+            fileBuilder.projectBuilder.patchBuilder.patch = ByteString.EMPTY
+            fileBuilder.path = "scriptA.groovy"
+        }.build()
+
+        // Don't set a policy document before running this script so that nothing is allowed
+        runBlocking {
+            // This should throw because the policy document has not been set, so the kernel must act as if an empty
+            // policy document was set, which denies all authentication operations
+            shouldThrow<StatusException> {
+                scriptHost.runScript(runRequest).toCollection(mutableListOf())
+            }
+        }
+
+        server.ensureStopped()
+        server.port.shouldBe(-1)
+    }
+
+    companion object {
+        private fun RunResponse.shouldHaveNewTask(taskId: Long, progress: Float) {
+            hasNewTask().shouldBeTrue()
+            newTask.hasTask().shouldBeTrue()
+            newTask.task.taskId.shouldBe(taskId)
+            newTask.task.progress.shouldBe(progress)
+        }
+
+        private fun RunResponse.shouldHaveTaskEnd(taskId: Long) {
+            hasTaskEnd().shouldBeTrue()
+            taskEnd.taskId.shouldBe(taskId)
+        }
     }
 }

@@ -19,16 +19,21 @@ package com.commonwealthrobotics.bowlerkernel.scripting
 import com.commonwealthrobotics.bowlerkernel.gitfs.DependencyResolver
 import com.commonwealthrobotics.proto.gitfs.FileSpec
 import com.commonwealthrobotics.proto.script_host.ScriptOutput
+import java.io.PrintStream
 
 /**
  * This "execution environment" provides all the facilities a script needs to interact with the Bowler stack. Scripts
  * should not interact with any other part of the Bowler stack directly; all interaction should go through this
  * interface.
  *
- * There are three injected variables in Groovy scripts:
+ * None of these functions are suspending because this interface may be used by API consumers from any JVM language.
+ * This interface should be as simple as possible to use.
+ *
+ * There are some injected variables in Groovy scripts:
  * 1. `args`: The argument passes to the script.
  * 2. `scriptEnvironment`: The script environment map.
- * 3. `scriptExecutionEnvironment`: The script-local execution environment.
+ * 3. `scriptExecutionEnvironment`, `bowler`: The script-local execution environment (i.e. an instance of this
+ * interface).
  *
  * TODO: Need to add a way for the script to get its output directory. Any files written into this directory will be
  *  synced to the client when the script finishes using [ScriptOutput].
@@ -54,4 +59,14 @@ interface ScriptExecutionEnvironment {
      * @return A started script.
      */
     fun startChildScript(fileSpec: FileSpec, scriptEnvironment: Map<String, String>, args: List<Any?>): Script
+
+    /**
+     * An analog to System.stdout that scripts should use if they want to print back to the client.
+     */
+    val out: PrintStream
+
+    /**
+     * An analog to System.stderr that scripts should use if they want to print back to the client.
+     */
+    val err: PrintStream
 }

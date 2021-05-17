@@ -16,12 +16,23 @@
  */
 package com.commonwealthrobotics.bowlerkernel.util
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.produce
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
+import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Test
 
-@ExperimentalCoroutinesApi
-fun <T> Flow<T>.toChannel(scope: CoroutineScope): ReceiveChannel<T> = scope.produce { collect { send(it) } }
+internal class RedirectionStreamTest {
+
+    @Test
+    fun `read chunks`() {
+        val chunks = mutableListOf<ByteArray>()
+        val stream = RedirectionStream(32) {
+            chunks.add(it)
+        }
+
+        for (i in 1..64) {
+            stream.write(i)
+        }
+
+        assertArrayEquals((1..32).map { it.toByte() }.toByteArray(), chunks[0])
+        assertArrayEquals((33..64).map { it.toByte() }.toByteArray(), chunks[1])
+    }
+}

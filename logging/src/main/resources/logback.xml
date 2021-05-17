@@ -17,7 +17,9 @@
         </encoder>
     </appender>
 
-    <root level="debug">
+    <logger name="com.commonwealthrobotics" level="debug" />
+
+    <root level="warn">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
     </root>

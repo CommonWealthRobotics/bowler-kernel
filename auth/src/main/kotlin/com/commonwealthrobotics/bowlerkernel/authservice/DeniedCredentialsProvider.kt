@@ -14,15 +14,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with bowler-kernel.  If not, see <https://www.gnu.org/licenses/>.
  */
-@file:SuppressWarnings("TooManyFunctions")
+package com.commonwealthrobotics.bowlerkernel.authservice
 
-package com.commonwealthrobotics.bowlerkernel.protoutil
+/**
+ * Denies all authentication attempts.
+ */
+object DeniedCredentialsProvider : CredentialsProvider {
 
-import com.commonwealthrobotics.proto.script_host.SessionClientMessage
-import com.commonwealthrobotics.proto.script_host.SessionServerMessage
-
-inline fun sessionServerMessage(conf: SessionServerMessage.Builder.() -> Unit): SessionServerMessage =
-    SessionServerMessage.newBuilder().apply { conf() }.build()
-
-inline fun sessionClientMessage(conf: SessionClientMessage.Builder.() -> Unit): SessionClientMessage =
-    SessionClientMessage.newBuilder().apply { conf() }.build()
+    override suspend fun getCredentialsFor(remote: String) = Credentials.Denied
+}

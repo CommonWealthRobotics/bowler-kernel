@@ -21,7 +21,12 @@ import arrow.core.left
 import arrow.core.nonFatalOrThrow
 import arrow.core.right
 import arrow.syntax.function.partially1
+import com.commonwealthrobotics.bowlerkernel.util.RedirectionStream
 import com.commonwealthrobotics.proto.gitfs.FileSpec
+import kotlinx.coroutines.runBlocking
+import mu.KotlinLogging
+import java.io.OutputStream
+import java.io.PrintStream
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -53,6 +58,20 @@ class DefaultScript(
      */
     private val threads = mutableListOf<Thread>()
 
+    override var out: PrintStream = PrintStream(OutputStream.nullOutputStream())
+        private set
+
+    override var err: PrintStream = PrintStream(OutputStream.nullOutputStream())
+        private set
+
+    override fun redirectOut(readBuffer: (ByteArray) -> Unit) {
+        out = PrintStream(RedirectionStream(1024, readBuffer))
+    }
+
+    override fun redirectErr(readBuffer: (ByteArray) -> Unit) {
+        err = PrintStream(RedirectionStream(1024, readBuffer))
+    }
+
     override fun start(args: List<Any?>, parent: Script?) {
         require(parent != this) {
             "A script cannot be its own parent."
@@ -63,7 +82,9 @@ class DefaultScript(
         }
 
         internalIsRunning.set(true)
+        logger.debug { "Submitting script closure to executor..." }
         returnValue = executor.submit(scriptClosure.partially1(args).partially1(this))
+        logger.debug { "Submitted script closure to executor." }
     }
 
     override fun join() = join(0, 1000, TimeUnit.MILLISECONDS)
@@ -75,8 +96,10 @@ class DefaultScript(
         val result = try {
             // A timeout of 0 means to wait forever. `get` doesn't handle this, so we have to.
             if (scriptTimeout == 0L) {
+                logger.debug { "Waiting for script return indefinitely." }
                 returnValue.get().right()
             } else {
+                logger.debug { "Waiting for script return with timeout of $scriptTimeout $timeUnit" }
                 returnValue.get(scriptTimeout, timeUnit).right()
             }
         } catch (ex: Throwable) {
@@ -84,6 +107,9 @@ class DefaultScript(
         }
 
         stopAndCleanUp(threadTimeout, timeUnit)
+
+        out.flush()
+        err.flush()
 
         return result
     }
@@ -96,7 +122,7 @@ class DefaultScript(
     }
 
     private fun stopAndCleanUp(threadTimeout: Long, timeUnit: TimeUnit) {
-        returnValue = FutureTask { Unit }
+        returnValue = FutureTask { }
 
         // Join all the child threads this script started.
         threads.forEach {
@@ -124,5 +150,12 @@ class DefaultScript(
     }
 
     override fun startChildScript(fileSpec: FileSpec, scriptEnvironment: Map<String, String>, args: List<Any?>) =
-        scriptLoader.resolveAndLoad(fileSpec, listOf(), scriptEnvironment).also { it.start(args, this) }
+        runBlocking {
+            scriptLoader.resolveAndLoad(fileSpec, listOf(), scriptEnvironment)
+                .also { it.start(args, this@DefaultScript) }
+        }
+
+    companion object {
+        private val logger = KotlinLogging.logger { }
+    }
 }
