@@ -20,7 +20,7 @@
  * blocks.
  */
 object Versions {
-    const val projectVersion = "0.10.0"
+    const val projectVersion = "0.11.0"
 
     const val spotlessPlugin = "5.12.5"
     const val testLoggerPlugin = "3.0.0"
