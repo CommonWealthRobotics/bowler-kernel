@@ -284,7 +284,7 @@ internal class PolicyServiceTest {
 
         @Suppress("unused", "LongMethod")
         @JvmStatic
-        private fun validPolicyDocuments() = listOf(
+        fun validPolicyDocuments() = listOf(
             PolicyDocument.newBuilder().apply {
                 version = "2021-04-17"
             }.build(),
@@ -380,7 +380,7 @@ internal class PolicyServiceTest {
 
         @Suppress("unused", "LongMethod")
         @JvmStatic
-        private fun invalidPolicyDocuments() = listOf(
+        fun invalidPolicyDocuments() = listOf(
             PolicyDocument.newBuilder().apply {
                 version = "some-version"
             }.build(),

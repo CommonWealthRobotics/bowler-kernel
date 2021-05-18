@@ -16,9 +16,17 @@
  */
 package com.commonwealthrobotics.bowlerkernel.cli
 
+import java.lang.NumberFormatException
 import java.net.InetAddress
 import java.net.UnknownHostException
+import java.util.Locale
 import kotlin.reflect.KClass
+
+sealed class MatchResult {
+    data class Match(val data: Any?) : MatchResult()
+    data class Invalid(val source: String) : MatchResult()
+    object Unknown : MatchResult()
+}
 
 data class Option(
     val clazz: KClass<*>,
@@ -37,23 +45,29 @@ data class Option(
      * @param args The args from the cmdline.
      * @return The parsed value of this option.
      */
-    fun matchAndRemove(args: MutableList<String>): Any? {
+    fun matchAndRemove(args: MutableList<String>): MatchResult {
         val argIndex = args.indexOfFirst { it == "-$short" || it == "--$long" }
         if (argIndex == -1) {
-            return null
+            return MatchResult.Unknown
         }
 
         val argValue = try {
             args[argIndex + 1]
         } catch (ex: IndexOutOfBoundsException) {
             null
-        } ?: return null
+        } ?: return MatchResult.Unknown
 
-        val value = parse(clazz, argValue)
-        if (value != null) {
+        val value = try {
+            MatchResult.Match(parse(clazz, argValue))
+        } catch (ex: NumberFormatException) {
+            MatchResult.Invalid(argValue)
+        }
+
+        if (value is MatchResult.Match) {
             args.removeAt(argIndex) // Remove the option
             args.removeAt(argIndex) // Remove its value
         }
+
         return value
     }
 
@@ -67,7 +81,7 @@ data class Option(
                 Long::class -> value.toLong()
                 Float::class -> value.toFloat()
                 Double::class -> value.toDouble()
-                Boolean::class -> when (value.trim().toLowerCase()) {
+                Boolean::class -> when (value.trim().lowercase(Locale.getDefault())) {
                     "true", "yes", "y" -> true
                     "false", "no", "n" -> false
                     else -> null

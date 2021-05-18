@@ -18,7 +18,7 @@ package com.commonwealthrobotics.bowlerkernel.testutil
 
 import org.junit.jupiter.api.AfterEach
 import org.koin.core.Koin
-import org.koin.core.KoinComponent
+import org.koin.core.component.KoinComponent
 import org.koin.core.context.stopKoin
 import org.koin.core.module.Module
 import org.koin.dsl.koinApplication

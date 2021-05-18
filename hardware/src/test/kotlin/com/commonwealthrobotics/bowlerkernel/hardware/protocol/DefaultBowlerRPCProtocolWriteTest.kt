@@ -24,7 +24,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
-import org.octogonapus.ktguava.collections.emptyImmutableList
 import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
@@ -110,9 +109,9 @@ internal class DefaultBowlerRPCProtocolWriteTest {
                     protocol.writeAndRead(led, byteArrayOf(1))
                 }
             } pcSends {
-                emptyImmutableList()
+                emptyList()
             } deviceResponds {
-                emptyImmutableList()
+                emptyList()
             }
         }
     }

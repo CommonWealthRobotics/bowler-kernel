@@ -15,11 +15,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, macos-latest] # TODO: Re-enable windows-latest after https://github.com/grpc/grpc-kotlin/issues/116 is closed
+        os: [ubuntu-20.04, macos-latest]
 
     steps:
       - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.4.0
+        uses: styfle/cancel-workflow-action@0.9.0
+        if: ${{ !env.ACT }}
         with:
           access_token: ${{ github.token }}
 
@@ -31,26 +32,23 @@ jobs:
       - run: git config --global user.name "Example User"
 
       - uses: gradle/wrapper-validation-action@v1
+        if: ${{ !env.ACT }}
 
-      - name: Set up JDK 11
-        uses: actions/setup-java@v1
+      - name: Set up JDK
+        uses: actions/setup-java@v2
         with:
-          java-version: 11
-          java-package: jdk+fx
+          distribution: adopt
+          java-version: 14
 
       - name: Cache Gradle packages
         uses: actions/cache@v2
+        if: ${{ !env.ACT }}
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
 
-      - name: Check (Linux)
-        if: ${{ runner.os == 'Linux' }}
-        run: xvfb-run -s '-screen 0 1024x768x24' ./gradlew check --info --stacktrace -Plogtests
-
       - name: Check
-        if: ${{ runner.os != 'Linux' }}
         run: ./gradlew check --info --stacktrace -Plogtests
 
       - name: JacocoRootReport
@@ -60,5 +58,5 @@ jobs:
         run: ./gradlew --stop
 
       - name: Upload Coverage
-        if: ${{ runner.os == 'Linux' }}
+        if: ${{ runner.os == 'Linux' && !env.ACT }}
         run: bash <(curl --connect-timeout 10 --retry 10 --retry-max-time 0 https://codecov.io/bash) || (sleep 30 && bash <(curl --connect-timeout 10 --retry 10 --retry-max-time 0 https://codecov.io/bash))

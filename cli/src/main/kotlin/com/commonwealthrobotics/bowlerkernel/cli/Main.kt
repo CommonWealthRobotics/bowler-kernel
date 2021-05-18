@@ -16,7 +16,6 @@
  */
 package com.commonwealthrobotics.bowlerkernel.cli
 
-import arrow.core.Tuple2
 import com.commonwealthrobotics.bowlerkernel.kerneldiscovery.NameClient
 import com.commonwealthrobotics.bowlerkernel.kerneldiscovery.NameServer
 import com.commonwealthrobotics.bowlerkernel.server.KernelServer
@@ -146,7 +145,7 @@ object Main {
                             port = it.option("port", NameServer.defaultPort),
                             timeoutMs = it.option("timeout", 1000)
                         ).joinToString("\n") {
-                            "${it.a} <- ${it.b}"
+                            "${it.first} <- ${it.second}"
                         }
                     },
                     Command(
@@ -181,21 +180,20 @@ object Main {
                         )
                     ) {
                         val address = it.option<InetAddress>("address")
-                        val grpcPort = NameClient.getGrpcPort(
-                            address = address,
-                            port = it.option("port", NameServer.defaultPort),
-                            timeoutMs = it.option("timeout", 1000),
-                            attempts = it.option("attempts", 10),
-                        )
-                        grpcPort.attempt().unsafeRunSync().fold(
-                            {
-                                """
-                                |Encountered exception while requesting the kernel server's port number:
-                                |${it.localizedMessage}
-                                """.trimMargin()
-                            },
-                            { "Kernel server at $address is running on port $it" }
-                        )
+                        try {
+                            val grpcPort = NameClient.getGrpcPort(
+                                address = address,
+                                port = it.option("port", NameServer.defaultPort),
+                                timeoutMs = it.option("timeout", 1000),
+                                attempts = it.option("attempts", 10),
+                            )
+                            "Kernel server at $address is running on port $grpcPort"
+                        } catch (ex: IllegalStateException) {
+                            """
+                            |Encountered exception while requesting the kernel server's port number:
+                            |${ex.localizedMessage}
+                            """.trimMargin()
+                        }
                     },
                     Command(
                         name = "start-server",
@@ -284,11 +282,11 @@ object Main {
  * Gets the value of a required option.
  */
 @Suppress("UNCHECKED_CAST")
-internal fun <T> List<Tuple2<Option, *>>.option(long: String): T = first { it.a.long == long }.b as T
+internal fun <T> List<Pair<Option, *>>.option(long: String): T = first { it.first.long == long }.second as T
 
 /**
  * Gets the value of a non-required option or a default value if the option was not set.
  */
 @Suppress("UNCHECKED_CAST")
-internal fun <T> List<Tuple2<Option, *>>.option(long: String, default: T): T =
-    firstOrNull { it.a.long == long }?.b as T? ?: default
+internal fun <T> List<Pair<Option, *>>.option(long: String, default: T): T =
+    firstOrNull { it.first.long == long }?.second as T? ?: default

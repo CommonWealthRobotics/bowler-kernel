@@ -19,8 +19,8 @@ package com.commonwealthrobotics.bowlerkernel.scripting
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.nonFatalOrThrow
+import arrow.core.partially1
 import arrow.core.right
-import arrow.syntax.function.partially1
 import com.commonwealthrobotics.bowlerkernel.util.RedirectionStream
 import com.commonwealthrobotics.proto.gitfs.FileSpec
 import kotlinx.coroutines.runBlocking

@@ -42,9 +42,9 @@ internal class DiscoveryRoundTripTest {
         while (!ns.isRunning.get()) { Thread.sleep(10) }
 
         val scan = NameClient.scan()
-        scan.map { it.a }.shouldContainExactly(name)
+        scan.map { it.first }.shouldContainExactly(name)
 
-        NameClient.getGrpcPort(scan.first().b).unsafeRunSync().shouldBe(grpcPort)
+        NameClient.getGrpcPort(scan.first().second).shouldBe(grpcPort)
 
         ns.ensureStopped()
         ns.isRunning.get().shouldBeFalse()

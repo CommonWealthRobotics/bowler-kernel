@@ -40,7 +40,7 @@ internal class BenchmarkDeviceServerTest {
         server.addReliable(2)
 
         println("Test with reliable transport:")
-        println(benchmarkDeviceServer(server, 61, 2).unsafeRunSync())
+        println(benchmarkDeviceServer(server, 61, 2))
     }
 
     @Test
@@ -59,6 +59,6 @@ internal class BenchmarkDeviceServerTest {
         server.addUnreliable(2, 10)
 
         println("Test with unreliable transport:")
-        println(benchmarkDeviceServer(server, 61, 2).unsafeRunSync())
+        println(benchmarkDeviceServer(server, 61, 2))
     }
 }
