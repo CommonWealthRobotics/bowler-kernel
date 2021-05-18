@@ -41,7 +41,6 @@ object Versions {
     const val githubAPI = "1.115"
     const val jgit = "5.4.0.201906121030-r"
     const val commonsMath3 = "3.6.1"
-    const val ktGuavaCore = "0.2.6"
     const val groovy = "3.0.8"
     const val ivy = "2.5.0"
     const val koin = "3.0.1"
