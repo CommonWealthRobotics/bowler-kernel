@@ -31,7 +31,6 @@ import com.commonwealthrobotics.bowlerkernel.util.getFullPathToGitHubCacheDirect
 import io.grpc.Server
 import io.grpc.netty.NettyServerBuilder
 import mu.KotlinLogging
-import org.koin.core.component.KoinApiExtension
 import org.koin.core.component.KoinComponent
 import org.koin.core.qualifier.named
 import org.koin.dsl.koinApplication
@@ -39,7 +38,6 @@ import org.koin.dsl.module
 import java.nio.file.Path
 import kotlin.system.exitProcess
 
-@OptIn(KoinApiExtension::class)
 class KernelServer {
 
     private var server: Server? = null

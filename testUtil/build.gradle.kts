@@ -15,5 +15,6 @@ dependencies {
     api(group = "io.mockk", name = "mockk", version = Versions.mockk)
     api(group = "io.arrow-kt", name = "arrow-core", version = Versions.arrow)
     api(group = "org.jacoco", name = "org.jacoco.agent", version = Versions.jacocoTool)
-    api(group = "org.koin", name = "koin-test", version = Versions.koin)
+    api(group = "io.insert-koin", name = "koin-test", version = Versions.koin)
+    api(group = "io.insert-koin", name = "koin-test-junit5", version = Versions.koin)
 }

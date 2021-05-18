@@ -44,7 +44,7 @@ object Versions {
     const val ktGuavaCore = "0.2.6"
     const val groovy = "3.0.8"
     const val ivy = "2.5.0"
-    const val koin = "2.2.2"
+    const val koin = "3.0.1"
     const val jline = "3.20.0"
     const val bowlerProtoKotlin = "0.8.1"
 
