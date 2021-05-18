@@ -47,7 +47,6 @@ allprojects {
 
     repositories {
         mavenCentral()
-        jcenter()
     }
 
     // Configures the Jacoco tool version to be the same for all projects that have it applied.

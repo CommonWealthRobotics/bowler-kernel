@@ -24,7 +24,6 @@ import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.
 import io.kotest.assertions.throwables.shouldThrow
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
-import org.octogonapus.ktguava.collections.emptyImmutableList
 import java.util.concurrent.TimeUnit
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
@@ -113,9 +112,9 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
                     )
                 }
             } pcSends {
-                emptyImmutableList()
+                emptyList()
             } deviceResponds {
-                emptyImmutableList()
+                emptyList()
             }
         }
     }
@@ -135,9 +134,9 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
                     )
                 }
             } pcSends {
-                emptyImmutableList()
+                emptyList()
             } deviceResponds {
-                emptyImmutableList()
+                emptyList()
             }
         }
     }
@@ -159,9 +158,9 @@ internal class DefaultBowlerRPCProtocolWriteGroupTest {
                     )
                 }
             } pcSends {
-                emptyImmutableList()
+                emptyList()
             } deviceResponds {
-                emptyImmutableList()
+                emptyList()
             }
         }
     }

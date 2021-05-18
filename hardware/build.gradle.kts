@@ -18,12 +18,6 @@ dependencies {
     implementation(group = "io.arrow-kt", name = "arrow-optics", version = Versions.arrow)
     kapt("io.arrow-kt:arrow-meta:${Versions.arrow}")
 
-    implementation(
-        group = "org.octogonapus",
-        name = "kt-guava-core",
-        version = Versions.ktGuavaCore
-    )
-
     testImplementation(project(":testUtil"))
 
     runtimeOnly(project(":logging"))

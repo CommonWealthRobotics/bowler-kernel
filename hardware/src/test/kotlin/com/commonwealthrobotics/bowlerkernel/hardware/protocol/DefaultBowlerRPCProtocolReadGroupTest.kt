@@ -24,8 +24,6 @@ import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.
 import io.kotest.assertions.throwables.shouldThrow
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
-import org.octogonapus.ktguava.collections.emptyImmutableList
-import org.octogonapus.ktguava.collections.plus
 import java.lang.UnsupportedOperationException
 import java.util.concurrent.TimeUnit
 
@@ -93,9 +91,9 @@ internal class DefaultBowlerRPCProtocolReadGroupTest {
                     protocol.read(listOf(lineSensor1, lineSensor2))
                 }
             } pcSends {
-                emptyImmutableList()
+                emptyList()
             } deviceResponds {
-                emptyImmutableList()
+                emptyList()
             }
         }
     }
@@ -111,9 +109,9 @@ internal class DefaultBowlerRPCProtocolReadGroupTest {
                     protocol.read(listOf(lineSensor1))
                 }
             } pcSends {
-                emptyImmutableList()
+                emptyList()
             } deviceResponds {
-                emptyImmutableList()
+                emptyList()
             }
         }
     }
@@ -129,9 +127,9 @@ internal class DefaultBowlerRPCProtocolReadGroupTest {
                     protocol.read(listOf(lineSensor1, lineSensor1))
                 }
             } pcSends {
-                emptyImmutableList()
+                emptyList()
             } deviceResponds {
-                emptyImmutableList()
+                emptyList()
             }
         }
     }
