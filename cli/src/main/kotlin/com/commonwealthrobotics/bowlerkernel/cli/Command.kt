@@ -16,15 +16,14 @@
  */
 package com.commonwealthrobotics.bowlerkernel.cli
 
-import arrow.core.Tuple2
-import arrow.fx.IO
+import arrow.core.Invalid
 import org.jline.builtins.Completers
 
 internal class Command private constructor(
     val name: String,
     private val help: String,
     private val lambda1: (List<String>) -> String,
-    private val lambda2: (List<Tuple2<Option, *>>) -> String,
+    private val lambda2: (List<Pair<Option, *>>) -> String,
     private val type: Type,
     private val children: List<Command>,
     private val options: List<Option>,
@@ -60,7 +59,7 @@ internal class Command private constructor(
         name: String,
         help: String,
         options: List<Option> = emptyList(),
-        lambda: (List<Tuple2<Option, *>>) -> String
+        lambda: (List<Pair<Option, *>>) -> String
     ) : this(
         name = name,
         help = help,
@@ -81,21 +80,20 @@ internal class Command private constructor(
         return if (type == Type.Terminal) {
             val matchedArgs = ArrayList(args)
             val matchedOptions = options.map {
-                Tuple2(it, IO { it.matchAndRemove(matchedArgs) }.attempt().unsafeRunSync())
+                Pair(it, it.matchAndRemove(matchedArgs))
             }
 
-            val matchedButNotParsedOptions = matchedOptions.filter { it.b.isLeft() }
+            val matchedButNotParsedOptions = matchedOptions.filter { it.second is MatchResult.Invalid }
             if (matchedButNotParsedOptions.isNotEmpty()) {
                 // These matched but resulted in parse errors
                 return invalidOptions(matchedButNotParsedOptions)
             }
 
-            val matchedAndParsedOptions = matchedOptions.map { it.map { it.fold({ throw it }, { it }) } }
-
-            val requiredButNotMatchedOptions = matchedAndParsedOptions.filter { it.a.required && it.b == null }
+            val requiredButNotMatchedOptions =
+                matchedOptions.filter { it.first.required && it.second is MatchResult.Unknown }
             if (requiredButNotMatchedOptions.isNotEmpty()) {
                 // Not all required options matched
-                return missingOptions(requiredButNotMatchedOptions.map { it.a })
+                return missingOptions(requiredButNotMatchedOptions.map { it.first })
             }
 
             if (matchedArgs.isNotEmpty()) {
@@ -103,21 +101,32 @@ internal class Command private constructor(
                 return unknownOptions(matchedArgs)
             }
 
-            val invalidMatches = matchedAndParsedOptions.filter { it.b != null }.filter { !it.a.validator(it.b!!) }
+            val invalidMatches =
+                matchedOptions.filter { it.second is MatchResult.Match }
+                    .filter { !it.first.validator((it.second as MatchResult.Match).data!!) }
             if (invalidMatches.isNotEmpty()) {
                 // Some options have invalid values
                 return invalidOptions(invalidMatches)
             }
 
             // All required options matched
-            lambda2(matchedAndParsedOptions).prependIndent("  ")
+            lambda2(
+                matchedOptions.map {
+                    val data = when (val match = it.second) {
+                        is MatchResult.Match -> match.data
+                        is MatchResult.Unknown -> null
+                        else -> error("Unhandled match branch")
+                    }
+                    Pair(it.first, data)
+                }
+            ).prependIndent("  ")
         } else {
             lambda1(args).prependIndent("  ")
         }
     }
 
-    private fun invalidOptions(invalidMatches: List<Tuple2<Option, Any?>>): String {
-        val optionString = invalidMatches.joinToString("\n") { it.a.helpMessage }.prependIndent("  ")
+    private fun invalidOptions(invalidMatches: List<Pair<Option, Any?>>): String {
+        val optionString = invalidMatches.joinToString("\n") { it.first.helpMessage }.prependIndent("  ")
         return """
         |Invalid options:
         |$optionString
@@ -140,7 +149,8 @@ internal class Command private constructor(
         """.trimMargin()
     }
 
-    @SuppressWarnings("SpreadOperator") // node() requires varargs
+    // node() requires varargs
+    @SuppressWarnings("SpreadOperator")
     fun node(): Completers.TreeCompleter.Node = Completers.TreeCompleter.node(
         name,
         *children.map(Command::node).toTypedArray()

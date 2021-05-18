@@ -15,7 +15,6 @@ dependencies {
     api(project(":device-server"))
 
     implementation(group = "io.arrow-kt", name = "arrow-core", version = Versions.arrow)
-    implementation(group = "io.arrow-kt", name = "arrow-syntax", version = Versions.arrow)
     implementation(group = "io.arrow-kt", name = "arrow-optics", version = Versions.arrow)
     kapt("io.arrow-kt:arrow-meta:${Versions.arrow}")
 

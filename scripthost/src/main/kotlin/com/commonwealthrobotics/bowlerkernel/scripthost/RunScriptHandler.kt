@@ -31,11 +31,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
-import org.koin.core.KoinComponent
-import org.koin.core.inject
+import org.koin.core.component.KoinApiExtension
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 
+@OptIn(KoinApiExtension::class)
 class RunScriptHandler(
     private val koinComponent: KoinComponent
 ) : KoinComponent by koinComponent {
@@ -108,8 +110,8 @@ class RunScriptHandler(
                 is Either.Left -> send(
                     RunResponse.newBuilder().apply {
                         errorBuilder.apply {
-                            description = result.a.localizedMessage
-                            stacktrace = result.a.stackTraceToString()
+                            description = result.value.localizedMessage
+                            stacktrace = result.value.stackTraceToString()
                         }
                     }.build()
                 )
@@ -117,7 +119,7 @@ class RunScriptHandler(
                 is Either.Right -> send(
                     RunResponse.newBuilder().apply {
                         scriptOutputBuilder.apply {
-                            output = result.b?.toString()
+                            output = result.value?.toString()
                             // TODO: Set stdout and stderr
                             // TODO: Set tarball
                         }

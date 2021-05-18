@@ -9,11 +9,11 @@ dependencies {
 
     api(group = "io.kotest", name = "kotest-runner-junit5-jvm", version = Versions.kotest)
     api(group = "io.kotest", name = "kotest-assertions-core-jvm", version = Versions.kotest)
-    api(group = "io.kotest", name = "kotest-assertions-arrow", version = Versions.kotest)
+    api(group = "io.kotest.extensions", name = "kotest-assertions-arrow", version = Versions.kotestAssertionsArrow)
     api(group = "io.kotest", name = "kotest-property-jvm", version = Versions.kotest)
 
     api(group = "io.mockk", name = "mockk", version = Versions.mockk)
-    api(group = "io.arrow-kt", name = "arrow-core-data", version = Versions.arrow)
+    api(group = "io.arrow-kt", name = "arrow-core", version = Versions.arrow)
     api(group = "org.jacoco", name = "org.jacoco.agent", version = Versions.jacocoTool)
     api(group = "org.koin", name = "koin-test", version = Versions.koin)
 }

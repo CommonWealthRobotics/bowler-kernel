@@ -16,7 +16,6 @@
  */
 package com.commonwealthrobotics.bowlerkernel.protoutil
 
-import arrow.core.extensions.set.monoidal.identity
 import com.commonwealthrobotics.proto.script_host.NewTask
 import com.commonwealthrobotics.proto.script_host.TaskEnd
 import com.commonwealthrobotics.proto.script_host.TaskEndCause

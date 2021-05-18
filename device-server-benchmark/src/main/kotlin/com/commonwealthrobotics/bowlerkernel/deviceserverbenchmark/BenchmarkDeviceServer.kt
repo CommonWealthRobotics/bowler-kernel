@@ -16,7 +16,6 @@
  */
 package com.commonwealthrobotics.bowlerkernel.deviceserverbenchmark
 
-import arrow.fx.IO
 import com.commonwealthrobotics.bowlerkernel.deviceserver.DeviceServer
 import com.commonwealthrobotics.bowlerkernel.deviceserver.getPayload
 import org.apache.commons.math3.stat.descriptive.moment.Mean
@@ -37,7 +36,7 @@ fun benchmarkDeviceServer(
     deviceServer: DeviceServer,
     payloadSize: Int,
     packetId: Byte
-) = IO {
+) {
     // Warm up JVM
     repeat(100) {
         measureNanoTime {
@@ -50,10 +49,7 @@ fun benchmarkDeviceServer(
 
     val roundTripTimes = (0..1000).map {
         measureNanoTime {
-            deviceServer.write(
-                packetId,
-                getPayload(payloadSize, byteArrayOf(it.toByte()))
-            )
+            deviceServer.write(packetId, getPayload(payloadSize, byteArrayOf(it.toByte())))
         }
     }
 

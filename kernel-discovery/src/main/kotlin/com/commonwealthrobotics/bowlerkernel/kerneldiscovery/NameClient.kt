@@ -16,8 +16,6 @@
  */
 package com.commonwealthrobotics.bowlerkernel.kerneldiscovery
 
-import arrow.core.Tuple2
-import arrow.fx.IO
 import mu.KotlinLogging
 import java.net.DatagramPacket
 import java.net.DatagramSocket
@@ -40,14 +38,14 @@ object NameClient {
         multicastGroup: InetAddress = NameServer.defaultMulticastGroup,
         port: Int = NameServer.defaultPort,
         timeoutMs: Int = 1000
-    ): List<Tuple2<String, InetAddress>> {
+    ): List<Pair<String, InetAddress>> {
         val socket = DatagramSocket()
         socket.soTimeout = timeoutMs
 
         logger.debug { "Sending to $multicastGroup:$port" }
         socket.send(DatagramPacket(NameServer.getNameBytes, NameServer.getNameBytes.size, multicastGroup, port))
 
-        val names = mutableListOf<Tuple2<String, InetAddress>>()
+        val names = mutableListOf<Pair<String, InetAddress>>()
         while (true) {
             try {
                 val reply = DatagramPacket(ByteArray(NameServer.maxReplyLength), NameServer.maxReplyLength)
@@ -56,7 +54,7 @@ object NameClient {
 
                 val numBytes = reply.data[0].toInt()
                 val name = reply.data.toList().subList(1, numBytes + 1).toByteArray().decodeToString()
-                names.add(Tuple2(name, reply.address))
+                names.add(Pair(name, reply.address))
             } catch (ex: SocketTimeoutException) {
                 break
             }
@@ -80,7 +78,7 @@ object NameClient {
         port: Int = NameServer.defaultPort,
         timeoutMs: Int = 1000,
         attempts: Int = 10,
-    ): IO<Int> = IO {
+    ): Int {
         val socket = DatagramSocket()
         socket.soTimeout = timeoutMs
 
@@ -100,7 +98,7 @@ object NameClient {
                 val grpcPort = ByteBuffer.allocate(Int.SIZE_BYTES).put(reply.data, 1, Int.SIZE_BYTES).rewind().int
 
                 socket.close()
-                return@IO grpcPort
+                return grpcPort
             } catch (ex: SocketTimeoutException) {
                 // Ignored
             }

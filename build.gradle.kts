@@ -1,7 +1,6 @@
 import com.adarshr.gradle.testlogger.theme.ThemeType
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
-import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -13,8 +12,6 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version Versions.ktlintPlugin
     `java-test-fixtures`
     id("org.jetbrains.dokka") version Versions.dokkaPlugin
-    id("com.jfrog.bintray") version Versions.bintrayPlugin
-    `maven-publish`
 }
 
 val kotlinProjects = listOf(
@@ -51,12 +48,6 @@ allprojects {
     repositories {
         mavenCentral()
         jcenter()
-        // Needed for bowler-script-kernel
-        maven("https://dl.bintray.com/s1m0nw1/KtsRunner") {
-            content {
-                includeGroup("de.swirtz")
-            }
-        }
     }
 
     // Configures the Jacoco tool version to be the same for all projects that have it applied.
@@ -217,7 +208,8 @@ configure(kotlinProjects) {
 
     ktlint {
         version.set(Versions.ktlint)
-        enableExperimentalRules.set(true)
+//        enableExperimentalRules.set(true)
+
         additionalEditorconfigFile.set(file(rootProject.rootDir.toPath().resolve("config").resolve("ktlint").resolve(".editorconfig")))
         filter {
             exclude {
@@ -225,49 +217,6 @@ configure(kotlinProjects) {
             }
         }
     }
-}
-
-// Need to configure the root project or else the task bintrayUpload will throw a NPE
-configureBintrayPkg(null)
-
-configure(publishedProjects) {
-    apply {
-        plugin("com.jfrog.bintray")
-        plugin("maven-publish")
-    }
-
-    task<Jar>("sourcesJar") {
-        archiveClassifier.set("sources")
-        archiveBaseName.set("${Metadata.projectName}-${this@configure.name.toLowerCase()}")
-        from(sourceSets.main.get().allSource)
-    }
-
-    val dokkaJar by tasks.creating(Jar::class) {
-        group = JavaBasePlugin.DOCUMENTATION_GROUP
-        description = "Assembles Kotlin docs with Dokka"
-        archiveClassifier.set("javadoc")
-        archiveBaseName.set("${Metadata.projectName}-${this@configure.name.toLowerCase()}")
-        from(tasks.withType<DokkaTask>())
-    }
-
-    val publicationName = "publication-${Metadata.projectName}-${name.toLowerCase()}"
-
-    publishing {
-        publications {
-            create<MavenPublication>(publicationName) {
-                artifactId = "${Metadata.projectName}-${this@configure.name.toLowerCase()}"
-                from(components["java"])
-                artifact(tasks["sourcesJar"])
-                try {
-                    artifact(tasks.named("shadowJar"))
-                } catch (ex: UnknownTaskException) {
-                }
-                artifact(dokkaJar)
-            }
-        }
-    }
-
-    configureBintrayPkg(publicationName)
 }
 
 val jacocoRootReport by tasks.creating(JacocoReport::class) {
@@ -297,29 +246,4 @@ val jacocoRootReport by tasks.creating(JacocoReport::class) {
 tasks.wrapper {
     distributionType = Wrapper.DistributionType.ALL
     gradleVersion = Versions.gradleWrapper
-}
-
-fun Project.configureBintrayPkg(publicationName: String?) {
-    bintray {
-        val bintrayApiUser = properties["bintray.api.user"] ?: System.getenv("BINTRAY_USER")
-        val bintrayApiKey = properties["bintray.api.key"] ?: System.getenv("BINTRAY_API_KEY")
-        user = bintrayApiUser as String?
-        key = bintrayApiKey as String?
-
-        publicationName?.let { setPublications(it) }
-
-        with(pkg) {
-            repo = Metadata.Bintray.repo
-            name = Metadata.projectName
-            userOrg = Metadata.organization
-            publish = true
-            setLicenses(Metadata.license)
-            vcsUrl = Metadata.Bintray.vcsUrl
-            githubRepo = Metadata.Bintray.githubRepo
-            with(version) {
-                name = Versions.projectVersion
-                desc = Metadata.projectDescription
-            }
-        }
-    }
 }

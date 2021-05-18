@@ -18,9 +18,11 @@ package com.commonwealthrobotics.bowlerkernel.scripthost
 
 import com.commonwealthrobotics.proto.script_host.RunRequest
 import com.commonwealthrobotics.proto.script_host.ScriptHostGrpcKt
-import org.koin.core.KoinComponent
+import org.koin.core.component.KoinApiExtension
+import org.koin.core.component.KoinComponent
 
-class ScriptHost(
+@OptIn(KoinApiExtension::class)
+class ScriptHost constructor(
     private val koinComponent: KoinComponent
 ) : ScriptHostGrpcKt.ScriptHostCoroutineImplBase(), KoinComponent by koinComponent {
 

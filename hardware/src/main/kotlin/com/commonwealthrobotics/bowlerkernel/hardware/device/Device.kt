@@ -16,7 +16,6 @@
  */
 package com.commonwealthrobotics.bowlerkernel.hardware.device
 
-import arrow.fx.IO
 import com.commonwealthrobotics.bowlerkernel.hardware.device.deviceid.DeviceId
 import com.commonwealthrobotics.bowlerkernel.hardware.deviceresource.resourceid.ResourceId
 
@@ -33,7 +32,7 @@ interface Device {
      *
      * @return An error if there is a connection problem.
      */
-    fun connect(): IO<Unit>
+    fun connect()
 
     /**
      * Closes the persistent connection to the device. Does nothing if there is no connection open.
@@ -41,7 +40,7 @@ interface Device {
      *
      * @return An error if there is a disconnect problem.
      */
-    fun disconnect(): IO<Unit>
+    fun disconnect()
 
     /**
      * Returns whether the [resourceId] is in the valid range of resources for this device.
@@ -49,7 +48,7 @@ interface Device {
      * @param resourceId The id of a resource on this device.
      * @return Whether the resource id is in the valid range of resources for this device.
      */
-    fun isResourceInRange(resourceId: ResourceId): IO<Boolean>
+    fun isResourceInRange(resourceId: ResourceId): Boolean
 
     // TODO: Maybe we want to recreate the add methods in here
 //    /**

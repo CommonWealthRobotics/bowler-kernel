@@ -52,7 +52,7 @@ class NameServer(
     init {
         // Check the name will fit in the payload, even if we need to make it unique (1 byte header, 24 byte suffix)
         require(desiredName.length + 24 < maxReplyLength + 1)
-        name = determineUniqueName(desiredName, NameClient.scan(multicastGroup, desiredPort).map { it.a })
+        name = determineUniqueName(desiredName, NameClient.scan(multicastGroup, desiredPort).map { it.first })
 
         // Check the unique name will fit in the payload
         check(name.length < maxReplyLength + 1)

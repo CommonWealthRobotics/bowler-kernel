@@ -159,7 +159,7 @@ internal class ScriptClasspathIsolationIntegTest {
             // The child script must not have access to the dependency from the parent script.
             parentScript.join().shouldBeRight {
                 it.shouldBeInstanceOf<Either.Left<Throwable>>()
-                it.a.message.shouldContain("unable to resolve class org.apache.commons.cli.Options")
+                it.value.message.shouldContain("unable to resolve class org.apache.commons.cli.Options")
             }
         }
     }

@@ -16,10 +16,8 @@
  */
 package com.commonwealthrobotics.bowlerkernel.cli
 
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
-import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import java.net.InetAddress
@@ -29,14 +27,14 @@ internal class OptionTest {
     @Test
     fun `match no arg`() {
         val option = option<Int>(short = "a", long = "aa", help = "")
-        option.matchAndRemove(mutableListOf()).shouldBeNull()
+        option.matchAndRemove(mutableListOf()).shouldBe(MatchResult.Unknown)
     }
 
     @Test
     fun `match the short switch`() {
         val option = option<Int>(short = "a", long = "aa", help = "")
         val args = mutableListOf("-a", "1")
-        option.matchAndRemove(args).shouldBe(1)
+        option.matchAndRemove(args).shouldBe(MatchResult.Match(1))
         args.shouldBeEmpty()
     }
 
@@ -44,7 +42,7 @@ internal class OptionTest {
     fun `match the long switch`() {
         val option = option<Int>(short = "a", long = "aa", help = "")
         val args = mutableListOf("--aa", "1")
-        option.matchAndRemove(args).shouldBe(1)
+        option.matchAndRemove(args).shouldBe(MatchResult.Match(1))
         args.shouldBeEmpty()
     }
 
@@ -52,7 +50,7 @@ internal class OptionTest {
     fun `don't match a different switch`() {
         val option = option<Int>(short = "a", long = "aa", help = "")
         val args = mutableListOf("--ab", "1")
-        option.matchAndRemove(args).shouldBeNull()
+        option.matchAndRemove(args).shouldBe(MatchResult.Unknown)
         args.shouldContainExactly("--ab", "1")
     }
 
@@ -60,9 +58,7 @@ internal class OptionTest {
     fun `match a short switch but fail parsing`() {
         val option = option<Int>(short = "a", long = "aa", help = "")
         val args = mutableListOf("-a", "q")
-        shouldThrow<NumberFormatException> {
-            option.matchAndRemove(args)
-        }
+        option.matchAndRemove(args).shouldBe(MatchResult.Invalid("q"))
     }
 
     @Test
